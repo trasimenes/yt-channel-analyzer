@@ -1,0 +1,20 @@
+{
+  "competitors": {
+    "channel1": {
+      "name": "Cooking 101",
+      "videos": [
+        {"title": "Hero Trailer", "category": "hero", "view_count": 1000, "published_at": "2023-01-01"},
+        {"title": "Weekly Recipes", "category": "hub", "view_count": 500, "published_at": "2023-01-10"},
+        {"title": "How to chop onions", "category": "help", "view_count": 800, "published_at": "2023-01-15"}
+      ]
+    },
+    "channel2": {
+      "name": "Tech Tips",
+      "videos": [
+        {"title": "Launch Video", "category": "hero", "view_count": 2000, "published_at": "2023-02-01"},
+        {"title": "Weekly Tech News", "category": "hub", "view_count": 1200, "published_at": "2023-02-08"},
+        {"title": "How to use Python", "category": "help", "view_count": 1500, "published_at": "2023-02-12"}
+      ]
+    }
+  }
+}
