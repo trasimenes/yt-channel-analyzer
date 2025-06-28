@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Active Tasks - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    .task-status {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .status-running {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .status-completed {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .status-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .status-paused {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+        border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    
+    .channel-thumbnail-container {
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .channel-thumbnail-task {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(99, 102, 241, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .task-card:hover .channel-thumbnail-task {
+        border-color: var(--primary);
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.3);
+    }
+    
+    .channel-thumbnail-fallback {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        border: 3px solid rgba(239, 68, 68, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .task-card:hover .channel-thumbnail-fallback {
+        border-color: #ef4444;
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.3);
+    }
+    
+    .progress {
+        height: 8px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.1);
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 10px;
+        transition: width 0.6s ease;
+    }
+    
+    .btn-action {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        border: none;
+        color: white;
+    }
+    
+    .btn-danger-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+    
+    .auto-refresh {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 1rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-list-task text-primary me-3"></i>
+                    Active Tasks
+                </h1>
+                <p class="text-muted mb-0">Monitor your YouTube channel analysis tasks in real-time</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-warning btn-action" onclick="cleanDuplicateTasks()" id="clean-btn">
+                    <i class="bi bi-trash me-1"></i>
+                    Clean Duplicates
+                </button>
+            </div>
+        </div>
+
+        <!-- Auto-refresh indicator -->
+        <div class="auto-refresh" id="refresh-indicator">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Auto-refresh: <span id="countdown">30</span>s
+        </div>
+
+        <!-- Tasks Container -->
+        <div id="tasks-container">
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-start gap-3 flex-grow-1">
+                            <div class="channel-thumbnail-container">
+                                {% if task.channel_thumbnail %}
+                                    <img src="{{ task.channel_thumbnail }}" 
+                                         alt="{{ task.channel_name }}" 
+                                         class="channel-thumbnail-task"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="channel-thumbnail-fallback" style="display: none;">
+                                        <i class="bi bi-youtube"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="channel-thumbnail-fallback">
+                                        <i class="bi bi-youtube"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">
+                                    {{ task.channel_name or 'Unknown Channel' }}
+                                </h5>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-link-45deg me-1"></i>
+                                {{ task.channel_url }}
+                            </p>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="task-status status-{{ task.status }}">
+                                    {% if task.status == 'running' %}
+                                        <i class="bi bi-play-circle me-1"></i>
+                                    {% elif task.status == 'completed' %}
+                                        <i class="bi bi-check-circle me-1"></i>
+                                    {% elif task.status == 'error' %}
+                                        <i class="bi bi-x-circle me-1"></i>
+                                    {% elif task.status == 'paused' %}
+                                        <i class="bi bi-pause-circle me-1"></i>
+                                    {% endif %}
+                                    {{ task.status.title() }}
+                                </span>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>
+                                    Started: {{ task.start_time }}
+                                </small>
+                                {% if task.end_time %}
+                                <small class="text-muted">
+                                    <i class="bi bi-arrow-repeat me-1"></i>
+                                    Finished: {{ task.end_time }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            {% if task.status == 'completed' %}
+                                <a href="/scraper_result/{{ task.id }}" class="btn btn-primary-custom btn-action">
+                                    <i class="bi bi-eye me-1"></i>
+                                    View Results
+                                </a>
+                            {% endif %}
+                            {% if task.status in ['running', 'pending'] %}
+                                <button class="btn btn-danger-custom btn-action" onclick="cancelTask('{{ task.id }}')">
+                                    <i class="bi bi-stop-circle me-1"></i>
+                                    Cancel
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Progress bar for running tasks -->
+                    {% if task.status == 'running' and task.progress is defined %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="text-muted">{{ task.progress }}%</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ task.progress }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Task details -->
+                    <div class="row g-3 text-sm">
+                        <div class="col-md-4">
+                            <strong>Videos Found:</strong>
+                            <span class="text-muted">{{ task.videos_found }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Videos Processed:</strong>
+                            <span class="text-muted">{{ task.videos_processed }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Current Step:</strong>
+                            <span class="text-muted">{{ task.current_step }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Error message for failed tasks -->
+                    {% if task.status == 'error' and task.error_message %}
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> {{ task.error_message }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-list-task empty-icon"></i>
+                    <h3 class="text-muted mb-3">No active tasks</h3>
+                    <p class="text-muted mb-4">
+                        Start a new YouTube channel analysis from the home page to see tasks here.
+                    </p>
+                    <a href="/" class="btn btn-primary-custom">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Start New Analysis
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let refreshInterval;
+    let countdown = 30;
+
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            countdown--;
+            document.getElementById('countdown').textContent = countdown;
+            
+            if (countdown <= 0) {
+                location.reload();
+            }
+        }, 1000);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    }
+
+    // Start auto-refresh when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        startAutoRefresh();
+    });
+
+    // Stop auto-refresh when page is hidden
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            countdown = 30;
+            startAutoRefresh();
+        }
+    });
+
+    async function cancelTask(taskId) {
+        if (!confirm('Are you sure you want to cancel this task?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/cancel_task/${taskId}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error cancelling task');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error cancelling task');
+        }
+    }
+
+    async function cleanDuplicateTasks() {
+        if (!confirm('Êtes-vous sûr de vouloir nettoyer les doublons ? Seule la tâche avec le plus de vidéos sera conservée pour chaque chaîne.')) {
+            return;
+        }
+
+        const cleanBtn = document.getElementById('clean-btn');
+        const originalHtml = cleanBtn.innerHTML;
+        
+        // Afficher un état de chargement
+        cleanBtn.disabled = true;
+        cleanBtn.innerHTML = '<i class="bi bi-arrow-clockwise spinner-border spinner-border-sm me-1"></i> Nettoyage...';
+
+        try {
+            const response = await fetch('/api/tasks/clean-duplicates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Afficher un message de succès
+                alert(`✅ ${result.message}`);
+                
+                // Recharger la page pour voir les changements
+                location.reload();
+            } else {
+                alert(`❌ Erreur: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Erreur lors du nettoyage des doublons');
+        } finally {
+            // Restaurer le bouton
+            cleanBtn.disabled = false;
+            cleanBtn.innerHTML = originalHtml;
+        }
+    }
+
+    // Add smooth scrolling to any anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
+{% endblock %}

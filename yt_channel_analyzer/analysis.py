@@ -1,8 +1,8 @@
 from datetime import date, datetime
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 
-def hero_hub_help_matrix(competitor: Dict, start: date | None = None, end: date | None = None) -> Tuple[Dict[str, int], Dict[str, int]]:
+def hero_hub_help_matrix(competitor: Dict, start: Optional[date] = None, end: Optional[date] = None) -> Tuple[Dict[str, int], Dict[str, int]]:
     counts = {"hero": 0, "hub": 0, "help": 0}
     views = {"hero": 0, "hub": 0, "help": 0}
     for video in competitor.get("videos", []):

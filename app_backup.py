@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import json
 import os
 from flask import Flask, request, render_template, jsonify, session, redirect, url_for, flash
@@ -10,7 +10,8 @@ load_dotenv()
 
 from yt_channel_analyzer.storage import load_data
 from yt_channel_analyzer.analysis import hero_hub_help_matrix
-from yt_channel_analyzer.scraper import autocomplete_youtube_channels
+from yt_channel_analyzer.scraper import tor_scrape_youtube_videos, autocomplete_youtube_channels
+from yt_channel_analyzer.selenium_scraper import get_video_data, get_channel_video_links, get_channel_videos_data
 from yt_channel_analyzer.youtube_adapter import get_channel_videos_data_api, autocomplete_youtube_channels_api, get_api_quota_status
 from yt_channel_analyzer.auth import verify_credentials, is_authenticated, authenticate_session, logout_session
 
@@ -23,15 +24,6 @@ app.permanent_session_lifetime = timedelta(hours=24)
 # Configuration du cache
 CACHE_DIR = "cache_recherches"
 CACHE_FILE = os.path.join(CACHE_DIR, "recherches.json")
-
-# Configuration par défaut
-DEFAULT_SETTINGS = {
-    'paid_threshold': 10000,
-    'industry': 'tourism',
-    'auto_classify': True,
-    'max_videos': 30,
-    'cache_duration': 24
-}
 
 def login_required(f):
     """Décorateur pour protéger les routes"""
@@ -343,6 +335,23 @@ def save_competitor_data(channel_url, videos):
     except Exception as e:
         print(f"[CACHE] Erreur lors de la sauvegarde: {e}")
 
+TEMPLATE = """
+<!doctype html>
+<title>YouTube Channel Analyzer</title>
+<h1>YouTube Channel Analyzer</h1>
+<form method="get">
+  Start date: <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+  End date: <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+  <input type="submit" value="Filter">
+</form>
+<table border="1">
+  <tr><th>Channel</th><th>Hero (videos/views)</th><th>Hub (videos/views)</th><th>Help (videos/views)</th></tr>
+  {% for r in results %}
+    <tr>
+      <td>{{ r.name }}</td>
+      <td>{{ r.counts.hero }} / {{ r.views.hero }}</td>
+      <td>{{ r.counts.hub }} / {{ r.views.hub }}</td>
+      <td>{{ r.counts.help }} / {{ r.views.help }}</td>
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -478,11 +487,10 @@ def competitor_detail(competitor_id):
 @app.route('/api/patterns', methods=['GET'])
 @login_required
 def get_patterns():
+    """API pour récupérer les patterns actuels"""
     try:
         from yt_channel_analyzer.ai_classifier import HubHeroHelpClassifier
-        
         classifier = HubHeroHelpClassifier()
-        
         return jsonify(classifier.patterns)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -490,6 +498,7 @@ def get_patterns():
 @app.route('/api/patterns', methods=['POST'])
 @login_required
 def update_patterns():
+    """API pour mettre à jour les patterns"""
     try:
         from yt_channel_analyzer.ai_classifier import HubHeroHelpClassifier
         classifier = HubHeroHelpClassifier()
@@ -514,6 +523,7 @@ def update_patterns():
 @app.route('/api/tag-video', methods=['POST'])
 @login_required
 def tag_video():
+    """API pour tagger une vidéo et apprendre automatiquement"""
     try:
         from yt_channel_analyzer.ai_classifier import HubHeroHelpClassifier
         classifier = HubHeroHelpClassifier()
@@ -660,6 +670,7 @@ def autocomplete():
 @app.route('/api/delete-competitor', methods=['POST'])
 @login_required
 def api_delete_competitor():
+    """API pour supprimer un concurrent"""
     try:
         data = request.get_json()
         competitor_id = data.get('competitor_id')
@@ -688,6 +699,7 @@ def api_delete_competitor():
 @app.route('/background-analysis', methods=['POST'])
 @login_required
 def start_background_analysis():
+    """Lance une analyse en arrière-plan"""
     try:
         from yt_channel_analyzer.background_tasks import task_manager
         
@@ -716,6 +728,7 @@ def start_background_analysis():
 @app.route('/api/tasks', methods=['GET'])
 @login_required
 def get_tasks():
+    """Récupère toutes les tâches"""
     try:
         from yt_channel_analyzer.background_tasks import task_manager
         tasks = task_manager.get_all_tasks()
@@ -726,6 +739,7 @@ def get_tasks():
 @app.route('/api/tasks/<task_id>', methods=['GET'])
 @login_required
 def get_task(task_id):
+    """Récupère une tâche spécifique"""
     try:
         from yt_channel_analyzer.background_tasks import task_manager
         task = task_manager.get_task(task_id)

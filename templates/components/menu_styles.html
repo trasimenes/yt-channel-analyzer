@@ -1,0 +1,144 @@
+<!-- Global Menu Styles Component -->
+<style>
+    /* Menu dynamique avec indicateurs d'état */
+    .navbar-nav .nav-link {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+
+    
+    /* Badge pour les tâches actives */
+    .nav-link .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 10px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+        }
+    }
+    
+    /* Indicateur de statut API */
+    #api-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        animation: blink 3s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 50%, 100% { opacity: 1; }
+        25%, 75% { opacity: 0.5; }
+    }
+    
+    /* Menu mobile responsive */
+    @media (max-width: 991.98px) {
+        .navbar-nav .nav-link {
+            border-radius: 8px;
+            margin: 0.2rem 0;
+        }
+        
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link.active {
+            background: var(--primary);
+            color: white !important;
+        }
+    }
+    
+    /* Transitions fluides pour les pages */
+    .main-content {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Style pour les alertes de notification */
+    .alert.position-fixed {
+        animation: slideInRight 0.3s ease-out;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 12px;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Amélioration des cartes globales */
+    .card, .stat-card {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover, .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Loading states */
+    .btn.loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Status indicators */
+    .status-healthy { color: var(--success) !important; }
+    .status-warning { color: var(--warning) !important; }
+    .status-critical { color: var(--danger) !important; }
+    
+    /* Dark mode support (préparation future) */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --navbar-bg: rgba(30, 41, 59, 0.95);
+            --card-bg: rgba(51, 65, 85, 0.9);
+        }
+    }
+</style> 

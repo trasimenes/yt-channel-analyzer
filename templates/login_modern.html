@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login - YT Analyzer</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.min.css') }}">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --light: #f8fafc;
+            --dark: #1e293b;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.5;
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .brand-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .brand-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            background: white;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            z-index: 3;
+        }
+        
+        .form-control.with-icon {
+            padding-left: 3rem;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+            width: 100%;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.6);
+            color: white;
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .alert-custom {
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .alert-info {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            top: 70%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+        
+        .shape:nth-child(3) {
+            bottom: 20%;
+            left: 15%;
+            animation-delay: 6s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(5deg); }
+            66% { transform: translateY(-15px) rotate(-3deg); }
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 3;
+        }
+        
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-check-input {
+            border-radius: 4px;
+            border: 2px solid #e2e8f0;
+            margin-right: 0.5rem;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .form-check-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .version-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Shapes -->
+    <div class="floating-shapes">
+        <div class="shape">
+            <i class="bi bi-youtube" style="font-size: 4rem; color: white;"></i>
+        </div>
+        <div class="shape">
+            <i class="bi bi-graph-up-arrow" style="font-size: 3rem; color: white;"></i>
+        </div>
+        <div class="shape">
+            <i class="bi bi-bar-chart-line-fill" style="font-size: 3.5rem; color: white;"></i>
+        </div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="container">
+            <div class="login-card animated fadeInUp">
+                <!-- Brand Logo -->
+                <div class="brand-logo">
+                    <div class="brand-icon">
+                        <i class="bi bi-youtube"></i>
+                    </div>
+                    <h1 class="brand-title">YT Analyzer</h1>
+                    <p class="brand-subtitle">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Secure YouTube Analytics Platform
+                    </p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-custom" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                                    {{ message }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Error Message -->
+                {% if error %}
+                    <div class="alert alert-danger alert-custom" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {{ error }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Login Form -->
+                <form method="POST" id="loginForm">
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person me-1"></i>
+                            Username
+                        </label>
+                        <div class="input-group">
+                            <i class="bi bi-person-circle input-group-icon"></i>
+                            <input type="text" class="form-control with-icon" id="username" name="username" 
+                                   placeholder="Enter your username" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock me-1"></i>
+                            Password
+                        </label>
+                        <div class="input-group">
+                            <i class="bi bi-key-fill input-group-icon"></i>
+                            <input type="password" class="form-control with-icon" id="password" name="password" 
+                                   placeholder="Enter your password" required autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <i class="bi bi-eye" id="password-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="remember-me">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Remember me for 24 hours
+                        </label>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="btn btn-login" id="loginBtn">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Additional Info -->
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Contact your administrator for access credentials
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Text -->
+    <div class="footer-text">
+        <i class="bi bi-cpu me-1"></i>
+        Powered by YouTube Data API v3 • Built with Flask & Bootstrap 5
+    </div>
+
+    <!-- Version Info -->
+    <div class="version-info">
+        <i class="bi bi-code-slash me-1"></i>
+        v2.0.0
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Template JS -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Form validation and submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const submitBtn = document.getElementById('loginBtn');
+            
+            if (!username || !password) {
+                e.preventDefault();
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Signing in...';
+            submitBtn.disabled = true;
+        });
+
+        // Password visibility toggle
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordIcon.className = 'bi bi-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                passwordIcon.className = 'bi bi-eye';
+            }
+        }
+
+        // Focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on username field
+            document.getElementById('username').focus();
+            
+            // Enter key handling
+            document.getElementById('username').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('password').focus();
+                }
+            });
+        });
+
+        // Show alert function
+        function showAlert(message, type) {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `alert alert-${type === 'error' ? 'danger' : type} alert-custom`;
+            alertContainer.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${getAlertIcon(type)} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            // Insert at the top of the form
+            const form = document.getElementById('loginForm');
+            form.parentNode.insertBefore(alertContainer, form);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertContainer.parentNode) {
+                    alertContainer.remove();
+                }
+            }, 5000);
+        }
+
+        // Get alert icon
+        function getAlertIcon(type) {
+            const icons = {
+                'success': 'check-circle-fill',
+                'error': 'exclamation-triangle-fill',
+                'warning': 'exclamation-triangle-fill',
+                'info': 'info-circle-fill'
+            };
+            return icons[type] || 'info-circle-fill';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Alt + L to focus on login
+            if (e.altKey && e.key === 'l') {
+                e.preventDefault();
+                document.getElementById('username').focus();
+            }
+        });
+
+        // Auto-fill detection
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for autofilled values after a short delay
+            setTimeout(() => {
+                const username = document.getElementById('username');
+                const password = document.getElementById('password');
+                
+                if (username.value || password.value) {
+                    // Add visual feedback for autofilled fields
+                    if (username.value) username.classList.add('border-success');
+                    if (password.value) password.classList.add('border-success');
+                }
+            }, 500);
+        });
+
+        // Prevent form resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</body>
+</html>

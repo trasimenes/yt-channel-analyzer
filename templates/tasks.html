@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tâches en cours - YouTube Channel Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .task-card {
+            transition: all 0.3s ease;
+        }
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .progress-container {
+            position: relative;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .status-running {
+            color: #0d6efd;
+        }
+        .status-completed {
+            color: #198754;
+        }
+        .status-error {
+            color: #dc3545;
+        }
+        .status-paused {
+            color: #6c757d;
+        }
+        .global-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 0;
+            backdrop-filter: blur(10px);
+        }
+        .global-progress-text {
+            color: white;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barre de progression globale (s'affiche seulement s'il y a des tâches en cours) -->
+<div id="global-progress-bar" class="global-progress" style="display: none;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-1">
+                <div class="spinner-border spinner-border-sm text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="col-10">
+                <div class="progress" style="height: 6px;">
+                    <div id="global-progress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col-1">
+                <span id="global-task-count" class="global-progress-text">0 tâches</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4" style="margin-top: 50px;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">YT Analyzer</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/concurrents">Concurrents</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/tasks">Tâches en cours</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/settings">Paramètres</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link text-warning" href="/logout">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-5">
+                    <i class="bi bi-clock-history text-primary me-3"></i>
+                    Tâches en cours
+                </h1>
+                <button class="btn btn-outline-secondary" onclick="refreshTasks()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Erreur lors du chargement des tâches: {{ error }}
+            </div>
+            {% endif %}
+            
+            <div id="tasks-container">
+                {% if tasks %}
+                <div class="row" id="tasks-grid">
+                    {% for task in tasks %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card task-card h-100" data-task-id="{{ task.id }}">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-youtube text-danger me-2"></i>
+                                    {{ task.channel_name }}
+                                </h6>
+                                <span class="badge status-{{ task.status }}">
+                                    {% if task.status == 'running' %}
+                                        <i class="bi bi-play-circle me-1"></i>En cours
+                                    {% elif task.status == 'completed' %}
+                                        <i class="bi bi-check-circle me-1"></i>Terminé
+                                    {% elif task.status == 'error' %}
+                                        <i class="bi bi-x-circle me-1"></i>Erreur
+                                    {% elif task.status == 'paused' %}
+                                        <i class="bi bi-pause-circle me-1"></i>Suspendu
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress-container mb-3">
+                                    <div class="progress" style="height: 25px;">
+                                        <div class="progress-bar progress-bar-striped 
+                                                    {% if task.status == 'running' %}progress-bar-animated bg-primary
+                                                    {% elif task.status == 'completed' %}bg-success
+                                                    {% elif task.status == 'error' %}bg-danger
+                                                    {% else %}bg-secondary{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ task.progress }}%" 
+                                             aria-valuenow="{{ task.progress }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                        <div class="progress-text">{{ task.progress }}%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <strong>État:</strong> 
+                                    <span class="task-current-step">{{ task.current_step }}</span>
+                                </div>
+                                
+                                <div class="row text-center mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Vidéos trouvées</small>
+                                        <div class="task-videos-found fw-bold">{{ task.videos_found }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Traitées</small>
+                                        <div class="task-videos-processed fw-bold">{{ task.videos_processed }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-muted small">
+                                    <div><strong>Début:</strong> {{ task.start_time }}</div>
+                                    {% if task.end_time %}
+                                    <div><strong>Fin:</strong> {{ task.end_time }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if task.error_message %}
+                                <div class="alert alert-danger alert-sm mt-2">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    {{ task.error_message }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-light">
+                                <div class="btn-group w-100" role="group">
+                                    {% if task.status == 'running' %}
+                                    <button class="btn btn-outline-warning btn-sm" onclick="cancelTask('{{ task.id }}')">
+                                        <i class="bi bi-stop-circle me-1"></i>
+                                        Arrêter
+                                    </button>
+                                    {% elif task.status == 'paused' or task.status == 'error' %}
+                                    <button class="btn btn-outline-success btn-sm" onclick="resumeTask('{{ task.id }}')">
+                                        <i class="bi bi-play-circle me-1"></i>
+                                        Reprendre
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if task.status == 'completed' %}
+                                    <a href="/concurrents" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-graph-up me-1"></i>
+                                        Voir résultats
+                                    </a>
+                                    {% endif %}
+                                    
+                                    {% if task.status != 'running' %}
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteTask('{{ task.id }}')">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Supprimer
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <a href="{{ task.channel_url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                                        Chaîne
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-clock text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-muted">Aucune tâche en cours</h3>
+                    <p class="text-muted mb-4">
+                        Lancez une analyse en arrière-plan depuis la page d'accueil pour voir les tâches ici.
+                    </p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Démarrer une analyse
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let refreshInterval;
+
+// Actualiser les tâches toutes les 2 secondes
+function startAutoRefresh() {
+    refreshInterval = setInterval(refreshTasks, 2000);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+}
+
+async function refreshTasks() {
+    try {
+        const response = await fetch('/api/tasks');
+        const tasks = await response.json();
+        
+        if (Array.isArray(tasks)) {
+            updateTasksUI(tasks);
+            updateGlobalProgress(tasks);
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'actualisation des tâches:', error);
+    }
+}
+
+function updateTasksUI(tasks) {
+    const container = document.getElementById('tasks-grid');
+    if (!container) return;
+    
+    tasks.forEach(task => {
+        const taskCard = document.querySelector(`[data-task-id="${task.id}"]`);
+        if (taskCard) {
+            // Mettre à jour la progression
+            const progressBar = taskCard.querySelector('.progress-bar');
+            const progressText = taskCard.querySelector('.progress-text');
+            if (progressBar && progressText) {
+                progressBar.style.width = task.progress + '%';
+                progressBar.setAttribute('aria-valuenow', task.progress);
+                progressText.textContent = task.progress + '%';
+            }
+            
+            // Mettre à jour l'état
+            const currentStepElement = taskCard.querySelector('.task-current-step');
+            if (currentStepElement) {
+                currentStepElement.textContent = task.current_step;
+            }
+            
+            // Mettre à jour les compteurs
+            const videosFoundElement = taskCard.querySelector('.task-videos-found');
+            const videosProcessedElement = taskCard.querySelector('.task-videos-processed');
+            if (videosFoundElement) videosFoundElement.textContent = task.videos_found;
+            if (videosProcessedElement) videosProcessedElement.textContent = task.videos_processed;
+        }
+    });
+}
+
+function updateGlobalProgress(tasks) {
+    const runningTasks = tasks.filter(task => task.status === 'running');
+    const globalProgressBar = document.getElementById('global-progress-bar');
+    const globalProgress = document.getElementById('global-progress');
+    const globalTaskCount = document.getElementById('global-task-count');
+    
+    if (runningTasks.length > 0) {
+        // Afficher la barre globale
+        globalProgressBar.style.display = 'block';
+        document.querySelector('nav').style.marginTop = '50px';
+        
+        // Calculer la progression moyenne
+        const totalProgress = runningTasks.reduce((sum, task) => sum + task.progress, 0);
+        const avgProgress = Math.round(totalProgress / runningTasks.length);
+        
+        globalProgress.style.width = avgProgress + '%';
+        globalProgress.setAttribute('aria-valuenow', avgProgress);
+        globalTaskCount.textContent = runningTasks.length + (runningTasks.length === 1 ? ' tâche' : ' tâches');
+    } else {
+        // Masquer la barre globale
+        globalProgressBar.style.display = 'none';
+        document.querySelector('nav').style.marginTop = '0';
+    }
+}
+
+async function cancelTask(taskId) {
+    if (!confirm('Êtes-vous sûr de vouloir arrêter cette tâche ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/tasks/${taskId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('Tâche arrêtée avec succès', 'success');
+            refreshTasks();
+        } else {
+            showAlert('Erreur lors de l\'arrêt: ' + (result.error || 'Erreur inconnue'), 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de l\'arrêt de la tâche', 'danger');
+    }
+}
+
+async function resumeTask(taskId) {
+    if (!confirm('Reprendre cette tâche depuis où elle s\'est arrêtée ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/tasks/${taskId}/resume`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('Tâche reprise avec succès', 'success');
+            refreshTasks();
+        } else {
+            showAlert('Erreur lors de la reprise: ' + (result.error || 'Erreur inconnue'), 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de la reprise de la tâche', 'danger');
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer définitivement cette tâche et ses données ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/tasks/${taskId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert('Tâche supprimée avec succès', 'success');
+            refreshTasks();
+        } else {
+            showAlert('Erreur lors de la suppression: ' + (result.error || 'Erreur inconnue'), 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de la suppression de la tâche', 'danger');
+    }
+}
+
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    // Auto-dismiss après 4 secondes
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 4000);
+}
+
+// Démarrer l'actualisation automatique au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+    
+    // Arrêter l'actualisation quand on quitte la page
+    window.addEventListener('beforeunload', stopAutoRefresh);
+});
+</script>
+</body>
+</html> 

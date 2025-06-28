@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+
+{% block title %}API Usage - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .main-content {
+        background: transparent;
+    }
+    
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 3rem 2.5rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--info) 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--primary);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem;
+    }
+    
+    .quota-card {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quota-card::before {
+        background: linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+    }
+    
+    .quota-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transform: rotate(45deg);
+    }
+    
+    .quota-card .stat-number {
+        color: white;
+        font-size: 2.2rem;
+        font-weight: 700;
+    }
+    
+    .quota-card .stat-label {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .progress-ring-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 140px;
+        height: 140px;
+        margin: 0 auto;
+    }
+    
+    .progress-ring {
+        width: 140px;
+        height: 140px;
+        transform: rotate(-90deg);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    }
+    
+    .progress-ring__circle {
+        stroke: rgba(255, 255, 255, 0.2);
+        stroke-width: 10;
+        fill: transparent;
+    }
+    
+    .progress-ring__progress {
+        stroke: white;
+        stroke-width: 10;
+        fill: transparent;
+        stroke-linecap: round;
+        transition: stroke-dasharray 0.6s ease;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    }
+    
+    .progress-ring-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 10;
+    }
+    
+    .progress-ring-text .stat-number {
+        line-height: 1;
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+    
+    .status-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+    }
+    
+    .status-card.status-healthy {
+        border-left: 5px solid var(--success);
+    }
+    
+    .status-card.status-warning {
+        border-left: 5px solid var(--warning);
+    }
+    
+    .status-card.status-critical {
+        border-left: 5px solid var(--danger);
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .info-card::before {
+        background: linear-gradient(90deg, var(--success) 0%, var(--info) 100%);
+    }
+    
+    .cost-table {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .cost-table .table {
+        margin: 0;
+    }
+    
+    .cost-table .table th {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+        padding: 1rem;
+    }
+    
+    .cost-table .table td {
+        border: none;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+    }
+    
+    .cost-table .table tbody tr:nth-child(even) {
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .external-links .btn {
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .external-links .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-refresh {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-refresh:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+    }
+    
+    .btn-reset {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(239, 68, 68, 0.4);
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    .loading-shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        background-size: 1000px 100%;
+        animation: shimmer 1.5s infinite;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .stat-card {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-ring-container {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .stat-number {
+            font-size: 2.2rem;
+        }
+        
+        .page-header {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div class="mb-3 mb-md-0">
+                    <h1 class="page-title">
+                        <i class="bi bi-cloud-arrow-up text-primary me-3"></i>
+                        API Usage Monitor
+                    </h1>
+                    <p class="text-muted mb-0 fs-5">Monitor your YouTube Data API v3 quota usage and performance</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-refresh" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Refresh
+                    </button>
+                    <button class="btn btn-reset" onclick="resetQuota()">
+                        <i class="bi bi-trash me-2"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Status Cards -->
+        <div class="row mb-4">
+            <!-- Quota Usage -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card quota-card text-center">
+                    <div class="progress-ring-container mb-3">
+                        <svg class="progress-ring" width="140" height="140">
+                            <circle class="progress-ring__circle" cx="70" cy="70" r="60"></circle>
+                            <circle class="progress-ring__progress" cx="70" cy="70" r="60" id="quota-progress"></circle>
+                        </svg>
+                        <div class="progress-ring-text">
+                            <div class="stat-number" id="quota-percentage">0%</div>
+                        </div>
+                    </div>
+                    <div class="stat-label">Daily Quota Used</div>
+                    <div class="text-white fs-5 fw-semibold">
+                        <span id="quota-used">0</span> / <span id="quota-limit">10,000</span> units
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Requests Made -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-label">REQUESTS MADE</div>
+                    <div class="stat-number" id="requests-count">0</div>
+                    <div class="text-muted mt-2">
+                        <i class="bi bi-graph-up me-1"></i>
+                        Today
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Remaining Quota -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card text-center">
+                    <div class="stat-label">REMAINING QUOTA</div>
+                    <div class="stat-number text-success" id="remaining-quota">10,000</div>
+                    <div class="text-muted mt-2">
+                        <i class="bi bi-clock me-1"></i>
+                        Resets at midnight UTC
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Status -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card status-card status-healthy" id="status-card">
+                    <div class="stat-label">API STATUS</div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="me-3" id="status-icon">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="text-center">
+                            <div class="fw-bold fs-5" id="status-text">Healthy</div>
+                            <div class="text-muted small" id="status-detail">All systems operational</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Information -->
+        <div class="row mb-4">
+            <!-- API Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="stat-card info-card">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>
+                        API Information
+                    </h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-4">
+                                <div class="text-muted mb-1">Daily Limit</div>
+                                <div class="fw-bold fs-3 text-primary">10,000 <small class="text-muted fs-6">units</small></div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="text-muted mb-1">Used Today</div>
+                                <div class="fw-bold fs-3 text-warning" id="quota-used-detail">0 <small class="text-muted fs-6">units</small></div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-4">
+                                <div class="text-muted mb-1">Last Updated</div>
+                                <div class="fw-semibold" id="last-updated">-</div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="text-muted mb-1">Current Date</div>
+                                <div class="fw-semibold" id="current-date">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Costs Reference -->
+            <div class="col-lg-6 mb-4">
+                <div class="stat-card">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <i class="bi bi-currency-dollar me-2 text-primary"></i>
+                        API Costs Reference
+                    </h5>
+                    <div class="cost-table">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Operation</th>
+                                    <th class="text-end">Cost (units)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="bi bi-search me-2"></i>Search channels/videos</td>
+                                    <td class="text-end fw-bold">100</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-person me-2"></i>Channel information</td>
+                                    <td class="text-end fw-bold">1</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-play me-2"></i>Video details</td>
+                                    <td class="text-end fw-bold">1</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-list me-2"></i>Playlist items</td>
+                                    <td class="text-end fw-bold">1</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- External Links -->
+        <div class="row">
+            <div class="col-12">
+                <div class="stat-card external-links">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <i class="bi bi-link-45deg me-2 text-primary"></i>
+                        External Resources
+                    </h5>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="https://console.cloud.google.com/apis/dashboard" target="_blank" class="btn btn-outline-primary">
+                            <i class="bi bi-cloud me-2"></i>
+                            Google Cloud Console
+                            <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                        <a href="https://developers.google.com/youtube/v3/getting-started#quota" target="_blank" class="btn btn-outline-secondary">
+                            <i class="bi bi-book me-2"></i>
+                            API Documentation
+                            <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                        <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="btn btn-outline-info">
+                            <i class="bi bi-key me-2"></i>
+                            API Credentials
+                            <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let refreshInterval;
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadApiUsage();
+    // Auto-refresh every 30 seconds
+    refreshInterval = setInterval(loadApiUsage, 30000);
+});
+
+function loadApiUsage() {
+    fetch('/api/usage')
+        .then(response => response.json())
+        .then(data => {
+            updateUI(data);
+        })
+        .catch(error => {
+            console.error('Error loading API usage:', error);
+            showError('Failed to load API usage data');
+        });
+}
+
+function updateUI(data) {
+    // Update quota usage
+    const percentage = Math.round(data.percentage || 0);
+    const quotaUsed = data.today_usage || 0;
+    const quotaLimit = data.daily_quota || 10000;
+    const remaining = data.remaining || quotaLimit;
+    
+    document.getElementById('quota-percentage').textContent = percentage + '%';
+    document.getElementById('quota-used').textContent = quotaUsed.toLocaleString();
+    document.getElementById('quota-limit').textContent = quotaLimit.toLocaleString();
+    document.getElementById('quota-used-detail').innerHTML = quotaUsed.toLocaleString() + ' <small class="text-muted fs-6">units</small>';
+    document.getElementById('remaining-quota').textContent = remaining.toLocaleString();
+    
+    // Update progress ring
+    updateProgressRing(percentage);
+    
+    // Update requests count
+    document.getElementById('requests-count').textContent = (data.requests_made || 0).toLocaleString();
+    
+    // Update status
+    updateStatus(data.status || 'healthy', percentage);
+    
+    // Update timestamps
+    document.getElementById('last-updated').textContent = data.last_updated || 'Unknown';
+    document.getElementById('current-date').textContent = data.date || 'Unknown';
+}
+
+function updateProgressRing(percentage) {
+    const circle = document.getElementById('quota-progress');
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percentage / 100) * circumference;
+    
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = offset;
+}
+
+function updateStatus(status, percentage) {
+    const statusIcon = document.getElementById('status-icon');
+    const statusText = document.getElementById('status-text');
+    const statusDetail = document.getElementById('status-detail');
+    const statusCard = document.getElementById('status-card');
+    
+    // Reset status classes
+    statusCard.classList.remove('status-healthy', 'status-warning', 'status-critical');
+    
+    if (percentage > 90 || status === 'critical') {
+        statusIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>';
+        statusText.textContent = 'Critical';
+        statusDetail.textContent = 'High quota usage detected';
+        statusCard.classList.add('status-critical');
+    } else if (percentage > 80 || status === 'warning') {
+        statusIcon.innerHTML = '<i class="bi bi-exclamation-circle-fill text-warning" style="font-size: 3rem;"></i>';
+        statusText.textContent = 'Warning';
+        statusDetail.textContent = 'Monitor usage closely';
+        statusCard.classList.add('status-warning');
+    } else {
+        statusIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>';
+        statusText.textContent = 'Healthy';
+        statusDetail.textContent = 'All systems operational';
+        statusCard.classList.add('status-healthy');
+    }
+}
+
+function refreshData() {
+    const btn = document.querySelector('.btn-refresh');
+    const icon = btn.querySelector('i');
+    
+    // Add spinning animation
+    icon.style.animation = 'spin 1s linear infinite';
+    btn.disabled = true;
+    btn.classList.add('loading-shimmer');
+    
+    loadApiUsage();
+    
+    // Remove animation after 1 second
+    setTimeout(() => {
+        icon.style.animation = '';
+        btn.disabled = false;
+        btn.classList.remove('loading-shimmer');
+    }, 1000);
+}
+
+function resetQuota() {
+    if (!confirm('Are you sure you want to reset the quota counter? This action cannot be undone.')) {
+        return;
+    }
+    
+    const btn = document.querySelector('.btn-reset');
+    btn.disabled = true;
+    btn.classList.add('loading-shimmer');
+    
+    fetch('/api/usage/reset', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess('Quota counter reset successfully');
+            loadApiUsage();
+        } else {
+            showError(data.message || 'Failed to reset quota');
+        }
+    })
+    .catch(error => {
+        console.error('Error resetting quota:', error);
+        showError('Failed to reset quota');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.classList.remove('loading-shimmer');
+    });
+}
+
+function showSuccess(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
+}
+
+function showError(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+
+// Cleanup interval on page unload
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,195 @@
+<!-- Global JavaScript Functions -->
+<script>
+// Fonctions utilitaires globales pour l'interface
+window.YTAnalyzer = {
+    // Fonctions de notification
+    showAlert: function(message, type = 'info', duration = 5000) {
+        const alertContainer = document.createElement('div');
+        alertContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertContainer.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertContainer.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${this.getAlertIcon(type)} me-2"></i>
+                <div>${message}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertContainer);
+        
+        // Auto dismiss
+        setTimeout(() => {
+            if (alertContainer.parentNode) {
+                alertContainer.remove();
+            }
+        }, duration);
+    },
+
+    showSuccess: function(message) {
+        this.showAlert(message, 'success');
+    },
+
+    showError: function(message) {
+        this.showAlert(message, 'danger');
+    },
+
+    showWarning: function(message) {
+        this.showAlert(message, 'warning');
+    },
+
+    showInfo: function(message) {
+        this.showAlert(message, 'info');
+    },
+
+    getAlertIcon: function(type) {
+        const icons = {
+            'success': 'check-circle',
+            'danger': 'exclamation-triangle',
+            'warning': 'exclamation-circle',
+            'info': 'info-circle',
+            'primary': 'info-circle',
+            'secondary': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    },
+
+    // Fonctions de chargement
+    setButtonLoading: function(button, loading = true) {
+        if (loading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+    },
+
+    // Confirmation avec style
+    confirmAction: function(message, title = 'Confirmation') {
+        return new Promise((resolve) => {
+            // Utiliser le confirm natif pour le moment
+            // TODO: Implémenter un modal custom
+            const result = confirm(`${title}\n\n${message}`);
+            resolve(result);
+        });
+    },
+
+    // Mise à jour du menu
+    updateActiveMenuItem: function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            
+            if (href === currentPath || 
+                (currentPath === '/' && href === '/') ||
+                (currentPath.startsWith('/home') && href === '/') ||
+                (currentPath.startsWith(href) && href !== '/')) {
+                link.classList.add('active');
+            }
+        });
+    },
+
+    // Gestion des tâches
+    updateTasksBadge: function(count) {
+        const tasksLink = document.querySelector('a[href="/tasks"]');
+        if (tasksLink) {
+            let badge = tasksLink.querySelector('.badge');
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'badge bg-primary ms-1';
+                    tasksLink.appendChild(badge);
+                }
+                badge.textContent = count;
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+    },
+
+    // API Status
+    updateApiStatus: function() {
+        fetch('/api/usage')
+            .then(response => response.json())
+            .then(data => {
+                const indicator = document.getElementById('api-status-indicator');
+                if (indicator) {
+                    let statusClass = 'text-success';
+                    let title = 'API Status: Healthy';
+                    
+                    if (data.percentage > 90) {
+                        statusClass = 'text-danger';
+                        title = 'API Status: Critical';
+                    } else if (data.percentage > 80) {
+                        statusClass = 'text-warning';
+                        title = 'API Status: Warning';
+                    }
+                    
+                    indicator.innerHTML = `<i class="bi bi-circle-fill ${statusClass}" style="font-size: 0.5rem;" title="${title}"></i>`;
+                }
+            })
+            .catch(error => {
+                const indicator = document.getElementById('api-status-indicator');
+                if (indicator) {
+                    indicator.innerHTML = `<i class="bi bi-circle-fill text-muted" style="font-size: 0.5rem;" title="API Status: Unknown"></i>`;
+                }
+            });
+    },
+
+    // Récupération des tâches actives
+    updateActiveTasks: function() {
+        fetch('/api/tasks')
+            .then(response => response.json())
+            .then(tasks => {
+                const activeTasks = tasks.filter(task => task.status === 'running').length;
+                this.updateTasksBadge(activeTasks);
+            })
+            .catch(error => {
+                console.warn('Erreur récupération tâches:', error);
+            });
+    },
+
+    // Initialisation globale
+    init: function() {
+        // Mettre à jour l'élément actif du menu
+        this.updateActiveMenuItem();
+        
+        // Démarrer les mises à jour périodiques
+        this.updateApiStatus();
+        this.updateActiveTasks();
+        
+        // Mettre à jour toutes les 30 secondes
+        setInterval(() => {
+            this.updateApiStatus();
+            this.updateActiveTasks();
+        }, 30000);
+        
+        // Écouter les changements de page pour mettre à jour le menu
+        window.addEventListener('popstate', () => {
+            this.updateActiveMenuItem();
+        });
+        
+        console.log('🚀 YT Analyzer UI initialized');
+    }
+};
+
+// Auto-initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    window.YTAnalyzer.init();
+});
+
+// Fonctions globales pour compatibilité
+function showAlert(message, type) {
+    window.YTAnalyzer.showAlert(message, type);
+}
+
+function showSuccess(message) {
+    window.YTAnalyzer.showSuccess(message);
+}
+
+function showError(message) {
+    window.YTAnalyzer.showError(message);
+}
+</script> 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Résultats de l'analyse YouTube</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .video-thumb { width: 120px; border-radius: 8px; }
+        .card { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .table-responsive { max-height: 70vh; }
+    </style>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">YT Analyzer</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/concurrents">Concurrents</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/tasks">Tâches en cours</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/settings">Paramètres</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container d-flex justify-content-center align-items-start" style="min-height:80vh;">
+  <div class="card w-100" style="max-width:900px;">
+    <div class="card-body">
+      <h2 class="card-title mb-4">Résultats de l'analyse</h2>
+      {% if error %}
+        <div class="alert alert-danger">Erreur : {{ error }}</div>
+      {% elif analysis_exists %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>{{ analysis_message|safe }}</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% elif videos %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Analyse terminée !</strong> Cette chaîne a été automatiquement ajoutée à vos concurrents. 
+          <a href="/concurrents" class="alert-link">Voir tous les concurrents</a>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% for video in videos %}
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 text-center">
+                <img class="video-thumb mb-2" src="https://img.youtube.com/vi/{{ video.url.split('v=')[-1].split('&')[0] if 'v=' in video.url else video.url.split('/')[-1] }}/mqdefault.jpg" alt="miniature">
+                <div><a href="{{ video.url }}" class="btn btn-outline-primary btn-sm mt-2" target="_blank">Voir sur YouTube</a></div>
+              </div>
+              <div class="col-md-9">
+                <h4>{{ video.title }}</h4>
+                <p><strong>Date de publication :</strong> {{ video.publication_date or '-' }}</p>
+                <p><strong>Vues :</strong> {{ video.views or '-' }}</p>
+                <p><strong>Likes :</strong> {{ video.likes or '-' }}</p>
+                <p><strong>Description :</strong><br>{{ video.description or '-' }}</p>
+                <hr>
+                <div class="d-flex align-items-center">
+                  <img src="{{ video.channel.image }}" alt="logo chaîne" style="width:40px; height:40px; border-radius:50%; margin-right:10px;">
+                  <div>
+                    <strong>Chaîne :</strong> <a href="{{ video.channel.url }}" target="_blank">{{ video.channel.name }}</a><br>
+                    <span class="text-muted">Abonnés : {{ video.channel.subs or '-' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-warning">Aucune vidéo trouvée.</div>
+      {% endif %}
+      <a href="/" class="btn btn-secondary mt-3">Nouvelle recherche</a>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

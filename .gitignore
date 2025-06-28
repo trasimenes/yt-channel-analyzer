@@ -1,2 +1,41 @@
+# Variables d'environnement et fichiers sensibles
+.env
+.env.local
+.env.production
+
+# Configuration d'authentification chiffrée
+auth_config.json
+
+# Cache et données temporaires
+cache_recherches/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Selenium et navigateurs
+geckodriver.log
+chromedriver.log
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# External Forks - contenu privé
+External Forks/

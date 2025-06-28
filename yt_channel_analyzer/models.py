@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -15,3 +15,6 @@ class Video:
 class Competitor:
     name: str
     videos: List[Video]
+    region: Optional[str] = "Europe"  # Par défaut Europe
+    industry: Optional[str] = None  # Optionnelle, peut être None
+    custom_tags: Optional[List[str]] = None  # Tags personnalisés additionnels

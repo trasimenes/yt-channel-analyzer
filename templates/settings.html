@@ -1,0 +1,660 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 2.5rem;
+        border: none;
+    }
+    
+    .card-header-success {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        padding: 2rem 2.5rem;
+    }
+    
+    .card-header-dark {
+        background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
+        padding: 2rem 2.5rem;
+    }
+    
+    .card-body {
+        padding: 2.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        background: white;
+    }
+    
+    .btn-primary-modern {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+    
+    .btn-outline-secondary-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: var(--dark);
+        background: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary-modern:hover {
+        background: var(--dark);
+        border-color: var(--dark);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-success-modern {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success-modern:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .alert-custom {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+    }
+    
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .alert-info {
+        background: rgba(6, 182, 212, 0.1);
+        color: var(--info);
+        border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid #e2e8f0;
+        margin-right: 0.5rem;
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+    }
+    
+    .nav-pills .nav-link:hover:not(.active) {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+    }
+    
+    .badge {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, var(--dark) 0%, #374151 100%) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .badge.bg-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+        color: white !important;
+    }
+    
+    .badge.bg-success {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%) !important;
+        color: white !important;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .form-check-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+    }
+    
+    .recommendation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .recommendation-item {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .recommendation-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .pattern-container {
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    /* Pattern badge styles for better readability */
+    .pattern-container .badge,
+    .pattern-badge {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        margin: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .pattern-container .badge:hover,
+    .pattern-badge:hover {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .pattern-container .badge .btn-close,
+    .pattern-badge .btn-close {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+        opacity: 0.8;
+        transition: all 0.2s ease;
+        filter: brightness(1.2);
+    }
+    
+    .pattern-container .badge .btn-close:hover,
+    .pattern-badge .btn-close:hover {
+        background: rgba(255, 255, 255, 0.4) !important;
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    /* Category-specific badge colors */
+    .pattern-container[data-category="help"] .badge,
+    .pattern-container[data-category="help"] .pattern-badge {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+        border-color: rgba(220, 38, 38, 0.3);
+        color: white !important;
+    }
+    
+    .pattern-container[data-category="hero"] .badge,
+    .pattern-container[data-category="hero"] .pattern-badge {
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%) !important;
+        border-color: rgba(234, 88, 12, 0.3);
+        color: white !important;
+    }
+    
+    .pattern-container[data-category="hub"] .badge,
+    .pattern-container[data-category="hub"] .pattern-badge {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        border-color: rgba(14, 165, 233, 0.3);
+        color: white !important;
+    }
+    
+    /* Enhanced input styling */
+    .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: none;
+    }
+    
+    .input-group .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-gear text-primary me-3"></i>
+                        Analysis Settings
+                    </h1>
+                    <p class="text-muted mb-0">Configure classification and analysis parameters for your YouTube channels</p>
+                </div>
+
+                {% if message %}
+                <div class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <!-- Organic vs Paid Threshold -->
+                    <div class="settings-card">
+                        <div class="card-header-custom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-chart-line me-2"></i>
+                                Organic vs Paid Classification
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="paid_threshold" class="form-label">
+                                        <strong>View threshold for paid content</strong>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="paid_threshold" 
+                                               name="paid_threshold" 
+                                               value="{{ current_settings.paid_threshold or 10000 }}"
+                                               min="0" 
+                                               step="1000">
+                                        <span class="input-group-text">views</span>
+                                    </div>
+                                    <div class="form-text">
+                                        Videos with more views than this threshold will be considered as "Paid" content
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="industry" class="form-label">
+                                        <strong>Industry sector</strong>
+                                    </label>
+                                    <select class="form-select" id="industry" name="industry">
+                                        <option value="tourism" {% if current_settings.industry == 'tourism' %}selected{% endif %}>
+                                            Tourism & Travel
+                                        </option>
+                                        <option value="retail" {% if current_settings.industry == 'retail' %}selected{% endif %}>
+                                            Retail & E-commerce
+                                        </option>
+                                        <option value="tech" {% if current_settings.industry == 'tech' %}selected{% endif %}>
+                                            Technology & SaaS
+                                        </option>
+                                        <option value="finance" {% if current_settings.industry == 'finance' %}selected{% endif %}>
+                                            Finance & Insurance
+                                        </option>
+                                    </select>
+                                    <div class="form-text">
+                                        The industry sector influences recommended thresholds
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="recommendation-grid">
+                                <div class="recommendation-item">
+                                    <small class="fw-bold d-block">Tourism</small>
+                                    <span class="text-primary fw-bold">10,000+ views</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <small class="fw-bold d-block">Retail</small>
+                                    <span class="text-primary fw-bold">15,000+ views</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <small class="fw-bold d-block">Tech</small>
+                                    <span class="text-primary fw-bold">20,000+ views</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <small class="fw-bold d-block">Finance</small>
+                                    <span class="text-primary fw-bold">25,000+ views</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HUB/HERO/HELP Classification -->
+                    <div class="settings-card">
+                        <div class="card-header-success">
+                            <h5 class="mb-0">
+                                <i class="bi bi-tags me-2"></i>
+                                HUB • HERO • HELP Classification
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-4">
+                                <div class="col-md-4">
+                                    <div class="p-3">
+                                        <div class="display-6 mb-2">🔥</div>
+                                        <h6 class="text-danger fw-bold">HERO</h6>
+                                        <small class="text-muted">Viral, event-driven content</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3">
+                                        <div class="display-6 mb-2">🏠</div>
+                                        <h6 class="text-info fw-bold">HUB</h6>
+                                        <small class="text-muted">Regular, series content</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3">
+                                        <div class="display-6 mb-2">🆘</div>
+                                        <h6 class="text-primary fw-bold">HELP</h6>
+                                        <small class="text-muted">Guides, tutorials</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex align-items-center">
+                                <input class="form-check-input me-3" 
+                                       type="checkbox" 
+                                       role="switch" 
+                                       id="auto_classify"
+                                       name="auto_classify"
+                                       {% if current_settings.auto_classify %}checked{% endif %}>
+                                <div>
+                                    <label class="form-check-label fw-bold" for="auto_classify">
+                                        Automatic AI classification
+                                    </label>
+                                    <div class="form-text">
+                                        Enable automatic video classification using the HUB/HERO/HELP framework
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pattern Management -->
+                    <div class="settings-card">
+                        <div class="card-header-dark">
+                            <h5 class="mb-0">
+                                <i class="bi bi-code-square me-2"></i>
+                                Classification Pattern Management
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info alert-custom">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Patterns are keywords used to automatically classify videos. 
+                                Add/remove patterns or let the AI learn from your manual tags in the dashboards.
+                            </div>
+
+                            <!-- Tabs for each category -->
+                            <ul class="nav nav-pills mb-4" id="patterns-tab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="help-patterns-tab" data-bs-toggle="pill" data-bs-target="#help-patterns" type="button">
+                                        🆘 HELP
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="hero-patterns-tab" data-bs-toggle="pill" data-bs-target="#hero-patterns" type="button">
+                                        🔥 HERO
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="hub-patterns-tab" data-bs-toggle="pill" data-bs-target="#hub-patterns" type="button">
+                                        🏠 HUB
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="patterns-tabContent">
+                                <!-- HELP Patterns -->
+                                <div class="tab-pane fade show active" id="help-patterns" role="tabpanel">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="new-help-pattern" placeholder="New HELP pattern (e.g., how to, tutorial)">
+                                        <button class="btn btn-success-modern" onclick="addPattern('help')">
+                                            <i class="bi bi-plus"></i> Add
+                                        </button>
+                                    </div>
+                                    <div id="help-patterns-list" class="pattern-container">
+                                        <div class="text-center text-muted">Loading...</div>
+                                    </div>
+                                </div>
+
+                                <!-- HERO Patterns -->
+                                <div class="tab-pane fade" id="hero-patterns" role="tabpanel">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="new-hero-pattern" placeholder="New HERO pattern (e.g., launch, exclusive)">
+                                        <button class="btn btn-success-modern" onclick="addPattern('hero')">
+                                            <i class="bi bi-plus"></i> Add
+                                        </button>
+                                    </div>
+                                    <div id="hero-patterns-list" class="pattern-container">
+                                        <div class="text-center text-muted">Loading...</div>
+                                    </div>
+                                </div>
+
+                                <!-- HUB Patterns -->
+                                <div class="tab-pane fade" id="hub-patterns" role="tabpanel">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="new-hub-pattern" placeholder="New HUB pattern (e.g., episode, series)">
+                                        <button class="btn btn-success-modern" onclick="addPattern('hub')">
+                                            <i class="bi bi-plus"></i> Add
+                                        </button>
+                                    </div>
+                                    <div id="hub-patterns-list" class="pattern-container">
+                                        <div class="text-center text-muted">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="d-flex justify-content-end gap-3">
+                        <button type="button" class="btn btn-outline-secondary-modern" onclick="resetToDefaults()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Reset to defaults
+                        </button>
+                        <button type="submit" class="btn btn-primary-modern">
+                            <i class="bi bi-check-lg me-2"></i>
+                            Save settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function resetToDefaults() {
+        document.getElementById('paid_threshold').value = 10000;
+        document.getElementById('industry').value = 'tourism';
+        document.getElementById('auto_classify').checked = true;
+    }
+
+    // Automatic threshold update based on industry
+    document.getElementById('industry').addEventListener('change', function() {
+        const thresholds = {
+            'tourism': 10000,
+            'retail': 15000,
+            'tech': 20000,
+            'finance': 25000
+        };
+        
+        document.getElementById('paid_threshold').value = thresholds[this.value] || 10000;
+    });
+
+    // Pattern management
+    let patterns = {};
+
+    // Load patterns on startup
+    loadPatterns();
+
+    async function loadPatterns() {
+        try {
+            const response = await fetch('/api/patterns');
+            patterns = await response.json();
+            displayPatterns();
+        } catch (error) {
+            console.error('Error loading patterns:', error);
+        }
+    }
+
+    function displayPatterns() {
+        ['help', 'hero', 'hub'].forEach(category => {
+            const container = document.getElementById(`${category}-patterns-list`);
+            // Add data-category attribute for CSS styling
+            container.setAttribute('data-category', category);
+            
+            if (patterns[category] && patterns[category].length > 0) {
+                container.innerHTML = patterns[category].map(pattern => 
+                    `<span class="badge pattern-badge">
+                        ${pattern}
+                        <button class="btn-close btn-close-white ms-2" onclick="removePattern('${category}', '${pattern}')" title="Remove pattern"></button>
+                    </span>`
+                ).join('');
+            } else {
+                container.innerHTML = '<div class="text-center text-muted">No patterns defined</div>';
+            }
+        });
+    }
+
+    async function addPattern(category) {
+        const input = document.getElementById(`new-${category}-pattern`);
+        const pattern = input.value.trim();
+        
+        if (!pattern) return;
+        
+        try {
+            const response = await fetch('/api/patterns', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'add',
+                    category: category,
+                    pattern: pattern
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                input.value = '';
+                loadPatterns(); // Reload patterns
+                showAlert(`Pattern "${pattern}" added to ${category.toUpperCase()}`, 'success');
+            } else {
+                showAlert('Error adding pattern', 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Error adding pattern', 'danger');
+        }
+    }
+
+    async function removePattern(category, pattern) {
+        try {
+            const response = await fetch('/api/patterns', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'remove',
+                    category: category,
+                    pattern: pattern
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                loadPatterns(); // Reload patterns
+                showAlert(`Pattern "${pattern}" removed from ${category.toUpperCase()}`, 'success');
+            } else {
+                showAlert('Error removing pattern', 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Error removing pattern', 'danger');
+        }
+    }
+
+    function showAlert(message, type) {
+        const alertContainer = document.querySelector('.main-content .container .row .col-lg-10');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-custom alert-dismissible fade show`;
+        alert.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        alertContainer.insertBefore(alert, alertContainer.children[1]);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+</script>
+{% endblock %} 
