@@ -565,10 +565,12 @@
                                 </a>
                                 <button class="glass-btn secondary" 
                                         data-competitor-id="{{ competitor_key }}"
-                                        onclick="refreshSingleThumbnail(this)"
-                                        title="Rafraîchir">
-                                    <i class="bi bi-arrow-clockwise"></i>
+                                        data-channel-url="{{ competitor_data.get('channel_url', '') }}"
+                                        onclick="refreshCompetitorData(this)"
+                                        title="Rafraîchir les données">
+                                    <i class="bi bi-arrow-repeat"></i>
                                 </button>
+
                                 <button class="glass-btn danger" 
                                         onclick="deleteCompetitor('{{ competitor_key }}')"
                                         title="Supprimer">
@@ -628,12 +630,13 @@
         }
     }
 
-    // Function to refresh single thumbnail
-    function refreshSingleThumbnail(button) {
+    // Function to refresh competitor data (videos + stats)
+    function refreshCompetitorData(button) {
         const competitorId = button.getAttribute('data-competitor-id');
+        const channelUrl = button.getAttribute('data-channel-url');
         
-        if (!competitorId) {
-            alert('ID du concurrent non trouvé');
+        if (!competitorId && !channelUrl) {
+            alert('Données du concurrent non trouvées');
             return;
         }
 
@@ -641,24 +644,36 @@
         button.disabled = true;
         button.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i>';
 
-        fetch('/api/refresh-single-thumbnail', {
+        fetch('/api/refresh-competitor', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ competitor_id: competitorId })
+            body: JSON.stringify({ 
+                competitor_id: competitorId,
+                channel_url: channelUrl 
+            })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                const stats = data.stats;
+                let message = `✅ Rafraîchissement terminé pour ${data.message.split(' pour ')[1]}!\n\n`;
+                message += `📊 Statistiques:\n`;
+                message += `• Total: ${stats.total_videos} vidéos\n`;
+                message += `• Nouvelles: ${stats.new_videos} vidéos\n`;
+                message += `• Enrichies: ${stats.enriched_videos} vidéos\n`;
+                message += `• Mises à jour: ${stats.updated_videos} vidéos`;
+                
+                alert(message);
                 location.reload();
              } else {
-                alert('Erreur lors du rafraîchissement: ' + (data.error || 'Erreur inconnue'));
+                alert('❌ Erreur lors du rafraîchissement: ' + (data.error || 'Erreur inconnue'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Erreur lors du rafraîchissement de l\'image');
+            alert('❌ Erreur lors du rafraîchissement des données');
         })
         .finally(() => {
             button.disabled = false;
@@ -666,40 +681,7 @@
         });
     }
 
-    // Function to refresh all thumbnails
-    function refreshAllThumbnails() {
-        const refreshBtn = document.querySelector('button[onclick="refreshAllThumbnails()"]');
-        
-        if (!refreshBtn) return;
-        
-        const originalHtml = refreshBtn.innerHTML;
-        refreshBtn.disabled = true;
-        refreshBtn.innerHTML = '<i class="bi bi-arrow-repeat spinning me-1"></i>Rafraîchissement...';
-
-        fetch('/api/refresh-thumbnails', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Images rafraîchies avec succès ! ${data.updated_count} concurrent(s) mis à jour.`);
-                location.reload();
-            } else {
-                alert('Erreur lors du rafraîchissement: ' + (data.error || 'Erreur inconnue'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Erreur lors du rafraîchissement des images');
-        })
-        .finally(() => {
-            refreshBtn.disabled = false;
-            refreshBtn.innerHTML = originalHtml;
-        });
-    }
+    // ANCIENNES FONCTIONS SUPPRIMÉES - Maintenant on utilise refreshCompetitorData() qui fait tout
 
     // Fonction pour ajuster le blur en temps réel
     function adjustBlur(blurValue) {

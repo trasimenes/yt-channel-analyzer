@@ -2,6 +2,6 @@
   "paid_threshold": 10000,
   "industry": "tourism",
   "auto_classify": true,
-  "max_videos": 30,
+  "max_videos": 1000,
   "cache_duration": 24
 }

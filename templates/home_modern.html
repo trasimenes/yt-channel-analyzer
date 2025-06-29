@@ -1083,7 +1083,7 @@
         }
         
         // Start background analysis
-        fetch('/background-analysis', {
+                            fetch('/api/simple-analysis', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1525,7 +1525,7 @@
         button.disabled = true;
         
         try {
-            const response = await fetch('/background-analysis', {
+                            const response = await fetch('/api/simple-analysis', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

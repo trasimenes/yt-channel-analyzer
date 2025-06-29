@@ -6,6 +6,24 @@
 # Configuration d'authentification chiffrée
 auth_config.json
 
+# Clés API et secrets
+*api_key*
+*API_KEY*
+youtube_api_key.txt
+secrets.json
+config.json
+settings_private.json
+
+# Base de données avec données privées
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Cookies et sessions
+cookies.txt
+flask_session/
+
 # Cache et données temporaires
 cache_recherches/
 __pycache__/
@@ -17,6 +35,7 @@ __pycache__/
 # Logs
 *.log
 logs/
+yt_analyzer.log
 
 # IDE
 .vscode/
