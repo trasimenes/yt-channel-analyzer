@@ -76,7 +76,7 @@ def suggest_default_industry(channel_name, description):
 
 def load_cache():
     """Charger le cache existant"""
-    cache_file = 'cache_recherches/cache_data.json'
+    cache_file = 'cache_recherches/recherches.json'
     if os.path.exists(cache_file):
         try:
             with open(cache_file, 'r', encoding='utf-8') as f:
@@ -88,7 +88,7 @@ def load_cache():
 
 def save_cache(cache_data):
     """Sauvegarder le cache mis à jour"""
-    cache_file = 'cache_recherches/cache_data.json'
+    cache_file = 'cache_recherches/recherches.json'
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)
     
     try:

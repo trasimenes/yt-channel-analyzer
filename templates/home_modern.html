@@ -51,14 +51,16 @@
     
     .analysis-card {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 2.5rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(20px) saturate(150%);
         border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        padding: clamp(1.5rem, 4vw, 3rem);
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        transform-style: preserve-3d;
+        width: clamp(320px, 90vw, 500px);
+        margin: 2rem auto;
         position: relative;
+        z-index: 1;
         overflow: hidden;
     }
     
@@ -408,8 +410,9 @@
         }
         
         .analysis-card {
-            padding: 1.5rem;
+            padding: clamp(1rem, 5vw, 1.5rem);
             margin: 1rem;
+            width: auto;
         }
     }
 

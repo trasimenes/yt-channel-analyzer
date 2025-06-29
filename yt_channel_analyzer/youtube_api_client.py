@@ -193,7 +193,14 @@ class YouTubeAPI:
             title = 'Nom inconnu'
         
         # Récupération de l'image de bannière (illustration) et de l'avatar
-        avatar_url = channel.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', '')
+        thumbnails = channel.get('snippet', {}).get('thumbnails', {})
+        if thumbnails:
+            avatar_url = thumbnails.get('high', {}).get('url') or \
+                         thumbnails.get('medium', {}).get('url') or \
+                         thumbnails.get('default', {}).get('url', '')
+        else:
+            avatar_url = ''
+        
         banner_url = channel.get('brandingSettings', {}).get('image', {}).get('bannerExternalUrl', '')
         
         # Amélioration de la récupération des bannières avec des URLs de haute qualité
