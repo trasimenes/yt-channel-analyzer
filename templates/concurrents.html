@@ -4,252 +4,171 @@
 
 {% block extra_css %}
 <style>
-    .competitor-tile {
+    /* ========================================
+       GLASSMORPHISM DESIGN ULTRA-PUR
+       ======================================== */
+    
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Grille des cartes glassmorphism */
+    .glass-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Carte glassmorphism principale */
+    .glass-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
         position: relative;
-        background: linear-gradient(
-            150deg,
-            rgba(255, 255, 255, 0.4) 0%,
-            rgba(255, 255, 255, 0.1) 100%
-        );
-        backdrop-filter: blur(60px) saturate(150%);
-        -webkit-backdrop-filter: blur(60px) saturate(150%);
-        border-radius: 16px;
-        padding: 1.25rem;
-        min-height: 280px;
-        height: auto;
-        box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        transition: all 0.3s ease;
-        will-change: transform;
         overflow: hidden;
+        text-align: center;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Avatar circulaire principal */
+    .channel-avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .avatar-fallback {
+        width: 100%;
+        height: 100%;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 2rem;
     }
     
-    /* Overlay avec flou gaussien élégant pour les arrière-plans */
-    .competitor-tile::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-            135deg,
-            rgba(0, 0, 0, 0.3) 0%,
-            rgba(0, 0, 0, 0.1) 50%,
-            rgba(0, 0, 0, 0.4) 100%
-        );
-        backdrop-filter: blur(80px) saturate(120%) brightness(110%);
-        -webkit-backdrop-filter: blur(80px) saturate(120%) brightness(110%);
-        border-radius: 16px;
-        z-index: 1;
-        transition: all 0.3s ease;
-    }
-    
-    /* Contenu au-dessus de l'overlay */
-    .competitor-tile > * {
+    /* Contenu glassmorphism */
+    .glass-content {
         position: relative;
         z-index: 2;
     }
     
-    /* Texte optimisé pour la lisibilité */
-    .competitor-tile .stat-value,
-    .competitor-tile .stat-label {
-        color: white !important;
-        text-shadow: 
-            0 2px 8px rgba(0, 0, 0, 0.9),
-            0 1px 4px rgba(0, 0, 0, 0.8),
-            1px 1px 2px rgba(0, 0, 0, 1);
-        font-weight: 700;
-    }
-    
-    .competitor-tile .channel-subtitle {
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.95) !important;
-    }
-    
-    /* Amélioration des badges pour le contraste */
-    .competitor-tile .tag-badge {
-        background: rgba(255, 255, 255, 0.95) !important;
-        color: #333 !important;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        text-shadow: none;
+    .channel-name {
+        font-size: 1.25rem;
         font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    .competitor-tile .tag-badge.bg-primary {
-        background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
-        color: white !important;
-    }
-    
-    .competitor-tile .tag-badge.bg-success {
-        background: linear-gradient(135deg, #198754, #146c43) !important;
-        color: white !important;
-    }
-    
-    /* Styles pour le mini logo et les infos du canal */
-    .channel-info-container {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
+    .channel-meta {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.7);
         margin-bottom: 1rem;
     }
     
-    .channel-mini-logo {
-        flex-shrink: 0;
-    }
-    
-    .mini-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-    }
-    
-    .mini-avatar-fallback {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #6c757d, #495057);
+    /* Métadonnées épurées */
+    .meta-line {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
     }
     
-    .channel-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-        line-height: 1.3;
-        color: white !important;
-        text-shadow: 
-            0 2px 8px rgba(0, 0, 0, 0.9), 
-            0 1px 4px rgba(0, 0, 0, 0.7),
-            2px 2px 4px rgba(0, 0, 0, 0.8),
-            -1px -1px 2px rgba(0, 0, 0, 0.6);
-        background: rgba(0, 0, 0, 0.3);
-        padding: 0.25rem 0.5rem;
-        border-radius: 6px;
-        backdrop-filter: blur(5px);
-    }
-    
-    .channel-subtitle {
-        font-size: 0.85rem;
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.9) !important;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
     }
     
-    /* Effet hover amélioré pour les cartes avec arrière-plan */
-    .competitor-tile.has-background:hover::before {
-        background: linear-gradient(
-            135deg,
-            rgba(0, 0, 0, 0.4) 0%,
-            rgba(0, 0, 0, 0.2) 50%,
-            rgba(0, 0, 0, 0.5) 100%
-        );
-        backdrop-filter: blur(100px) saturate(150%) brightness(120%);
-        -webkit-backdrop-filter: blur(100px) saturate(150%) brightness(120%);
+    .meta-separator {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.8rem;
     }
     
-    .competitor-tile.has-background:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.25);
-        backdrop-filter: blur(70px) saturate(160%);
-        -webkit-backdrop-filter: blur(70px) saturate(160%);
+    /* Actions glassmorphism */
+    .glass-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
-    /* Effet de flou multi-couches pour les tuiles avec image de fond */
-    .competitor-tile.has-background {
-        position: relative;
-        overflow: hidden;
+    .glass-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.5rem 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
     }
     
-    .competitor-tile.has-background::after {
-        content: "";
-        position: absolute;
-        top: -50px;
-        left: -50px;
-        right: -50px;
-        bottom: -50px;
-        background-image: inherit;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        filter: blur(120px) saturate(180%) brightness(90%);
-        -webkit-filter: blur(120px) saturate(180%) brightness(90%);
-        z-index: -1;
-        opacity: 0.4;
-        transition: all 0.4s ease;
-    }
-    
-    .competitor-tile.has-background:hover::after {
-        filter: blur(140px) saturate(200%) brightness(100%);
-        -webkit-filter: blur(140px) saturate(200%) brightness(100%);
-        opacity: 0.5;
-    }
-    
-    /* Glass card overlays with colorful gradients pour les tuiles */
-    .competitor-tile::before {
-        content: "";
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-        border-radius: 50%;
-        opacity: 0.12;
-        z-index: -1;
-        transition: all 0.3s ease;
-    }
-    
-    .competitor-tile::after {
-        content: "";
-        position: absolute;
-        bottom: -20px;
-        left: -20px;
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%);
-        border-radius: 50%;
-        opacity: 0.1;
-        z-index: -1;
-        transition: all 0.3s ease;
-    }
-    
-    .competitor-tile:hover::before,
-    .competitor-tile:hover::after {
-        opacity: 0.2;
-        transform: scale(1.1);
-    }
-    
-    .btn-analyze {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-analyze:hover {
+    .glass-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .glass-btn.primary {
+        background: rgba(103, 126, 234, 0.3);
+        border-color: rgba(103, 126, 234, 0.4);
+    }
+    
+    .glass-btn.primary:hover {
+        background: rgba(103, 126, 234, 0.5);
+        border-color: rgba(103, 126, 234, 0.6);
+    }
+    
+    .glass-btn.secondary {
+        padding: 0.5rem;
+        min-width: auto;
+    }
+    
+    .glass-btn.danger:hover {
+        background: rgba(220, 53, 69, 0.3);
+        border-color: rgba(220, 53, 69, 0.4);
     }
     
     .empty-state {
@@ -262,904 +181,395 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
-    /* Optimisation des performances pour les effets de flou */
-    .competitor-tile {
-        will-change: backdrop-filter, filter, transform;
-        contain: layout style;
-    }
-    
-    /* Support amélioré pour Safari */
-    @supports not (backdrop-filter: blur(1px)) {
-        .competitor-tile {
-            background: linear-gradient(
-                150deg,
-                rgba(255, 255, 255, 0.85) 0%,
-                rgba(255, 255, 255, 0.7) 100%
-            );
-        }
-        
-        .competitor-tile::before {
-            background: linear-gradient(
-                135deg,
-                rgba(0, 0, 0, 0.5) 0%,
-                rgba(0, 0, 0, 0.3) 50%,
-                rgba(0, 0, 0, 0.6) 100%
-            );
-        }
-    }
-    
     .empty-icon {
         font-size: 4rem;
         color: #cbd5e1;
         margin-bottom: 1rem;
     }
     
-    .spinning {
-        animation: spin 1s linear infinite;
-    }
+    /* ========================================
+       ELEGANT SEARCH INTERFACE STYLES
+       ======================================== */
     
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* Glass card border shine effect */
-    @supports (-webkit-mask: initial) {
-        .competitor-tile .card-shine {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 20px;
-            padding: 2px;
-            background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.5) 0%,
-                rgba(255, 255, 255, 0) 40%,
-                rgba(255, 255, 255, 0) 60%,
-                rgba(99, 102, 241, 0.3) 100%
-            );
-            -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
-            user-select: none;
-            z-index: -1;
-            pointer-events: none;
-        }
-    }
-    
-    /* Glass card noise texture */
-    .competitor-tile .card-texture {
-        position: absolute;
-        content: "";
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        border-radius: 20px;
-        background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="1" result="noise" seed="1"/><feColorMatrix in="noise" type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>');
-        background-repeat: repeat;
-        background-size: 64px;
-        opacity: 0.4;
-        z-index: -1;
-        pointer-events: none;
-    }
-    
-    /* Advanced 3D Card Effects - Inspired by Robin Delaporte CodePen */
-    .competitor-tile:not(.entering) {
-        perspective: 1000px;
-        transform-style: preserve-3d;
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-        will-change: transform;
-        cursor: pointer;
+    .elegant-search-bar {
         position: relative;
-        transform-origin: center center;
-        margin: 0.75rem;
-        /* État de repos avec perspective subtile */
-        transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);
+        margin-bottom: 2rem;
     }
     
-    /* Effet de brillance/reflet qui suit la souris */
-    .competitor-tile:not(.entering)::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at var(--shine-x, 50%) var(--shine-y, 50%), 
-            rgba(255,255,255,0.15) 0%, 
-            rgba(255,255,255,0.05) 30%, 
-            transparent 60%
-        );
-        border-radius: 16px;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-        z-index: 2;
-        mix-blend-mode: overlay;
-    }
-    
-    /* Brillance visible au survol */
-    .competitor-tile:not(.entering):hover::after {
-        opacity: 1;
-    }
-    
-
-    
-    /* Ombre dynamique qui suit les transformations */
-    .competitor-tile:not(.entering):hover {
-        box-shadow: 
-            0 20px 40px rgba(0,0,0,0.1),
-            0 10px 20px rgba(0,0,0,0.05),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-        z-index: 10;
-    }
-    
-    /* Styles pour les tags intelligents */
-    .tile-tags {
-        margin: 0.75rem 0;
-    }
-    
-    .tag-badge {
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 12px;
-        font-weight: 500;
-    }
-    
-    .tag-badge:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    
-    .tag-badge.add-tag {
-        border: 1px dashed #6c757d;
-        background: transparent !important;
-        color: #6c757d;
-    }
-    
-    .tag-badge.add-tag:hover {
-        background: #6c757d !important;
-        color: white;
-    }
-    
-    .custom-tag {
-        position: relative;
-    }
-    
-    .custom-tag:hover {
-        background: #dc3545 !important;
-    }
-    
-    /* Modal pour édition des tags */
-    .tag-edit-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-    
-    .tag-edit-content {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        min-width: 300px;
-        max-width: 500px;
-    }
-    
-    .tag-edit-content h5 {
-        margin-bottom: 1rem;
-        color: #333;
-    }
-    
-    .tag-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .tag-option {
-        padding: 0.5rem 1rem;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        background: #f8f9fa;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.875rem;
-    }
-    
-    .tag-option:hover,
-    .tag-option.selected {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-    
-    /* Animation de flip 3D sophistiquée (contrôlée via JavaScript) */
-    .competitor-tile.flipping {
-        transform-style: preserve-3d;
-        backface-visibility: hidden;
-    }
-    
-    /* Effet de brillance dynamique pour les tuiles */
-    .competitor-tile .card-shine {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 16px;
+    .search-container {
         background: linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.3) 0%,
-            rgba(255, 255, 255, 0) 40%,
-            rgba(255, 255, 255, 0) 60%,
-            rgba(99, 102, 241, 0.2) 100%
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.08) 100%
         );
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-        z-index: 1;
-    }
-    
-    .competitor-tile:hover .card-shine {
-        opacity: 1;
-    }
-    
-    /* Responsive pour les tuiles */
-    @media (max-width: 768px) {
-        .competitor-tile {
-            height: auto;
-            min-height: 200px;
-        }
-        
-        .tile-header {
-            margin-bottom: 0.75rem;
-        }
-        
-        .channel-avatar,
-        .channel-avatar-fallback {
-            width: 40px;
-            height: 40px;
-        }
-        
-        .channel-avatar-fallback {
-            font-size: 1rem;
-        }
-        
-        .channel-name h6 {
-            font-size: 0.85rem;
-        }
-        
-        .tile-stats {
-            gap: 0.5rem;
-            margin: 0.5rem 0;
-        }
-        
-        .stat-value {
-            font-size: 0.75rem;
-        }
-        
-        .stat-label {
-            font-size: 0.65rem;
-        }
-        
-        .tile-actions .btn {
-            font-size: 0.7rem;
-            padding: 0.35rem 0.5rem;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .competitor-tile {
-            padding: 1rem;
-            height: auto;
-            min-height: 180px;
-        }
-    }
-    
-    /* YouTube icon with glass effect */
-    /* Styles pour les nouvelles tuiles compactes */
-    .tile-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    
-    .channel-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1rem;
         transition: all 0.3s ease;
-        flex-shrink: 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
     
-    .channel-avatar-fallback {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        flex-shrink: 0;
-    }
-    
-    .channel-name {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .channel-name h6 {
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-bottom: 0.25rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .tile-stats {
-        display: flex;
-        gap: 1rem;
-        margin: 0.75rem 0;
-    }
-    
-    .stat-item {
-        flex: 1;
-        text-align: center;
-    }
-    
-    .stat-value {
-        font-weight: 700;
-        font-size: 0.8rem;
-        color: #3b82f6;
-        margin-bottom: 0.1rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .stat-label {
-        font-size: 0.7rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    
-    .tile-actions {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-    
-    .tile-actions .btn {
-        font-size: 0.75rem;
-        padding: 0.4rem 0.6rem;
-        border-radius: 8px;
-        font-weight: 500;
-    }
-    
-    .tile-actions .btn:last-child:not(.flex-fill) {
-        min-width: 32px;
-        padding: 0.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    /* Hover effects pour les tuiles */
-    .competitor-tile:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .competitor-tile:hover .channel-avatar,
-    .competitor-tile:hover .channel-avatar-fallback {
-        transform: scale(1.1);
-        border-color: rgba(255, 255, 255, 0.5);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-    }
-    
-    /* Entrance animation for tiles */
-    .competitor-tile.entering {
-        opacity: 0;
-        transform: translateY(20px) scale(0.9);
-        animation: tileEnter 0.5s ease-out forwards;
-    }
-    
-    .competitor-tile.entering:nth-child(1) { animation-delay: 0.1s; }
-    .competitor-tile.entering:nth-child(2) { animation-delay: 0.15s; }
-    .competitor-tile.entering:nth-child(3) { animation-delay: 0.2s; }
-    .competitor-tile.entering:nth-child(4) { animation-delay: 0.25s; }
-    .competitor-tile.entering:nth-child(5) { animation-delay: 0.3s; }
-    .competitor-tile.entering:nth-child(6) { animation-delay: 0.35s; }
-    .competitor-tile.entering:nth-child(n+7) { animation-delay: 0.4s; }
-    
-    @keyframes tileEnter {
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-    
-    /* Natural Language Search Styles */
-    .natural-search-container {
+    .search-container:hover {
         background: linear-gradient(
-            150deg,
-            rgba(255, 255, 255, 0.9) 0%,
-            rgba(255, 255, 255, 0.7) 100%
+            135deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.12) 100%
         );
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
     
-    .natural-search-form {
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-        font-size: 24px;
-        line-height: 40px;
-        color: #334155;
-        text-align: center;
+    .search-input-group {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 1rem;
         flex-wrap: wrap;
+    }
+    
+    .search-icon {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    
+    .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        font-weight: 400;
+        padding: 0.5rem 0;
+        min-width: 250px;
+    }
+    
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        font-style: italic;
+    }
+    
+    .search-input:focus {
+        color: white;
+    }
+    
+    .filter-pills {
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
+        flex-wrap: wrap;
     }
     
-    .natural-search-form .input-container {
-        border-bottom: 2px dashed #3b82f6;
-        color: #3b82f6;
-        padding: 8px 12px;
-        margin: 0 4px;
-        display: inline-block;
+    .filter-pill {
         position: relative;
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 0.4rem 0.8rem;
         cursor: pointer;
-        min-width: 120px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     
-    .natural-search-form .input-container:hover {
-        border-bottom: 2px dashed #1d4ed8;
-        color: #1d4ed8;
-        background: rgba(59, 130, 246, 0.05);
+    .filter-pill:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-1px);
     }
     
-    .natural-search-form .input-container.active {
-        z-index: 5000;
-        border-bottom: 2px solid #1d4ed8;
-        color: #1d4ed8;
-        background: rgba(59, 130, 246, 0.1);
-        cursor: default;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    }
-    
-    .natural-search-form .input-container.active:before {
-        content: "";
-        display: block;
-        background-color: rgba(0, 0, 0, 0.2);
-        position: fixed;
-        z-index: 0;
-        width: 100%;
-        height: 100%;
-        left: 0;
-        top: 0;
-        backdrop-filter: blur(2px);
-    }
-    
-    .natural-search-form .input-container.active .input {
-        visibility: visible;
-        opacity: 1;
-    }
-    
-    .natural-search-form .input-container .newOption {
-        padding: 12px 50px 12px 16px;
-        background: white;
-        position: relative;
-        border-radius: 8px;
-        margin: 2px 0;
-        transition: all 0.2s ease;
-        border: 1px solid #e2e8f0;
-        font-size: 18px;
-        color: #475569;
-    }
-    
-    .natural-search-form .input-container .newOption:hover {
-        background: #3b82f6;
+    .filter-pill.active {
+        background: rgba(59, 130, 246, 0.3);
+        border-color: rgba(59, 130, 246, 0.4);
         color: white;
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
     
-    .natural-search-form .input-container .newOption:hover:after {
-        color: white !important;
+    .pill-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        text-transform: capitalize;
     }
     
-    .natural-search-form .input-container .newOption.selected:after {
-        content: "✓";
-        color: #3b82f6;
-        display: block;
-        top: 0;
-        right: 0;
-        height: 100%;
-        width: 50px;
-        font-size: 16px;
-        font-weight: bold;
-        text-align: center;
-        line-height: 44px;
+    .pill-arrow {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.7rem;
+        transition: transform 0.2s ease;
+    }
+    
+    .filter-pill.active .pill-arrow {
+        transform: rotate(180deg);
+    }
+    
+    .pill-dropdown {
         position: absolute;
-    }
-    
-    .natural-search-form .input-container .placeholder {
-        position: relative;
-        z-index: 1;
-        font-weight: 600;
-    }
-    
-    .natural-search-form .input-container .input {
-        display: block;
-        visibility: hidden;
-        position: absolute;
-        z-index: 2;
-        top: 0;
+        top: calc(100% + 8px);
         left: 0;
-        opacity: 0;
-        min-width: 200px;
-        max-width: 300px;
-    }
-    
-    .natural-search-form select.hidden {
-        position: absolute;
-        left: -5000px;
-    }
-    
-    .search-button, .reset-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        border: none;
-        padding: 12px 24px;
-        font-size: 18px;
-        font-weight: 600;
-        margin: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 12px;
-        color: white;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        min-width: 160px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        cursor: pointer;
+        overflow: hidden;
     }
     
-    .search-button:hover, .reset-button:hover {
-        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-    }
-    
-    .reset-button {
-        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
-    }
-    
-    .reset-button:hover {
-        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-        box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
-    }
-    
-    .search-button:active, .reset-button:active {
+    .filter-pill.active .pill-dropdown {
+        opacity: 1;
+        visibility: visible;
         transform: translateY(0);
     }
     
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .natural-search-form {
-            font-size: 18px;
-            line-height: 32px;
-            flex-direction: column;
-            text-align: center;
-        }
-        
-        .natural-search-form .input-container {
-            margin: 4px 0;
-        }
-        
-        .search-button, .reset-button {
-            margin-top: 16px;
-            font-size: 16px;
-            padding: 10px 20px;
-        }
+    .pill-option {
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+        color: #334155;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+        text-transform: capitalize;
     }
     
-    /* Loading state for competitors */
-    .competitors-loading {
-        opacity: 0.6;
-        transition: opacity 0.3s ease;
+    .pill-option:last-child {
+        border-bottom: none;
     }
     
-    .competitors-loading .competitor-tile {
-        pointer-events: none;
+    .pill-option:hover {
+        background: rgba(59, 130, 246, 0.1);
+        color: #1e40af;
     }
     
-    /* No results state */
-    .no-results {
-        text-align: center;
-        padding: 3rem 2rem;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
+    .reset-filters {
+        background: rgba(220, 38, 38, 0.2);
+        border: 1px solid rgba(220, 38, 38, 0.3);
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        margin: 2rem 0;
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     
-    .no-results-icon {
-        font-size: 3rem;
-        color: #cbd5e1;
-        margin-bottom: 1rem;
+    .reset-filters:hover {
+        background: rgba(220, 38, 38, 0.3);
+        border-color: rgba(220, 38, 38, 0.4);
+        color: white;
+        transform: translateY(-1px);
     }
     
-    .no-results h3 {
-        color: #475569;
-        margin-bottom: 0.5rem;
+    .search-results-info {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     
-    .no-results p {
-        color: #64748b;
-        margin-bottom: 0;
+    /* Responsive */
+    @media (max-width: 768px) {
+        .glass-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1rem !important;
+        }
+        
+        .glass-card {
+            padding: 1.5rem;
+        }
+        
+        .search-input-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+        
+        .search-input {
+            min-width: unset;
+        }
+        
+        .filter-pills {
+            justify-content: center;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="main-content">
-    <div class="container">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="bi bi-people text-primary me-3"></i>
-                Competitor Analysis
-            </h1>
-            <p class="text-muted mb-0">Analyze and compare YouTube channel performance with your competitors</p>
-        </div>
-
-        <!-- Analytics Summary -->
-        {% if stats %}
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="alert alert-info d-flex align-items-center" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.2); border-radius: 12px;">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <div>
-                        <strong>Analysis Summary:</strong> 
-                        Showing {{ stats.unique_channels }} unique channels from {{ stats.total_analyses }} total analyses.
-                        {% if stats.duplicates_removed > 0 %}
-                        <span class="badge bg-success ms-2">{{ stats.duplicates_removed }} duplicates eliminated</span>
-                        {% endif %}
-                        <small class="d-block text-muted mt-1">
-                            <i class="bi bi-arrow-up-circle me-1"></i>
-                            For each channel, showing the analysis with the most videos to avoid duplicates.
-                        </small>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header simple -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0">
+                    <i class="bi bi-people-fill me-2"></i>
+                    Competitors Analysis
+                </h2>
+                
+                <!-- Contrôles minimalistes -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Slider de blur en temps réel -->
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="blurSlider" class="form-label mb-0 text-white" style="font-size: 0.875rem;">
+                            Flou: <span id="blurValue">300px</span>
+                        </label>
+                        <input type="range" 
+                               id="blurSlider" 
+                               min="0" 
+                               max="500" 
+                               value="300" 
+                               class="form-range"
+                               style="width: 120px;"
+                               oninput="adjustBlur(this.value)">
+                    </div>
+                    
+                    <!-- Bouton de rafraîchissement global -->
+                    <button class="btn btn-outline-light btn-sm" onclick="refreshAllThumbnails()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Rafraîchir images
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Interface de recherche élégante et discrète -->
+            <div class="elegant-search-bar">
+                <div class="search-container">
+                    <div class="search-input-group">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" 
+                               class="search-input" 
+                               placeholder="Search competitors by sector, region, or name..."
+                               id="elegant-search-input">
+                        
+                        <!-- Pills de filtres -->
+                        <div class="filter-pills">
+                            <div class="filter-pill" id="sector-pill">
+                                <span class="pill-label">hospitality</span>
+                                <i class="bi bi-chevron-down pill-arrow"></i>
+                                <div class="pill-dropdown">
+                                    <div class="pill-option" data-value="hospitality">hospitality</div>
+                                    <div class="pill-option" data-value="travel">travel</div>
+                                    <div class="pill-option" data-value="tech">tech</div>
+                                    <div class="pill-option" data-value="retail">retail</div>
+                                    <div class="pill-option" data-value="finance">finance</div>
+                                    <div class="pill-option" data-value="automotive">automotive</div>
+                                    <div class="pill-option" data-value="food">food & beverage</div>
+                                    <div class="pill-option" data-value="fashion">fashion</div>
+                                    <div class="pill-option" data-value="health">health & wellness</div>
+                                    <div class="pill-option" data-value="education">education</div>
+                                    <div class="pill-option" data-value="entertainment">entertainment</div>
+                                    <div class="pill-option" data-value="all">all sectors</div>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-pill" id="region-pill">
+                                <span class="pill-label">Europe</span>
+                                <i class="bi bi-chevron-down pill-arrow"></i>
+                                <div class="pill-dropdown">
+                                    <div class="pill-option" data-value="france">France</div>
+                                    <div class="pill-option" data-value="belgium">Belgium</div>
+                                    <div class="pill-option" data-value="europe">Europe</div>
+                                    <div class="pill-option" data-value="north-america">North America</div>
+                                    <div class="pill-option" data-value="asia">Asia</div>
+                                    <div class="pill-option" data-value="worldwide">Worldwide</div>
+                                </div>
+                            </div>
+                            
+                            <button class="reset-filters" id="reset-filters" style="display: none;">
+                                <i class="bi bi-x-circle"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Résultats de recherche discrets -->
+                    <div class="search-results-info" id="search-results-info" style="display: none;">
+                        <!-- Les résultats seront affichés ici -->
                     </div>
                 </div>
             </div>
-        </div>
-        {% endif %}
-
-        <!-- Natural Language Search Filter -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="natural-search-container">
-                    <div class="natural-search-form">
-                        I'm looking for
-                        
-                        <span id="sector" class="input-container">
-                            <span class="placeholder">hospitality</span>
-                            <span class="input selectbox">
-                                <select class="fancy-select hidden" id="sector-select">
-                                    <option value="hospitality">hospitality</option>
-                                    <option value="travel">travel</option>
-                                    <option value="tech">tech</option>
-                                    <option value="retail">retail</option>
-                                    <option value="finance">finance</option>
-                                    <option value="automotive">automotive</option>
-                                    <option value="food">food & beverage</option>
-                                    <option value="fashion">fashion</option>
-                                    <option value="health">health & wellness</option>
-                                    <option value="education">education</option>
-                                    <option value="entertainment">entertainment</option>
-                                    <option value="all">all sectors</option>
-                                </select>
-                            </span>
-                        </span>
-                        
-                        channels in
-                        
-                        <span id="region" class="input-container">
-                            <span class="placeholder">Europe</span>
-                            <span class="input selectbox">
-                                <select class="fancy-select hidden" id="region-select">
-                                    <option value="france">France</option>
-                                    <option value="belgium">Belgium</option>
-                                    <option value="europe">Europe</option>
-                                    <option value="north-america">North America</option>
-                                    <option value="asia">Asia</option>
-                                    <option value="worldwide">Worldwide</option>
-                                </select>
-                            </span>
-                        </span>
-                        
-                        <button type="button" id="search-btn" class="search-button">
-                            <i class="bi bi-search"></i>
-                            Find Competitors
-                        </button>
-                        
-                        <button type="button" id="reset-btn" class="reset-button" style="display: none;">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                            Show All
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Competitors Grid -->
-        <div id="competitors-container" style="overflow: visible; position: relative;">
+            
             {% if concurrents %}
-                <div class="row g-4" style="padding: 2rem 1rem;">
+                <div class="glass-grid" style="padding: 2rem 1rem;">
                 {% for competitor_key, competitor_data in concurrents %}
-                    <div class="col-lg-4 col-md-6 col-sm-12">
-                        <div class="competitor-tile entering{% if competitor_data.get('thumbnail') %} has-background{% endif %}" 
-                             data-card
-                             data-name="{{ competitor_data.get('name', '').lower() }}"
-                             data-channel-url="{{ competitor_data.get('channel_url', '') }}"
-                             data-description="{{ competitor_data.get('description', '').lower() }}"
-                             data-total-videos="{{ competitor_data.get('total_videos', 0) }}"
-                             data-total-views="{{ competitor_data.get('total_views_exact', 0) }}"
-                             {% if competitor_data.get('thumbnail') %}
-                             data-bg-image="{{ competitor_data.get('thumbnail') }}"
-                             {% endif %}>
-                            <div class="card-shine"></div>
-                            <div class="card-texture"></div>
-                            
-                            <!-- Header avec nom et logo mini -->
-                            <div class="tile-header">
-                                <div class="channel-info-container">
-                                    <!-- Mini logo en coin -->
-                                    <div class="channel-mini-logo">
-                                        {% if competitor_data.get('thumbnail') %}
-                                            <img src="{{ competitor_data.get('thumbnail') }}" 
-                                                 alt="{{ competitor_data.get('name', 'Channel') }}" 
-                                                 class="mini-avatar"
-                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                            <div class="mini-avatar-fallback" style="display: none;">
-                                                <i class="bi bi-youtube"></i>
-                                            </div>
-                                        {% else %}
-                                            <div class="mini-avatar-fallback">
-                                                <i class="bi bi-youtube"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <!-- Nom et infos -->
-                                    <div class="channel-name">
-                                        <h6 class="mb-0 channel-title">{{ competitor_data.get('name', 'Nom inconnu') }}</h6>
-                                        <small class="channel-subtitle">{{ competitor_data.get('videos')|length if competitor_data.get('videos') else 0 }} vidéos</small>
-                                    </div>
+                    <div class="glass-card" 
+                         data-competitor-id="{{ competitor_key }}"
+                         data-name="{{ competitor_data.get('name', '').lower() }}"
+                         data-industry="{{ competitor_data.get('industry', '').lower() }}"
+                         data-region="{{ competitor_data.get('region', 'europe').lower() }}"
+                         data-description="{{ competitor_data.get('description', '').lower() }}">
+                        
+                        <!-- Avatar circulaire principal -->
+                        <div class="channel-avatar-circle">
+                            {% if competitor_data.get('thumbnail') %}
+                                <img src="{{ competitor_data.get('thumbnail') }}" 
+                                     alt="{{ competitor_data.get('name', 'Channel') }}" 
+                                     class="avatar-image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="avatar-fallback" style="display: none;">
+                                    <i class="bi bi-youtube"></i>
                                 </div>
+                            {% else %}
+                                <div class="avatar-fallback">
+                                    <i class="bi bi-youtube"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Contenu minimal -->
+                        <div class="glass-content">
+                            <h3 class="channel-name">{{ competitor_data.get('name', 'Nom inconnu') }}</h3>
+                            <p class="channel-meta">{{ competitor_data.get('videos')|length if competitor_data.get('videos') else 0 }} vidéos</p>
+                            
+                            <!-- Métadonnées ultra-épurées -->
+                            <div class="meta-line">
+                                <span class="meta-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    {{ competitor_data.get('region', 'Europe') }}
+                                </span>
+                                {% if competitor_data.get('industry') %}
+                                <span class="meta-separator">•</span>
+                                <span class="meta-item">
+                                    <i class="bi bi-briefcase"></i>
+                                    {{ competitor_data.get('industry') }}
+                                </span>
+                                {% endif %}
                             </div>
                             
-                            <!-- Tags intelligents -->
-                            <div class="tile-tags mb-2">
-                                <div class="d-flex flex-wrap gap-1">
-                                    <!-- Badge Région -->
-                                    <span class="badge bg-primary tag-badge" 
-                                          data-tag-type="region" 
-                                          data-competitor-id="{{ competitor_key }}"
-                                          onclick="editTag(this)"
-                                          title="Cliquer pour modifier la région">
-                                        <i class="bi bi-geo-alt me-1"></i>
-                                        {{ competitor_data.get('region', 'Europe') }}
-                                    </span>
-                                    
-                                    <!-- Badge Industrie -->
-                                    {% if competitor_data.get('industry') %}
-                                        <span class="badge bg-success tag-badge" 
-                                              data-tag-type="industry" 
-                                              data-competitor-id="{{ competitor_key }}"
-                                              onclick="editTag(this)"
-                                              title="Cliquer pour modifier l'industrie">
-                                            <i class="bi bi-briefcase me-1"></i>
-                                            {{ competitor_data.get('industry') }}
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-secondary tag-badge" 
-                                              data-tag-type="industry" 
-                                              data-competitor-id="{{ competitor_key }}"
-                                              onclick="editTag(this)"
-                                              title="Cliquer pour ajouter une industrie">
-                                            <i class="bi bi-plus me-1"></i>
-                                            Industrie
-                                        </span>
-                                    {% endif %}
-                                    
-                                    <!-- Tags personnalisés -->
-                                    {% for tag in competitor_data.get('custom_tags', []) %}
-                                        <span class="badge bg-info tag-badge custom-tag" 
-                                              data-tag-type="custom" 
-                                              data-competitor-id="{{ competitor_key }}"
-                                              data-tag-value="{{ tag }}"
-                                              onclick="removeCustomTag(this)"
-                                              title="Cliquer pour supprimer ce tag">
-                                            {{ tag }}
-                                            <i class="bi bi-x ms-1"></i>
-                                        </span>
-                                    {% endfor %}
-                                    
-                                    <!-- Bouton ajouter tag personnalisé -->
-                                    <span class="badge bg-outline-secondary tag-badge add-tag" 
-                                          data-competitor-id="{{ competitor_key }}"
-                                          onclick="addCustomTag(this)"
-                                          title="Ajouter un tag personnalisé">
-                                        <i class="bi bi-plus"></i>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Stats rapides -->
-                            <div class="tile-stats">
-                                <div class="stat-item">
-                                    <div class="stat-value">{{ competitor_data.get('total_views', '0') }}</div>
-                                    <div class="stat-label">Vues totales</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">{{ competitor_data.get('first_analyzed', '')[:10] if competitor_data.get('first_analyzed') else 'N/A' }}</div>
-                                    <div class="stat-label">Ajouté</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Actions compactes -->
-                            <div class="tile-actions">
-                                <a href="/competitor/{{ competitor_key }}" class="btn btn-primary btn-sm flex-fill">
-                                    <i class="bi bi-bar-chart-line me-1"></i>
+                            <!-- Actions minimalistes -->
+                            <div class="glass-actions">
+                                <a href="/competitor/{{ competitor_key }}" class="glass-btn primary">
+                                    <i class="bi bi-bar-chart-line"></i>
                                     Résultats
                                 </a>
-                                <button class="btn btn-outline-primary btn-sm" 
-                                        data-channel-url="{{ competitor_data.get('channel_url', '') }}" 
-                                        data-channel-name="{{ competitor_data.get('name', 'Unknown') }}"
-                                        onclick="relaunchAnalysis(this)"
-                                        title="Relancer l'analyse">
+                                <button class="glass-btn secondary" 
+                                        data-competitor-id="{{ competitor_key }}"
+                                        onclick="refreshSingleThumbnail(this)"
+                                        title="Rafraîchir">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" 
+                                <button class="glass-btn danger" 
                                         onclick="deleteCompetitor('{{ competitor_key }}')"
                                         title="Supprimer">
                                     <i class="bi bi-trash"></i>
@@ -1189,19 +599,13 @@
 
 {% block extra_js %}
 <script>
-    // Add smooth scrolling to any anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
+    // ========================================
+    // FONCTIONS POUR LA GESTION DES CARTES
+    // ========================================
 
     // Function to delete competitor
     function deleteCompetitor(competitorKey) {
-        if (confirm('Are you sure you want to delete this competitor?')) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce concurrent ?')) {
             fetch('/api/delete-competitor', {
                 method: 'POST',
                 headers: {
@@ -1212,748 +616,356 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    location.reload(); // Refresh the page to show updated list
+                    location.reload();
                 } else {
-                    alert('Error deleting competitor: ' + data.error);
+                    alert('Erreur lors de la suppression: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error deleting competitor');
+                alert('Erreur lors de la suppression');
             });
         }
     }
 
-    // Function to relaunch analysis for a competitor
-    function relaunchAnalysis(button) {
-        const channelUrl = button.getAttribute('data-channel-url');
-        const channelName = button.getAttribute('data-channel-name');
+    // Function to refresh single thumbnail
+    function refreshSingleThumbnail(button) {
+        const competitorId = button.getAttribute('data-competitor-id');
         
-        if (!channelUrl) {
-            alert('Channel URL not found');
+        if (!competitorId) {
+            alert('ID du concurrent non trouvé');
             return;
         }
 
-        // Disable button and show loading state
         const originalHtml = button.innerHTML;
         button.disabled = true;
-        button.innerHTML = '<i class="bi bi-arrow-repeat spinning me-1"></i>Launching...';
+        button.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i>';
 
-        // Launch background analysis
-        fetch('/api/launch-background-task', {
+        fetch('/api/refresh-single-thumbnail', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                channel_url: channelUrl,
-                task_type: 'relaunch'
-            })
+            body: JSON.stringify({ competitor_id: competitorId })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show success and redirect to tasks page
-                alert(`Analysis relaunched for ${channelName}! Redirecting to Active Tasks...`);
-                window.location.href = '/tasks';
-            } else {
-                throw new Error(data.error || 'Unknown error occurred');
+                location.reload();
+             } else {
+                alert('Erreur lors du rafraîchissement: ' + (data.error || 'Erreur inconnue'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error relaunching analysis: ' + error.message);
-            
-            // Restore button
+            alert('Erreur lors du rafraîchissement de l\'image');
+        })
+        .finally(() => {
             button.disabled = false;
-                         button.innerHTML = originalHtml;
-         });
-     }
-
-     // Advanced 3D Card Effects - Inspired by Robin Delaporte CodePen Style
-     function initAdvanced3DCards() {
-         const cards = document.querySelectorAll(".competitor-tile");
-         console.log(`🎮 Initialisation des effets 3D avancés sur ${cards.length} cartes`);
-         
-         if (cards.length === 0) {
-             console.warn('⚠️ Aucune carte trouvée !');
-             return;
-         }
-         
-         cards.forEach((card, index) => {
-             // Ignorer les cartes en animation d'entrée
-             if (card.classList.contains('entering')) {
-                 console.log(`⏳ Carte ${index + 1} en animation d'entrée, passage...`);
-                 return;
-             }
-             
-             console.log(`🎯 Configuration carte 3D avancée ${index + 1}`);
-             
-             let bounds = card.getBoundingClientRect();
-             
-             // Recalculer les bounds au resize
-             const updateBounds = () => {
-                 bounds = card.getBoundingClientRect();
-             };
-             window.addEventListener('resize', updateBounds);
-             
-             // Handler de mouvement de souris avec calculs avancés
-             const handleMouseMove = (e) => {
-                 updateBounds();
-                 
-                 // Position relative de la souris dans la carte (0-1)
-                 const mouseX = (e.clientX - bounds.left) / bounds.width;
-                 const mouseY = (e.clientY - bounds.top) / bounds.height;
-                 
-                 // Centrer les coordonnées (-0.5 à 0.5)
-                 const centerX = mouseX - 0.5;
-                 const centerY = mouseY - 0.5;
-                 
-                 // Calculs de rotation (plus fluides)
-                 const rotateX = centerY * -15; // Rotation verticale
-                 const rotateY = centerX * 15;  // Rotation horizontale
-                 
-                 // Calcul de l'élévation basée sur la distance du centre
-                 const distance = Math.sqrt(centerX * centerX + centerY * centerY);
-                 const scale = 1 + (distance * 0.03);
-                 const translateZ = distance * 10;
-                 
-                 // Application des transformations
-                 card.style.transform = `
-                     perspective(1000px) 
-                     rotateX(${rotateX}deg) 
-                     rotateY(${rotateY}deg) 
-                     scale(${scale}) 
-                     translateZ(${translateZ}px)
-                 `;
-                 
-                 // Effet de brillance qui suit la souris
-                 const shineX = mouseX * 100;
-                 const shineY = mouseY * 100;
-                 card.style.setProperty('--shine-x', `${shineX}%`);
-                 card.style.setProperty('--shine-y', `${shineY}%`);
-             };
-             
-             // Gestion des événements
-             card.addEventListener('mouseenter', () => {
-                 console.log(`✨ Survol avancé carte ${index + 1}`);
-                 card.style.transition = 'none'; // Désactiver transition pendant le mouvement
-                 card.addEventListener('mousemove', handleMouseMove);
-             });
-             
-             card.addEventListener('mouseleave', () => {
-                 console.log(`🚀 Sortie avancée carte ${index + 1}`);
-                 card.removeEventListener('mousemove', handleMouseMove);
-                 
-                 // Rétablir transition et retour à l'état normal
-                 card.style.transition = 'all 0.4s cubic-bezier(0.23, 1, 0.320, 1)';
-                 card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0px)';
-             });
-             
-             // Animation de clic sophistiquée
-             card.addEventListener('click', (e) => {
-                 if (e.target.closest('button') || e.target.closest('a')) return;
-                 
-                 console.log(`🎪 Animation clic avancée carte ${index + 1}`);
-                 
-                 // Animation de "flip" 3D
-                 card.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-                 card.style.transform = 'perspective(1000px) rotateY(180deg) scale(1.1)';
-                 
-                 setTimeout(() => {
-                     card.style.transform = 'perspective(1000px) rotateY(360deg) scale(1)';
-                 }, 300);
-                 
-                 setTimeout(() => {
-                     card.style.transition = 'all 0.4s cubic-bezier(0.23, 1, 0.320, 1)';
-                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0px)';
-                 }, 600);
-             });
-         });
-     }
-
-     // Initialisation immédiate et robuste pour les effets 3D avancés
-     function startAdvanced3DEffects() {
-         console.log('🚀 Démarrage des effets 3D avancés...');
-         
-         // Retirer immédiatement les classes d'animation d'entrée
-         document.querySelectorAll('.competitor-tile.entering').forEach((tile, index) => {
-             tile.classList.remove('entering');
-             console.log(`✨ Classe 'entering' retirée de la tuile ${index + 1}`);
-         });
-         
-         // Initialiser les effets 3D avancés
-         setTimeout(initAdvanced3DCards, 100);
-     }
-     
-     // Lancer immédiatement si le DOM est prêt
-     if (document.readyState === 'loading') {
-         document.addEventListener('DOMContentLoaded', startAdvanced3DEffects);
-     } else {
-         startAdvanced3DEffects();
-     }
-     
-     // Force l'initialisation après un court délai comme fallback
-     setTimeout(startAdvanced3DEffects, 500);
-
-     // ========================================
-     // Natural Language Search Functionality
-     // ========================================
-     
-     // Store original competitors for filtering
-     let originalCompetitors = [];
-     let currentFilters = {
-         sector: 'hospitality',
-         region: 'europe'
-     };
-     
-     // Mapping de secteurs avec mots-clés pour le filtrage intelligent
-     const sectorKeywords = {
-         'hospitality': ['hotel', 'resort', 'accommodation', 'hilton', 'marriott', 'hyatt', 'accor', 'inn', 'suite', 'lodge', 'club med'],
-         'travel': ['travel', 'voyage', 'trip', 'tourism', 'airline', 'flight', 'booking', 'expedia', 'airbnb', 'vacation'],
-         'tech': ['tech', 'technology', 'software', 'app', 'digital', 'cloud', 'ai', 'microsoft', 'google', 'apple'],
-         'retail': ['retail', 'shop', 'store', 'mall', 'fashion', 'clothing', 'brand', 'luxury', 'commerce'],
-         'finance': ['bank', 'finance', 'investment', 'insurance', 'credit', 'loan', 'fintech', 'payment'],
-         'automotive': ['car', 'auto', 'vehicle', 'bmw', 'mercedes', 'toyota', 'ford', 'automotive'],
-         'food': ['restaurant', 'food', 'cuisine', 'chef', 'recipe', 'coffee', 'beverage', 'kitchen'],
-         'fashion': ['fashion', 'style', 'luxury', 'brand', 'designer', 'clothes', 'beauty', 'cosmetic'],
-         'health': ['health', 'medical', 'wellness', 'fitness', 'pharmacy', 'hospital', 'care'],
-         'education': ['education', 'university', 'school', 'course', 'learning', 'training'],
-         'entertainment': ['entertainment', 'music', 'game', 'movie', 'tv', 'sport', 'media']
-     };
-     
-     // Mapping de régions avec mots-clés
-     const regionKeywords = {
-         'france': ['france', 'french', 'paris', 'lyon', 'marseille', 'fr'],
-         'belgium': ['belgium', 'belgian', 'brussels', 'bruxelles', 'be'],
-         'europe': ['europe', 'european', 'eu', 'uk', 'germany', 'spain', 'italy'],
-         'north-america': ['usa', 'america', 'canada', 'us', 'american'],
-         'asia': ['asia', 'asian', 'japan', 'china', 'korea', 'singapore', 'hong kong'],
-         'worldwide': [] // Pas de filtre par région
-     };
-     
-     // Initialize natural language form functionality
-     function initNaturalLanguageForm() {
-         // Store original competitors data
-         const competitorsContainer = document.querySelector('#competitors-container .row');
-         if (competitorsContainer) {
-             originalCompetitors = Array.from(competitorsContainer.children).map(col => ({
-                 element: col,
-                 name: col.querySelector('.channel-name h6')?.textContent?.toLowerCase() || '',
-                 description: col.querySelector('.channel-name small')?.textContent?.toLowerCase() || '',
-                 data: col.innerHTML
-             }));
-         }
-         
-         // Initialize custom selects
-         initCustomSelects();
-         
-         // Bind search functionality
-         document.getElementById('search-btn')?.addEventListener('click', performSearch);
-         document.getElementById('reset-btn')?.addEventListener('click', resetSearch);
-     }
-     
-     // Initialize custom styled selects (natural language form style)
-     function initCustomSelects() {
-         const selects = document.querySelectorAll('.fancy-select');
-         
-         selects.forEach(select => {
-             const container = select.closest('.input-container');
-             const selectWrapper = select.parentElement;
-             
-             // Create new select wrapper
-             selectWrapper.classList.add('newSelect');
-             const optionsContainer = document.createElement('div');
-             optionsContainer.className = 'newOptions';
-             selectWrapper.prepend(optionsContainer);
-             
-             // Populate options
-             Array.from(select.options).forEach(option => {
-                 const newOption = document.createElement('div');
-                 newOption.className = 'newOption';
-                 newOption.setAttribute('data-value', option.value);
-                 newOption.textContent = option.textContent;
-                 
-                 if (option.selected) {
-                     newOption.classList.add('selected');
-                 }
-                 
-                 optionsContainer.appendChild(newOption);
-             });
-             
-             // Handle option clicks
-             optionsContainer.addEventListener('click', (e) => {
-                 if (e.target.classList.contains('newOption')) {
-                     const value = e.target.getAttribute('data-value');
-                     const placeholder = container.querySelector('.placeholder');
-                     
-                     // Update selection
-                     optionsContainer.querySelectorAll('.newOption').forEach(opt => {
-                         opt.classList.remove('selected');
-                     });
-                     e.target.classList.add('selected');
-                     
-                     // Update original select
-                     select.value = value;
-                     placeholder.textContent = e.target.textContent;
-                     
-                     // Update filters
-                     if (select.id === 'sector-select') {
-                         currentFilters.sector = value;
-                     } else if (select.id === 'region-select') {
-                         currentFilters.region = value;
-                     }
-                     
-                     // Close dropdown
-                     container.classList.remove('active');
-                     
-                     // Auto-search on selection change
-                     setTimeout(performSearch, 100);
-                 }
-             });
-         });
-         
-         // Handle input container clicks
-         document.querySelectorAll('.input-container').forEach(container => {
-             container.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 
-                 // Close all other dropdowns
-                 document.querySelectorAll('.input-container.active').forEach(active => {
-                     if (active !== container) {
-                         active.classList.remove('active');
-                     }
-                 });
-                 
-                 container.classList.toggle('active');
-             });
-         });
-         
-         // Close dropdowns when clicking outside
-         document.addEventListener('click', () => {
-             document.querySelectorAll('.input-container.active').forEach(container => {
-                 container.classList.remove('active');
-             });
-         });
-     }
-     
-     // Perform intelligent search based on selected filters
-     function performSearch() {
-         const searchBtn = document.getElementById('search-btn');
-         const resetBtn = document.getElementById('reset-btn');
-         const competitorsContainer = document.querySelector('#competitors-container .row');
-         
-         if (!competitorsContainer) return;
-         
-         // Show loading state
-         searchBtn.innerHTML = '<i class="bi bi-search spinning"></i> Searching...';
-         searchBtn.disabled = true;
-         competitorsContainer.classList.add('competitors-loading');
-         
-         setTimeout(() => {
-             const filteredCompetitors = filterCompetitors();
-             displayFilteredResults(filteredCompetitors);
-             
-             // Update UI
-             searchBtn.innerHTML = '<i class="bi bi-search"></i> Find Competitors';
-             searchBtn.disabled = false;
-             competitorsContainer.classList.remove('competitors-loading');
-             
-             if (filteredCompetitors.length === 0) {
-                 showNoResults();
-             } else {
-                 hideNoResults();
-             }
-             
-             // Show reset button
-             resetBtn.style.display = 'inline-flex';
-             
-             console.log(`🔍 Search completed: ${filteredCompetitors.length} results for sector="${currentFilters.sector}", region="${currentFilters.region}"`);
-         }, 500);
-     }
-     
-     // Filter competitors based on current filters
-     function filterCompetitors() {
-         return originalCompetitors.filter(competitor => {
-             // Sector filtering
-             if (currentFilters.sector !== 'all') {
-                 const sectorWords = sectorKeywords[currentFilters.sector] || [];
-                 const matchesSector = sectorWords.some(keyword => 
-                     competitor.name.includes(keyword.toLowerCase()) ||
-                     competitor.description.includes(keyword.toLowerCase())
-                 );
-                 if (!matchesSector) return false;
-             }
-             
-             // Region filtering
-             if (currentFilters.region !== 'worldwide') {
-                 const regionWords = regionKeywords[currentFilters.region] || [];
-                 if (regionWords.length > 0) {
-                     const matchesRegion = regionWords.some(keyword => 
-                         competitor.name.includes(keyword.toLowerCase()) ||
-                         competitor.description.includes(keyword.toLowerCase())
-                     );
-                     if (!matchesRegion) return false;
-                 }
-             }
-             
-             return true;
-         });
-     }
-     
-     // Display filtered results
-     function displayFilteredResults(filteredCompetitors) {
-         const competitorsContainer = document.querySelector('#competitors-container .row');
-         if (!competitorsContainer) return;
-         
-         // Clear current results
-         competitorsContainer.innerHTML = '';
-         
-         // Add filtered competitors
-         filteredCompetitors.forEach((competitor, index) => {
-             const newElement = competitor.element.cloneNode(true);
-             newElement.style.animationDelay = `${index * 0.05}s`;
-             newElement.querySelector('.competitor-tile').classList.add('entering');
-             competitorsContainer.appendChild(newElement);
-         });
-         
-         // Re-initialize 3D effects for new elements
-         setTimeout(() => {
-             document.querySelectorAll('.competitor-tile.entering').forEach(tile => {
-                 tile.classList.remove('entering');
-             });
-             initAdvanced3DCards();
-         }, 100);
-     }
-     
-     // Reset search to show all competitors
-     function resetSearch() {
-         const resetBtn = document.getElementById('reset-btn');
-         const competitorsContainer = document.querySelector('#competitors-container .row');
-         
-         if (!competitorsContainer) return;
-         
-         // Reset filters to default
-         currentFilters = { sector: 'hospitality', region: 'europe' };
-         
-         // Reset UI selections
-         document.querySelector('#sector .placeholder').textContent = 'hospitality';
-         document.querySelector('#region .placeholder').textContent = 'Europe';
-         document.querySelector('#sector-select').value = 'hospitality';
-         document.querySelector('#region-select').value = 'europe';
-         
-         // Update selected options in custom selects
-         document.querySelectorAll('.newOption').forEach(option => {
-             option.classList.remove('selected');
-             if ((option.getAttribute('data-value') === 'hospitality' && option.closest('#sector')) ||
-                 (option.getAttribute('data-value') === 'europe' && option.closest('#region'))) {
-                 option.classList.add('selected');
-             }
-         });
-         
-         // Restore all competitors
-         competitorsContainer.innerHTML = '';
-         originalCompetitors.forEach((competitor, index) => {
-             const newElement = competitor.element.cloneNode(true);
-             newElement.style.animationDelay = `${index * 0.05}s`;
-             newElement.querySelector('.competitor-tile').classList.add('entering');
-             competitorsContainer.appendChild(newElement);
-         });
-         
-         // Hide reset button and no results
-         resetBtn.style.display = 'none';
-         hideNoResults();
-         
-         // Re-initialize 3D effects
-         setTimeout(() => {
-             document.querySelectorAll('.competitor-tile.entering').forEach(tile => {
-                 tile.classList.remove('entering');
-             });
-             initAdvanced3DCards();
-         }, 100);
-         
-         console.log('🔄 Search reset - showing all competitors');
-     }
-     
-     // Show no results message
-     function showNoResults() {
-         const competitorsContainer = document.getElementById('competitors-container');
-         let noResultsEl = competitorsContainer.querySelector('.no-results');
-         
-         if (!noResultsEl) {
-             noResultsEl = document.createElement('div');
-             noResultsEl.className = 'no-results';
-             noResultsEl.innerHTML = `
-                 <i class="bi bi-search no-results-icon"></i>
-                 <h3>No competitors found</h3>
-                 <p>Try adjusting your search criteria or add more competitors to your analysis.</p>
-             `;
-             competitorsContainer.appendChild(noResultsEl);
-         }
-         
-         noResultsEl.style.display = 'block';
-     }
-     
-     // Hide no results message
-     function hideNoResults() {
-         const noResultsEl = document.querySelector('#competitors-container .no-results');
-         if (noResultsEl) {
-             noResultsEl.style.display = 'none';
-         }
-     }
-     
-     // Initialize natural language search when DOM is ready
-     if (document.readyState === 'loading') {
-         document.addEventListener('DOMContentLoaded', initNaturalLanguageForm);
-     } else {
-         initNaturalLanguageForm();
-     }
-     
-     // Fallback initialization
-     setTimeout(initNaturalLanguageForm, 200);
-
-    // ========================================
-    // GESTION DES TAGS INTELLIGENTS
-    // ========================================
-    
-    // Options disponibles pour chaque type de tag
-    const TAG_OPTIONS = {
-        region: [
-            'Europe', 'France', 'Belgium', 'Spain', 'Italy', 'Germany', 'UK',
-            'North America', 'USA', 'Canada',
-            'Asia', 'Japan', 'China', 'Korea', 'India',
-            'Worldwide', 'International'
-        ],
-        industry: [
-            'food', 'hospitality', 'technology', 'fashion', 'beauty', 'automotive',
-            'finance', 'health', 'retail', 'entertainment', 'education', 'sports',
-            'travel', 'luxury', 'gaming', 'media', 'consulting', 'real-estate'
-        ]
-    };
-    
-    // Fonction pour éditer un tag (région ou industrie)
-    function editTag(element) {
-        const tagType = element.getAttribute('data-tag-type');
-        const competitorId = element.getAttribute('data-competitor-id');
-        const currentValue = element.textContent.trim().replace(/^\s*[^\s]+\s*/, ''); // Enlever l'icône
-        
-        // Créer le modal d'édition
-        const modal = createTagEditModal(tagType, currentValue, (newValue) => {
-            updateCompetitorTag(competitorId, tagType, newValue, element);
+            button.innerHTML = originalHtml;
         });
-        
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
     }
-    
-    // Fonction pour créer le modal d'édition
-    function createTagEditModal(tagType, currentValue, onSave) {
-        const modal = document.createElement('div');
-        modal.className = 'tag-edit-modal';
+
+    // Function to refresh all thumbnails
+    function refreshAllThumbnails() {
+        const refreshBtn = document.querySelector('button[onclick="refreshAllThumbnails()"]');
         
-        const options = TAG_OPTIONS[tagType] || [];
-        const optionsHtml = options.map(option => 
-            `<div class="tag-option ${option === currentValue ? 'selected' : ''}" 
-                  data-value="${option}">${option}</div>`
-        ).join('');
+        if (!refreshBtn) return;
         
-        modal.innerHTML = `
-            <div class="tag-edit-content">
-                <h5>Modifier ${tagType === 'region' ? 'la région' : 'l\'industrie'}</h5>
-                <div class="tag-options">
-                    ${optionsHtml}
-                </div>
-                <div class="d-flex gap-2 justify-content-end">
-                    <button class="btn btn-secondary" onclick="closeTagModal()">Annuler</button>
-                    <button class="btn btn-primary" onclick="saveTagSelection()">Sauvegarder</button>
-                </div>
-            </div>
+        const originalHtml = refreshBtn.innerHTML;
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="bi bi-arrow-repeat spinning me-1"></i>Rafraîchissement...';
+
+        fetch('/api/refresh-thumbnails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Images rafraîchies avec succès ! ${data.updated_count} concurrent(s) mis à jour.`);
+                location.reload();
+            } else {
+                alert('Erreur lors du rafraîchissement: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors du rafraîchissement des images');
+        })
+        .finally(() => {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = originalHtml;
+        });
+    }
+
+    // Fonction pour ajuster le blur en temps réel
+    function adjustBlur(blurValue) {
+        document.getElementById('blurValue').textContent = blurValue + 'px';
+        
+        const opacity = Math.max(0.1, Math.min(0.4, blurValue / 1000));
+        const backdropBlur = Math.max(10, Math.min(50, blurValue / 10));
+        
+        const dynamicCSS = `
+            .glass-card {
+                background: linear-gradient(145deg, rgba(255,255,255,${opacity + 0.1}) 0%, rgba(255,255,255,${opacity}) 100%) !important;
+                backdrop-filter: blur(${backdropBlur}px) !important;
+                -webkit-backdrop-filter: blur(${backdropBlur}px) !important;
+            }
         `;
         
-        // Gérer la sélection des options
-        modal.querySelectorAll('.tag-option').forEach(option => {
-            option.addEventListener('click', () => {
-                modal.querySelectorAll('.tag-option').forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
+        const existingStyle = document.getElementById('dynamic-glass-style');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        const styleElement = document.createElement('style');
+        styleElement.id = 'dynamic-glass-style';
+        styleElement.textContent = dynamicCSS;
+        document.head.appendChild(styleElement);
+        
+        localStorage.setItem('glassBlurPreference', blurValue);
+    }
+
+    // Charger la préférence de blur au chargement
+    function loadGlassBlurPreference() {
+        const savedBlur = localStorage.getItem('glassBlurPreference');
+        if (savedBlur) {
+            const slider = document.getElementById('blurSlider');
+            if (slider) {
+                slider.value = savedBlur;
+                adjustBlur(savedBlur);
+            }
+        }
+    }
+
+    // ========================================
+    // ELEGANT SEARCH INTERFACE
+    // ========================================
+    
+    // Initialiser l'interface de recherche élégante
+    function initElegantSearch() {
+        console.log("✨ Initialisation de l'interface de recherche élégante");
+        
+        // Éléments de l'interface
+        const searchInput = document.getElementById('elegant-search-input');
+        const sectorPill = document.getElementById('sector-pill');
+        const regionPill = document.getElementById('region-pill');
+        const resetBtn = document.getElementById('reset-filters');
+        const resultsInfo = document.getElementById('search-results-info');
+        
+        if (!searchInput || !sectorPill || !regionPill) {
+            console.warn("Éléments de recherche non trouvés");
+            return;
+        }
+        
+        // Variables pour les filtres actifs
+        let currentSector = 'hospitality';
+        let currentRegion = 'europe';
+        let searchText = '';
+        
+        // Initialiser les pills de filtre
+        initFilterPill(sectorPill, currentSector, (value, text) => {
+            currentSector = value;
+            performSearch();
+        });
+        
+        initFilterPill(regionPill, currentRegion, (value, text) => {
+            currentRegion = value;
+            performSearch();
+        });
+        
+        // Gestion de la recherche textuelle
+        searchInput.addEventListener('input', function() {
+            searchText = this.value.toLowerCase().trim();
+            performSearch();
+        });
+        
+        // Gestion du bouton reset
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                console.log('🔄 Reset des filtres');
+                
+                // Réinitialiser les valeurs
+                currentSector = 'hospitality';
+                currentRegion = 'europe';
+                searchText = '';
+                
+                // Réinitialiser l'interface
+                searchInput.value = '';
+                updatePillDisplay(sectorPill, 'hospitality');
+                updatePillDisplay(regionPill, 'Europe');
+                
+                // Masquer les résultats et le bouton reset
+                if (resultsInfo) resultsInfo.style.display = 'none';
+                resetBtn.style.display = 'none';
+                
+                // Afficher tous les concurrents
+                showAllCompetitors();
+            });
+        }
+        
+        // Fonction de recherche principale
+        function performSearch() {
+            const allCards = document.querySelectorAll('.glass-card');
+            let visibleCount = 0;
+            
+            allCards.forEach(card => {
+                const data = getCompetitorDataFromCard(card);
+                
+                // Filtrage par secteur
+                let sectorMatch = currentSector === 'all' || 
+                                 (data.industry && data.industry.includes(currentSector)) ||
+                                 (data.name && data.name.includes(currentSector)) ||
+                                 (data.description && data.description.includes(currentSector));
+                
+                // Filtrage par région
+                let regionMatch = currentRegion === 'worldwide' ||
+                                 (data.region && data.region.includes(currentRegion));
+                
+                // Filtrage par texte de recherche
+                let textMatch = !searchText || 
+                               data.name.includes(searchText) ||
+                               data.industry.includes(searchText) ||
+                               data.region.includes(searchText) ||
+                               data.description.includes(searchText);
+                
+                // Afficher/masquer la carte
+                if (sectorMatch && regionMatch && textMatch) {
+                    card.style.display = 'block';
+                    card.style.opacity = '1';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Afficher les résultats
+            showSearchResults(visibleCount, currentSector, currentRegion, searchText);
+            
+            // Afficher le bouton reset si des filtres sont actifs
+            if (resetBtn) {
+                if (currentSector !== 'hospitality' || currentRegion !== 'europe' || searchText) {
+                    resetBtn.style.display = 'flex';
+                } else {
+                    resetBtn.style.display = 'none';
+                }
+            }
+        }
+        
+        // Afficher les résultats de recherche
+        function showSearchResults(count, sector, region, text) {
+            if (!resultsInfo) return;
+            
+            const allCards = document.querySelectorAll('.glass-card');
+            if (count === allCards.length && !text && sector === 'hospitality' && region === 'europe') {
+                resultsInfo.style.display = 'none';
+                return;
+            }
+            
+            let message = `${count} competitor${count !== 1 ? 's' : ''} found`;
+            
+            if (text) {
+                message += ` for "${text}"`;
+            }
+            
+            if (sector !== 'hospitality' || region !== 'europe') {
+                const sectorDisplay = sector === 'all' ? 'all sectors' : sector;
+                const regionDisplay = region === 'worldwide' ? 'worldwide' : region;
+                message += ` in ${sectorDisplay} (${regionDisplay})`;
+            }
+            
+            resultsInfo.innerHTML = `
+                <i class="bi bi-check-circle me-2"></i>
+                ${message}
+            `;
+            resultsInfo.style.display = 'block';
+        }
+    }
+    
+    // Initialiser une pill de filtre
+    function initFilterPill(pill, defaultValue, onSelect) {
+        const dropdown = pill.querySelector('.pill-dropdown');
+        const options = dropdown.querySelectorAll('.pill-option');
+        
+        // Gestion du clic sur la pill
+        pill.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Fermer les autres pills
+            document.querySelectorAll('.filter-pill.active').forEach(activePill => {
+                if (activePill !== pill) {
+                    activePill.classList.remove('active');
+                }
+            });
+            
+            // Toggle cette pill
+            pill.classList.toggle('active');
+        });
+        
+        // Gestion du clic sur les options
+        options.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                const value = option.getAttribute('data-value');
+                const text = option.textContent;
+                
+                // Mettre à jour l'affichage
+                updatePillDisplay(pill, text);
+                
+                // Fermer le dropdown
+                pill.classList.remove('active');
+                
+                // Callback
+                if (onSelect) {
+                    onSelect(value, text);
+                }
             });
         });
         
-        // Sauvegarder la sélection
-        modal.querySelector('.btn-primary').addEventListener('click', () => {
-            const selected = modal.querySelector('.tag-option.selected');
-            if (selected) {
-                onSave(selected.getAttribute('data-value'));
-            }
-            closeTagModal();
+        // Fermer le dropdown si on clique ailleurs
+        document.addEventListener('click', function() {
+            pill.classList.remove('active');
         });
-        
-        // Fermer avec Escape
-        document.addEventListener('keydown', function escapeHandler(e) {
-            if (e.key === 'Escape') {
-                closeTagModal();
-                document.removeEventListener('keydown', escapeHandler);
-            }
-        });
-        
-        return modal;
     }
     
-    // Fermer le modal
-    function closeTagModal() {
-        const modal = document.querySelector('.tag-edit-modal');
-        if (modal) {
-            modal.remove();
+    // Mettre à jour l'affichage d'une pill
+    function updatePillDisplay(pill, text) {
+        const label = pill.querySelector('.pill-label');
+        if (label) {
+            label.textContent = text;
         }
     }
     
-    // Mettre à jour un tag de compétiteur
-    function updateCompetitorTag(competitorId, tagType, newValue, element) {
-        const updateData = {
-            competitor_id: competitorId
+    // Récupérer les données d'un concurrent
+    function getCompetitorDataFromCard(card) {
+        return {
+            name: card.getAttribute('data-name') || '',
+            industry: card.getAttribute('data-industry') || '',
+            region: card.getAttribute('data-region') || '',
+            description: card.getAttribute('data-description') || ''
         };
-        updateData[tagType] = newValue;
-        
-        fetch('/api/update-competitor-tags', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mettre à jour l'affichage
-                if (tagType === 'region') {
-                    element.innerHTML = `<i class="bi bi-geo-alt me-1"></i>${newValue}`;
-                } else if (tagType === 'industry') {
-                    element.innerHTML = `<i class="bi bi-briefcase me-1"></i>${newValue}`;
-                    element.className = 'badge bg-success tag-badge';
-                }
-                
-                // Afficher un message de succès
-                showAlert(`${tagType === 'region' ? 'Région' : 'Industrie'} mise à jour: ${newValue}`, 'success');
-            } else {
-                showAlert('Erreur lors de la mise à jour: ' + data.error, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Erreur lors de la mise à jour', 'danger');
+    }
+    
+    // Afficher tous les concurrents
+    function showAllCompetitors() {
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.style.display = 'block';
+            card.style.opacity = '1';
         });
-    }
-    
-    // Ajouter un tag personnalisé
-    function addCustomTag(element) {
-        const competitorId = element.getAttribute('data-competitor-id');
-        const tagName = prompt('Entrez le nom du tag personnalisé:');
-        
-        if (tagName && tagName.trim()) {
-            const trimmedTag = tagName.trim();
-            
-            showAlert('Fonctionnalité de tags personnalisés en cours de développement', 'info');
-        }
-    }
-    
-    // Supprimer un tag personnalisé
-    function removeCustomTag(element) {
-        const competitorId = element.getAttribute('data-competitor-id');
-        const tagValue = element.getAttribute('data-tag-value');
-        
-        if (confirm(`Supprimer le tag "${tagValue}" ?`)) {
-            showAlert('Fonctionnalité de suppression à implémenter', 'info');
-        }
-    }
-    
-    // Fonction utilitaire pour afficher des alertes
-    function showAlert(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(alertDiv);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
     }
 
     // ========================================
-    // GESTION DES IMAGES DE FOND DES CARTES
+    // INITIALISATION
     // ========================================
-    
-    // Fonction pour appliquer les images de fond aux cartes compétiteurs
-    function applyBackgroundImages() {
-        const tiles = document.querySelectorAll('.competitor-tile[data-bg-image]');
-        
-        tiles.forEach(tile => {
-            const bgImage = tile.getAttribute('data-bg-image');
-            if (bgImage) {
-                // Appliquer l'image de fond avec un fallback en cas d'erreur
-                const img = new Image();
-                img.onload = function() {
-                    tile.style.backgroundImage = `url('${bgImage}')`;
-                    tile.classList.add('has-background-loaded');
-                };
-                img.onerror = function() {
-                    console.log(`Impossible de charger l'image: ${bgImage}`);
-                    // En cas d'erreur, utiliser un gradient de fallback
-                    tile.style.background = `linear-gradient(135deg, 
-                        rgba(74, 144, 226, 0.8) 0%, 
-                        rgba(80, 200, 120, 0.8) 100%)`;
-                };
-                img.src = bgImage;
-            }
-        });
-    }
-    
-    // Appliquer les images de fond au chargement de la page
-    document.addEventListener('DOMContentLoaded', applyBackgroundImages);
-    
-    // Fallback pour s'assurer que les images sont appliquées
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', applyBackgroundImages);
-    } else {
-        applyBackgroundImages();
-    }
-    
-    // Observer pour appliquer les images aux nouvelles cartes ajoutées dynamiquement
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) { // Element node
-                        const newTiles = node.querySelectorAll ? 
-                            node.querySelectorAll('.competitor-tile[data-bg-image]') : [];
-                        newTiles.forEach(tile => {
-                            const bgImage = tile.getAttribute('data-bg-image');
-                            if (bgImage && !tile.style.backgroundImage) {
-                                const img = new Image();
-                                img.onload = function() {
-                                    tile.style.backgroundImage = `url('${bgImage}')`;
-                                    tile.classList.add('has-background-loaded');
-                                };
-                                img.src = bgImage;
-                            }
-                        });
-                    }
-                });
-            }
-        });
+
+    // Initialiser au chargement du DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        loadGlassBlurPreference();
+        setTimeout(initElegantSearch, 100);
     });
-    
-    // Observer le container des compétiteurs pour les changements
-    const competitorsContainer = document.getElementById('competitors-container');
-    if (competitorsContainer) {
-        observer.observe(competitorsContainer, { childList: true, subtree: true });
-    }
-    
 </script>
-{% endblock %} 
+{% endblock %}

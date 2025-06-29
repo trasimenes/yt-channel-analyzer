@@ -176,7 +176,7 @@ class YouTubeAPI:
             raise ValueError(f"Impossible d'extraire l'ID de chaîne de: {channel_url}")
         
         params = {
-            'part': 'id,snippet,statistics,contentDetails',
+            'part': 'id,snippet,statistics,contentDetails,brandingSettings',
             'id': channel_id
         }
         
@@ -192,13 +192,48 @@ class YouTubeAPI:
         if not title or title.strip() == '':
             title = 'Nom inconnu'
         
+        # Récupération de l'image de bannière (illustration) et de l'avatar
+        avatar_url = channel.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', '')
+        banner_url = channel.get('brandingSettings', {}).get('image', {}).get('bannerExternalUrl', '')
+        
+        # Amélioration de la récupération des bannières avec des URLs de haute qualité
+        if not banner_url:
+            # Essayer d'autres tailles de bannière depuis l'API
+            banner_url = (
+                channel.get('brandingSettings', {}).get('image', {}).get('bannerImageUrl', '') or
+                channel.get('brandingSettings', {}).get('image', {}).get('bannerMobileImageUrl', '') or
+                channel.get('brandingSettings', {}).get('image', {}).get('bannerTabletLowImageUrl', '')
+            )
+        
+        # Si toujours pas de bannière, construire l'URL haute qualité manuellement
+        if not banner_url and avatar_url:
+            # Extraire l'ID de chaîne pour construire l'URL de bannière haute qualité
+            # Format: https://yt3.googleusercontent.com/[ID_UNIQUE]=w2560-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj
+            try:
+                # Essayer de construire l'URL de bannière à partir de l'avatar
+                if 'yt3.googleusercontent.com' in avatar_url:
+                    # Extraire la partie unique de l'URL avatar
+                    avatar_parts = avatar_url.split('/')
+                    if len(avatar_parts) > 3:
+                        unique_id = avatar_parts[-1].split('=')[0]
+                        # Construire l'URL de bannière haute qualité
+                        banner_url = f"https://yt3.googleusercontent.com/{unique_id}=w2560-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj"
+                        print(f"[BANNER] 🎨 Bannière construite: {banner_url}")
+            except Exception as e:
+                print(f"[BANNER] ⚠️ Erreur construction bannière: {e}")
+        
+        # Fallback final sur l'avatar si aucune bannière n'est disponible
+        if not banner_url:
+            banner_url = avatar_url
+        
         return {
             'id': channel['id'],
             'title': title,
             'description': channel.get('snippet', {}).get('description', ''),
             'custom_url': channel.get('snippet', {}).get('customUrl', ''),
             'published_at': channel.get('snippet', {}).get('publishedAt', ''),
-            'thumbnail': channel.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', ''),
+            'thumbnail': avatar_url,  # Avatar/logo de la chaîne
+            'banner': banner_url,     # Image d'illustration/bannière de la chaîne
             'subscriber_count': int(channel.get('statistics', {}).get('subscriberCount', 0)),
             'video_count': int(channel.get('statistics', {}).get('videoCount', 0)),
             'view_count': int(channel.get('statistics', {}).get('viewCount', 0)),
