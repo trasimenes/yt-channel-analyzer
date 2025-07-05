@@ -4,6 +4,48 @@
 
 {% block extra_css %}
 <style>
+    .country-selector {
+        margin-top: 8px;
+    }
+    
+    .country-selector .form-label-sm {
+        font-size: 0.775rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    
+    .country-selector .form-select-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: #1e293b;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .country-selector .form-select-sm:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .country-selector .form-select-sm:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    /* Animation pour les notifications */
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
     /* ========================================
        GLASSMORPHISM DESIGN ULTRA-PUR
        ======================================== */
@@ -540,7 +582,12 @@
                         <!-- Contenu minimal -->
                         <div class="glass-content">
                             <h3 class="channel-name">{{ competitor_data.get('name', 'Nom inconnu') }}</h3>
-                            <p class="channel-meta">{{ competitor_data.get('videos')|length if competitor_data.get('videos') else 0 }} vidéos</p>
+                            <p class="channel-meta">
+                                {{ competitor_data.get('videos')|length if competitor_data.get('videos') else 0 }} vidéos
+                                {% if competitor_data.get('total_views') %}
+                                • {{ "{:,}".format(competitor_data.get('total_views')) }} vues
+                                {% endif %}
+                            </p>
                             
                             <!-- Métadonnées ultra-épurées -->
                             <div class="meta-line">
@@ -555,6 +602,29 @@
                                     {{ competitor_data.get('industry') }}
                                 </span>
                                 {% endif %}
+                            </div>
+                            
+                            <!-- Sélecteur de pays -->
+                            <div class="country-selector mt-2">
+                                <label class="form-label-sm">
+                                    <i class="bi bi-flag me-1"></i>
+                                    Pays:
+                                </label>
+                                <select class="form-select form-select-sm" 
+                                        onchange="updateCompetitorCountry(this, '{{ competitor_key }}')"
+                                        data-competitor-id="{{ competitor_key }}">
+                                    <option value="">Sélectionner un pays</option>
+                                    <option value="France" {% if competitor_data.get('country') == 'France' %}selected{% endif %}>🇫🇷 France</option>
+                                    <option value="United States" {% if competitor_data.get('country') == 'United States' %}selected{% endif %}>🇺🇸 États-Unis</option>
+                                    <option value="United Kingdom" {% if competitor_data.get('country') == 'United Kingdom' %}selected{% endif %}>🇬🇧 Royaume-Uni</option>
+                                    <option value="Germany" {% if competitor_data.get('country') == 'Germany' %}selected{% endif %}>🇩🇪 Allemagne</option>
+                                    <option value="Spain" {% if competitor_data.get('country') == 'Spain' %}selected{% endif %}>🇪🇸 Espagne</option>
+                                    <option value="Italy" {% if competitor_data.get('country') == 'Italy' %}selected{% endif %}>🇮🇹 Italie</option>
+                                    <option value="Netherlands" {% if competitor_data.get('country') == 'Netherlands' %}selected{% endif %}>🇳🇱 Pays-Bas</option>
+                                    <option value="Canada" {% if competitor_data.get('country') == 'Canada' %}selected{% endif %}>🇨🇦 Canada</option>
+                                    <option value="Australia" {% if competitor_data.get('country') == 'Australia' %}selected{% endif %}>🇦🇺 Australie</option>
+                                    <option value="International" {% if competitor_data.get('country') == 'International' %}selected{% endif %}>🌍 International</option>
+                                </select>
                             </div>
                             
                             <!-- Actions minimalistes -->
@@ -628,6 +698,78 @@
                 alert('Erreur lors de la suppression');
             });
         }
+    }
+
+    // Function to update competitor country
+    function updateCompetitorCountry(selectElement, competitorId) {
+        const country = selectElement.value;
+        const originalBg = selectElement.style.backgroundColor;
+        
+        // Feedback visuel
+        selectElement.style.backgroundColor = '#fff3cd';
+        selectElement.disabled = true;
+        
+        fetch('/api/update-competitor-country', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                competitor_id: competitorId,
+                country: country
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                selectElement.style.backgroundColor = '#d1edff';
+                setTimeout(() => {
+                    selectElement.style.backgroundColor = originalBg;
+                }, 1000);
+                
+                // Optionnel: afficher une notification
+                showNotification(`✅ Pays mis à jour: ${country}`, 'success');
+            } else {
+                selectElement.style.backgroundColor = '#f8d7da';
+                setTimeout(() => {
+                    selectElement.style.backgroundColor = originalBg;
+                }, 1000);
+                
+                alert('❌ Erreur lors de la mise à jour du pays: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            selectElement.style.backgroundColor = '#f8d7da';
+            setTimeout(() => {
+                selectElement.style.backgroundColor = originalBg;
+            }, 1000);
+            
+            alert('❌ Erreur lors de la mise à jour du pays');
+        })
+        .finally(() => {
+            selectElement.disabled = false;
+        });
+    }
+
+    // Function to show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        notification.innerHTML = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     // Function to refresh competitor data (videos + stats)

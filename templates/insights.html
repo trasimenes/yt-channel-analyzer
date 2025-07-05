@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+
+{% block title %}Insights - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .insights-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .insights-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+    }
+    
+    .insights-hero .content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .country-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .country-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .country-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .country-flag {
+        width: 32px;
+        height: 24px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-right: 1rem;
+        vertical-align: middle;
+    }
+    
+    .performance-score {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+    
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem 2rem;
+    }
+    
+    .insight-card {
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .insight-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .duration-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+    .timing-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+    .category-icon { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .engagement-icon { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+    
+    .recommendation {
+        background: linear-gradient(135deg, #fef3c7, #fed7aa);
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+    }
+    
+    .stats-overview {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .stat-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 16px;
+        margin: 2rem 0;
+    }
+    
+    .error-message {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        border: 1px solid #f87171;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        color: #991b1b;
+    }
+    
+    /* 🆕 Styles pour les insights détaillés */
+    .detailed-insight {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .insight-detail {
+        margin-bottom: 1rem;
+    }
+    
+    .keyword-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .keyword-tag {
+        background: linear-gradient(135deg, #fef3c7, #fed7aa);
+        border: 1px solid #f59e0b;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+    
+    .duration-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .duration-group {
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        padding: 0.75rem;
+        text-align: center;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .group-name {
+        font-weight: 600;
+        color: #374151;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .engagement-rate {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #7c3aed;
+        display: block;
+    }
+    
+    .keywords-list {
+        margin-top: 0.5rem;
+    }
+    
+    .keyword-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .keyword-name {
+        font-weight: 600;
+        color: #059669;
+        font-size: 1rem;
+    }
+    
+    .keyword-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .keyword-stats .engagement {
+        color: #dc2626;
+        font-weight: 600;
+    }
+    
+    .keyword-stats .views {
+        color: #2563eb;
+    }
+    
+    .keyword-stats .count {
+        color: #6b7280;
+    }
+    
+    .text-purple {
+        color: #7c3aed !important;
+    }
+    
+    /* Responsive pour mobile */
+    @media (max-width: 768px) {
+        .keyword-stats {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .keyword-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="insights-hero">
+            <div class="content">
+                <h1><i class="bi bi-lightbulb me-2"></i>Insights & Guidelines</h1>
+                <p class="lead">Découvrez les strategies gagnantes par pays basées sur l'analyse de vos données</p>
+                {% if insights.generated_at %}
+                <small>Dernière analyse: {{ insights.generated_at[:19] }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Error handling -->
+        {% if insights.error %}
+        <div class="error-message">
+            <h5><i class="bi bi-exclamation-triangle me-2"></i>Erreur lors de l'analyse</h5>
+            <p>{{ insights.error }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Global Statistics -->
+        {% if insights.insights %}
+        <div class="stats-overview">
+            <h3><i class="bi bi-graph-up me-2"></i>Vue d'ensemble</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ insights.total_countries or 0 }}</div>
+                    <div class="stat-label">Pays analysés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ "{:,}".format(insights.total_videos_analyzed or 0) }}</div>
+                    <div class="stat-label">Vidéos analysées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ insights.insights|length }}</div>
+                    <div class="stat-label">Guidelines générées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% set total_competitors = [] %}
+                        {% for country_data in insights.insights.values() %}
+                            {% set _ = total_competitors.append(country_data.competitor_count) %}
+                        {% endfor %}
+                        {{ total_competitors|sum }}
+                    </div>
+                    <div class="stat-label">Concurrents</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Country Insights -->
+        {% for country, data in insights.insights.items() %}
+        <div class="country-card">
+            <div class="country-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="country-flag">🌍</span>
+                        <h4 class="d-inline">{{ country }}</h4>
+                        <span class="ms-3 text-muted">{{ data.competitor_count }} concurrents • {{ "{:,}".format(data.total_videos) }} vidéos</span>
+                    </div>
+                    <div>
+                        <span class="performance-score">
+                            Score: {{ data.performance_score }}/10
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+                <!-- Duration Insights -->
+                {% if data.duration and data.duration.optimal_range_minutes %}
+                <div class="insight-card">
+                    <div class="insight-icon duration-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h6>Durée Optimale</h6>
+                    <div class="metric-value">{{ data.duration.optimal_range_minutes[0] }}-{{ data.duration.optimal_range_minutes[1] }} min</div>
+                    <div class="metric-label">Plage recommandée</div>
+                    {% if data.duration.performance_diff != "N/A" %}
+                    <small class="text-success">{{ data.duration.performance_diff }} vs moyenne globale</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Timing Insights -->
+                {% if data.timing and data.timing.recommendation_hour != "Données insuffisantes" %}
+                <div class="insight-card">
+                    <div class="insight-icon timing-icon">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <h6>Timing Optimal</h6>
+                    <div class="metric-value">{{ data.timing.recommendation_hour }}</div>
+                    <div class="metric-label">Heure recommandée</div>
+                    {% if data.timing.recommendation_day != "Données insuffisantes" %}
+                    <small class="text-info">Jour: {{ data.timing.recommendation_day }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Category Performance -->
+                {% if data.categories and data.categories.best_performing %}
+                <div class="insight-card">
+                    <div class="insight-icon category-icon">
+                        <i class="bi bi-tags"></i>
+                    </div>
+                    <h6>Catégorie Gagnante</h6>
+                    {% set best_category = data.categories.best_performing[0] %}
+                    <div class="metric-value">{{ (best_category[0] or 'Non classé')|upper }}</div>
+                    <div class="metric-label">{{ best_category[1].success_rate }}% de succès</div>
+                    <small class="text-warning">Ratio de performance: {{ best_category[1].performance_ratio }}</small>
+                </div>
+                {% endif %}
+
+                <!-- Engagement -->
+                {% if data.engagement and data.engagement.status != "insufficient_data" %}
+                <div class="insight-card">
+                    <div class="insight-icon engagement-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <h6>Engagement Moyen</h6>
+                    <div class="metric-value">{{ data.engagement.avg_like_rate }}%</div>
+                    <div class="metric-label">Taux de likes</div>
+                    <small class="text-danger">Commentaires: {{ data.engagement.avg_comment_rate }}%</small>
+                </div>
+                {% endif %}
+                
+                <!-- 🆕 Hooks d'engagement -->
+                {% if data.hooks and data.hooks.status != "insufficient_data" %}
+                <div class="insight-card">
+                    <div class="insight-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white;">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                    <h6>Ce qui accroche</h6>
+                    {% if data.hooks.title_patterns %}
+                    <div class="metric-value">{{ data.hooks.title_patterns|length }}</div>
+                    <div class="metric-label">Patterns identifiés</div>
+                    <small class="text-warning">{{ data.hooks.title_patterns[0] if data.hooks.title_patterns else '' }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- 🆕 Temps de décrochage -->
+                {% if data.dropoff and data.dropoff.status != "insufficient_data" %}
+                <div class="insight-card">
+                    <div class="insight-icon" style="background: linear-gradient(135deg, #a855f7, #9333ea); color: white;">
+                        <i class="bi bi-graph-down"></i>
+                    </div>
+                    <h6>Durée optimale</h6>
+                    <div class="metric-value">{{ data.dropoff.optimal_length|title }}</div>
+                    <div class="metric-label">Vidéos performantes</div>
+                    {% if data.dropoff.dropoff_recommendation %}
+                    <small class="text-info">{{ data.dropoff.dropoff_recommendation }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- 🆕 Mots-clés performants -->
+                {% if data.keywords and data.keywords.status != "insufficient_data" %}
+                <div class="insight-card">
+                    <div class="insight-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                        <i class="bi bi-tag"></i>
+                    </div>
+                    <h6>Mots-clés gagnants</h6>
+                    {% if data.keywords.top_keywords %}
+                    {% set first_keyword = data.keywords.top_keywords.items()|list|first %}
+                    <div class="metric-value">{{ first_keyword[0] }}</div>
+                    <div class="metric-label">{{ first_keyword[1].avg_engagement }}% d'engagement</div>
+                    <small class="text-success">{{ first_keyword[1].videos_count }} vidéos</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recommendations -->
+            {% if data.recommendations %}
+            <div style="padding: 0 2rem 1rem;">
+                <h6><i class="bi bi-lightbulb me-2"></i>Recommandations</h6>
+                {% for recommendation in data.recommendations %}
+                <div class="recommendation">
+                    {{ recommendation }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- 🆕 Insights détaillés -->
+            <div style="padding: 0 2rem 2rem;">
+                <h6><i class="bi bi-graph-up me-2"></i>Insights détaillés</h6>
+                
+                <!-- Hooks d'engagement détaillés -->
+                {% if data.hooks and data.hooks.status != "insufficient_data" %}
+                <div class="detailed-insight">
+                    <h6 class="text-danger"><i class="bi bi-fire me-2"></i>🔥 Ce qui crée l'engagement</h6>
+                    
+                    {% if data.hooks.title_patterns %}
+                    <div class="insight-detail">
+                        <strong>Patterns de titres performants :</strong>
+                        <ul>
+                            {% for pattern in data.hooks.title_patterns %}
+                            <li>{{ pattern }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if data.hooks.engagement_keywords %}
+                    <div class="insight-detail">
+                        <strong>Mots-clés qui accrochent :</strong>
+                        <div class="keyword-grid">
+                            {% for keyword, stats in data.hooks.engagement_keywords.items() %}
+                            <span class="keyword-tag">
+                                <strong>{{ keyword }}</strong>
+                                <small>({{ stats.ratio }}x plus présent)</small>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Temps de décrochage détaillé -->
+                {% if data.dropoff and data.dropoff.status != "insufficient_data" %}
+                <div class="detailed-insight">
+                    <h6 class="text-purple"><i class="bi bi-graph-down me-2"></i>⏱️ Analyse du décrochage</h6>
+                    
+                    {% if data.dropoff.duration_groups %}
+                    <div class="insight-detail">
+                        <strong>Engagement par durée :</strong>
+                        <div class="duration-stats">
+                            {% for group_name, stats in data.dropoff.duration_groups.items() %}
+                            <div class="duration-group">
+                                <span class="group-name">{{ group_name|title }}</span>
+                                <span class="engagement-rate">{{ stats.avg_engagement }}%</span>
+                                <small>({{ stats.video_count }} vidéos)</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="insight-detail">
+                        <strong>Dans le top 20% :</strong>
+                        <span class="text-success">{{ data.dropoff.top_short_count }} vidéos courtes</span> vs
+                        <span class="text-warning">{{ data.dropoff.top_long_count }} vidéos longues</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Mots-clés performants détaillés -->
+                {% if data.keywords and data.keywords.status != "insufficient_data" %}
+                <div class="detailed-insight">
+                    <h6 class="text-success"><i class="bi bi-tag me-2"></i>🎯 Mots-clés gagnants</h6>
+                    
+                    {% if data.keywords.top_keywords %}
+                    <div class="insight-detail">
+                        <strong>Top mots-clés par engagement :</strong>
+                        <div class="keywords-list">
+                            {% for keyword, stats in data.keywords.top_keywords.items() %}
+                            <div class="keyword-item">
+                                <span class="keyword-name">{{ keyword }}</span>
+                                <span class="keyword-stats">
+                                    <span class="engagement">{{ stats.avg_engagement }}% engagement</span>
+                                    <span class="views">{{ "{:,}".format(stats.avg_views) }} vues moy</span>
+                                    <span class="count">{{ stats.videos_count }} vidéos</span>
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="bi bi-database-x" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+            <h5>Données insuffisantes</h5>
+            <p>Au moins 20 vidéos par pays sont nécessaires pour générer des insights fiables.</p>
+            <p class="text-muted">Ajoutez plus de concurrents ou attendez que plus de données soient collectées.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation d'entrée pour les cartes
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.country-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %} 

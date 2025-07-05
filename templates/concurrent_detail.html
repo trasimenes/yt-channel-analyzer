@@ -31,6 +31,30 @@
     .help-badge { background: #45b7d1; color: white; }
     .paid-badge { background: #f39c12; color: white; }
     .organic-badge { background: #27ae60; color: white; }
+    
+    /* Styles spécifiques aux playlists */
+    .playlist-section {
+        border-radius: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .playlist-card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .playlist-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    .section-separator {
+        height: 4px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 2px;
+        margin: 3rem 0;
+    }
 </style>
 {% endblock %}
 
@@ -77,7 +101,7 @@
         <div class="col-md-3">
             <div class="card metric-card bg-success text-white">
                 <div class="card-body text-center">
-                    <h3>{{ competitor.total_views or "N/A" }}</h3>
+                    <h3>{{ "{:,}".format(competitor.total_views) if competitor.total_views else "N/A" }}</h3>
                     <p class="mb-0">Vues totales</p>
                 </div>
             </div>
@@ -99,6 +123,123 @@
             </div>
         </div>
     </div>
+
+    <!-- ======= MODULE PLAYLISTS (SECTION DÉDIÉE) ======= -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card playlist-section">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">
+                            <i class="bi bi-collection-play me-2"></i>
+                            Playlists de {{ competitor.name }}
+                            <span class="badge bg-light text-dark ms-2">{{ playlists|length if playlists else 0 }}</span>
+                        </h4>
+                        <div>
+                            <button class="btn btn-light btn-sm me-2" onclick="refreshPlaylists()">
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                Actualiser
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="aiClassifyPlaylists()">
+                                <i class="bi bi-robot me-1"></i>
+                                IA Auto-Classify
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if playlists %}
+                    <div class="row">
+                        {% for playlist in playlists %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card playlist-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0 me-3">
+                                            {% if playlist.thumbnail_url %}
+                                            <img src="{{ playlist.thumbnail_url }}" class="rounded" 
+                                                 alt="{{ playlist.name }}" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="bi bi-collection-play text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-1">{{ playlist.name }}</h6>
+                                            <p class="text-muted small mb-2">
+                                                {{ playlist.video_count }} vidéos
+                                            </p>
+                                            
+                                            <!-- Catégorie actuelle -->
+                                            <div class="mb-2">
+                                                {% if playlist.category %}
+                                                <span class="badge {% if playlist.category == 'hero' %}hero-badge{% elif playlist.category == 'hub' %}hub-badge{% else %}help-badge{% endif %}">
+                                                    {% if playlist.category == 'hero' %}🔥 HERO{% elif playlist.category == 'hub' %}🏠 HUB{% else %}🆘 HELP{% endif %}
+                                                </span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non catégorisé</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Boutons de catégorisation -->
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button class="btn btn-outline-danger" 
+                                                        onclick="tagPlaylist({{ playlist.id }}, 'hero')"
+                                                        title="Marquer comme HERO">
+                                                    🔥
+                                                </button>
+                                                <button class="btn btn-outline-info" 
+                                                        onclick="tagPlaylist({{ playlist.id }}, 'hub')"
+                                                        title="Marquer comme HUB">
+                                                    🏠
+                                                </button>
+                                                <button class="btn btn-outline-primary" 
+                                                        onclick="tagPlaylist({{ playlist.id }}, 'help')"
+                                                        title="Marquer comme HELP">
+                                                    🆘
+                                                </button>
+                                                <button class="btn btn-outline-secondary" 
+                                                        onclick="tagPlaylist({{ playlist.id }}, null)"
+                                                        title="Supprimer catégorie">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if playlist.description %}
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            {{ playlist.description[:100] }}{% if playlist.description|length > 100 %}...{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-collection-play text-white" style="font-size: 3rem; opacity: 0.7;"></i>
+                        <h5 class="text-white mt-3">Aucune playlist trouvée</h5>
+                        <p class="text-white-50">
+                            Cliquez sur "Actualiser" pour récupérer les playlists de cette chaîne.
+                        </p>
+                        <button class="btn btn-light" onclick="refreshPlaylists()">
+                            <i class="bi bi-arrow-repeat me-2"></i>
+                            Récupérer les playlists
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Séparateur visuel -->
+    <div class="section-separator"></div>
 
     <!-- Matrice de performance (style Airbnb) -->
     <div class="row mb-4">
@@ -192,94 +333,99 @@
         </div>
     </div>
 
-    <!-- Onglets avec détails -->
+    <!-- ======= ONGLETS VIDÉOS (HERO • HUB • HELP) ======= -->
     <div class="row">
         <div class="col-12">
-            <ul class="nav nav-tabs" id="analysisTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button">
-                        🔥 HERO ({{ stats.hero_count }})
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="hub-tab" data-bs-toggle="tab" data-bs-target="#hub" type="button">
-                        🏠 HUB ({{ stats.hub_count }})
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help" type="button">
-                        🆘 HELP ({{ stats.help_count }})
-                    </button>
-                </li>
-            </ul>
-            
-            <div class="tab-content" id="analysisTabContent">
-                {% for category in ['hero', 'hub', 'help'] %}
-                <div class="tab-pane fade {% if category == 'hero' %}show active{% endif %}" id="{{ category }}">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            {% if videos_by_category[category] %}
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Titre</th>
-                                            <th>Vues</th>
-                                            <th>Likes</th>
-                                            <th>Type</th>
-                                            <th>Score</th>
-                                            <th>Tag</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for video in videos_by_category[category][:10] %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        {{ video.title[:60] }}{% if video.title|length > 60 %}...{% endif %}
-                                                        <br>
-                                                        <small class="text-muted">Confiance: {{ video.confidence }}%</small>
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-play-circle me-2"></i>Analyse des Vidéos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="nav nav-tabs" id="analysisTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button">
+                                🔥 HERO ({{ stats.hero_count }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="hub-tab" data-bs-toggle="tab" data-bs-target="#hub" type="button">
+                                🏠 HUB ({{ stats.hub_count }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help" type="button">
+                                🆘 HELP ({{ stats.help_count }})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="analysisTabContent">
+                        {% for category in ['hero', 'hub', 'help'] %}
+                        <div class="tab-pane fade {% if category == 'hero' %}show active{% endif %}" id="{{ category }}">
+                            <div class="p-4">
+                                {% if videos_by_category[category] %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Titre</th>
+                                                <th>Vues</th>
+                                                <th>Likes</th>
+                                                <th>Type</th>
+                                                <th>Score</th>
+                                                <th>Tag</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for video in videos_by_category[category][:20] %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            {{ video.title[:60] }}{% if video.title|length > 60 %}...{% endif %}
+                                                            <br>
+                                                            <small class="text-muted">Confiance: {{ video.confidence }}%</small>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>{{ video.views }}</td>
-                                            <td>{{ video.likes }}</td>
-                                            <td>
-                                                <span class="badge {{ 'paid-badge' if video.distribution_type == 'paid' else 'organic-badge' }}">
-                                                    {{ video.distribution_type|title }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-secondary">{{ video.performance_score }}/10</span>
-                                            </td>
-                                            <td>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                                        <i class="bi bi-tag"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'help')">🆘 HELP</a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hero')">🔥 HERO</a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hub')">🏠 HUB</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                                </td>
+                                                <td>{{ video.views }}</td>
+                                                <td>{{ video.likes }}</td>
+                                                <td>
+                                                    <span class="badge {{ 'paid-badge' if video.distribution_type == 'paid' else 'organic-badge' }}">
+                                                        {{ video.distribution_type|title }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ video.performance_score }}/10</span>
+                                                </td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                            <i class="bi bi-tag"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'help')">🆘 HELP</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hero')">🔥 HERO</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hub')">🏠 HUB</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                    <h5 class="text-muted mt-3">Aucune vidéo {{ category.upper() }}</h5>
+                                </div>
+                                {% endif %}
                             </div>
-                            {% else %}
-                            <div class="text-center py-5">
-                                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                                <h5 class="text-muted mt-3">Aucune vidéo {{ category.upper() }}</h5>
-                            </div>
-                            {% endif %}
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
     </div>
@@ -475,6 +621,119 @@ function showAlert(message, type) {
 function confirmDeleteFromDetail(competitorId, competitorName) {
     if (confirm(`Êtes-vous sûr de vouloir supprimer le concurrent "${competitorName}" ?\n\nCette action est irréversible et supprimera toutes les données associées.`)) {
         deleteCompetitorFromDetail(competitorId, competitorName);
+    }
+}
+
+// Fonctions pour les playlists
+async function refreshPlaylists() {
+    const competitorId = window.location.pathname.split('/').pop();
+    
+    try {
+        const button = document.querySelector('button[onclick="refreshPlaylists()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i> Actualisation...';
+        
+        const response = await fetch(`/api/competitor/${competitorId}/playlists/refresh`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert(`${result.count} playlists récupérées avec succès!`, 'success');
+            // Recharger la page pour voir les nouvelles playlists
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('Erreur lors de la récupération des playlists: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de la récupération des playlists', 'danger');
+    } finally {
+        const button = document.querySelector('button[onclick="refreshPlaylists()"]');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
+
+async function tagPlaylist(playlistId, category) {
+    const competitorId = window.location.pathname.split('/').pop();
+    
+    try {
+        const response = await fetch('/api/tag-playlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                playlist_id: playlistId,
+                category: category,
+                competitor_id: competitorId
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showAlert(result.message, 'success');
+            // Recharger la page pour voir les changements
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('Erreur lors du tagging: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors du tagging de la playlist', 'danger');
+    }
+}
+
+async function aiClassifyPlaylists() {
+    const competitorId = window.location.pathname.split('/').pop();
+    
+    try {
+        const button = document.querySelector('button[onclick="aiClassifyPlaylists()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bi bi-robot spinner-border spinner-border-sm me-1"></i> Classification IA...';
+        
+        const response = await fetch(`/api/competitor/${competitorId}/playlists/ai-classify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            if (result.classified_count > 0) {
+                showAlert(`🤖 IA: ${result.classified_count} playlists classifiées automatiquement!`, 'success');
+                // Recharger la page pour voir les changements
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('✅ Toutes les playlists sont déjà catégorisées!', 'info');
+            }
+        } else {
+            showAlert('Erreur lors de la classification IA: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de la classification IA', 'danger');
+    } finally {
+        const button = document.querySelector('button[onclick="aiClassifyPlaylists()"]');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
     }
 }
 

@@ -1,0 +1,17 @@
+{
+  "scraper": {
+    "headless": true,
+    "timeout": 10,
+    "data_points_per_chart": 30,
+    "pause_between_points": 0.1,
+    "pause_between_competitors": 2
+  },
+  "database": {
+    "path": "instance/database.db",
+    "backup_on_scrape": true
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/scraper.log"
+  }
+}

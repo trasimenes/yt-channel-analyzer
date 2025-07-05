@@ -74,6 +74,54 @@ def create_database():
         )
     ''')
     
+    # Créer la table pour l'historique des statistiques
+    cursor.execute('''
+        CREATE TABLE competitor_stats_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            concurrent_id INTEGER NOT NULL,
+            recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            subscriber_count INTEGER,
+            view_count BIGINT,
+            video_count INTEGER,
+            subscriber_change INTEGER DEFAULT 0,
+            view_change BIGINT DEFAULT 0,
+            video_change INTEGER DEFAULT 0,
+            notes TEXT,
+            FOREIGN KEY (concurrent_id) REFERENCES concurrent (id) ON DELETE CASCADE
+        )
+    ''')
+    
+    # Créer la table Playlist
+    cursor.execute('''
+        CREATE TABLE playlist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            concurrent_id INTEGER NOT NULL,
+            playlist_id VARCHAR(100) UNIQUE NOT NULL,
+            name VARCHAR(200) NOT NULL,
+            description TEXT,
+            thumbnail_url VARCHAR(200),
+            category VARCHAR(50),
+            video_count INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (concurrent_id) REFERENCES concurrent (id) ON DELETE CASCADE
+        )
+    ''')
+    
+    # Créer la table de liaison playlists_videos
+    cursor.execute('''
+        CREATE TABLE playlist_video (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            playlist_id INTEGER NOT NULL,
+            video_id INTEGER NOT NULL,
+            position INTEGER,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (playlist_id) REFERENCES playlist (id) ON DELETE CASCADE,
+            FOREIGN KEY (video_id) REFERENCES video (id) ON DELETE CASCADE,
+            UNIQUE(playlist_id, video_id)
+        )
+    ''')
+    
     # Créer des index pour améliorer les performances
     cursor.execute('CREATE INDEX idx_concurrent_channel_id ON concurrent(channel_id)')
     cursor.execute('CREATE INDEX idx_concurrent_channel_url ON concurrent(channel_url)')
@@ -81,6 +129,12 @@ def create_database():
     cursor.execute('CREATE INDEX idx_video_video_id ON video(video_id)')
     cursor.execute('CREATE INDEX idx_video_published_at ON video(published_at)')
     cursor.execute('CREATE INDEX idx_video_view_count ON video(view_count)')
+    cursor.execute('CREATE INDEX idx_stats_concurrent_id ON competitor_stats_history(concurrent_id)')
+    cursor.execute('CREATE INDEX idx_stats_recorded_at ON competitor_stats_history(recorded_at)')
+    cursor.execute('CREATE INDEX idx_playlist_concurrent_id ON playlist(concurrent_id)')
+    cursor.execute('CREATE INDEX idx_playlist_playlist_id ON playlist(playlist_id)')
+    cursor.execute('CREATE INDEX idx_playlist_video_playlist_id ON playlist_video(playlist_id)')
+    cursor.execute('CREATE INDEX idx_playlist_video_video_id ON playlist_video(video_id)')
     
     # Sauvegarder les changements
     conn.commit()
@@ -88,6 +142,9 @@ def create_database():
     print("✅ Tables créées avec succès:")
     print("   - concurrent (concurrents/chaînes YouTube)")
     print("   - video (vidéos des chaînes)")
+    print("   - competitor_stats_history (historique des statistiques)")
+    print("   - playlist (playlists des chaînes)")
+    print("   - playlist_video (liaison playlists-vidéos)")
     print("   - Index créés pour optimiser les performances")
     
     # Vérifier que les tables ont été créées

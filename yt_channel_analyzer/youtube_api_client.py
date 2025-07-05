@@ -414,6 +414,74 @@ class YouTubeAPI:
         
         return channels
     
+    def get_channel_playlists(self, channel_id: str) -> List[Dict]:
+        """Récupère toutes les playlists d'une chaîne"""
+        try:
+            params = {
+                'part': 'id,snippet,contentDetails',
+                'channelId': channel_id,
+                'maxResults': 50
+            }
+            
+            response = self._make_request('playlists', params)
+            
+            playlists = []
+            for item in response.get('items', []):
+                playlist = {
+                    'playlist_id': item.get('id', ''),
+                    'name': item.get('snippet', {}).get('title', 'Playlist sans nom'),
+                    'description': item.get('snippet', {}).get('description', ''),
+                    'thumbnail_url': item.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', ''),
+                    'video_count': item.get('contentDetails', {}).get('itemCount', 0),
+                    'published_at': item.get('snippet', {}).get('publishedAt', ''),
+                    'privacy_status': item.get('snippet', {}).get('privacyStatus', 'public')
+                }
+                playlists.append(playlist)
+            
+            print(f"[API] 📋 {len(playlists)} playlists trouvées pour la chaîne {channel_id}")
+            return playlists
+            
+        except Exception as e:
+            print(f"[API] ❌ Erreur récupération playlists: {e}")
+            return []
+    
+    def get_playlist_videos(self, playlist_id: str, max_results: int = 50) -> List[str]:
+        """Récupère les IDs des vidéos d'une playlist"""
+        try:
+            video_ids = []
+            next_page_token = None
+            
+            while len(video_ids) < max_results:
+                params = {
+                    'part': 'snippet',
+                    'playlistId': playlist_id,
+                    'maxResults': min(50, max_results - len(video_ids))
+                }
+                
+                if next_page_token:
+                    params['pageToken'] = next_page_token
+                
+                response = self._make_request('playlistItems', params)
+                
+                if not response.get('items'):
+                    break
+                
+                for item in response['items']:
+                    video_id = item.get('snippet', {}).get('resourceId', {}).get('videoId')
+                    if video_id:
+                        video_ids.append(video_id)
+                
+                next_page_token = response.get('nextPageToken')
+                if not next_page_token:
+                    break
+            
+            print(f"[API] 🎬 {len(video_ids)} vidéos trouvées dans la playlist {playlist_id}")
+            return video_ids
+            
+        except Exception as e:
+            print(f"[API] ❌ Erreur récupération vidéos playlist: {e}")
+            return []
+    
     def get_quota_usage(self) -> Dict:
         """Retourne l'usage actuel du quota"""
         # Recharger les données les plus récentes

@@ -1,0 +1,630 @@
+{% extends "base.html" %}
+
+{% block title %}Top Videos - Global Ranking{% endblock %}
+
+{% block extra_css %}
+<style>
+    .top-videos-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--dark);
+        margin-top: 0.5rem;
+    }
+    
+    .filters-section {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark);
+        min-width: 120px;
+    }
+    
+    .filter-select, .filter-input {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .videos-table {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .videos-table table {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .videos-table th {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem 0.75rem;
+        text-align: center;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .videos-table th:hover {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    }
+    
+    .videos-table th.sortable:after {
+        content: ' ↕';
+        opacity: 0.5;
+        font-size: 0.8rem;
+    }
+    
+    .videos-table th.sort-asc:after {
+        content: ' ↑';
+        opacity: 1;
+        color: #10b981;
+    }
+    
+    .videos-table th.sort-desc:after {
+        content: ' ↓';
+        opacity: 1;
+        color: #f59e0b;
+    }
+    
+    .videos-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .videos-table tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .video-thumbnail {
+        width: 60px;
+        height: 35px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .video-title {
+        max-width: 200px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .video-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .video-title a:hover {
+        color: var(--primary);
+    }
+    
+    .competitor-name {
+        font-weight: 600;
+        color: var(--info);
+    }
+    
+    .competitor-name a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .competitor-name a:hover {
+        color: var(--primary);
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .category-hero {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .category-hub {
+        background: rgba(6, 182, 212, 0.1);
+        color: #0891b2;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    
+    .category-help {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    
+    .organic-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .organic-yes {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .organic-no {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .score-bar {
+        width: 60px;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .score-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+        transition: width 0.3s ease;
+    }
+    
+    .number-format {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+    
+    .btn-filter {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        color: white;
+    }
+    
+    .btn-reset {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(107, 114, 128, 0.3);
+        color: white;
+    }
+    
+    .table-responsive {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(5px);
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .text-small {
+        font-size: 0.85rem;
+    }
+    
+    .text-muted {
+        color: #6b7280 !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-label {
+            min-width: auto;
+        }
+        
+        .videos-table {
+            font-size: 0.85rem;
+        }
+        
+        .video-title {
+            max-width: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid main-content">
+    <!-- Header -->
+    <div class="top-videos-header">
+        <h1 class="mb-3">
+            <i class="bi bi-trophy me-3"></i>
+            Top Videos - Global Ranking
+        </h1>
+        <p class="mb-0">Ranking of all videos from all competitors with objective and subjective criteria</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_videos|default(0) }}</div>
+            <div class="stat-label">Total Videos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_competitors|default(0) }}</div>
+            <div class="stat-label">Competitors</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_organic_videos|default(0) }}</div>
+            <div class="stat-label">Organic Videos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_paid_videos|default(0) }}</div>
+            <div class="stat-label">Paid Videos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.shown_videos|default(0) }}</div>
+            <div class="stat-label">Shown Videos</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-section">
+        <h5 class="mb-3">
+            <i class="bi bi-funnel me-2"></i>
+            Filters & Sorting
+        </h5>
+        
+        <form method="GET" action="/top-videos" id="filter-form">
+            <div class="filter-group">
+                <label class="filter-label">Sort by:</label>
+                <select name="sort_by" class="filter-select">
+                    <option value="view_count" {% if current_sort == 'view_count' %}selected{% endif %}>Views</option>
+                    <option value="like_count" {% if current_sort == 'like_count' %}selected{% endif %}>Likes</option>
+                    <option value="comment_count" {% if current_sort == 'comment_count' %}selected{% endif %}>Comments</option>
+                    <option value="published_at" {% if current_sort == 'published_at' %}selected{% endif %}>Publication Date</option>
+                    <option value="published_hour" {% if current_sort == 'published_hour' %}selected{% endif %}>Publication Hour</option>
+                    <option value="duration_seconds" {% if current_sort == 'duration_seconds' %}selected{% endif %}>Duration</option>
+                    <option value="beauty_score" {% if current_sort == 'beauty_score' %}selected{% endif %}>Beauty Score</option>
+                    <option value="emotion_score" {% if current_sort == 'emotion_score' %}selected{% endif %}>Emotion Score</option>
+                    <option value="info_quality_score" {% if current_sort == 'info_quality_score' %}selected{% endif %}>Info Quality Score</option>
+                    <option value="competitor_name" {% if current_sort == 'competitor_name' %}selected{% endif %}>Competitor</option>
+                    <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title</option>
+                </select>
+                
+                <select name="order" class="filter-select">
+                    <option value="desc" {% if current_order == 'desc' %}selected{% endif %}>Descending</option>
+                    <option value="asc" {% if current_order == 'asc' %}selected{% endif %}>Ascending</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Category:</label>
+                <select name="category" class="filter-select">
+                    <option value="all" {% if current_category == 'all' %}selected{% endif %}>All Categories</option>
+                    <option value="hero" {% if current_category == 'hero' %}selected{% endif %}>🔥 HERO</option>
+                    <option value="hub" {% if current_category == 'hub' %}selected{% endif %}>🏠 HUB</option>
+                    <option value="help" {% if current_category == 'help' %}selected{% endif %}>🆘 HELP</option>
+                </select>
+                
+                <label class="filter-label">Type:</label>
+                <select name="organic" class="filter-select">
+                    <option value="all" {% if current_organic == 'all' %}selected{% endif %}>All Types</option>
+                    <option value="organic" {% if current_organic == 'organic' %}selected{% endif %}>Organic Only</option>
+                    <option value="paid" {% if current_organic == 'paid' %}selected{% endif %}>Paid Only</option>
+                </select>
+                
+                <label class="filter-label">Limit:</label>
+                <select name="limit" class="filter-select">
+                    <option value="25" {% if current_limit == 25 %}selected{% endif %}>25 videos</option>
+                    <option value="50" {% if current_limit == 50 %}selected{% endif %}>50 videos</option>
+                    <option value="100" {% if current_limit == 100 %}selected{% endif %}>100 videos</option>
+                    <option value="200" {% if current_limit == 200 %}selected{% endif %}>200 videos</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn-filter">
+                    <i class="bi bi-funnel-fill me-2"></i>
+                    Apply Filters
+                </button>
+                <a href="/top-videos" class="btn btn-reset">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Videos Table -->
+    <div class="videos-table">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Thumbnail</th>
+                        <th>Title</th>
+                        <th>Competitor</th>
+                        <th>Category</th>
+                        <th>Organic</th>
+                        <th>Views</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Engagement</th>
+                        <th>Duration</th>
+                        <th>Published</th>
+                        <th>Hour</th>
+                        <th>Beauty</th>
+                        <th>Emotion</th>
+                        <th>Info Quality</th>
+                        <th>Avg Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for video in videos %}
+                    <tr>
+                        <td class="number-format">{{ loop.index }}</td>
+                        <td>
+                            {% if video.thumbnail_url %}
+                                <img src="{{ video.thumbnail_url }}" alt="Thumbnail" class="video-thumbnail">
+                            {% else %}
+                                <div class="video-thumbnail bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-play-circle text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="video-title">
+                            <a href="{{ video.url }}" target="_blank" title="{{ video.title }}">
+                                {{ video.title|truncate(40) }}
+                            </a>
+                        </td>
+                        <td class="competitor-name">
+                            <a href="/competitor/{{ video.competitor_id }}">
+                                {{ video.competitor_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="category-badge category-{{ video.category }}">
+                                {% if video.category == 'hero' %}🔥 HERO
+                                {% elif video.category == 'help' %}🆘 HELP
+                                {% else %}🏠 HUB
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="organic-badge {% if video.organic_status == 'organic' %}organic-yes{% else %}organic-no{% endif %}">
+                                {% if video.organic_status == 'organic' %}✅ YES{% else %}💰 NO{% endif %}
+                            </span>
+                        </td>
+                        <td class="number-format">{{ "{:,}".format(video.view_count) }}</td>
+                        <td class="number-format">{{ "{:,}".format(video.like_count) }}</td>
+                        <td class="number-format">{{ "{:,}".format(video.comment_count) }}</td>
+                        <td class="number-format">{{ video.engagement_ratio }}%</td>
+                        <td class="number-format">{{ video.duration_text }}</td>
+                        <td class="text-small">
+                            {% if video.published_at %}
+                                {{ video.published_at_formatted }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="text-small">
+                            <strong class="text-primary">{{ video.published_hour_formatted }}</strong>
+                        </td>
+                        <td>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ (video.beauty_score * 10)|int }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ video.beauty_score }}/10</small>
+                        </td>
+                        <td>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ (video.emotion_score * 10)|int }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ video.emotion_score }}/10</small>
+                        </td>
+                        <td>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ (video.info_quality_score * 10)|int }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ video.info_quality_score }}/10</small>
+                        </td>
+                        <td>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ (video.avg_subjective_score * 10)|int }}%"></div>
+                            </div>
+                            <strong class="text-primary">{{ video.avg_subjective_score }}/10</strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if not videos %}
+    <div class="text-center py-5">
+        <i class="bi bi-collection-play" style="font-size: 4rem; color: var(--primary);"></i>
+        <h3 class="mt-3 mb-2">No videos found</h3>
+        <p class="text-muted">Try adjusting your filters or add some competitors first.</p>
+        <a href="/concurrents" class="btn btn-primary">
+            <i class="bi bi-people me-2"></i>
+            View Competitors
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="text-center">
+        <div class="loading-spinner"></div>
+        <p class="mt-3 text-muted">Loading videos...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay when form is submitted
+    const filterForm = document.getElementById('filter-form');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    
+    filterForm.addEventListener('submit', function() {
+        loadingOverlay.style.display = 'flex';
+    });
+    
+    // Auto-submit form when filters change
+    const filterSelects = document.querySelectorAll('.filter-select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    });
+    
+    // Format numbers with thousands separators
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Update URL without page reload for better UX
+    function updateURLParams(params) {
+        const url = new URL(window.location);
+        Object.keys(params).forEach(key => {
+            if (params[key]) {
+                url.searchParams.set(key, params[key]);
+            } else {
+                url.searchParams.delete(key);
+            }
+        });
+        window.history.replaceState({}, '', url);
+    }
+    
+    console.log('🎯 Top Videos page loaded');
+    console.log('📊 Showing {{ stats.shown_videos }} videos out of {{ stats.total_videos }}');
+});
+</script>
+{% endblock %} 

@@ -381,5 +381,40 @@ class BackgroundTaskManager:
             if task_id in self.stop_flags:
                 del self.stop_flags[task_id]
 
+    def check_orphaned_tasks(self):
+        """Vérifie les tâches dont les concurrents n'existent plus en base de données"""
+        try:
+            from .database import get_all_competitors_urls
+            
+            # Récupérer toutes les URLs des concurrents en base
+            db_urls = set(get_all_competitors_urls())
+            
+            orphaned_tasks = []
+            for task_id, task in self.tasks.items():
+                # Vérifier si l'URL de la tâche existe en base
+                if task.channel_url not in db_urls:
+                    orphaned_tasks.append(task)
+            
+            return orphaned_tasks
+            
+        except Exception as e:
+            print(f"[TASKS] Erreur lors de la vérification des tâches orphelines: {e}")
+            return []
+    
+    def get_all_tasks_with_warnings(self):
+        """Récupère toutes les tâches avec des avertissements pour les concurrents manquants"""
+        tasks = self.get_all_tasks()
+        orphaned_tasks = self.check_orphaned_tasks()
+        orphaned_ids = {task.id for task in orphaned_tasks}
+        
+        # Ajouter un flag warning aux tâches orphelines
+        for task in tasks:
+            if task.id in orphaned_ids:
+                task.warning = "⚠️ Concurrent non présent en base de données"
+            else:
+                task.warning = None
+        
+        return tasks
+
 # Instance globale du gestionnaire
 task_manager = BackgroundTaskManager() 

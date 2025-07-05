@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse par Pays - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .countries-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .country-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .country-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    .country-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .country-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+    
+    .country-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-item {
+        background: #f8fafc;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        text-align: center;
+        flex: 1;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #3b82f6;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    
+    .competitors-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .competitor-item {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .competitor-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .competitor-metrics {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    .global-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .global-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .global-stat-item {
+        text-align: center;
+    }
+    
+    .global-stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        display: block;
+    }
+    
+    .global-stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-top: 0.25rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .performance-bar {
+        background: #e2e8f0;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .performance-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="countries-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-globe me-3"></i>
+                    Analyse par Pays
+                </h1>
+                <p class="lead mb-0">
+                    Découvrez les performances de vos concurrents par zones géographiques
+                </p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <i class="bi bi-flag display-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if error %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Erreur: {{ error }}
+        </div>
+    {% endif %}
+    
+    <!-- Global Statistics -->
+    {% if global_stats %}
+    <div class="global-stats">
+        <h2 class="text-center mb-4">
+            <i class="bi bi-bar-chart me-2"></i>
+            Vue d'ensemble
+        </h2>
+        <div class="global-stats-grid">
+            <div class="global-stat-item">
+                <span class="global-stat-value">{{ global_stats.total_countries }}</span>
+                <div class="global-stat-label">Pays analysés</div>
+            </div>
+            <div class="global-stat-item">
+                <span class="global-stat-value">{{ global_stats.total_competitors }}</span>
+                <div class="global-stat-label">Concurrents</div>
+            </div>
+            <div class="global-stat-item">
+                <span class="global-stat-value">{{ "{:,}".format(global_stats.total_videos) }}</span>
+                <div class="global-stat-label">Vidéos totales</div>
+            </div>
+            <div class="global-stat-item">
+                <span class="global-stat-value">{{ "{:,}".format(global_stats.total_views) }}</span>
+                <div class="global-stat-label">Vues totales</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Countries Analysis -->
+    {% if countries %}
+        {% for country in countries %}
+        <div class="country-card">
+            <div class="country-header">
+                <h3 class="country-name">
+                    {% if country.country == 'France' %}🇫🇷 France
+                    {% elif country.country == 'United States' %}🇺🇸 États-Unis
+                    {% elif country.country == 'United Kingdom' %}🇬🇧 Royaume-Uni
+                    {% elif country.country == 'Germany' %}🇩🇪 Allemagne
+                    {% elif country.country == 'Spain' %}🇪🇸 Espagne
+                    {% elif country.country == 'Italy' %}🇮🇹 Italie
+                    {% elif country.country == 'Netherlands' %}🇳🇱 Pays-Bas
+                    {% elif country.country == 'Canada' %}🇨🇦 Canada
+                    {% elif country.country == 'Australia' %}🇦🇺 Australie
+                    {% elif country.country == 'International' %}🌍 International
+                    {% else %}🏳️ {{ country.country }}
+                    {% endif %}
+                </h3>
+                <span class="badge bg-primary">{{ country.competitor_count }} concurrent{{ 's' if country.competitor_count > 1 else '' }}</span>
+            </div>
+            
+            <!-- Country Statistics -->
+            <div class="country-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ "{:,}".format(country.total_videos) }}</span>
+                    <div class="stat-label">Vidéos</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ "{:,}".format(country.total_views) }}</span>
+                    <div class="stat-label">Vues totales</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ "{:,}".format(country.avg_views_per_video|int) }}</span>
+                    <div class="stat-label">Vues/vidéo</div>
+                </div>
+            </div>
+            
+            <!-- Performance Bar -->
+            <div class="performance-bar">
+                <div class="performance-fill" style="width: {{ (country.total_views / global_stats.total_views * 100) if global_stats.total_views > 0 else 0 }}%"></div>
+            </div>
+            
+            <!-- Competitors List -->
+            <div class="competitors-list mt-3">
+                {% for competitor in country.competitors %}
+                <div class="competitor-item">
+                    <div class="competitor-name">{{ competitor.name }}</div>
+                    <div class="competitor-metrics">
+                        <span>{{ competitor.video_count }} vidéos</span>
+                        <span>{{ "{:,}".format(competitor.total_views) }} vues</span>
+                        <span>{{ "{:,}".format(competitor.avg_views|int) }} moy/vidéo</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-flag empty-icon"></i>
+            <h3>Aucune donnée par pays</h3>
+            <p>Attribuez des pays à vos concurrents pour voir les analyses par zone géographique.</p>
+            <a href="/concurrents" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour aux concurrents
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation des barres de performance
+    document.addEventListener('DOMContentLoaded', function() {
+        const performanceBars = document.querySelectorAll('.performance-fill');
+        
+        performanceBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        });
+    });
+</script>
+{% endblock %} 
