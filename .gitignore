@@ -58,3 +58,27 @@ ENV/
 
 # External Forks - contenu privé
 External Forks/
+
+# Données internes et sensibles - NE JAMAIS UPLOADER
+DO_NOT_UPLOAD_INTERNAL/
+**/DO_NOT_UPLOAD_INTERNAL/
+PRIVATE/
+INTERNAL/
+CONFIDENTIAL/
+SENSITIVE/
+
+# Backups et sauvegardes privées
+backups/
+backup_*.csv
+backup_*.json
+subscriber_data_backup_*.csv
+
+# CSVs avec données privées
+*_private.csv
+*_internal.csv
+*_confidential.csv
+
+# Hooks et scripts privés
+*blade*
+*hook*
+*internal*
