@@ -125,20 +125,30 @@ class YouTubeAPI:
         return None
     
     def _get_channel_id_by_handle(self, handle: str) -> Optional[str]:
-        """Récupère l'ID de chaîne par handle (@nom)"""
+        """Récupère l'ID de chaîne par handle (@nom) en utilisant le endpoint search"""
         try:
+            # Le endpoint 'channels' ne supporte pas 'forHandle'.
+            # On doit utiliser le endpoint 'search' pour trouver la chaîne par son handle.
             params = {
                 'part': 'id',
-                'forHandle': handle
+                'q': handle,
+                'type': 'channel',
+                'maxResults': 1
             }
-            response = self._make_request('channels', params)
+            response = self._make_request('search', params)
             
             if response.get('items'):
-                return response['items'][0]['id']
-        except:
-            pass
+                # Vérifier si le handle correspond exactement
+                # L'API de recherche peut retourner des résultats partiels
+                item = response['items'][0]
+                # La recherche retourne un snippet avec le customUrl, qui est le handle
+                # Note: Le handle est dans 'customUrl' sans le '@'
+                # Nous devons récupérer les détails de la chaîne pour être sûr.
+                return item['id']['channelId']
+        except Exception as e:
+            print(f"[API] ❌ Erreur récupération ID par handle '{handle}': {e}")
         return None
-    
+
     def _get_channel_id_by_custom_name(self, custom_name: str) -> Optional[str]:
         """Récupère l'ID de chaîne par nom personnalisé"""
         try:
@@ -329,6 +339,9 @@ class YouTubeAPI:
                 if not channel_title or channel_title.strip() == '':
                     channel_title = 'Chaîne inconnue'
                 
+                # Détecter si c'est un Short (≤ 60 secondes)
+                is_short = duration <= 60 if duration > 0 else False
+                
                 video = {
                     'id': item.get('id', ''),
                     'title': title,
@@ -338,6 +351,8 @@ class YouTubeAPI:
                     'channel_title': channel_title,
                     'thumbnail': item.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', ''),
                     'duration': duration,
+                    'duration_seconds': duration,
+                    'is_short': is_short,
                     'view_count': int(item.get('statistics', {}).get('viewCount', 0)),
                     'like_count': int(item.get('statistics', {}).get('likeCount', 0)),
                     'comment_count': int(item.get('statistics', {}).get('commentCount', 0)),
@@ -375,7 +390,7 @@ class YouTubeAPI:
         return hours * 3600 + minutes * 60 + seconds
     
     def search_channels(self, query: str, max_results: int = 10) -> List[Dict]:
-        """Recherche des chaînes YouTube"""
+        """Recherche des chaînes YouTube avec miniatures"""
         params = {
             'part': 'snippet',
             'type': 'channel',
@@ -385,7 +400,10 @@ class YouTubeAPI:
         
         response = self._make_request('search', params)
         
-        channels = []
+        # Étape 1: Récupérer les IDs des chaînes depuis la recherche
+        channel_ids = []
+        channel_data = {}
+        
         for item in response.get('items', []):
             try:
                 # Récupération sécurisée de l'ID de chaîne
@@ -399,20 +417,254 @@ class YouTubeAPI:
                 if not title or title.strip() == '':
                     title = 'Nom inconnu'
                 
-                channel = {
-                    'id': channel_id,
+                channel_ids.append(channel_id)
+                channel_data[channel_id] = {
                     'title': title,
                     'description': item.get('snippet', {}).get('description', ''),
-                    'thumbnail': item.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', ''),
-                    'url': f"https://www.youtube.com/channel/{channel_id}"
+                    'search_thumbnail': item.get('snippet', {}).get('thumbnails', {}).get('high', {}).get('url', ''),
                 }
-                channels.append(channel)
                 
             except Exception as e:
                 print(f"[API] ❌ Erreur traitement chaîne: {e}, item: {item}")
                 continue
         
+        # Étape 2: Récupérer les détails des chaînes avec leurs vraies miniatures
+        if channel_ids:
+            try:
+                details_params = {
+                    'part': 'snippet,statistics',
+                    'id': ','.join(channel_ids)
+                }
+                
+                details_response = self._make_request('channels', details_params)
+                
+                # Mettre à jour les données avec les vraies miniatures
+                for item in details_response.get('items', []):
+                    channel_id = item.get('id', '')
+                    if channel_id in channel_data:
+                        # Récupérer la meilleure miniature disponible
+                        thumbnails = item.get('snippet', {}).get('thumbnails', {})
+                        thumbnail_url = ''
+                        
+                        # Ordre de préférence : high > medium > default
+                        if thumbnails.get('high', {}).get('url'):
+                            thumbnail_url = thumbnails['high']['url']
+                        elif thumbnails.get('medium', {}).get('url'):
+                            thumbnail_url = thumbnails['medium']['url']
+                        elif thumbnails.get('default', {}).get('url'):
+                            thumbnail_url = thumbnails['default']['url']
+                        
+                        channel_data[channel_id]['thumbnail'] = thumbnail_url
+                        
+                        # Ajouter le nombre d'abonnés si disponible
+                        subscriber_count = item.get('statistics', {}).get('subscriberCount', 0)
+                        if subscriber_count:
+                            channel_data[channel_id]['subscriber_count'] = int(subscriber_count)
+                        
+                        print(f"[API] 🖼️ Miniature récupérée pour {channel_data[channel_id]['title']}: {thumbnail_url[:50]}...")
+                
+            except Exception as e:
+                print(f"[API] ⚠️ Erreur récupération détails chaînes: {e}")
+        
+        # Étape 3: Formatter les résultats finaux
+        channels = []
+        for channel_id in channel_ids:
+            if channel_id in channel_data:
+                data = channel_data[channel_id]
+                channel = {
+                    'id': channel_id,
+                    'title': data['title'],
+                    'description': data['description'],
+                    'thumbnail': data.get('thumbnail', data.get('search_thumbnail', '')),
+                    'url': f"https://www.youtube.com/channel/{channel_id}",
+                    'subscriber_count': data.get('subscriber_count', 0)
+                }
+                channels.append(channel)
+        
         return channels
+    
+    def search_local_tourism_competitors(self, country_code: str, max_results: int = 20) -> Dict:
+        """
+        Recherche spécialisée pour les concurrents locaux dans le tourisme
+        
+        Args:
+            country_code: Code pays (DE, NL, BE, FR, etc.)
+            max_results: Nombre maximum de résultats par recherche
+            
+        Returns:
+            Dict avec les résultats organisés par pertinence
+        """
+        
+        # Définir les mots-clés par pays/région
+        tourism_keywords = {
+            'DE': [
+                'Familienurlaub Deutschland',
+                'Ferienpark Deutschland', 
+                'Camping mit Kindern',
+                'Wellness Deutschland',
+                'Kurzurlaub Familie',
+                'Freizeitpark Deutschland',
+                'Familienausflug Deutschland',
+                'Urlaub mit Kindern',
+                'Ferienanlage Deutschland'
+            ],
+            'NL': [
+                'Familiepark Nederland',
+                'Vakantieparken kinderen',
+                'Recreatiepark Nederland',
+                'Weekendje weg familie',
+                'Bungalowpark Nederland',
+                'Dagje uit kinderen',
+                'Vakantie Nederland',
+                'Familievakantie Nederland'
+            ],
+            'BE': [
+                'Familiepark België',
+                'Vakantieparken België',
+                'Weekendje weg België',
+                'Parcs de vacances Belgique',
+                'Séjour famille Belgique',
+                'Village vacances Belgique',
+                'Vakantie België',
+                'Familievakantie België'
+            ],
+            'FR': [
+                'Parcs de vacances France',
+                'Vacances en famille France',
+                'Village vacances France',
+                'Camping familial France',
+                'Séjour famille France',
+                'Résidence de vacances',
+                'Tourisme famille France'
+            ]
+        }
+        
+        # Mots-clés pour identifier le secteur touristique
+        tourism_indicators = [
+            'park', 'resort', 'hotel', 'camping', 'vacation', 'holiday', 'familie',
+            'urlaub', 'vakantie', 'vacances', 'séjour', 'wellness', 'spa', 'travel',
+            'reisen', 'touris', 'recreation', 'freizit', 'leisure', 'family'
+        ]
+        
+        results = {
+            'country': country_code,
+            'total_found': 0,
+            'high_relevance': [],  # Très pertinents pour le tourisme
+            'medium_relevance': [], # Moyennement pertinents
+            'low_relevance': [],   # Faible pertinence
+            'keywords_used': tourism_keywords.get(country_code, []),
+            'search_summary': {}
+        }
+        
+        keywords = tourism_keywords.get(country_code, [])
+        if not keywords:
+            print(f"[TOURISM-SEARCH] ⚠️ Aucun mot-clé défini pour {country_code}")
+            return results
+        
+        print(f"[TOURISM-SEARCH] 🔍 Recherche concurrents locaux pour {country_code}")
+        
+        all_channels = {}  # Déduplication par channel_id
+        
+        # Rechercher avec chaque mot-clé
+        for keyword in keywords:
+            print(f"[TOURISM-SEARCH] 📝 Recherche: '{keyword}'")
+            
+            try:
+                channels = self.search_channels(keyword, max_results=max_results)
+                results['search_summary'][keyword] = len(channels)
+                
+                for channel in channels:
+                    channel_id = channel['id']
+                    
+                    # Éviter les doublons
+                    if channel_id not in all_channels:
+                        # Calculer le score de pertinence
+                        relevance_score = self._calculate_tourism_relevance(
+                            channel, tourism_indicators
+                        )
+                        
+                        channel['relevance_score'] = relevance_score
+                        channel['found_with_keyword'] = keyword
+                        channel['country_code'] = country_code
+                        
+                        all_channels[channel_id] = channel
+                        
+                        print(f"[TOURISM-SEARCH] 🏨 Trouvé: {channel['title']} (Score: {relevance_score})")
+                
+            except Exception as e:
+                print(f"[TOURISM-SEARCH] ❌ Erreur recherche '{keyword}': {e}")
+                results['search_summary'][keyword] = 0
+        
+        # Classer les résultats par pertinence
+        sorted_channels = sorted(all_channels.values(), key=lambda x: x['relevance_score'], reverse=True)
+        
+        for channel in sorted_channels:
+            score = channel['relevance_score']
+            
+            if score >= 7:
+                results['high_relevance'].append(channel)
+            elif score >= 4:
+                results['medium_relevance'].append(channel)
+            else:
+                results['low_relevance'].append(channel)
+        
+        results['total_found'] = len(sorted_channels)
+        
+        print(f"[TOURISM-SEARCH] ✅ {results['total_found']} chaînes trouvées pour {country_code}")
+        print(f"[TOURISM-SEARCH] 📊 Pertinence: {len(results['high_relevance'])} haute, {len(results['medium_relevance'])} moyenne, {len(results['low_relevance'])} faible")
+        
+        return results
+    
+    def _calculate_tourism_relevance(self, channel: Dict, tourism_indicators: list) -> int:
+        """
+        Calcule un score de pertinence pour le secteur touristique (0-10)
+        
+        Args:
+            channel: Données de la chaîne
+            tourism_indicators: Liste des mots-clés du tourisme
+            
+        Returns:
+            Score de pertinence (0-10)
+        """
+        score = 0
+        
+        title = channel.get('title', '').lower()
+        description = channel.get('description', '').lower()
+        
+        # Points pour les mots-clés du tourisme dans le titre (plus important)
+        for indicator in tourism_indicators:
+            if indicator in title:
+                score += 2
+        
+        # Points pour les mots-clés du tourisme dans la description
+        for indicator in tourism_indicators:
+            if indicator in description:
+                score += 1
+        
+        # Bonus pour les mots-clés spécifiques au tourisme familial
+        family_keywords = ['famili', 'family', 'kids', 'kinder', 'enfant', 'children']
+        for keyword in family_keywords:
+            if keyword in title:
+                score += 1
+            if keyword in description:
+                score += 0.5
+        
+        # Bonus pour les chaînes avec beaucoup d'abonnés (indicateur de qualité)
+        subscriber_count = channel.get('subscriber_count', 0)
+        if subscriber_count > 100000:
+            score += 2
+        elif subscriber_count > 50000:
+            score += 1
+        elif subscriber_count > 10000:
+            score += 0.5
+        
+        # Malus pour les chaînes qui semblent être des agences de voyage génériques
+        generic_keywords = ['travel agency', 'booking', 'flight', 'ticket', 'deal']
+        for keyword in generic_keywords:
+            if keyword in title or keyword in description:
+                score -= 1
+        
+        return min(max(int(score), 0), 10)  # Limiter entre 0 et 10
     
     def get_channel_playlists(self, channel_id: str) -> List[Dict]:
         """Récupère toutes les playlists d'une chaîne"""

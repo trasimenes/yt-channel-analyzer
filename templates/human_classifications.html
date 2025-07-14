@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Classifications Humaines - YT Channel Analyzer{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-person-check text-success me-3"></i>
+                        Classifications Humaines
+                    </h1>
+                    <p class="text-muted mb-0">🛡️ Toutes les classifications et corrections manuelles (Vidéos + Playlists)</p>
+                    <div class="mt-3">
+                        <a href="/supervised-learning" class="btn btn-primary">
+                            <i class="bi bi-lightning-charge me-2"></i>
+                            Valider plus
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <div class="h3 text-primary mb-2">{{ total_count }}</div>
+                                <div class="text-muted">Classifications totales</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <div class="h3 text-info mb-2">{{ video_count }}</div>
+                                <div class="text-muted">Vidéos reclassifiées</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <div class="h3 text-warning mb-2">{{ playlist_count }}</div>
+                                <div class="text-muted">Playlists classifiées</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <div class="h3 text-success mb-2">{{ affected_competitors }}</div>
+                                <div class="text-muted">Concurrents concernés</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="card bg-white shadow-sm border-0">
+                    <div class="card-header bg-transparent">
+                        <ul class="nav nav-tabs card-header-tabs" id="classificationsTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                                    🔍 Tout ({{ total_count }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button" role="tab">
+                                    🎬 Vidéos ({{ video_count }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="playlists-tab" data-bs-toggle="tab" data-bs-target="#playlists" type="button" role="tab">
+                                    📋 Playlists ({{ playlist_count }})
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <div class="tab-content" id="classificationsTabContent">
+                            <!-- ONGLET TOUT -->
+                            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                                {% if classifications %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="60">Type</th>
+                                                <th width="80">Miniature</th>
+                                                <th>Nom</th>
+                                                <th width="150">Concurrent</th>
+                                                <th width="120">IA → Humain</th>
+                                                <th width="100">Confiance</th>
+                                                <th width="120">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in classifications %}
+                                            <tr>
+                                                <td>
+                                                    {% if item.type == 'video' %}
+                                                    <span class="badge bg-info text-white">🎬 Vidéo</span>
+                                                    {% else %}
+                                                    <span class="badge bg-warning text-dark">📋 Playlist</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if item.type == 'video' %}
+                                                    <a href="https://www.youtube.com/watch?v={{ item.video_id }}" target="_blank" rel="noopener noreferrer">
+                                                        <img src="{{ item.thumbnail_url }}" alt="Thumbnail" 
+                                                             class="img-thumbnail" style="width: 50px; height: 38px; object-fit: cover;">
+                                                    </a>
+                                                    {% else %}
+                                                    <a href="https://www.youtube.com/playlist?list={{ item.playlist_id }}" target="_blank" rel="noopener noreferrer">
+                                                        <img src="{{ item.thumbnail_url or '/static/playlist-default.png' }}" alt="Playlist" 
+                                                             class="img-thumbnail" style="width: 50px; height: 38px; object-fit: cover;">
+                                                    </a>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold text-truncate" style="max-width: 300px;" title="{{ item.title }}">
+                                                            {{ item.title }}
+                                                        </span>
+                                                        <small class="text-muted">
+                                                            {% if item.type == 'video' %}
+                                                            <i class="bi bi-eye me-1"></i>{{ item.view_count | format_number }}
+                                                            <i class="bi bi-hand-thumbs-up ms-2 me-1"></i>{{ item.like_count | format_number }}
+                                                            {% else %}
+                                                            <i class="bi bi-collection me-1"></i>{{ item.video_count }} vidéos
+                                                            {% endif %}
+                                                        </small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ item.competitor_name }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        {% if item.ia_classification != 'unknown' %}
+                                                        <span class="badge bg-light text-dark mb-1">🤖 {{ item.ia_classification|upper }}</span>
+                                                        {% endif %}
+                                                        <span class="badge bg-success text-white">🛡️ {{ item.human_classification|upper }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ item.confidence_score }}%</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small class="text-muted">
+                                                        {{ item.feedback_timestamp if item.feedback_timestamp else 'N/A' }}
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                    <h4 class="mt-3">Aucune classification humaine</h4>
+                                    <p class="text-muted">Aucune vidéo ou playlist n'a encore été classifiée manuellement.</p>
+                                    <a href="/supervised-learning" class="btn btn-primary">
+                                        <i class="bi bi-lightning-charge me-2"></i>
+                                        Commencer la supervision
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- ONGLET VIDÉOS SEULEMENT -->
+                            <div class="tab-pane fade" id="videos" role="tabpanel">
+                                {% if video_classifications %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="80">Miniature</th>
+                                                <th>Titre</th>
+                                                <th width="150">Concurrent</th>
+                                                <th width="120">IA → Humain</th>
+                                                <th width="100">Confiance</th>
+                                                <th width="120">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for video in video_classifications %}
+                                            <tr>
+                                                <td>
+                                                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" rel="noopener noreferrer">
+                                                        <img src="{{ video.thumbnail_url }}" alt="Thumbnail" 
+                                                             class="img-thumbnail" style="width: 50px; height: 38px; object-fit: cover;">
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold text-truncate" style="max-width: 300px;" title="{{ video.title }}">
+                                                            {{ video.title }}
+                                                        </span>
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-eye me-1"></i>{{ video.view_count | format_number }}
+                                                            <i class="bi bi-hand-thumbs-up ms-2 me-1"></i>{{ video.like_count | format_number }}
+                                                            <i class="bi bi-chat ms-2 me-1"></i>{{ video.comment_count | format_number }}
+                                                        </small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ video.competitor_name }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="badge bg-light text-dark mb-1">🤖 {{ video.ia_classification|upper }}</span>
+                                                        <span class="badge bg-success text-white">🛡️ {{ video.human_classification|upper }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ video.confidence_score }}%</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small class="text-muted">
+                                                        {{ video.feedback_timestamp if video.feedback_timestamp else 'N/A' }}
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-play-circle text-muted" style="font-size: 3rem;"></i>
+                                    <h4 class="mt-3">Aucune vidéo reclassifiée</h4>
+                                    <p class="text-muted">Aucune vidéo n'a encore été reclassifiée par un humain.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- ONGLET PLAYLISTS SEULEMENT -->
+                            <div class="tab-pane fade" id="playlists" role="tabpanel">
+                                {% if playlist_classifications %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="80">Miniature</th>
+                                                <th>Nom de la playlist</th>
+                                                <th width="100">Nb Vidéos</th>
+                                                <th width="150">Concurrent</th>
+                                                <th width="120">Catégorie</th>
+                                                <th width="100">Confiance</th>
+                                                <th width="120">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for playlist in playlist_classifications %}
+                                            <tr>
+                                                <td>
+                                                    <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" target="_blank" rel="noopener noreferrer">
+                                                        <img src="{{ playlist.thumbnail_url or '/static/playlist-default.png' }}" alt="Playlist" 
+                                                             class="img-thumbnail" style="width: 50px; height: 38px; object-fit: cover;">
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold text-truncate" style="max-width: 350px;" title="{{ playlist.title }}">
+                                                            {{ playlist.title }}
+                                                        </span>
+                                                        <small class="text-muted">
+                                                            <span class="badge bg-success text-white" style="font-size: 0.7em;">🛡️ CLASSIFICATION HUMAINE</span>
+                                                        </small>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ playlist.video_count }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ playlist.competitor_name }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if playlist.human_classification == 'hero' %}bg-danger{% elif playlist.human_classification == 'hub' %}bg-info{% else %}bg-primary{% endif %} text-white">
+                                                        {% if playlist.human_classification == 'hero' %}🔥 HERO{% elif playlist.human_classification == 'hub' %}🏠 HUB{% else %}🆘 HELP{% endif %}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success">{{ playlist.confidence_score }}%</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small class="text-muted">
+                                                        {{ playlist.feedback_timestamp if playlist.feedback_timestamp else 'N/A' }}
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-collection text-muted" style="font-size: 3rem;"></i>
+                                    <h4 class="mt-3">Aucune playlist classifiée</h4>
+                                    <p class="text-muted">Aucune playlist n'a encore été classifiée manuellement.</p>
+                                    <a href="/concurrents" class="btn btn-primary">
+                                        <i class="bi bi-collection me-2"></i>
+                                        Classifier des playlists
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                {% if competitor_stats %}
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-header bg-transparent">
+                                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Classifications par concurrent</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Concurrent</th>
+                                                <th class="text-center">Vidéos</th>
+                                                <th class="text-center">Playlists</th>
+                                                <th class="text-center">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for competitor in competitor_stats[:10] %}
+                                            <tr>
+                                                <td>{{ competitor.name }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ competitor.video_count }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning text-dark">{{ competitor.playlist_count }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success">{{ competitor.total_count }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if playlist_category_distribution %}
+                    <div class="col-md-6">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-header bg-transparent">
+                                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribution des playlists classifiées</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    {% for category, count in playlist_category_distribution.items() %}
+                                    <div class="col-4 mb-3">
+                                        <div class="card border-{% if category == 'hero' %}danger{% elif category == 'hub' %}info{% else %}primary{% endif %}">
+                                            <div class="card-body py-2">
+                                                <h4 class="text-{% if category == 'hero' %}danger{% elif category == 'hub' %}info{% else %}primary{% endif %}">{{ count }}</h4>
+                                                <small>
+                                                    {% if category == 'hero' %}🔥 HERO{% elif category == 'hub' %}🏠 HUB{% else %}🆘 HELP{% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if current_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ current_page - 1 }}&per_page={{ per_page }}">Précédent</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in range(1, total_pages + 1) %}
+                                {% if page_num == current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% elif page_num <= 3 or page_num >= total_pages - 2 or (page_num >= current_page - 1 and page_num <= current_page + 1) %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}&per_page={{ per_page }}">{{ page_num }}</a>
+                                </li>
+                                {% elif page_num == 4 or page_num == total_pages - 3 %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                
+                                {% if current_page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ current_page + 1 }}&per_page={{ per_page }}">Suivant</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changePerPage(value) {
+    const url = new URL(window.location);
+    url.searchParams.set('per_page', value);
+    url.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %} 

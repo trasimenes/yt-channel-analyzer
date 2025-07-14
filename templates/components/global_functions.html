@@ -192,4 +192,205 @@ function showSuccess(message) {
 function showError(message) {
     window.YTAnalyzer.showError(message);
 }
-</script> 
+</script>
+
+<!-- Fonctions globales pour la gestion des miniatures -->
+<script>
+// Fonction pour générer une URL de miniature YouTube robuste
+function getYouTubeThumbnailUrl(videoId, quality = 'hqdefault') {
+    if (!videoId) return '/static/images/no-thumbnail.png';
+    
+    // Nettoyer l'ID vidéo si c'est une URL complète
+    if (videoId.includes('watch?v=')) {
+        videoId = videoId.split('watch?v=')[1].split('&')[0];
+    } else if (videoId.includes('/')) {
+        videoId = videoId.split('/').pop();
+    }
+    
+    return `https://i.ytimg.com/vi/${videoId}/${quality}.jpg`;
+}
+
+// Fonction pour créer un élément image avec fallback
+function createThumbnailElement(videoId, title = '', className = '', width = 120, height = 90) {
+    const img = document.createElement('img');
+    img.src = getYouTubeThumbnailUrl(videoId);
+    img.alt = title || 'Miniature YouTube';
+    img.className = `youtube-thumbnail ${className}`;
+    img.width = width;
+    img.height = height;
+    img.loading = 'lazy';
+    
+    // Ajouter les gestionnaires d'erreur
+    img.onerror = function() {
+        handleThumbnailError(this);
+    };
+    
+    img.onload = function() {
+        this.classList.add('thumbnail-loaded');
+    };
+    
+    return img;
+}
+
+// Fonction pour extraire l'ID vidéo depuis différents formats d'URL
+function extractVideoId(url) {
+    if (!url) return null;
+    
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /(?:v=|\/)([0-9A-Za-z_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return null;
+}
+
+// Fonction pour réparer toutes les miniatures de la page
+function repairAllThumbnails() {
+    const images = document.querySelectorAll('img[src*="ytimg.com"], img[src*="youtube.com"]');
+    let repairedCount = 0;
+    
+    images.forEach(img => {
+        if (img.complete && img.naturalWidth === 0) {
+            // Image cassée, essayer de la réparer
+            const videoId = extractVideoId(img.src);
+            if (videoId) {
+                img.src = getYouTubeThumbnailUrl(videoId, 'mqdefault');
+                repairedCount++;
+            }
+        }
+    });
+    
+    if (repairedCount > 0) {
+        console.log(`[THUMBNAIL] ${repairedCount} miniatures réparées`);
+    }
+    
+    return repairedCount;
+}
+
+// Fonction pour améliorer les miniatures existantes dans le DOM
+function enhanceExistingThumbnails() {
+    const images = document.querySelectorAll('img[src*="ytimg.com"], img[src*="youtube.com"]');
+    
+    images.forEach(img => {
+        if (!img.classList.contains('youtube-thumbnail')) {
+            img.classList.add('youtube-thumbnail');
+            
+            // Ajouter les gestionnaires s'ils n'existent pas
+            if (!img.onerror) {
+                img.onerror = function() {
+                    handleThumbnailError(this);
+                };
+            }
+            
+            if (!img.onload) {
+                img.onload = function() {
+                    this.classList.add('thumbnail-loaded');
+                };
+            }
+        }
+    });
+}
+
+// Observer pour les changements dynamiques du DOM
+const thumbnailObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const thumbnails = node.querySelectorAll ? 
+                        node.querySelectorAll('img[src*="ytimg.com"], img[src*="youtube.com"]') : 
+                        [];
+                    
+                    thumbnails.forEach(img => {
+                        if (!img.classList.contains('youtube-thumbnail')) {
+                            img.classList.add('youtube-thumbnail');
+                            img.onerror = function() { handleThumbnailError(this); };
+                            img.onload = function() { this.classList.add('thumbnail-loaded'); };
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
+
+// Démarrer l'observation
+thumbnailObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Initialisation globale
+document.addEventListener('DOMContentLoaded', function() {
+    enhanceExistingThumbnails();
+    
+    // Réparer les miniatures au chargement
+    setTimeout(repairAllThumbnails, 1000);
+    
+    // Vérification périodique
+    setInterval(function() {
+        repairAllThumbnails();
+    }, 10000); // Toutes les 10 secondes
+});
+</script>
+
+<!-- Styles CSS pour les miniatures -->
+<style>
+.youtube-thumbnail {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    object-fit: cover;
+}
+
+.youtube-thumbnail:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.youtube-thumbnail.thumbnail-loaded {
+    background: transparent;
+}
+
+.thumbnail-fallback {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.thumbnail-fallback:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Animation de chargement */
+.youtube-thumbnail:not(.thumbnail-loaded) {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+/* Styles responsifs */
+@media (max-width: 768px) {
+    .youtube-thumbnail {
+        border-radius: 6px;
+    }
+    
+    .youtube-thumbnail:hover {
+        transform: scale(1.01);
+    }
+}
+</style> 

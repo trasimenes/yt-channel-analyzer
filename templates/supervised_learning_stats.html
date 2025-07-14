@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiques d'Apprentissage{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Statistiques d'Apprentissage Supervisé</h1>
+                <div>
+                    <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Retour à la Classification
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary" id="refreshStatsBtn">
+                        <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">Vue d'Ensemble</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-md bg-light rounded p-2">
+                                <i class="bi bi-check-circle text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ stats.total_count|default(0) }}</h6>
+                            <small class="text-muted">Classifications Humaines</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-md bg-light rounded p-2">
+                                <i class="bi bi-camera-reels text-info fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ stats.video_count|default(0) }}</h6>
+                            <small class="text-muted">Vidéos Corrigées</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-md bg-light rounded p-2">
+                                <i class="bi bi-collection-play text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ stats.playlist_count|default(0) }}</h6>
+                            <small class="text-muted">Playlists Corrigées</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent text-muted">
+                    <small>Total: {{ stats.total_videos }} vidéos et {{ stats.total_playlists }} playlists</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">Distribution des Playlists Corrigées</h5>
+                </div>
+
+                {% if stats.playlist_category_distribution and stats.playlist_category_distribution|length > 0 %}
+                    <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                        <canvas id="feedbackTypeChart"></canvas>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="row text-center">
+                            {% for category, count in stats.playlist_category_distribution.items() %}
+                            <div class="col">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="me-2" style="width: 12px; height: 12px; background-color: {{ {'hero': '#0d6efd', 'hub': '#ffc107', 'help': '#198754'}[category] }}; border-radius: 50%;"></div>
+                                    <span class="small">{{ category|upper }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                        <div class="text-center text-muted">
+                            <i class="bi bi-pie-chart fs-1"></i>
+                            <p class="mt-2">Aucune distribution à afficher.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">Répartition par Concurrent</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 250px;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Concurrent</th>
+                                    <th class="text-center">Vidéos</th>
+                                    <th class="text-center">Playlists</th>
+                                    <th class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c_stats in stats.competitor_stats %}
+                                <tr>
+                                    <td>
+                                        {% if c_stats.id %}
+                                            <a href="{{ url_for('competitor_detail', competitor_id=c_stats.id) }}" class="text-decoration-none text-dark fw-bold">
+                                                {{ c_stats.name }}
+                                            </a>
+                                        {% else %}
+                                            {{ c_stats.name }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ c_stats.video_count }}</td>
+                                    <td class="text-center">{{ c_stats.playlist_count }}</td>
+                                    <td class="text-center fw-bold">{{ c_stats.total_count }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Aucune donnée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Matrice de Reclassification (Vidéos)</h5>
+                        <small class="text-muted">IA vs Humain</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="vertical-align: middle;">IA <i class="bi bi-arrow-right"></i> Humain</th>
+                                    <th scope="col" class="bg-hero text-white">HERO</th>
+                                    <th scope="col" class="bg-hub text-dark">HUB</th>
+                                    <th scope="col" class="bg-help text-white">HELP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set categories = ['hero', 'hub', 'help'] %}
+                                {% for original_cat in categories %}
+                                <tr>
+                                    <th scope="row" class="fw-bold">{{ original_cat|upper }}</th>
+                                    {% for corrected_cat in categories %}
+                                        {% set count = stats.video_reclassification_matrix.get(original_cat, {}).get(corrected_cat, 0) %}
+                                        <td class="{{ 'fw-bold text-success' if original_cat == corrected_cat and count > 0 }} {{ 'text-muted' if count == 0 }}">
+                                            {{ count }}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">Historique des Classifications Humaines</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-nowrap mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Contenu</th>
+                                    <th scope="col">Concurrent</th>
+                                    <th scope="col">Classification IA</th>
+                                    <th scope="col">Classification Humaine</th>
+                                    <th scope="col">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stats.classifications|default([]) %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <img src="{{ item.thumbnail_url }}" alt="{{ item.name }}" class="rounded" style="width: 60px; height: auto;">
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <a href="{{ url_for('competitor_detail', competitor_id=item.competitor_id) }}#{{ 'video' if item.type == 'video' else 'playlist' }}-{{ item.id }}" class="text-decoration-none text-dark fw-bold">
+                                                    {{ item.name|truncate(60) }}
+                                                </a>
+                                                <div class="text-muted small">
+                                                    {% if item.type == 'video' %}
+                                                        <i class="bi bi-play-btn-fill"></i> Vues: {{ item.view_count|format_number }}
+                                                    {% else %}
+                                                        <i class="bi bi-collection-play-fill"></i> Vidéos: {{ item.video_count }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('competitor_detail', competitor_id=item.competitor_id) }}" class="text-decoration-none text-muted">{{ item.competitor_name }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ item.ia_classification|upper|default('N/A') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ item.human_classification }}">{{ item.human_classification|upper }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted">{{ item.feedback_timestamp }}</span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <p class="mb-0">Aucune classification humaine pour le moment.</p>
+                                        <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-sm btn-primary mt-2">Commencer à classifier</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const playlistDistribution = {{ stats.playlist_category_distribution|tojson }};
+    
+    // 1. Graphique de distribution des playlists
+    if (document.getElementById('feedbackTypeChart') && Object.keys(playlistDistribution).length > 0) {
+        const feedbackTypeCtx = document.getElementById('feedbackTypeChart').getContext('2d');
+        
+        const colorMap = {
+            'hero': '#0d6efd',
+            'hub': '#ffc107',
+            'help': '#198754'
+        };
+        
+        const chartLabels = Object.keys(playlistDistribution);
+        const chartData = Object.values(playlistDistribution);
+        const chartColors = chartLabels.map(label => colorMap[label] || '#6c757d');
+
+        new Chart(feedbackTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Distribution des Playlists',
+                    data: chartData,
+                    backgroundColor: chartColors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true, // Important pour éviter l'étirement
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Rafraîchir les stats
+    document.getElementById('refreshStatsBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Rafraîchissement...';
+        location.reload();
+    });
+});
+</script>
+{% endblock %}

@@ -125,6 +125,25 @@
 const input = document.getElementById('search-chaine');
 const list = document.getElementById('autocomplete-list');
 const urlInput = document.getElementById('channel-url');
+
+// Gérer les paramètres URL pour pré-remplir les champs
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const channelName = urlParams.get('channel_name');
+    const channelUrl = urlParams.get('channel_url');
+    const search = urlParams.get('search');
+    
+    if (channelName) {
+        input.value = channelName;
+    }
+    if (channelUrl) {
+        urlInput.value = channelUrl;
+    }
+    if (search) {
+        input.value = search;
+    }
+});
+
 input.addEventListener('input', async function() {
     const q = input.value.trim();
     if (!q) { list.innerHTML = ''; return; }

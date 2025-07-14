@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Insights - YT Analyzer{% endblock %}
+{% block title %}Brand Advice - YT Analyzer{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -305,8 +305,8 @@
         <!-- Hero Section -->
         <div class="insights-hero">
             <div class="content">
-                <h1><i class="bi bi-lightbulb me-2"></i>Insights & Guidelines</h1>
-                <p class="lead">Découvrez les strategies gagnantes par pays basées sur l'analyse de vos données</p>
+                <h1><i class="bi bi-lightbulb me-2"></i>Conseils pour les chaînes Center Parcs</h1>
+                <p class="lead">Recommandations personnalisées pour optimiser vos chaînes YouTube Center Parcs</p>
                 {% if insights.generated_at %}
                 <small>Dernière analyse: {{ insights.generated_at[:19] }}</small>
                 {% endif %}
@@ -314,7 +314,7 @@
         </div>
 
         <!-- Error handling -->
-        {% if insights.error %}
+        {% if not insights.success %}
         <div class="error-message">
             <h5><i class="bi bi-exclamation-triangle me-2"></i>Erreur lors de l'analyse</h5>
             <p>{{ insights.error }}</p>
@@ -322,268 +322,270 @@
         {% endif %}
 
         <!-- Global Statistics -->
-        {% if insights.insights %}
+        {% if insights.success and insights.channels %}
         <div class="stats-overview">
             <h3><i class="bi bi-graph-up me-2"></i>Vue d'ensemble</h3>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-number">{{ insights.total_countries or 0 }}</div>
-                    <div class="stat-label">Pays analysés</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ "{:,}".format(insights.total_videos_analyzed or 0) }}</div>
-                    <div class="stat-label">Vidéos analysées</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ insights.insights|length }}</div>
-                    <div class="stat-label">Guidelines générées</div>
+                    <div class="stat-number">{{ insights.total_channels or 0 }}</div>
+                    <div class="stat-label">Chaînes Center Parcs</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">
-                        {% set total_competitors = [] %}
-                        {% for country_data in insights.insights.values() %}
-                            {% set _ = total_competitors.append(country_data.competitor_count) %}
+                        {% set total_videos = [] %}
+                        {% for channel_data in insights.channels.values() %}
+                            {% set _ = total_videos.append(channel_data.stats.video_count) %}
                         {% endfor %}
-                        {{ total_competitors|sum }}
+                        {{ total_videos|sum }}
                     </div>
-                    <div class="stat-label">Concurrents</div>
+                    <div class="stat-label">Vidéos totales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% set total_views = [] %}
+                        {% for channel_data in insights.channels.values() %}
+                            {% set _ = total_views.append(channel_data.stats.total_views) %}
+                        {% endfor %}
+                        {{ "{:,}".format(total_views|sum) }}
+                    </div>
+                    <div class="stat-label">Vues totales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ insights.channels|length }}</div>
+                    <div class="stat-label">Régions couvertes</div>
                 </div>
             </div>
         </div>
 
-        <!-- Country Insights -->
-        {% for country, data in insights.insights.items() %}
+        <!-- Center Parcs Channels Insights -->
+        {% for region_key, data in insights.channels.items() %}
         <div class="country-card">
             <div class="country-header">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="country-flag">🌍</span>
-                        <h4 class="d-inline">{{ country }}</h4>
-                        <span class="ms-3 text-muted">{{ data.competitor_count }} concurrents • {{ "{:,}".format(data.total_videos) }} vidéos</span>
+                        {% if data.thumbnail_url %}
+                        <img src="{{ data.thumbnail_url }}" alt="{{ data.name }}" class="country-flag" style="border-radius: 50%;">
+                        {% else %}
+                        <span class="country-flag">🏕️</span>
+                        {% endif %}
+                        <h4 class="d-inline">{{ data.name }}</h4>
+                        <span class="ms-3 text-muted">{{ "{:,}".format(data.stats.video_count) }} vidéos • {{ "{:,}".format(data.stats.total_views) }} vues</span>
                     </div>
                     <div>
                         <span class="performance-score">
-                            Score: {{ data.performance_score }}/10
+                            {{ data.region }}
                         </span>
                     </div>
                 </div>
             </div>
 
             <div class="insights-grid">
-                <!-- Duration Insights -->
-                {% if data.duration and data.duration.optimal_range_minutes %}
+                <!-- Subscribers & Views -->
                 <div class="insight-card">
                     <div class="insight-icon duration-icon">
-                        <i class="bi bi-clock"></i>
+                        <i class="bi bi-people"></i>
                     </div>
-                    <h6>Durée Optimale</h6>
-                    <div class="metric-value">{{ data.duration.optimal_range_minutes[0] }}-{{ data.duration.optimal_range_minutes[1] }} min</div>
-                    <div class="metric-label">Plage recommandée</div>
-                    {% if data.duration.performance_diff != "N/A" %}
-                    <small class="text-success">{{ data.duration.performance_diff }} vs moyenne globale</small>
-                    {% endif %}
+                    <h6>Abonnés</h6>
+                    <div class="metric-value">{{ "{:,}".format(data.stats.subscriber_count) }}</div>
+                    <div class="metric-label">Audience totale</div>
+                    <small class="text-success">{{ "{:,}".format(data.stats.avg_views) }} vues/vidéo</small>
                 </div>
-                {% endif %}
 
-                <!-- Timing Insights -->
-                {% if data.timing and data.timing.recommendation_hour != "Données insuffisantes" %}
+                <!-- Content Distribution -->
                 <div class="insight-card">
                     <div class="insight-icon timing-icon">
-                        <i class="bi bi-calendar-event"></i>
+                        <i class="bi bi-pie-chart"></i>
                     </div>
-                    <h6>Timing Optimal</h6>
-                    <div class="metric-value">{{ data.timing.recommendation_hour }}</div>
-                    <div class="metric-label">Heure recommandée</div>
-                    {% if data.timing.recommendation_day != "Données insuffisantes" %}
-                    <small class="text-info">Jour: {{ data.timing.recommendation_day }}</small>
-                    {% endif %}
+                    <h6>Répartition Contenu</h6>
+                    <div class="metric-value">{{ data.content_distribution.hero_ratio }}% | {{ data.content_distribution.hub_ratio }}% | {{ data.content_distribution.help_ratio }}%</div>
+                    <div class="metric-label">HERO | HUB | HELP</div>
+                    <small class="text-info">{{ data.content_distribution.total_categorized }} vidéos catégorisées</small>
                 </div>
-                {% endif %}
 
-                <!-- Category Performance -->
-                {% if data.categories and data.categories.best_performing %}
+                <!-- Average Duration -->
+                {% if data.stats.avg_duration_minutes > 0 %}
                 <div class="insight-card">
                     <div class="insight-icon category-icon">
-                        <i class="bi bi-tags"></i>
+                        <i class="bi bi-clock"></i>
                     </div>
-                    <h6>Catégorie Gagnante</h6>
-                    {% set best_category = data.categories.best_performing[0] %}
-                    <div class="metric-value">{{ (best_category[0] or 'Non classé')|upper }}</div>
-                    <div class="metric-label">{{ best_category[1].success_rate }}% de succès</div>
-                    <small class="text-warning">Ratio de performance: {{ best_category[1].performance_ratio }}</small>
+                    <h6>Durée Moyenne</h6>
+                    <div class="metric-value">{{ data.stats.avg_duration_minutes }}min</div>
+                    <div class="metric-label">Par vidéo</div>
+                    {% if data.stats.avg_duration_minutes > 6 %}
+                    <small class="text-warning">⚠️ Trop long - optimiser à 3-6min</small>
+                    {% elif data.stats.avg_duration_minutes < 2 %}
+                    <small class="text-warning">⚠️ Trop court - développer le contenu</small>
+                    {% else %}
+                    <small class="text-success">✅ Durée optimale</small>
+                    {% endif %}
                 </div>
                 {% endif %}
 
-                <!-- Engagement -->
-                {% if data.engagement and data.engagement.status != "insufficient_data" %}
+                <!-- Top Video Performance -->
+                {% if data.top_videos and data.top_videos[0] %}
                 <div class="insight-card">
                     <div class="insight-icon engagement-icon">
-                        <i class="bi bi-heart"></i>
+                        <i class="bi bi-trophy"></i>
                     </div>
-                    <h6>Engagement Moyen</h6>
-                    <div class="metric-value">{{ data.engagement.avg_like_rate }}%</div>
-                    <div class="metric-label">Taux de likes</div>
-                    <small class="text-danger">Commentaires: {{ data.engagement.avg_comment_rate }}%</small>
-                </div>
-                {% endif %}
-                
-                <!-- 🆕 Hooks d'engagement -->
-                {% if data.hooks and data.hooks.status != "insufficient_data" %}
-                <div class="insight-card">
-                    <div class="insight-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white;">
-                        <i class="bi bi-fire"></i>
-                    </div>
-                    <h6>Ce qui accroche</h6>
-                    {% if data.hooks.title_patterns %}
-                    <div class="metric-value">{{ data.hooks.title_patterns|length }}</div>
-                    <div class="metric-label">Patterns identifiés</div>
-                    <small class="text-warning">{{ data.hooks.title_patterns[0] if data.hooks.title_patterns else '' }}</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-                
-                <!-- 🆕 Temps de décrochage -->
-                {% if data.dropoff and data.dropoff.status != "insufficient_data" %}
-                <div class="insight-card">
-                    <div class="insight-icon" style="background: linear-gradient(135deg, #a855f7, #9333ea); color: white;">
-                        <i class="bi bi-graph-down"></i>
-                    </div>
-                    <h6>Durée optimale</h6>
-                    <div class="metric-value">{{ data.dropoff.optimal_length|title }}</div>
-                    <div class="metric-label">Vidéos performantes</div>
-                    {% if data.dropoff.dropoff_recommendation %}
-                    <small class="text-info">{{ data.dropoff.dropoff_recommendation }}</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-                
-                <!-- 🆕 Mots-clés performants -->
-                {% if data.keywords and data.keywords.status != "insufficient_data" %}
-                <div class="insight-card">
-                    <div class="insight-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
-                        <i class="bi bi-tag"></i>
-                    </div>
-                    <h6>Mots-clés gagnants</h6>
-                    {% if data.keywords.top_keywords %}
-                    {% set first_keyword = data.keywords.top_keywords.items()|list|first %}
-                    <div class="metric-value">{{ first_keyword[0] }}</div>
-                    <div class="metric-label">{{ first_keyword[1].avg_engagement }}% d'engagement</div>
-                    <small class="text-success">{{ first_keyword[1].videos_count }} vidéos</small>
-                    {% endif %}
+                    <h6>Meilleure Performance</h6>
+                    <div class="metric-value">{{ "{:,}".format(data.top_videos[0].views) }}</div>
+                    <div class="metric-label">Vues record</div>
+                    <small class="text-success">{{ (data.top_videos[0].category or 'Non classé')|upper }}</small>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Recommendations -->
-            {% if data.recommendations %}
+            <!-- Conseils spécifiques -->
             <div style="padding: 0 2rem 1rem;">
-                <h6><i class="bi bi-lightbulb me-2"></i>Recommandations</h6>
-                {% for recommendation in data.recommendations %}
-                <div class="recommendation">
-                    {{ recommendation }}
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs" id="insightsTabs-{{ region_key }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="what-works-tab-{{ region_key }}" data-bs-toggle="tab" data-bs-target="#what-works-{{ region_key }}" type="button" role="tab">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>✅ Atouts
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="what-doesnt-work-tab-{{ region_key }}" data-bs-toggle="tab" data-bs-target="#what-doesnt-work-{{ region_key }}" type="button" role="tab">
+                            <i class="bi bi-x-circle-fill text-danger me-2"></i>❌ Problèmes
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="regional-advice-tab-{{ region_key }}" data-bs-toggle="tab" data-bs-target="#regional-advice-{{ region_key }}" type="button" role="tab">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i>📍 {{ data.region }}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="general-advice-tab-{{ region_key }}" data-bs-toggle="tab" data-bs-target="#general-advice-{{ region_key }}" type="button" role="tab">
+                            <i class="bi bi-lightbulb-fill text-warning me-2"></i>💡 YouTube
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content mt-3" id="insightsTabContent-{{ region_key }}">
+                    <!-- What Works Tab -->
+                    <div class="tab-pane fade show active" id="what-works-{{ region_key }}" role="tabpanel">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>🏆 Vos points forts</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if data.what_works %}
+                                    {% for point in data.what_works %}
+                                    <div class="alert alert-success mb-2" style="padding: 0.75rem; border-left: 4px solid #28a745;">
+                                        {{ point|safe }}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Analyse en cours... Les données sont en cours de traitement.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What Doesn't Work Tab -->
+                    <div class="tab-pane fade" id="what-doesnt-work-{{ region_key }}" role="tabpanel">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>⚠️ Points d'amélioration</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if data.what_doesnt_work %}
+                                    {% for point in data.what_doesnt_work %}
+                                    <div class="alert alert-danger mb-2" style="padding: 0.75rem; border-left: 4px solid #dc3545;">
+                                        {{ point|safe }}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-success">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        Excellente performance ! Aucun problème majeur détecté.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regional Advice Tab -->
+                    <div class="tab-pane fade" id="regional-advice-{{ region_key }}" role="tabpanel">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="bi bi-globe me-2"></i>🌍 Spécificités {{ data.region }}</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if data.regional_advice %}
+                                    {% for conseil in data.regional_advice %}
+                                    <div class="alert alert-primary mb-2" style="padding: 0.75rem; border-left: 4px solid #007bff;">
+                                        {{ conseil }}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Stratégie universelle recommandée pour votre marché.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- General Advice Tab -->
+                    <div class="tab-pane fade" id="general-advice-{{ region_key }}" role="tabpanel">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-youtube me-2"></i>📺 Bonnes pratiques YouTube</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if data.general_advice %}
+                                    {% for conseil in data.general_advice %}
+                                    <div class="alert alert-warning mb-2" style="padding: 0.75rem; border-left: 4px solid #ffc107;">
+                                        {{ conseil }}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Conseils généraux en cours de génération.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
+            </div>
+            
+            <!-- Top vidéos -->
+            {% if data.top_videos %}
+            <div style="padding: 0 2rem 2rem;">
+                <h6><i class="bi bi-star me-2"></i>Top 3 vidéos les plus performantes</h6>
+                <div class="top-videos-list">
+                    {% for video in data.top_videos[:3] %}
+                    <div class="video-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                        <div style="flex: 1;">
+                            <strong>{{ video.title[:60] }}{% if video.title|length > 60 %}...{% endif %}</strong>
+                            <br>
+                            <small class="text-muted">{{ (video.category or 'Non classé')|upper }}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="metric-value" style="font-size: 1rem;">{{ "{:,}".format(video.views) }}</div>
+                            <div class="metric-label">vues</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
-            
-            <!-- 🆕 Insights détaillés -->
-            <div style="padding: 0 2rem 2rem;">
-                <h6><i class="bi bi-graph-up me-2"></i>Insights détaillés</h6>
-                
-                <!-- Hooks d'engagement détaillés -->
-                {% if data.hooks and data.hooks.status != "insufficient_data" %}
-                <div class="detailed-insight">
-                    <h6 class="text-danger"><i class="bi bi-fire me-2"></i>🔥 Ce qui crée l'engagement</h6>
-                    
-                    {% if data.hooks.title_patterns %}
-                    <div class="insight-detail">
-                        <strong>Patterns de titres performants :</strong>
-                        <ul>
-                            {% for pattern in data.hooks.title_patterns %}
-                            <li>{{ pattern }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-                    
-                    {% if data.hooks.engagement_keywords %}
-                    <div class="insight-detail">
-                        <strong>Mots-clés qui accrochent :</strong>
-                        <div class="keyword-grid">
-                            {% for keyword, stats in data.hooks.engagement_keywords.items() %}
-                            <span class="keyword-tag">
-                                <strong>{{ keyword }}</strong>
-                                <small>({{ stats.ratio }}x plus présent)</small>
-                            </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-                
-                <!-- Temps de décrochage détaillé -->
-                {% if data.dropoff and data.dropoff.status != "insufficient_data" %}
-                <div class="detailed-insight">
-                    <h6 class="text-purple"><i class="bi bi-graph-down me-2"></i>⏱️ Analyse du décrochage</h6>
-                    
-                    {% if data.dropoff.duration_groups %}
-                    <div class="insight-detail">
-                        <strong>Engagement par durée :</strong>
-                        <div class="duration-stats">
-                            {% for group_name, stats in data.dropoff.duration_groups.items() %}
-                            <div class="duration-group">
-                                <span class="group-name">{{ group_name|title }}</span>
-                                <span class="engagement-rate">{{ stats.avg_engagement }}%</span>
-                                <small>({{ stats.video_count }} vidéos)</small>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="insight-detail">
-                        <strong>Dans le top 20% :</strong>
-                        <span class="text-success">{{ data.dropoff.top_short_count }} vidéos courtes</span> vs
-                        <span class="text-warning">{{ data.dropoff.top_long_count }} vidéos longues</span>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Mots-clés performants détaillés -->
-                {% if data.keywords and data.keywords.status != "insufficient_data" %}
-                <div class="detailed-insight">
-                    <h6 class="text-success"><i class="bi bi-tag me-2"></i>🎯 Mots-clés gagnants</h6>
-                    
-                    {% if data.keywords.top_keywords %}
-                    <div class="insight-detail">
-                        <strong>Top mots-clés par engagement :</strong>
-                        <div class="keywords-list">
-                            {% for keyword, stats in data.keywords.top_keywords.items() %}
-                            <div class="keyword-item">
-                                <span class="keyword-name">{{ keyword }}</span>
-                                <span class="keyword-stats">
-                                    <span class="engagement">{{ stats.avg_engagement }}% engagement</span>
-                                    <span class="views">{{ "{:,}".format(stats.avg_views) }} vues moy</span>
-                                    <span class="count">{{ stats.videos_count }} vidéos</span>
-                                </span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
         </div>
         {% endfor %}
 
+        <!-- No Data Message -->
         {% else %}
         <div class="no-data">
-            <i class="bi bi-database-x" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
-            <h5>Données insuffisantes</h5>
-            <p>Au moins 20 vidéos par pays sont nécessaires pour générer des insights fiables.</p>
-            <p class="text-muted">Ajoutez plus de concurrents ou attendez que plus de données soient collectées.</p>
+            <h4>Aucune chaîne Center Parcs trouvée</h4>
+            <p>Veuillez d'abord analyser les chaînes Center Parcs pour générer des conseils personnalisés.</p>
         </div>
         {% endif %}
     </div>

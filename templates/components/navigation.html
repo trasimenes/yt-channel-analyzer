@@ -27,36 +27,110 @@
                     </a>
                 </li>
                 
-                <!-- Top Videos -->
+                <!-- Learn -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'top_videos' %}active{% endif %}" href="/top-videos">
-                        <i class="bi bi-trophy me-1"></i>
-                        Top Videos
-                        <span class="badge bg-warning ms-1">Global</span>
+                    <a class="nav-link {% if request.endpoint in ['learn', 'learn_guide'] %}active{% endif %}" href="/learn">
+                        <i class="bi bi-mortarboard me-1"></i>
+                        Learn
+                        <span class="badge bg-success ms-1">New</span>
                     </a>
                 </li>
                 
-                <!-- Countries Analysis -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'countries_analysis' %}active{% endif %}" href="/countries-analysis">
-                        <i class="bi bi-globe me-1"></i>
-                        Par Pays
-                        <span class="badge bg-info ms-1">New</span>
-                    </a>
-                </li>
-                
-                <!-- Insights -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'insights' %}active{% endif %}" href="/insights">
-                        <i class="bi bi-lightbulb me-1"></i>
-                        Insights
-                        <span class="badge bg-success ms-1">AI</span>
-                    </a>
-                </li>
-                
-                <!-- Tools Dropdown -->
+                <!-- AI & Machine Learning Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['tasks_page', 'tasks', 'settings', 'api_usage'] %}active{% endif %}" 
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['supervised_learning_page', 'supervised_learning_stats', 'human_classifications', 'ai_training_status', 'transformers_dashboard'] %}active{% endif %}" 
+                       href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-robot me-1"></i>
+                        AI & ML
+                        <span class="badge bg-info ms-1">Intelligence</span>
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="aiDropdown">
+                        <!-- AI Dashboards -->
+                        <li class="dropdown-header">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboards IA
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'ai_training_status' %}active{% endif %}" href="/ai-training-status">
+                                <i class="bi bi-graph-up-arrow me-2"></i>
+                                Statut d'Entraînement
+                                <span class="badge bg-primary ms-1">Live</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'transformers_dashboard' %}active{% endif %}" href="/transformers-dashboard">
+                                <i class="bi bi-cpu me-2"></i>
+                                Transformers Hub
+                                <span class="badge bg-success ms-1">Avancé</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Classification & Learning -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header">
+                            <i class="bi bi-lightning-charge me-2"></i>Classification
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'supervised_learning_page' %}active{% endif %}" href="/supervised-learning">
+                                <i class="bi bi-check-square me-2"></i>
+                                Valider & Corriger
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'supervised_learning_stats' %}active{% endif %}" href="/supervised-learning/stats">
+                                <i class="bi bi-bar-chart-line me-2"></i>
+                                Statistiques ML
+                                <span class="badge bg-warning ms-1">Stats</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'human_classifications' %}active{% endif %}" href="/human-classifications">
+                                <i class="bi bi-person-check me-2"></i>
+                                Historique Humain
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Analytics Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['top_videos', 'countries_analysis', 'insights', 'frequency_dashboard'] %}active{% endif %}" 
+                       href="#" id="analyticsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-graph-up me-1"></i>
+                        Analytics
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="analyticsDropdown">
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'top_videos' %}active{% endif %}" href="/top-videos">
+                                <i class="bi bi-trophy me-2"></i>
+                                Top Vidéos Globales
+                                <span class="badge bg-warning ms-1">Global</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}" href="/countries-analysis">
+                                <i class="bi bi-globe me-2"></i>
+                                Analyse par Pays
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'insights' %}active{% endif %}" href="/insights">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                Conseils Marque
+                                <span class="badge bg-success ms-1">AI</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}" href="{{ url_for('frequency_dashboard') }}">
+                                <i class="bi bi-calendar-week me-2"></i>
+                                Fréquence Publication
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Tools & Settings Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['tasks_page', 'tasks', 'settings', 'api_usage_page', 'thumbnail_diagnostic', 'debug_page'] %}active{% endif %}" 
                        href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-tools me-1"></i>
                         Outils
@@ -65,30 +139,65 @@
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
+                        <!-- Configuration Section -->
+                        <li class="dropdown-header">
+                            <i class="bi bi-gear me-2"></i>Configuration
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'settings' %}active{% endif %}" href="/settings">
+                                <i class="bi bi-sliders me-2"></i>
+                                Paramètres & Patterns
+                            </a>
+                        </li>
                         <li>
                             <a class="dropdown-item {% if request.endpoint in ['tasks_page', 'tasks'] %}active{% endif %}" href="/tasks">
                                 <i class="bi bi-list-task me-2"></i>
-                                Active Tasks
+                                Tâches Actives
                                 {% if active_tasks_count is defined and active_tasks_count > 0 %}
                                 <span class="badge bg-primary ms-1">{{ active_tasks_count }}</span>
                                 {% endif %}
                             </a>
                         </li>
+                        
+                        <!-- Diagnostic Section -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header">
+                            <i class="bi bi-wrench me-2"></i>Diagnostic
+                        </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'settings' %}active{% endif %}" href="/settings">
-                                <i class="bi bi-gear me-2"></i>
-                                Settings
+                            <a class="dropdown-item {% if request.endpoint == 'thumbnail_diagnostic' %}active{% endif %}" href="/thumbnail-diagnostic">
+                                <i class="bi bi-image me-2"></i>
+                                Diagnostic Thumbnails
+                                <span class="badge bg-info ms-1">Repair</span>
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'api_usage' %}active{% endif %}" href="/api-usage" 
-                               title="Monitor YouTube API Usage">
+                            <a class="dropdown-item {% if request.endpoint == 'api_usage_page' %}active{% endif %}" href="/api-usage" 
+                               title="Surveillez l'utilisation de l'API YouTube">
                                 <i class="bi bi-cloud-arrow-up me-2"></i>
-                                API Usage
+                                Usage API YouTube
                                 <span id="api-status-indicator" class="ms-1">
-                                    <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i>
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 0.6rem;"></i>
                                 </span>
+                            </a>
+                        </li>
+                        
+                        <!-- Debug Section -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header">
+                            <i class="bi bi-bug me-2"></i>Développement
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'debug_page' %}active{% endif %}" href="/debug">
+                                <i class="bi bi-code-slash me-2"></i>
+                                Outils Debug
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'dashboard_glass' %}active{% endif %}" href="/dashboard-glass">
+                                <i class="bi bi-window-plus me-2"></i>
+                                Dashboard Glass
+                                <span class="badge bg-info ms-1">Demo</span>
                             </a>
                         </li>
                     </ul>

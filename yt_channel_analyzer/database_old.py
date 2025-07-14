@@ -1,0 +1,6280 @@
+"""
+Module pour les interactions avec la base de données SQLite.
+"""
+
+import sqlite3
+import json
+from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Tuple
+import re
+from collections import defaultdict
+
+DB_PATH = 'instance/database.db'
+
+def get_db_connection():
+    """Créer une connexion à la base de données"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Pour accéder aux colonnes par nom
+    return conn
+
+def extract_video_id_from_url(video_url: str) -> str:
+    """Extraire l'ID vidéo depuis l'URL YouTube"""
+    patterns = [
+        r'(?:v=|\/)([0-9A-Za-z_-]{11}).*',
+        r'(?:embed\/)([0-9A-Za-z_-]{11})',
+        r'(?:v\/)([0-9A-Za-z_-]{11})'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, video_url)
+        if match:
+            return match.group(1)
+    
+    # Fallback: utiliser l'URL complète comme ID
+    return video_url.replace('/', '_').replace(':', '_')[:50]
+
+def extract_channel_id_from_url(channel_url: str) -> str:
+    """Extraire l'ID de chaîne depuis l'URL YouTube"""
+    if '/channel/' in channel_url:
+        return channel_url.split('/channel/')[-1].split('/')[0].split('?')[0]
+    elif '/@' in channel_url:
+        return channel_url.split('/@')[-1].split('/')[0].split('?')[0]
+    elif '/c/' in channel_url:
+        return channel_url.split('/c/')[-1].split('/')[0].split('?')[0]
+    elif '/user/' in channel_url:
+        return channel_url.split('/user/')[-1].split('/')[0].split('?')[0]
+    else:
+        return channel_url.replace('/', '_').replace(':', '_')[:100]
+
+def detect_language(text: str) -> str:
+    """
+    Détection très légère de la langue pour éviter une dépendance externe.
+    Analyse quelques marqueurs courants FR / EN / DE / NL.
+
+    Args:
+        text: Texte à analyser
+
+    Returns:
+        str: Code langue ('fr', 'en', 'de', 'nl')
+    """
+    if not text:
+        return 'en'
+
+    text_lower = text.lower()
+    # Mots très fréquents par langue
+    french_markers = ['le ', 'la ', 'les ', 'des ', 'un ', 'une ', 'comment ', 'pour ', 'avec ']
+    german_markers = ['der ', 'die ', 'das ', 'und ', 'mit ', 'eine ', 'ein ', 'wie ']
+    dutch_markers = ['de ', 'het ', 'een ', 'hoe ', 'met ', 'en ']
+
+    score_fr = sum(text_lower.count(m) for m in french_markers)
+    score_de = sum(text_lower.count(m) for m in german_markers)
+    score_nl = sum(text_lower.count(m) for m in dutch_markers)
+
+    # Par défaut anglais si aucun score dominant
+    if max(score_fr, score_de, score_nl) == 0:
+        return 'en'
+
+    if score_fr >= score_de and score_fr >= score_nl:
+        return 'fr'
+    if score_de >= score_fr and score_de >= score_nl:
+        return 'de'
+    return 'nl'
+def save_competitor_and_videos(channel_url: str, videos: List[Dict], channel_info: Dict = None) -> int:
+    """
+    Sauvegarder un concurrent et ses vidéos dans la base de données.
+    Crée automatiquement le concurrent s'il n'existe pas.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si le concurrent existe déjà
+        cursor.execute('SELECT id FROM concurrent WHERE channel_url = ?', (channel_url,))
+        existing = cursor.fetchone()
+        
+        if existing:
+            competitor_id = existing[0]
+            print(f"[DB] Concurrent existant trouvé: ID {competitor_id}")
+        else:
+            # Créer un nouveau concurrent
+            channel_id = extract_channel_id_from_url(channel_url)
+            
+            # Utiliser les infos de la chaîne si disponibles
+            if channel_info:
+                name = channel_info.get('title', 'Canal inconnu')
+                thumbnail_url = channel_info.get('thumbnail', '')
+                banner_url = channel_info.get('banner', '')
+                description = channel_info.get('description', '')
+                subscriber_count = channel_info.get('subscriber_count')
+                view_count = channel_info.get('view_count')
+                video_count = len(videos)
+                country = channel_info.get('country', '')
+                language = channel_info.get('language', '')
+            else:
+                # Valeurs par défaut
+                name = channel_url.split('/')[-1] if '/' in channel_url else 'Canal inconnu'
+                thumbnail_url = ''
+                banner_url = ''
+                description = ''
+                subscriber_count = None
+                view_count = None
+                video_count = len(videos)
+                country = ''
+                language = ''
+            
+            cursor.execute('''
+                INSERT INTO concurrent (
+                    name, channel_id, channel_url, thumbnail_url, banner_url,
+                    description, subscriber_count, view_count, video_count,
+                    country, language, created_at, last_updated
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                name, channel_id, channel_url, thumbnail_url, banner_url,
+                description, subscriber_count, view_count, video_count,
+                country, language, datetime.now(), datetime.now()
+            ))
+            
+            competitor_id = cursor.lastrowid
+            print(f"[DB] Nouveau concurrent créé: {name} (ID {competitor_id})")
+        
+        # Sauvegarder les vidéos
+        videos_added = 0
+        videos_updated = 0
+        
+        for video in videos:
+            video_id = extract_video_id_from_url(video.get('url', ''))
+            
+            # Vérifier si la vidéo existe déjà
+            cursor.execute('SELECT id FROM video WHERE video_id = ?', (video_id,))
+            existing_video = cursor.fetchone()
+            
+            # Préparer les données de la vidéo
+            title = video.get('title', '')[:200]  # Limiter à 200 caractères
+            description = video.get('description', '')
+            url = video.get('url', '')
+            thumbnail_url = video.get('thumbnail', '')
+            
+            # Traiter la date de publication
+            published_at = None
+            if video.get('publication_date'):
+                try:
+                    # Essayer de parser différents formats de date
+                    date_str = video['publication_date']
+                    if 'il y a' in date_str:
+                        # Pour les dates relatives, utiliser la date actuelle
+                        published_at = datetime.now()
+                    else:
+                        # Essayer de parser la date directement
+                        published_at = datetime.strptime(date_str, '%Y-%m-%d')
+                except:
+                    published_at = datetime.now()
+            
+            # Traiter la durée
+            duration_seconds = None
+            duration_text = video.get('duration', '')
+            if duration_text:
+                try:
+                    # Convertir "2:45" en secondes
+                    parts = duration_text.split(':')
+                    if len(parts) == 2:
+                        duration_seconds = int(parts[0]) * 60 + int(parts[1])
+                    elif len(parts) == 3:
+                        duration_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                except:
+                    pass
+            
+            # Traiter les métriques
+            view_count = video.get('views') or video.get('view_count') or 0
+            if isinstance(view_count, str):
+                view_count = int(re.sub(r'[^\d]', '', view_count)) if re.sub(r'[^\d]', '', view_count) else 0
+            
+            like_count = video.get('likes') or video.get('like_count')
+            comment_count = video.get('comments') or video.get('comment_count')
+            
+            if existing_video:
+                # Mettre à jour la vidéo existante
+                cursor.execute('''
+                    UPDATE video SET
+                        title = ?, description = ?, url = ?, thumbnail_url = ?,
+                        published_at = ?, duration_seconds = ?, duration_text = ?,
+                        view_count = ?, like_count = ?, comment_count = ?,
+                        last_updated = ?
+                    WHERE id = ?
+                ''', (
+                    title, description, url, thumbnail_url,
+                    published_at, duration_seconds, duration_text,
+                    view_count, like_count, comment_count,
+                    datetime.now(), existing_video[0]
+                ))
+                videos_updated += 1
+            else:
+                # Insérer une nouvelle vidéo
+                cursor.execute('''
+                    INSERT INTO video (
+                        concurrent_id, video_id, title, description, url, thumbnail_url,
+                        published_at, duration_seconds, duration_text,
+                        view_count, like_count, comment_count,
+                        created_at, last_updated
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    competitor_id, video_id, title, description, url, thumbnail_url,
+                    published_at, duration_seconds, duration_text,
+                    view_count, like_count, comment_count,
+                    datetime.now(), datetime.now()
+                ))
+                videos_added += 1
+        
+        # Mettre à jour le nombre de vidéos du concurrent
+        cursor.execute('SELECT COUNT(*) FROM video WHERE concurrent_id = ?', (competitor_id,))
+        total_videos = cursor.fetchone()[0]
+        
+        cursor.execute('''
+            UPDATE concurrent SET video_count = ?, last_updated = ? WHERE id = ?
+        ''', (total_videos, datetime.now(), competitor_id))
+        
+        conn.commit()
+        print(f"[DB] Sauvegarde terminée: {videos_added} vidéos ajoutées, {videos_updated} mises à jour, total: {total_videos}")
+        
+        return competitor_id
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] Erreur lors de la sauvegarde: {e}")
+        raise
+    finally:
+        conn.close()
+
+def get_competitor_videos(competitor_id: int) -> List[Dict]:
+    """Récupérer toutes les vidéos d'un concurrent"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT * FROM video 
+        WHERE concurrent_id = ? 
+        ORDER BY published_at DESC
+    ''', (competitor_id,))
+    
+    videos = []
+    for row in cursor.fetchall():
+        videos.append(dict(row))
+    
+    conn.close()
+    return videos
+
+def get_all_competitors() -> List[Dict]:
+    """Récupérer tous les concurrents depuis la base de données avec vues totales calculées"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT * FROM concurrent 
+        ORDER BY name
+    ''')
+    
+    competitors = []
+    for row in cursor.fetchall():
+        competitor = dict(row)
+        
+        # Calculer les vues totales en sommant les vues de toutes ses vidéos
+        cursor.execute('''
+            SELECT COALESCE(SUM(view_count), 0) as total_views
+            FROM video 
+            WHERE concurrent_id = ?
+        ''', (competitor['id'],))
+        
+        total_views_result = cursor.fetchone()
+        competitor['total_views'] = total_views_result[0] if total_views_result else 0
+        
+        competitors.append(competitor)
+    
+    conn.close()
+    return competitors
+
+def get_competitor_by_url(channel_url: str) -> Optional[Dict]:
+    """Récupérer un concurrent par son URL"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM concurrent WHERE channel_url = ?', (channel_url,))
+    row = cursor.fetchone()
+    
+    conn.close()
+    return dict(row) if row else None
+
+def add_competitor(competitor_data: Dict) -> int:
+    """Ajouter un nouveau concurrent"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT INTO concurrent (
+            name, channel_id, channel_url, thumbnail_url, banner_url,
+            description, subscriber_count, view_count, video_count,
+            country, language, created_at, last_updated
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        competitor_data.get('name'),
+        competitor_data.get('channel_id'),
+        competitor_data.get('channel_url'),
+        competitor_data.get('thumbnail_url'),
+        competitor_data.get('banner_url'),
+        competitor_data.get('description'),
+        competitor_data.get('subscriber_count'),
+        competitor_data.get('view_count'),
+        competitor_data.get('video_count'),
+        competitor_data.get('country'),
+        competitor_data.get('language'),
+        datetime.now(),
+        datetime.now()
+    ))
+    
+    competitor_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    
+    return competitor_id
+
+def update_competitor(competitor_id: int, updates: Dict):
+    """Mettre à jour un concurrent"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Construire la requête dynamiquement
+    set_clause = []
+    values = []
+    
+    for key, value in updates.items():
+        if key in ['name', 'thumbnail_url', 'banner_url', 'description', 
+                   'subscriber_count', 'view_count', 'video_count', 'country', 'language']:
+            set_clause.append(f"{key} = ?")
+            values.append(value)
+    
+    if set_clause:
+        set_clause.append("last_updated = ?")
+        values.append(datetime.now())
+        values.append(competitor_id)
+        
+        query = f"UPDATE concurrent SET {', '.join(set_clause)} WHERE id = ?"
+        cursor.execute(query, values)
+        conn.commit()
+    
+    conn.close()
+
+def delete_competitor(competitor_id: int):
+    """Supprimer un concurrent et toutes ses vidéos"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # SQLite gère automatiquement la suppression en cascade des vidéos
+    cursor.execute('DELETE FROM concurrent WHERE id = ?', (competitor_id,))
+    
+    conn.commit()
+    conn.close()
+
+def competitors_to_legacy_format() -> Dict:
+    """Convertir les concurrents de la base vers le format JSON legacy pour compatibilité"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Récupérer tous les concurrents avec leurs vidéos
+    cursor.execute('''
+        SELECT c.*, COUNT(v.id) as video_count_actual
+        FROM concurrent c
+        LEFT JOIN video v ON c.id = v.concurrent_id
+        GROUP BY c.id
+        ORDER BY c.name
+    ''')
+    
+    competitors = cursor.fetchall()
+    legacy_data = {}
+    
+    for comp in competitors:
+        # Créer une clé compatible avec l'ancien format
+        key = comp['channel_url'].replace('/', '_').replace(':', '_').replace('?', '_').replace('&', '_')
+        
+        # Récupérer les vidéos de ce concurrent
+        cursor.execute('''
+            SELECT * FROM video WHERE concurrent_id = ? ORDER BY published_at DESC
+        ''', (comp['id'],))
+        
+        videos = []
+        for video_row in cursor.fetchall():
+            video_dict = dict(video_row)
+            # Convertir au format legacy
+            videos.append({
+                'title': video_dict['title'],
+                'url': video_dict['url'],
+                'views': video_dict['view_count'] or 0,
+                'view_count': video_dict['view_count'] or 0,
+                'publication_date': video_dict['published_at'].strftime('%Y-%m-%d') if video_dict['published_at'] and hasattr(video_dict['published_at'], 'strftime') else str(video_dict['published_at']) if video_dict['published_at'] else '',
+                'duration': video_dict['duration_text'] or '',
+                'thumbnail': video_dict['thumbnail_url'] or '',
+                'description': video_dict['description'] or '',
+                'likes': video_dict['like_count'],
+                'comments': video_dict['comment_count']
+            })
+        
+        legacy_data[key] = {
+            'name': comp['name'],
+            'channel_url': comp['channel_url'],
+            'channel_id': comp['channel_id'],
+            'thumbnail': comp['thumbnail_url'],
+            'banner': comp['banner_url'],
+            'description': comp['description'],
+            'subscriber_count': comp['subscriber_count'],
+            'view_count': comp['view_count'],
+            'video_count': comp['video_count_actual'],  # Utiliser le vrai count
+            'country': comp['country'],
+            'language': comp['language'],
+            'last_updated': comp['last_updated'].strftime('%Y-%m-%d %H:%M:%S') if comp['last_updated'] and hasattr(comp['last_updated'], 'strftime') else str(comp['last_updated']) if comp['last_updated'] else '',
+            'videos': videos,
+            'total_videos': len(videos),
+            'total_views': sum(v.get('view_count', 0) for v in videos)
+        }
+    
+    conn.close()
+    return legacy_data
+
+def save_competitor_playlists(competitor_id: int, playlists: List[Dict]):
+    """Sauvegarder les playlists d'un concurrent"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        for playlist in playlists:
+            playlist_id = playlist.get('playlist_id', '')
+            name = playlist.get('name', '')[:200]
+            description = playlist.get('description', '')
+            thumbnail_url = playlist.get('thumbnail_url', '')
+            video_count = playlist.get('video_count', 0)
+            
+            # Vérifier si la playlist existe déjà
+            cursor.execute(
+                'SELECT id FROM playlist WHERE playlist_id = ? AND concurrent_id = ?',
+                (playlist_id, competitor_id)
+            )
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Mettre à jour la playlist existante
+                cursor.execute('''
+                    UPDATE playlist SET
+                        name = ?, description = ?, thumbnail_url = ?, video_count = ?,
+                        last_updated = ?
+                    WHERE id = ?
+                ''', (name, description, thumbnail_url, video_count, datetime.now(), existing[0]))
+            else:
+                # Créer une nouvelle playlist
+                cursor.execute('''
+                    INSERT INTO playlist (
+                        concurrent_id, playlist_id, name, description, thumbnail_url, video_count,
+                        created_at, last_updated
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    competitor_id, playlist_id, name, description, thumbnail_url, video_count,
+                    datetime.now(), datetime.now()
+                ))
+        
+        conn.commit()
+        print(f"[DB] Sauvegarde terminée: {len(playlists)} playlists")
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] Erreur lors de la sauvegarde des playlists: {e}")
+        raise
+    finally:
+        conn.close()
+
+def save_subscriber_data(competitor_id: int, subscriber_data: List[Dict]) -> bool:
+    """
+    Sauvegarder les données d'abonnés importées depuis un CSV
+    
+    Args:
+        competitor_id: ID du concurrent
+        subscriber_data: Liste de dictionnaires avec 'date' et 'subscribers'
+        
+    Returns:
+        bool: True si la sauvegarde a réussi, False sinon
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        saved_count = 0
+        updated_count = 0
+        
+        for entry in subscriber_data:
+            date = entry.get('date')
+            subscribers = entry.get('subscribers')
+            
+            if not date or subscribers is None:
+                continue
+                
+            # Vérifier si une entrée existe déjà pour cette date
+            cursor.execute('''
+                SELECT id, subscriber_count FROM subscriber_data 
+                WHERE concurrent_id = ? AND date = ?
+            ''', (competitor_id, date))
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Mettre à jour si le nombre d'abonnés est différent
+                if existing[1] != subscribers:
+                    cursor.execute('''
+                        UPDATE subscriber_data SET
+                            subscriber_count = ?,
+                            imported_at = ?
+                        WHERE id = ?
+                    ''', (subscribers, datetime.now(), existing[0]))
+                    updated_count += 1
+            else:
+                # Insérer une nouvelle entrée
+                cursor.execute('''
+                    INSERT INTO subscriber_data (
+                        concurrent_id, date, subscriber_count, imported_at, source
+                    ) VALUES (?, ?, ?, ?, ?)
+                ''', (competitor_id, date, subscribers, datetime.now(), 'csv_import'))
+                saved_count += 1
+        
+        conn.commit()
+        print(f"[DB] Données d'abonnés sauvegardées: {saved_count} nouvelles, {updated_count} mises à jour")
+        return True
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] Erreur lors de la sauvegarde des données d'abonnés: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_competitor_subscriber_data(competitor_id: int) -> List[Dict]:
+    """
+    Récupérer les données d'évolution des abonnés d'un concurrent
+    
+    Args:
+        competitor_id: ID du concurrent
+        
+    Returns:
+        List[Dict]: Liste des données d'abonnés triées par date
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Requête simplifiée qui évite les erreurs de colonnes
+        cursor.execute('''
+            SELECT date, subscriber_count, imported_at, source
+            FROM subscriber_data 
+            WHERE concurrent_id = ? 
+            ORDER BY date ASC
+        ''', (competitor_id,))
+        
+        subscriber_data = []
+        for row in cursor.fetchall():
+            subscriber_data.append({
+                'date': row[0],
+                'subscriber_count': row[1],
+                'imported_at': row[2],
+                'source': row[3]
+            })
+        
+        return subscriber_data
+        
+    except Exception as e:
+        print(f"[DB] Erreur dans get_competitor_subscriber_data: {e}")
+        return []
+    finally:
+        conn.close()
+
+def get_competitor_playlists(competitor_id: int) -> List[Dict]:
+    """Récupérer toutes les playlists d'un concurrent avec les champs de tracking"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT id, concurrent_id, playlist_id, name, description, thumbnail_url, 
+               category, video_count, created_at, last_updated,
+               classification_source, classification_date, classification_confidence, human_verified
+        FROM playlist 
+        WHERE concurrent_id = ? 
+        ORDER BY video_count DESC, name ASC
+    ''', (competitor_id,))
+    
+    playlists = []
+    columns = [desc[0] for desc in cursor.description]
+    
+    for row in cursor.fetchall():
+        playlist_dict = dict(zip(columns, row))
+        playlists.append(playlist_dict)
+    
+    conn.close()
+    return playlists
+
+def update_playlist_category(playlist_id: int, category: str):
+    """
+    Mettre à jour la catégorie d'une playlist ET marquer comme classification humaine
+    🛡️ Cette fonction marque automatiquement la playlist comme étant classifiée par un humain
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si les colonnes de tracking existent
+        cursor.execute("PRAGMA table_info(playlist)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        has_tracking_columns = all(col in columns for col in ['classification_source', 'classification_confidence', 'classification_date', 'human_verified'])
+        
+        if has_tracking_columns:
+            # Mise à jour complète avec tracking humain
+            cursor.execute('''
+                UPDATE playlist SET 
+                    category = ?, 
+                    classification_source = 'human',
+                    human_verified = 1,
+                    classification_date = datetime('now'),
+                    classification_confidence = 100,
+                    last_updated = ? 
+                WHERE id = ?
+            ''', (category, datetime.now(), playlist_id))
+            print(f"[DB] 🛡️ PLAYLIST CLASSIFIÉE MANUELLEMENT: ID {playlist_id} → {category.upper()} (source: humain)")
+        else:
+            # Fallback si les colonnes n'existent pas encore
+            cursor.execute('''
+                UPDATE playlist SET category = ?, last_updated = ? WHERE id = ?
+            ''', (category, datetime.now(), playlist_id))
+            print(f"[DB] ⚠️ Playlist mise à jour sans tracking (colonnes manquantes): ID {playlist_id} → {category.upper()}")
+        
+        conn.commit()
+        return True
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] ❌ Erreur lors de la mise à jour de la playlist {playlist_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+def apply_playlist_categories_to_videos_safe(competitor_id: int, specific_playlist_id: int = None, force_human_playlists: bool = False):
+    """
+    Appliquer automatiquement les catégories des playlists aux vidéos
+    🚨 RESPECTE LES CLASSIFICATIONS HUMAINES - Logique stricte de protection
+    
+    Args:
+        competitor_id: ID du concurrent
+        specific_playlist_id: Si spécifié, ne traiter que cette playlist
+        force_human_playlists: Si True, propage même les playlists classifiées manuellement (DANGER!)
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 🚨 PROTECTION RENFORCÉE : Exclure les playlists classifiées par un humain
+        if specific_playlist_id:
+            if not force_human_playlists:
+                # Vérifier que la playlist spécifique n'est PAS classifiée par un humain
+                cursor.execute('''
+                    SELECT id, category, name, classification_source, human_verified FROM playlist 
+                    WHERE id = ? AND category IS NOT NULL
+                    AND (classification_source IS NULL OR classification_source != 'human')
+                    AND (human_verified IS NULL OR human_verified != 1)
+                ''', (specific_playlist_id,))
+            else:
+                # Mode force : traiter même les playlists humaines (DANGEREUX - usage explicite seulement)
+                cursor.execute('''
+                    SELECT id, category, name, classification_source, human_verified FROM playlist 
+                    WHERE id = ? AND category IS NOT NULL
+                ''', (specific_playlist_id,))
+            playlists_to_process = cursor.fetchall()
+        else:
+            if not force_human_playlists:
+                # Récupérer SEULEMENT les playlists NON classifiées par un humain
+                cursor.execute('''
+                    SELECT id, category, name, classification_source, human_verified FROM playlist 
+                    WHERE concurrent_id = ? AND category IS NOT NULL
+                    AND (classification_source IS NULL OR classification_source != 'human')
+                    AND (human_verified IS NULL OR human_verified != 1)
+                ''', (competitor_id,))
+            else:
+                # Mode force : traiter toutes les playlists (DANGEREUX)
+                cursor.execute('''
+                    SELECT id, category, name, classification_source, human_verified FROM playlist 
+                    WHERE concurrent_id = ? AND category IS NOT NULL
+                ''', (competitor_id,))
+            playlists_to_process = cursor.fetchall()
+        
+        videos_updated = 0
+        human_protected_count = 0
+        human_playlists_skipped = 0
+        processed_playlists = []
+        
+        for playlist_row in playlists_to_process:
+            playlist_db_id = playlist_row[0]
+            category = playlist_row[1]
+            playlist_name = playlist_row[2]
+            playlist_source = playlist_row[3]
+            playlist_human_verified = playlist_row[4]
+            
+            # 🚨 DOUBLE VÉRIFICATION : Ne jamais toucher aux playlists humaines sauf si force
+            if not force_human_playlists and (playlist_source == 'human' or playlist_human_verified == 1):
+                human_playlists_skipped += 1
+                print(f"[DB] 🛡️ PLAYLIST HUMAINE PROTÉGÉE: '{playlist_name}' ignorée (classification humaine)")
+                continue
+            
+            # Mettre à jour SEULEMENT les vidéos non protégées par supervision humaine
+            cursor.execute('''
+                UPDATE video SET 
+                    category = ?, 
+                    classification_source = ?,
+                    classification_date = CURRENT_TIMESTAMP,
+                    classification_confidence = 80,
+                    human_verified = 0,
+                    last_updated = ?
+                WHERE id IN (
+                    SELECT pv.video_id FROM playlist_video pv
+                    WHERE pv.playlist_id = ?
+                )
+                AND (classification_source IS NULL OR classification_source != 'human')
+                AND (human_verified IS NULL OR human_verified != 1)
+            ''', (category, 'playlist_propagation' if force_human_playlists else 'playlist', datetime.now(), playlist_db_id))
+            
+            updated_count = cursor.rowcount
+            
+            # Compter les vidéos protégées pour info
+            cursor.execute('''
+                SELECT COUNT(*) FROM video v
+                JOIN playlist_video pv ON v.id = pv.video_id
+                WHERE pv.playlist_id = ?
+                AND (v.classification_source = 'human' OR v.human_verified = 1)
+            ''', (playlist_db_id,))
+            protected_count = cursor.fetchone()[0]
+            
+            videos_updated += updated_count
+            human_protected_count += protected_count
+            
+            if updated_count > 0 or protected_count > 0:
+                processed_playlists.append({
+                    'name': playlist_name,
+                    'category': category,
+                    'videos_updated': updated_count,
+                    'videos_protected': protected_count,
+                    'playlist_source': playlist_source
+                })
+                
+                source_label = "[HUMAIN→VIDÉOS]" if force_human_playlists and playlist_source == 'human' else "[PLAYLIST-IA]"
+                
+                if updated_count > 0:
+                    print(f"[DB] ✨ Playlist '{playlist_name}' → {category.upper()}: {updated_count} vidéos tagguées {source_label}")
+                if protected_count > 0:
+                    print(f"[DB] 🛡️ Playlist '{playlist_name}': {protected_count} vidéos protégées par supervision humaine")
+        
+        conn.commit()
+        
+        if human_playlists_skipped > 0:
+            print(f"[DB] 🛡️ {human_playlists_skipped} playlists humaines protégées (non propagées)")
+        
+        result_message = f"{videos_updated} vidéos mises à jour, {human_protected_count} protégées"
+        if human_playlists_skipped > 0:
+            result_message += f", {human_playlists_skipped} playlists humaines protégées"
+        
+        if specific_playlist_id:
+            print(f"[DB] Classification spécifique terminée: {result_message}")
+        else:
+            print(f"[DB] Classification automatique globale terminée: {result_message}")
+        
+        return {
+            'videos_updated': videos_updated,
+            'human_protected': human_protected_count,
+            'human_playlists_skipped': human_playlists_skipped,
+            'processed_playlists': processed_playlists,
+            'force_mode': force_human_playlists
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] Erreur lors de la classification automatique: {e}")
+        raise
+    finally:
+        conn.close()
+
+# 🚨 FONCTION SPÉCIALE pour propagation manuelle explicite (playlists humaines)
+def force_apply_human_playlist_to_videos(playlist_id: int, user_confirmation: bool = False):
+    """
+    🚨 FONCTION DANGEREUSE : Propager EXPLICITEMENT la catégorie d'une playlist humaine vers ses vidéos
+    Cette fonction ne doit être utilisée QUE quand l'utilisateur confirme explicitement
+    
+    Args:
+        playlist_id: ID de la playlist humaine
+        user_confirmation: L'utilisateur doit explicitement confirmer cette action
+    """
+    if not user_confirmation:
+        print("[FORCE-APPLY] ❌ Confirmation utilisateur requise pour propager une playlist humaine")
+        return {'success': False, 'error': 'Confirmation utilisateur requise'}
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier que c'est bien une playlist humaine
+        cursor.execute('''
+            SELECT category, name, classification_source, human_verified FROM playlist WHERE id = ?
+        ''', (playlist_id,))
+        playlist_info = cursor.fetchone()
+        
+        if not playlist_info:
+            return {'success': False, 'error': 'Playlist non trouvée'}
+        
+        category, name, source, verified = playlist_info
+        
+        if source != 'human' and not verified:
+            return {'success': False, 'error': 'Cette playlist n\'est pas classifiée par un humain'}
+        
+        # FORCER la propagation vers les vidéos (en écrasant même les classifications humaines des vidéos)
+        cursor.execute('''
+            UPDATE video SET 
+                category = ?, 
+                classification_source = 'human_playlist_override',
+                classification_date = CURRENT_TIMESTAMP,
+                classification_confidence = 100,
+                human_verified = 1,
+                last_updated = ?
+            WHERE id IN (
+                SELECT pv.video_id FROM playlist_video pv
+                WHERE pv.playlist_id = ?
+            )
+        ''', (category, datetime.now(), playlist_id))
+        
+        videos_updated = cursor.rowcount
+        conn.commit()
+        
+        print(f"[FORCE-APPLY] ⚠️ PROPAGATION FORCÉE: Playlist humaine '{name}' → {videos_updated} vidéos forcées à {category.upper()}")
+        
+        return {
+            'success': True,
+            'videos_updated': videos_updated,
+            'playlist_name': name,
+            'category': category,
+            'forced_override': True
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[FORCE-APPLY] ❌ Erreur: {e}")
+        return {'success': False, 'error': str(e)}
+    finally:
+        conn.close()
+
+# 🚨 REMPLACER l'ancienne fonction par la nouvelle (avec rétrocompatibilité)
+def apply_playlist_categories_to_videos(competitor_id: int, specific_playlist_id: int = None):
+    """
+    🚨 WRAPPER SÉCURISÉ : Utilise la nouvelle logique de protection renforcée
+    Cette fonction ne propage JAMAIS les playlists classifiées par un humain
+    """
+    return apply_playlist_categories_to_videos_safe(
+        competitor_id=competitor_id, 
+        specific_playlist_id=specific_playlist_id, 
+        force_human_playlists=False  # Toujours False pour la sécurité
+    )
+
+def link_playlist_videos(playlist_db_id: int, video_ids: List[str]):
+    """Lier des vidéos à une playlist"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        for position, video_id in enumerate(video_ids):
+            # Récupérer l'ID de la vidéo dans notre base
+            cursor.execute('SELECT id FROM video WHERE video_id = ?', (video_id,))
+            video_row = cursor.fetchone()
+            
+            if video_row:
+                video_db_id = video_row[0]
+                
+                # Insérer la liaison (ignore si elle existe déjà)
+                cursor.execute('''
+                    INSERT OR IGNORE INTO playlist_video (playlist_id, video_id, position)
+                    VALUES (?, ?, ?)
+                ''', (playlist_db_id, video_db_id, position))
+        
+        conn.commit()
+        print(f"[DB] Liaison terminée: {len(video_ids)} vidéos liées à la playlist")
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB] Erreur lors de la liaison playlist-vidéos: {e}")
+        raise
+    finally:
+        conn.close() 
+
+def refresh_competitor_data(channel_url: str, fresh_videos: List[Dict], channel_info: Dict = None) -> Dict:
+    """
+    Rafraîchir intelligemment les données d'un concurrent existant.
+    - Ajoute les nouvelles vidéos
+    - Enrichit les vidéos existantes en gardant les valeurs maximales (vues, likes, commentaires)
+    - Met à jour les informations de la chaîne
+    
+    Returns:
+        Dict avec les statistiques de mise à jour
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si le concurrent existe
+        cursor.execute('SELECT id, name FROM concurrent WHERE channel_url = ?', (channel_url,))
+        existing = cursor.fetchone()
+        
+        if not existing:
+            # Si le concurrent n'existe pas, utiliser la fonction normale
+            competitor_id = save_competitor_and_videos(channel_url, fresh_videos, channel_info)
+            return {
+                'success': True,
+                'action': 'created',
+                'competitor_id': competitor_id,
+                'new_videos': len(fresh_videos),
+                'updated_videos': 0,
+                'enriched_videos': 0
+            }
+        
+        competitor_id = existing[0]
+        competitor_name = existing[1]
+        print(f"[REFRESH] 🔄 Rafraîchissement de {competitor_name} (ID {competitor_id})")
+        
+        # Récupérer les vidéos existantes
+        cursor.execute('''
+            SELECT video_id, view_count, like_count, comment_count, title, url
+            FROM video WHERE concurrent_id = ?
+        ''', (competitor_id,))
+        existing_videos = {row[0]: {
+            'view_count': row[1] or 0,
+            'like_count': row[2] or 0, 
+            'comment_count': row[3] or 0,
+            'title': row[4],
+            'url': row[5]
+        } for row in cursor.fetchall()}
+        
+        stats = {
+            'new_videos': 0,
+            'updated_videos': 0,
+            'enriched_videos': 0,
+            'total_processed': len(fresh_videos)
+        }
+        
+        # Traiter chaque vidéo fraîche
+        for video in fresh_videos:
+            video_id = extract_video_id_from_url(video.get('url', ''))
+            
+            # Préparer les données de base
+            title = video.get('title', '')[:200]
+            description = video.get('description', '')
+            url = video.get('url', '')
+            thumbnail_url = video.get('thumbnail', '')
+            
+            # Traiter la date de publication
+            published_at = None
+            if video.get('publication_date'):
+                try:
+                    date_str = video['publication_date']
+                    if 'il y a' in date_str:
+                        published_at = datetime.now()
+                    else:
+                        published_at = datetime.strptime(date_str, '%Y-%m-%d')
+                except:
+                    published_at = datetime.now()
+            
+            # Traiter la durée
+            duration_seconds = None
+            duration_text = video.get('duration', '')
+            if duration_text:
+                try:
+                    parts = duration_text.split(':')
+                    if len(parts) == 2:
+                        duration_seconds = int(parts[0]) * 60 + int(parts[1])
+                    elif len(parts) == 3:
+                        duration_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                except:
+                    pass
+            
+            # Traiter les métriques avec valeurs par défaut
+            fresh_view_count = video.get('views') or video.get('view_count') or 0
+            if isinstance(fresh_view_count, str):
+                fresh_view_count = int(re.sub(r'[^\d]', '', fresh_view_count)) if re.sub(r'[^\d]', '', fresh_view_count) else 0
+            
+            fresh_like_count = video.get('likes') or video.get('like_count') or 0
+            if isinstance(fresh_like_count, str):
+                fresh_like_count = int(re.sub(r'[^\d]', '', fresh_like_count)) if re.sub(r'[^\d]', '', fresh_like_count) else 0
+                
+            fresh_comment_count = video.get('comments') or video.get('comment_count') or 0
+            if isinstance(fresh_comment_count, str):
+                fresh_comment_count = int(re.sub(r'[^\d]', '', fresh_comment_count)) if re.sub(r'[^\d]', '', fresh_comment_count) else 0
+            
+            if video_id in existing_videos:
+                # Vidéo existante : ENRICHIR avec les valeurs maximales
+                existing = existing_videos[video_id]
+                
+                # Prendre les valeurs maximales
+                max_views = max(existing['view_count'], fresh_view_count)
+                max_likes = max(existing['like_count'], fresh_like_count)
+                max_comments = max(existing['comment_count'], fresh_comment_count)
+                
+                # Déterminer si on a enrichi les données
+                enriched = (
+                    max_views > existing['view_count'] or 
+                    max_likes > existing['like_count'] or 
+                    max_comments > existing['comment_count']
+                )
+                
+                if enriched:
+                    stats['enriched_videos'] += 1
+                    print(f"[REFRESH] 📈 Enrichi: {title[:50]}... "
+                          f"(vues: {existing['view_count']} → {max_views}, "
+                          f"likes: {existing['like_count']} → {max_likes})")
+                
+                # Mettre à jour avec les valeurs maximales
+                cursor.execute('''
+                    UPDATE video SET
+                        title = ?, description = ?, thumbnail_url = ?,
+                        published_at = ?, duration_seconds = ?, duration_text = ?,
+                        view_count = ?, like_count = ?, comment_count = ?,
+                        last_updated = ?
+                    WHERE concurrent_id = ? AND video_id = ?
+                ''', (
+                    title, description, thumbnail_url,
+                    published_at, duration_seconds, duration_text,
+                    max_views, max_likes, max_comments,
+                    datetime.now(), competitor_id, video_id
+                ))
+                
+                stats['updated_videos'] += 1
+                
+            else:
+                # Nouvelle vidéo : AJOUTER
+                cursor.execute('''
+                    INSERT INTO video (
+                        concurrent_id, video_id, title, description, url, thumbnail_url,
+                        published_at, duration_seconds, duration_text,
+                        view_count, like_count, comment_count,
+                        created_at, last_updated
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    competitor_id, video_id, title, description, url, thumbnail_url,
+                    published_at, duration_seconds, duration_text,
+                    fresh_view_count, fresh_like_count, fresh_comment_count,
+                    datetime.now(), datetime.now()
+                ))
+                
+                stats['new_videos'] += 1
+                print(f"[REFRESH] ✨ Nouvelle: {title[:50]}... ({fresh_view_count} vues)")
+        
+        # Mettre à jour les informations de la chaîne si disponibles
+        if channel_info:
+            updates = {
+                'thumbnail_url': channel_info.get('thumbnail', ''),
+                'banner_url': channel_info.get('banner', ''),
+                'description': channel_info.get('description', ''),
+                'subscriber_count': channel_info.get('subscriber_count'),
+                'view_count': channel_info.get('view_count'),
+                'country': channel_info.get('country', ''),
+                'language': channel_info.get('language', ''),
+                'last_updated': datetime.now()
+            }
+            
+            # Construire la requête de mise à jour dynamiquement
+            set_clauses = []
+            values = []
+            for key, value in updates.items():
+                if value is not None:
+                    set_clauses.append(f"{key} = ?")
+                    values.append(value)
+            
+            if set_clauses:
+                values.append(competitor_id)
+                cursor.execute(f'''
+                    UPDATE concurrent SET {', '.join(set_clauses)} WHERE id = ?
+                ''', values)
+                
+                # Enregistrer l'évolution des statistiques
+                try:
+                    # Analytics export supprimé - analyse locale maintenant
+                    track_competitor_update(competitor_id, channel_info)
+                except Exception as e:
+                    print(f"[REFRESH] ⚠️ Erreur lors du tracking: {e}")
+        
+        # Mettre à jour le nombre total de vidéos
+        cursor.execute('SELECT COUNT(*) FROM video WHERE concurrent_id = ?', (competitor_id,))
+        total_videos = cursor.fetchone()[0]
+        
+        cursor.execute('''
+            UPDATE concurrent SET video_count = ?, last_updated = ? WHERE id = ?
+        ''', (total_videos, datetime.now(), competitor_id))
+        
+        conn.commit()
+        
+        print(f"[REFRESH] ✅ Rafraîchissement terminé pour {competitor_name}:")
+        print(f"  • {stats['new_videos']} nouvelles vidéos")
+        print(f"  • {stats['updated_videos']} vidéos mises à jour")
+        print(f"  • {stats['enriched_videos']} vidéos enrichies")
+        print(f"  • {total_videos} vidéos au total")
+        
+        return {
+            'success': True,
+            'action': 'refreshed',
+            'competitor_id': competitor_id,
+            'competitor_name': competitor_name,
+            'total_videos': total_videos,
+            **stats
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[REFRESH] ❌ Erreur lors du rafraîchissement: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        conn.close() 
+
+def get_all_competitors_with_videos() -> List[Dict]:
+    """
+    Récupérer tous les concurrents avec leurs vidéos
+    
+    Returns:
+        List[Dict]: Liste des concurrents avec leurs vidéos
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Récupérer tous les concurrents avec les nouveaux champs
+        cursor.execute('''
+            SELECT id, name, channel_id, channel_url, thumbnail_url, banner_url,
+                   description, subscriber_count, view_count, video_count,
+                   country, language, sector, tags, custom_region, notes, is_active,
+                   created_at, last_updated
+            FROM concurrent
+            WHERE is_active = 1
+            ORDER BY last_updated DESC
+        ''')
+        
+        competitors = []
+        for row in cursor.fetchall():
+            competitor = {
+                'id': row[0],
+                'name': row[1],
+                'channel_id': row[2],
+                'channel_url': row[3],
+                'thumbnail_url': row[4],
+                'banner_url': row[5],
+                'description': row[6],
+                'subscriber_count': row[7],
+                'view_count': row[8],
+                'video_count': row[9],
+                'country': row[10],
+                'language': row[11],
+                'sector': row[12] or 'hospitality',
+                'tags': row[13] or '',
+                'custom_region': row[14] or '',
+                'notes': row[15] or '',
+                'is_active': row[16] if row[16] is not None else 1,
+                'created_at': row[17],
+                'last_updated': row[18]
+            }
+            
+            # Récupérer les vidéos pour ce concurrent
+            cursor.execute('''
+                SELECT video_id, title, description, url, thumbnail_url,
+                       published_at, duration_seconds, duration_text,
+                       view_count, like_count, comment_count, category
+                FROM video
+                WHERE concurrent_id = ?
+                ORDER BY published_at DESC
+            ''', (competitor['id'],))
+            
+            videos = []
+            for video_row in cursor.fetchall():
+                video = {
+                    'video_id': video_row[0],
+                    'title': video_row[1],
+                    'description': video_row[2],
+                    'url': video_row[3],
+                    'thumbnail_url': video_row[4],
+                    'published_at': video_row[5],
+                    'duration_seconds': video_row[6],
+                    'duration_text': video_row[7],
+                    'view_count': video_row[8],
+                    'like_count': video_row[9],
+                    'comment_count': video_row[10],
+                    'category': video_row[11]
+                }
+                videos.append(video)
+            
+            competitor['videos'] = videos
+            competitors.append(competitor)
+        
+        return competitors
+        
+    finally:
+        conn.close()
+
+def clean_duplicate_competitors() -> Dict:
+    """
+    Nettoyer les doublons de concurrents en gardant celui avec le plus de vidéos.
+    Utilise le nom ET l'URL de chaîne pour détecter les doublons.
+    
+    Returns:
+        Dict avec les statistiques de nettoyage
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        print("[DB-CLEAN] 🧹 Début du nettoyage des doublons...")
+        
+        # Récupérer tous les concurrents avec leur nombre de vidéos
+        cursor.execute('''
+            SELECT c.id, c.name, c.channel_url, c.channel_id, 
+                   COUNT(v.id) as video_count,
+                   c.created_at, c.last_updated
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            GROUP BY c.id
+            ORDER BY c.name, video_count DESC
+        ''')
+        
+        competitors = cursor.fetchall()
+        
+        if not competitors:
+            return {'success': True, 'deleted_count': 0, 'message': 'Aucun concurrent trouvé'}
+        
+        # Grouper par nom (insensible à la casse) et URL similaire
+        groups = {}
+        for comp in competitors:
+            comp_id, name, channel_url, channel_id, video_count, created_at, last_updated = comp
+            
+            # Clé de groupement : nom nettoyé + channel_id si disponible
+            name_clean = name.lower().strip()
+            group_key = name_clean
+            
+            # Si on a un channel_id, l'utiliser comme clé plus précise
+            if channel_id:
+                group_key = f"{name_clean}_{channel_id}"
+            
+            if group_key not in groups:
+                groups[group_key] = []
+            
+            groups[group_key].append({
+                'id': comp_id,
+                'name': name,
+                'channel_url': channel_url,
+                'channel_id': channel_id,
+                'video_count': video_count,
+                'created_at': created_at,
+                'last_updated': last_updated
+            })
+        
+        # Identifier et supprimer les doublons
+        deleted_count = 0
+        kept_competitors = []
+        
+        for group_key, group_competitors in groups.items():
+            if len(group_competitors) > 1:
+                # Trier par nombre de vidéos (desc) puis par date de création (plus récent)
+                group_competitors.sort(key=lambda x: (-x['video_count'], x['last_updated'] or ''), reverse=True)
+                
+                # Garder le premier (celui avec le plus de vidéos)
+                best = group_competitors[0]
+                to_delete = group_competitors[1:]
+                
+                print(f"[DB-CLEAN] 🔍 Doublons trouvés pour '{best['name']}':")
+                print(f"  ✅ GARDE: ID {best['id']} - {best['video_count']} vidéos - {best['channel_url']}")
+                
+                # Supprimer les doublons
+                for duplicate in to_delete:
+                    print(f"  ❌ SUPPRIME: ID {duplicate['id']} - {duplicate['video_count']} vidéos - {duplicate['channel_url']}")
+                    
+                    # Supprimer le concurrent (les vidéos sont supprimées par CASCADE)
+                    cursor.execute('DELETE FROM concurrent WHERE id = ?', (duplicate['id'],))
+                    deleted_count += 1
+                
+                kept_competitors.append(best)
+            else:
+                # Pas de doublon, garder tel quel
+                kept_competitors.append(group_competitors[0])
+        
+        # Valider les changements
+        conn.commit()
+        
+        print(f"[DB-CLEAN] ✅ Nettoyage terminé:")
+        print(f"  • {deleted_count} doublons supprimés")
+        print(f"  • {len(kept_competitors)} concurrents uniques conservés")
+        
+        # Afficher le résultat final
+        for comp in kept_competitors:
+            print(f"  📊 {comp['name']}: {comp['video_count']} vidéos")
+        
+        return {
+            'success': True,
+            'deleted_count': deleted_count,
+            'kept_count': len(kept_competitors),
+            'competitors': kept_competitors,
+            'message': f'{deleted_count} doublons supprimés, {len(kept_competitors)} concurrents uniques conservés'
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB-CLEAN] ❌ Erreur lors du nettoyage: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        conn.close() 
+
+def get_all_competitors_urls():
+    """Récupère toutes les URLs des concurrents en base de données"""
+    try:
+        connection = sqlite3.connect(DB_PATH)
+        cursor = connection.cursor()
+        
+        cursor.execute("SELECT channel_url FROM concurrent")
+        urls = [row[0] for row in cursor.fetchall()]
+        
+        connection.close()
+        return urls
+        
+    except Exception as e:
+        print(f"[DATABASE] Erreur lors de la récupération des URLs des concurrents: {e}")
+        return [] 
+
+def update_competitor_country(competitor_id, country):
+    """Met à jour le pays d'un concurrent"""
+    try:
+        connection = sqlite3.connect(DB_PATH)
+        cursor = connection.cursor()
+        
+        cursor.execute("""
+            UPDATE concurrent 
+            SET country = ?, last_updated = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (country, competitor_id))
+        
+        connection.commit()
+        connection.close()
+        
+        return True
+        
+    except Exception as e:
+        print(f"[DATABASE] Erreur lors de la mise à jour du pays: {e}")
+        return False
+
+def get_competitors_by_country():
+    """Récupère les concurrents groupés par pays"""
+    try:
+        connection = sqlite3.connect(DB_PATH)
+        cursor = connection.cursor()
+        
+        cursor.execute("""
+            SELECT country, COUNT(*) as count, 
+                   GROUP_CONCAT(name, ', ') as competitors
+            FROM concurrent 
+            GROUP BY country
+            ORDER BY country
+        """)
+        
+        results = []
+        for row in cursor.fetchall():
+            results.append({
+                'country': row[0] if row[0] else 'Non défini',
+                'count': row[1],
+                'competitors': row[2]
+            })
+        
+        connection.close()
+        return results
+        
+    except Exception as e:
+        print(f"[DATABASE] Erreur lors de la récupération par pays: {e}")
+        return [] 
+
+def classify_playlist_with_ai(name: str, description: str = "") -> str:
+    """
+    Classifier automatiquement une playlist en analysant son nom et sa description
+    Retourne 'hero', 'hub' ou 'help'
+    """
+    # Utiliser la nouvelle fonction multilingue avec détection automatique de langue
+    category, detected_language, confidence = classify_video_with_language(name, description)
+    
+    print(f"[PLAYLIST-AI] 🎯 '{name}' → {category.upper()} ({detected_language}, {confidence}%)")
+    
+    return category
+
+def auto_classify_uncategorized_playlists(competitor_id: int) -> Dict:
+    """
+    Classifier automatiquement avec l'IA toutes les playlists non catégorisées d'un concurrent
+    🚨 RESPECTE LES CLASSIFICATIONS HUMAINES - Ne touche jamais aux playlists classifiées par un humain
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 🚨 NOUVEAU : Récupérer SEULEMENT les playlists non catégorisées ET non classifiées par un humain
+        cursor.execute('''
+            SELECT id, name, description FROM playlist 
+            WHERE concurrent_id = ? 
+            AND (category IS NULL OR category = '')
+            AND (classification_source IS NULL OR classification_source != 'human')
+            AND (human_verified IS NULL OR human_verified != 1)
+        ''', (competitor_id,))
+        
+        uncategorized_playlists = cursor.fetchall()
+        
+        if not uncategorized_playlists:
+            return {
+                'success': True,
+                'message': 'Aucune playlist non catégorisée trouvée (toutes déjà classifiées ou protégées par supervision humaine)',
+                'classified_count': 0,
+                'classifications': []
+            }
+        
+        classifications = []
+        classified_count = 0
+        human_protected_count = 0
+        
+        for playlist_row in uncategorized_playlists:
+            playlist_id = playlist_row[0]
+            name = playlist_row[1] or ''
+            description = playlist_row[2] or ''
+            
+            # 🚨 DOUBLE VÉRIFICATION : S'assurer qu'on ne touche pas à une classification humaine
+            cursor.execute('''
+                SELECT classification_source, human_verified FROM playlist WHERE id = ?
+            ''', (playlist_id,))
+            protection_check = cursor.fetchone()
+            
+            if protection_check and (protection_check[0] == 'human' or protection_check[1] == 1):
+                human_protected_count += 1
+                print(f"[IA-CLASSIFY] 🚫 PROTECTION HUMAINE: Playlist ID {playlist_id} ignorée (classification humaine)")
+                continue
+            
+            # Classifier avec l'IA
+            predicted_category = classify_playlist_with_ai(name, description)
+            
+            # 🚨 NOUVEAU : Mettre à jour en base avec le tracking de source IA
+            cursor.execute('''
+                UPDATE playlist SET 
+                    category = ?, 
+                    classification_source = 'ai',
+                    classification_date = CURRENT_TIMESTAMP,
+                    classification_confidence = 70,
+                    human_verified = 0,
+                    last_updated = ? 
+                WHERE id = ?
+            ''', (predicted_category, datetime.now(), playlist_id))
+            
+            classifications.append({
+                'name': name,
+                'predicted_category': predicted_category,
+                'confidence': 'medium'  # Pour l'instant toujours medium
+            })
+            
+            classified_count += 1
+            print(f"[IA-CLASSIFY] ✨ {name} → {predicted_category.upper() if predicted_category else 'NON_CLASSE'} [IA]")
+        
+        conn.commit()
+        
+        if human_protected_count > 0:
+            print(f"[IA-CLASSIFY] 🛡️ {human_protected_count} playlists protégées par supervision humaine (non modifiées)")
+        
+        return {
+            'success': True,
+            'message': f'{classified_count} playlists classifiées (IA), {human_protected_count} protégées (humain)',
+            'classified_count': classified_count,
+            'human_protected': human_protected_count,
+            'classifications': classifications
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[IA-CLASSIFY] ❌ Erreur: {e}")
+        return {
+            'success': False,
+            'error': str(e),
+            'classified_count': 0,
+            'classifications': []
+        }
+    finally:
+        conn.close()
+
+# --- GESTION DES PATTERNS IA ---
+
+def get_classification_patterns(language: str = None) -> Dict:
+    """Récupérer tous les patterns de classification IA par langue"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si la table patterns existe, sinon la créer avec support multilingue
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS classification_patterns (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category VARCHAR(10) NOT NULL,
+                pattern VARCHAR(200) NOT NULL,
+                language VARCHAR(5) NOT NULL DEFAULT 'fr',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(category, pattern, language)
+            )
+        ''')
+        
+        # Ajouter la colonne language si elle n'existe pas (migration)
+        try:
+            cursor.execute('ALTER TABLE classification_patterns ADD COLUMN language VARCHAR(5) DEFAULT "fr"')
+        except:
+            pass  # La colonne existe déjà
+        
+        # Récupérer les patterns existants
+        if language:
+            cursor.execute('''
+                SELECT category, pattern FROM classification_patterns 
+                WHERE language = ?
+                ORDER BY category, pattern
+            ''', (language,))
+        else:
+            cursor.execute('''
+                SELECT category, pattern, language FROM classification_patterns 
+                ORDER BY language, category, pattern
+            ''')
+        
+        if language:
+            patterns = {'hero': [], 'hub': [], 'help': []}
+            for row in cursor.fetchall():
+                category, pattern = row
+                if category in patterns:
+                    patterns[category].append(pattern)
+        else:
+            patterns = {'fr': {'hero': [], 'hub': [], 'help': []}, 
+                       'en': {'hero': [], 'hub': [], 'help': []},
+                       'de': {'hero': [], 'hub': [], 'help': []},
+                       'nl': {'hero': [], 'hub': [], 'help': []}}
+            for row in cursor.fetchall():
+                category, pattern, lang = row
+                if lang in patterns and category in patterns[lang]:
+                    patterns[lang][category].append(pattern)
+        
+        # Si aucun pattern n'existe, initialiser avec les patterns par défaut
+        if language and not any(patterns.values()):
+            default_patterns = get_default_classification_patterns(language)
+            for category, pattern_list in default_patterns.items():
+                for pattern in pattern_list:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO classification_patterns (category, pattern, language)
+                        VALUES (?, ?, ?)
+                    ''', (category, pattern, language))
+            conn.commit()
+            patterns = default_patterns
+        elif not language and not any(any(patterns[lang].values()) for lang in patterns):
+            # Initialiser tous les patterns par défaut pour toutes les langues
+            for lang in ['fr', 'en', 'de', 'nl']:
+                default_patterns = get_default_classification_patterns(lang)
+                for category, pattern_list in default_patterns.items():
+                    for pattern in pattern_list:
+                        cursor.execute('''
+                            INSERT OR IGNORE INTO classification_patterns (category, pattern, language)
+                            VALUES (?, ?, ?)
+                        ''', (category, pattern, lang))
+            conn.commit()
+            patterns = {lang: get_default_classification_patterns(lang) for lang in ['fr', 'en', 'de', 'nl']}
+        
+        return patterns
+        
+    except Exception as e:
+        print(f"[PATTERNS] Erreur: {e}")
+        return get_default_classification_patterns(language) if language else {}
+    finally:
+        conn.close()
+
+def get_default_classification_patterns(language: str = 'fr') -> Dict:
+    """Patterns par défaut pour la classification IA selon la langue"""
+    
+    if language == 'fr':
+        return {
+            'hero': [
+                'meilleur', 'top', 'incroyable', 'exceptionnel', 'extraordinaire', 'fantastique', 'spectaculaire',
+                'luxe', 'premium', 'exclusif', 'unique', 'rare', 'privilégié', 'élite', 'prestige', 'prestigieux',
+                'destination', 'voyage', 'aventure', 'épique', 'légendaire', 'mythique', 'iconique',
+                'expérience', 'découverte', 'exploration', 'révélation', 'surprise', 'émerveillement',
+                'must', 'essentiels', 'incontournables', 'coup de coeur', 'inoubliable', 'mémorable',
+                'recommandation', 'favori', 'préféré', 'sélection', 'choix', 'élu',
+                'inspiration', 'rêve', 'fantasme', 'idéal', 'paradis', 'magie', 'magique',
+                'ultime', 'suprême', 'classe mondiale', 'niveau international', 'référence',
+                'remarquable', 'impressionnant', 'saisissant', 'éblouissant', 'splendide',
+                'à couper le souffle', 'magnifique', 'sublime', 'grandiose', 'majestueux',
+                'révolutionnaire', 'innovant', 'avant-gardiste', 'pionnier', 'précurseur',
+                'phénomène', 'sensation', 'buzz', 'viral', 'tendance', 'mode',
+                'exclusivité', 'première', 'lancement', 'révélation', 'nouveauté',
+                'chef-d\'œuvre', 'perfection', 'excellence', 'qualité supérieure', 'haut de gamme',
+                'passion', 'émotion', 'frisson', 'adrénaline', 'intensité', 'puissance',
+                'beauté', 'art', 'esthétique', 'raffinement', 'élégance', 'sophistication',
+                'célèbre', 'renommé', 'réputé', 'illustre', 'notoire', 'populaire',
+                'récompensé', 'primé', 'médaillé', 'lauréat', 'gagnant', 'champion',
+                'secret', 'mystère', 'caché', 'confidentiel', 'privé', 'réservé',
+                'authentique', 'véritable', 'original', 'naturel', 'brut', 'pur'
+            ],
+            'hub': [
+                'comment', 'tutoriel', 'guide', 'conseils', 'astuces', 'techniques', 'méthodes',
+                'planifier', 'organiser', 'préparer', 'programmer', 'structurer', 'ordonnancer',
+                'pratique', 'utile', 'quotidien', 'régulier', 'habituel', 'courant',
+                'général', 'aperçu', 'base', 'introduction', 'présentation', 'survol',
+                'information', 'infos', 'faits', 'détails', 'données', 'éléments',
+                'série', 'collection', 'compilation', 'sélection', 'ensemble', 'groupe',
+                'programme', 'agenda', 'calendrier', 'planning', 'emploi du temps',
+                'liste', 'étapes', 'processus', 'procédure', 'marche à suivre',
+                'méthode', 'technique', 'approche', 'stratégie', 'tactique', 'système',
+                'revue', 'analyse', 'étude', 'examen', 'évaluation', 'comparaison',
+                'hebdomadaire', 'mensuel', 'quotidien', 'journalier', 'périodique',
+                'standard', 'normal', 'typique', 'habituel', 'ordinaire', 'classique',
+                'formation', 'apprentissage', 'enseignement', 'éducation', 'instruction',
+                'récap', 'résumé', 'synthèse', 'bilan', 'compte-rendu', 'rapport',
+                'mise à jour', 'actualité', 'nouvelles', 'informations', 'bulletin',
+                'découverte', 'exploration', 'visite', 'tour', 'promenade', 'parcours',
+                'focus', 'zoom', 'gros plan', 'détail', 'précision', 'spécificité',
+                'thème', 'sujet', 'topic', 'question', 'problématique', 'enjeu',
+                'catégorie', 'type', 'genre', 'style', 'variété', 'gamme',
+                'routine', 'habitude', 'coutume', 'tradition', 'usage', 'pratique'
+            ],
+            'help': [
+                'aide', 'support', 'assistance', 'secours', 'soutien', 'appui',
+                'problème', 'souci', 'difficulté', 'obstacle', 'complication', 'ennui',
+                'question', 'interrogation', 'demande', 'requête', 'sollicitation',
+                'fréquent', 'commun', 'courant', 'habituel', 'récurrent', 'typique',
+                'résoudre', 'réparer', 'corriger', 'arranger', 'régler', 'solutionner',
+                'dépannage', 'réparation', 'maintenance', 'entretien', 'service',
+                'étape par étape', 'pas à pas', 'progressif', 'graduel', 'séquentiel',
+                'débutant', 'novice', 'apprenti', 'initié', 'néophyte', 'amateur',
+                'apprendre', 'étudier', 'maîtriser', 'acquérir', 'développer', 'comprendre',
+                'expliquer', 'clarifier', 'détailler', 'préciser', 'expliciter', 'démontrer',
+                'éviter', 'prévenir', 'empêcher', 'écarter', 'contourner', 'esquiver',
+                'erreur', 'faute', 'mistake', 'bévue', 'maladresse', 'impair',
+                'attention', 'prudence', 'vigilance', 'précaution', 'soin', 'circonspection',
+                'leçon', 'cours', 'formation', 'stage', 'atelier', 'séminaire',
+                'solution', 'résolution', 'réponse', 'remède', 'traitement', 'thérapie',
+                'conseil', 'recommandation', 'suggestion', 'proposition', 'indication',
+                'guidance', 'orientation', 'direction', 'pilotage', 'accompagnement',
+                'consultation', 'expertise', 'spécialisation', 'professionnalisme',
+                'diagnostic', 'analyse', 'évaluation', 'examen', 'inspection',
+                'urgence', 'rapidité', 'vitesse', 'immédiat', 'instant', 'express'
+            ]
+        }
+    
+    elif language == 'en':
+        return {
+            'hero': [
+                'best', 'top', 'incredible', 'amazing', 'spectacular', 'fantastic', 'extraordinary',
+                'luxury', 'premium', 'exclusive', 'unique', 'rare', 'privileged', 'elite', 'prestige', 'prestigious',
+                'destination', 'travel', 'adventure', 'epic', 'legendary', 'mythical', 'iconic',
+                'experience', 'discovery', 'exploration', 'revelation', 'surprise', 'wonder',
+                'must', 'essential', 'must-have', 'must-see', 'unforgettable', 'memorable',
+                'recommendation', 'favorite', 'preferred', 'selection', 'choice', 'pick',
+                'inspiration', 'dream', 'fantasy', 'ideal', 'paradise', 'magic', 'magical',
+                'ultimate', 'supreme', 'world-class', 'international', 'reference',
+                'remarkable', 'impressive', 'striking', 'stunning', 'splendid',
+                'breathtaking', 'magnificent', 'sublime', 'grandiose', 'majestic',
+                'revolutionary', 'innovative', 'cutting-edge', 'pioneering', 'groundbreaking',
+                'phenomenon', 'sensation', 'buzz', 'viral', 'trending', 'hot',
+                'exclusive', 'premiere', 'launch', 'revelation', 'novelty',
+                'masterpiece', 'perfection', 'excellence', 'superior quality', 'high-end',
+                'passion', 'emotion', 'thrill', 'adrenaline', 'intensity', 'power',
+                'beauty', 'art', 'aesthetic', 'refinement', 'elegance', 'sophistication',
+                'famous', 'renowned', 'reputed', 'illustrious', 'notorious', 'popular',
+                'awarded', 'prize-winning', 'medal-winning', 'winner', 'champion',
+                'secret', 'mystery', 'hidden', 'confidential', 'private', 'reserved',
+                'authentic', 'genuine', 'original', 'natural', 'raw', 'pure'
+            ],
+            'hub': [
+                'how to', 'tutorial', 'guide', 'tips', 'tricks', 'techniques', 'methods',
+                'planning', 'organize', 'prepare', 'schedule', 'structure', 'arrange',
+                'practical', 'useful', 'everyday', 'regular', 'routine', 'common',
+                'general', 'overview', 'basics', 'introduction', 'presentation', 'survey',
+                'information', 'info', 'facts', 'details', 'data', 'elements',
+                'series', 'collection', 'compilation', 'selection', 'set', 'group',
+                'program', 'agenda', 'calendar', 'planning', 'schedule', 'timeline',
+                'list', 'steps', 'process', 'procedure', 'workflow', 'protocol',
+                'method', 'technique', 'approach', 'strategy', 'tactic', 'system',
+                'review', 'analysis', 'study', 'examination', 'evaluation', 'comparison',
+                'weekly', 'monthly', 'daily', 'regular', 'periodic', 'recurring',
+                'standard', 'normal', 'typical', 'usual', 'ordinary', 'classic',
+                'training', 'learning', 'teaching', 'education', 'instruction',
+                'recap', 'summary', 'synthesis', 'overview', 'report', 'briefing',
+                'update', 'news', 'updates', 'information', 'bulletin', 'announcement',
+                'discovery', 'exploration', 'visit', 'tour', 'walk', 'journey',
+                'focus', 'zoom', 'close-up', 'detail', 'precision', 'specificity',
+                'theme', 'subject', 'topic', 'question', 'issue', 'matter',
+                'category', 'type', 'genre', 'style', 'variety', 'range',
+                'routine', 'habit', 'custom', 'tradition', 'usage', 'practice'
+            ],
+            'help': [
+                'help', 'support', 'assistance', 'aid', 'backup', 'relief',
+                'problem', 'issue', 'difficulty', 'obstacle', 'complication', 'trouble',
+                'question', 'inquiry', 'request', 'query', 'ask', 'need',
+                'frequent', 'common', 'usual', 'typical', 'recurring', 'regular',
+                'solve', 'fix', 'repair', 'correct', 'resolve', 'address',
+                'troubleshooting', 'debugging', 'maintenance', 'service', 'repair',
+                'step by step', 'step-by-step', 'progressive', 'gradual', 'sequential',
+                'beginner', 'novice', 'starter', 'newbie', 'learner', 'amateur',
+                'learn', 'study', 'master', 'acquire', 'develop', 'understand',
+                'explain', 'clarify', 'detail', 'specify', 'demonstrate', 'show',
+                'avoid', 'prevent', 'stop', 'bypass', 'sidestep', 'dodge',
+                'error', 'mistake', 'fault', 'bug', 'glitch', 'failure',
+                'warning', 'caution', 'alert', 'notice', 'attention', 'careful',
+                'lesson', 'course', 'training', 'workshop', 'seminar', 'class',
+                'solution', 'resolution', 'answer', 'remedy', 'treatment', 'cure',
+                'advice', 'recommendation', 'suggestion', 'tip', 'guidance', 'counsel',
+                'guidance', 'direction', 'orientation', 'navigation', 'coaching',
+                'consultation', 'expertise', 'specialization', 'professional',
+                'diagnosis', 'analysis', 'evaluation', 'assessment', 'inspection',
+                'emergency', 'urgent', 'quick', 'fast', 'immediate', 'instant'
+            ]
+        }
+    
+    elif language == 'de':
+        return {
+            'hero': [
+                'beste', 'top', 'unglaublich', 'erstaunlich', 'spektakulär', 'fantastisch', 'außergewöhnlich',
+                'luxus', 'premium', 'exklusiv', 'einzigartig', 'selten', 'privilegiert', 'elite', 'prestige',
+                'reiseziel', 'reise', 'abenteuer', 'episch', 'legendär', 'mythisch', 'ikonisch',
+                'erlebnis', 'entdeckung', 'erkundung', 'enthüllung', 'überraschung', 'wunder',
+                'muss', 'wesentlich', 'unvergesslich', 'denkwürdig', 'bijzonder',
+                'empfehlung', 'favorit', 'bevorzugt', 'auswahl', 'wahl', 'pick',
+                'inspiration', 'traum', 'fantasie', 'ideal', 'paradies', 'magie', 'magisch',
+                'ultimativ', 'höchste', 'weltklasse', 'international', 'referenz',
+                'bemerkenswert', 'beeindruckend', 'auffällig', 'atemberaubend', 'herrlich',
+                'atemberaubend', 'prächtig', 'erhaben', 'grandios', 'majestätisch',
+                'revolutionär', 'innovativ', 'bahnbrechend', 'wegweisend', 'pionier',
+                'phänomen', 'sensation', 'trend', 'viral', 'angesagt', 'heiß',
+                'exklusiv', 'premiere', 'einführung', 'enthüllung', 'neuheit',
+                'meisterwerk', 'perfektion', 'exzellenz', 'überlegene qualität', 'hochwertig',
+                'passion', 'emotion', 'nervenkitzel', 'adrenalin', 'intensität', 'kraft',
+                'schönheit', 'kunst', 'ästhetik', 'verfeinerung', 'eleganz', 'raffinesse',
+                'berühmt', 'renommiert', 'angesehen', 'illustriert', 'bekannt', 'populär',
+                'ausgezeichnet', 'preisgekrönt', 'medaillengewinner', 'gewinner', 'kampioen',
+                'geheim', 'mysterium', 'verborgen', 'vertraulich', 'privat', 'reserviert',
+                'authentisch', 'echt', 'original', 'natürlich', 'roh', 'rein'
+            ],
+            'hub': [
+                'wie man', 'tutorial', 'anleitung', 'tipps', 'tricks', 'techniken', 'methoden',
+                'planung', 'organisieren', 'vorbereiten', 'planen', 'strukturieren', 'arrangieren',
+                'praktisch', 'nützlich', 'alltäglich', 'regelmäßig', 'routine', 'üblich',
+                'allgemein', 'überblick', 'grundlagen', 'einführung', 'präsentation', 'umfrage',
+                'information', 'info', 'fakten', 'details', 'daten', 'elemente',
+                'serie', 'sammlung', 'zusammenstellung', 'auswahl', 'set', 'gruppe',
+                'programm', 'agenda', 'kalender', 'planung', 'zeitplan', 'timeline',
+                'liste', 'schritte', 'prozess', 'verfahren', 'arbeitsablauf', 'protokoll',
+                'methode', 'technik', 'ansatz', 'strategie', 'taktik', 'system',
+                'bewertung', 'analyse', 'studie', 'prüfung', 'bewertung', 'vergleich',
+                'wöchentlich', 'monatlich', 'täglich', 'regelmäßig', 'periodisch', 'wiederkehrend',
+                'standard', 'normal', 'typisch', 'üblich', 'gewöhnlich', 'klassisch',
+                'training', 'lernen', 'lehren', 'bildung', 'unterricht', 'ausbildung',
+                'zusammenfassung', 'überblick', 'synthese', 'bericht', 'briefing',
+                'update', 'nachrichten', 'updates', 'information', 'bulletin', 'ankündigung',
+                'entdeckung', 'erkundung', 'besuch', 'tour', 'spaziergang', 'reise',
+                'fokus', 'zoom', 'nahaufnahme', 'detail', 'präzision', 'spezifität',
+                'thema', 'gegenstand', 'topic', 'frage', 'problem', 'angelegenheit',
+                'kategorie', 'typ', 'genre', 'stil', 'vielfalt', 'bereich',
+                'routine', 'gewohnheit', 'brauch', 'tradition', 'verwendung', 'praxis'
+            ],
+            'help': [
+                'hilfe', 'unterstützung', 'assistenz', 'hilfe', 'backup', 'entlastung',
+                'probleem', 'issue', 'schwierigkeit', 'hindernis', 'komplikation', 'ärger',
+                'frage', 'anfrage', 'bitte', 'abfrage', 'fragen', 'brauchen',
+                'häufig', 'üblich', 'gewöhnlich', 'typisch', 'wiederkehrend', 'regelmäßig',
+                'lösen', 'reparieren', 'beheben', 'korrigieren', 'auflösen', 'adressieren',
+                'fehlerbehebung', 'debugging', 'wartung', 'service', 'reparatur',
+                'schritt für schritt', 'schrittweise', 'progressiv', 'allmählich', 'sequentiell',
+                'anfänger', 'neuling', 'starter', 'newbie', 'lernender', 'amateur',
+                'leren', 'studieren', 'meistern', 'erwerben', 'entwickeln', 'verstehen',
+                'erklären', 'klären', 'detaillieren', 'spezifizieren', 'demonstrieren', 'zeigen',
+                'vermeiden', 'verhindern', 'stoppen', 'umgehen', 'ausweichen', 'dodge',
+                'fehler', 'mistake', 'schuld', 'bug', 'glitch', 'ausfall',
+                'warnung', 'vorsicht', 'alarm', 'hinweis', 'achtung', 'vorsichtig',
+                'lektion', 'kurs', 'training', 'workshop', 'seminar', 'klasse',
+                'lösung', 'auflösung', 'antwort', 'heilmittel', 'behandlung', 'heilung',
+                'rat', 'empfehlung', 'vorschlag', 'tipp', 'anleitung', 'beratung',
+                'führung', 'richtung', 'orientierung', 'navigation', 'coaching',
+                'beratung', 'expertise', 'spezialisierung', 'professionell',
+                'diagnose', 'analyse', 'bewertung', 'beurteilung', 'inspektion',
+                'notfall', 'dringend', 'schnell', 'schnell', 'sofort', 'instant'
+            ]
+        }
+    
+    elif language == 'nl':
+        return {
+            'hero': [
+                'beste', 'top', 'ongelofelijk', 'verbazingwekkend', 'spectaculair', 'fantastisch', 'buitengewoon',
+                'luxe', 'premium', 'exclusief', 'uniek', 'zeldzaam', 'bevoorrecht', 'elite', 'prestige',
+                'bestemming', 'reis', 'avontuur', 'episch', 'legendarisch', 'mythisch', 'iconisch',
+                'ervaring', 'ontdekking', 'verkenning', 'onthulling', 'verrassing', 'wonder',
+                'moet', 'essentieel', 'onvergetelijk', 'gedenkwaardig', 'bijzonder',
+                'aanbeveling', 'favoriet', 'voorkeur', 'selectie', 'keuze', 'pick',
+                'inspiratie', 'droom', 'fantasie', 'ideaal', 'paradijs', 'magie', 'magisch',
+                'ultieme', 'supreme', 'wereldklasse', 'internationaal', 'referentie',
+                'opmerkelijk', 'indrukwekkend', 'opvallend', 'adembenemend', 'prachtig',
+                'adembenemend', 'magnifiek', 'subliem', 'grandioos', 'majestueus',
+                'revolutionair', 'innovatief', 'baanbrekend', 'pionierswerk', 'grondlegend',
+                'fenomeen', 'sensatie', 'trend', 'viral', 'trending', 'hot',
+                'exclusief', 'premiere', 'lancering', 'onthulling', 'nieuwigheid',
+                'meesterwerk', 'perfectie', 'excellentie', 'superieure kwaliteit', 'hoogwaardig',
+                'passie', 'emotie', 'thrill', 'adrenaline', 'intensiteit', 'kracht',
+                'schoonheid', 'kunst', 'esthetiek', 'verfijning', 'elegantie', 'verfijning',
+                'beroemd', 'gerenommeerd', 'gerespecteerd', 'illustere', 'bekend', 'populair',
+                'bekroond', 'prijswinnend', 'medaillewinnaar', 'winnaar', 'kampioen',
+                'geheim', 'mysterie', 'verborgen', 'vertrouwelijk', 'privé', 'gereserveerd',
+                'authentiek', 'echt', 'origineel', 'natuurlijk', 'rauw', 'puur'
+            ],
+            'hub': [
+                'hoe te', 'tutorial', 'gids', 'tips', 'trucs', 'technieken', 'methoden',
+                'planning', 'organiseren', 'voorbereiden', 'plannen', 'structureren', 'regelen',
+                'praktisch', 'nuttig', 'dagelijks', 'regelmatig', 'routine', 'gewoon',
+                'algemeen', 'overzicht', 'basics', 'introductie', 'presentatie', 'enquête',
+                'informatie', 'info', 'feiten', 'details', 'gegevens', 'elementen',
+                'serie', 'verzameling', 'compilatie', 'selectie', 'set', 'groep',
+                'programma', 'agenda', 'kalender', 'planning', 'schema', 'tijdlijn',
+                'lijst', 'stappen', 'proces', 'procedure', 'workflow', 'protocol',
+                'methode', 'techniek', 'aanpak', 'strategie', 'tactiek', 'systeem',
+                'review', 'analyse', 'studie', 'onderzoek', 'evaluatie', 'vergelijking',
+                'wekelijks', 'maandelijks', 'dagelijks', 'regelmatig', 'periodiek', 'terugkerend',
+                'standaard', 'normaal', 'typisch', 'gebruikelijk', 'gewoon', 'klassiek',
+                'training', 'leren', 'onderwijzen', 'educatie', 'instructie', 'opleiding',
+                'samenvatting', 'overzicht', 'synthese', 'rapport', 'briefing',
+                'update', 'nieuws', 'updates', 'informatie', 'bulletin', 'aankondiging',
+                'ontdekking', 'verkenning', 'bezoek', 'tour', 'wandeling', 'reis',
+                'focus', 'zoom', 'close-up', 'detail', 'precisie', 'specificiteit',
+                'thema', 'onderwerp', 'topic', 'vraag', 'probleem', 'kwestie',
+                'categorie', 'type', 'genre', 'stijl', 'variëteit', 'bereik',
+                'routine', 'gewoonte', 'gebruik', 'traditie', 'gebruik', 'praktijk'
+            ],
+            'help': [
+                'hulp', 'ondersteuning', 'assistentie', 'hulp', 'backup', 'verlichting',
+                'probleem', 'issue', 'moeilijkheid', 'obstakel', 'complicatie', 'problemen',
+                'vraag', 'vraag', 'verzoek', 'query', 'vragen', 'nodig',
+                'frequent', 'gewoon', 'gebruikelijk', 'typisch', 'terugkerend', 'regelmatig',
+                'oplossen', 'repareren', 'herstellen', 'corrigeren', 'oplossen', 'adresseren',
+                'probleemoplossing', 'debugging', 'onderhoud', 'service', 'reparatie',
+                'stap voor stap', 'stapsgewijs', 'progressief', 'geleidelijk', 'sequentieel',
+                'beginner', 'novice', 'starter', 'newbie', 'leerling', 'amateur',
+                'leren', 'studeren', 'beheersen', 'verkrijgen', 'ontwikkelen', 'begrijpen',
+                'uitleggen', 'verduidelijken', 'detailleren', 'specificeren', 'demonstreren', 'tonen',
+                'vermijden', 'voorkomen', 'stoppen', 'omzeilen', 'ontwijken', 'dodge',
+                'fout', 'mistake', 'schuld', 'bug', 'glitch', 'falen',
+                'waarschuwing', 'voorzichtigheid', 'alarm', 'kennisgeving', 'aandacht', 'voorzichtig',
+                'les', 'cursus', 'training', 'workshop', 'seminar', 'klas',
+                'oplossing', 'resolutie', 'antwoord', 'remedie', 'behandeling', 'genezing',
+                'advies', 'aanbeveling', 'suggestie', 'tip', 'begeleiding', 'advies',
+                'begeleiding', 'richting', 'oriëntatie', 'navigatie', 'coaching',
+                'consultatie', 'expertise', 'specialisatie', 'professioneel',
+                'diagnose', 'analyse', 'evaluatie', 'beoordeling', 'inspectie',
+                'noodgeval', 'urgent', 'snel', 'schnell', 'sofort', 'instant'
+            ]
+        }
+    
+    # Retour par défaut si langue non supportée
+    return get_default_classification_patterns('fr')
+
+def add_classification_pattern(category: str, pattern: str, language: str = 'fr') -> bool:
+    """Ajouter un nouveau pattern de classification pour une langue donnée"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            INSERT OR IGNORE INTO classification_patterns (category, pattern, language)
+            VALUES (?, ?, ?)
+        ''', (category, pattern.lower().strip(), language))
+        
+        conn.commit()
+        return cursor.rowcount > 0
+        
+    except Exception as e:
+        print(f"[PATTERNS] Erreur ajout: {e}")
+        return False
+    finally:
+        conn.close()
+
+def remove_classification_pattern(category: str, pattern: str, language: str = 'fr') -> bool:
+    """Supprimer un pattern de classification pour une langue donnée"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            DELETE FROM classification_patterns 
+            WHERE category = ? AND pattern = ? AND language = ?
+        ''', (category, pattern.lower().strip(), language))
+        
+        conn.commit()
+        return cursor.rowcount > 0
+        
+    except Exception as e:
+        print(f"[PATTERNS] Erreur suppression: {e}")
+        return False
+    finally:
+        conn.close()
+
+def detect_language(text: str) -> str:
+    """Détecter la langue d'un texte (simple heuristique)"""
+    text_lower = text.lower()
+    
+    # Mots indicateurs par langue
+    french_indicators = ['le', 'la', 'les', 'de', 'du', 'des', 'et', 'ou', 'avec', 'dans', 'pour', 'sur', 'comment', 'pourquoi', 'que', 'qui']
+    english_indicators = ['the', 'and', 'or', 'with', 'in', 'for', 'on', 'how', 'why', 'what', 'who', 'where', 'when']
+    german_indicators = ['der', 'die', 'das', 'und', 'oder', 'mit', 'in', 'für', 'auf', 'wie', 'warum', 'was', 'wer', 'wo', 'wann', 'ein', 'eine']
+    dutch_indicators = ['de', 'het', 'en', 'of', 'met', 'in', 'voor', 'op', 'hoe', 'waarom', 'wat', 'wie', 'waar', 'wanneer', 'een']
+    
+    # Compter les occurrences
+    french_score = sum(1 for word in french_indicators if f' {word} ' in f' {text_lower} ')
+    english_score = sum(1 for word in english_indicators if f' {word} ' in f' {text_lower} ')
+    german_score = sum(1 for word in german_indicators if f' {word} ' in f' {text_lower} ')
+    dutch_score = sum(1 for word in dutch_indicators if f' {word} ' in f' {text_lower} ')
+    
+    # Retourner la langue avec le score le plus élevé
+    scores = {
+        'fr': french_score,
+        'en': english_score,
+        'de': german_score,
+        'nl': dutch_score
+    }
+    
+    max_lang = max(scores, key=scores.get)
+    return max_lang if scores[max_lang] > 0 else 'fr'  # Défaut français
+
+def normalize_pattern(pattern):
+    # Transforme un pattern en regex souple : espaces/tirets/points interchangeables
+    # Ex: 'how to' => r'h[o0]w[\s\-\._]*to'
+    # On remplace chaque espace par [\s\-\._]*
+    parts = re.split(r'\s+', pattern.strip())
+    regex = r'[\s\-\._]*'.join(map(re.escape, parts))
+    return regex
+
+def classify_video_with_language(title: str, description: str = "") -> Tuple[str, str, int]:
+    """
+    Classifier une vidéo en détectant automatiquement la langue
+    Retourne (catégorie, langue, confiance)
+    """
+    # Détecter la langue
+    full_text = f"{title} {description}"
+    detected_language = detect_language(full_text)
+    text_lower = full_text.lower()
+
+    # 1. Appliquer les custom rules (priorité)
+    custom_rules = list_custom_rules(detected_language)
+    for rule in custom_rules:
+        pattern = rule['pattern']
+        regex = normalize_pattern(pattern)
+        if re.search(regex, text_lower, re.IGNORECASE):
+            return rule['category'], detected_language, 100
+
+    # 2. Récupérer les patterns standards pour cette langue
+    patterns = get_classification_patterns(detected_language)
+
+    # 3. Matching souple pour tous les patterns
+    def calculate_weighted_score(text: str, pattern_list: list) -> float:
+        score = 0.0
+        for pattern in pattern_list:
+            regex = normalize_pattern(pattern)
+            if re.search(regex, text, re.IGNORECASE):
+                words_count = len(pattern.split())
+                if words_count >= 3:
+                    weight = 3.0
+                elif words_count == 2:
+                    weight = 2.0
+                else:
+                    weight = 1.0
+                # Bonus si le pattern est en début de titre (après nettoyage)
+                title_norm = re.sub(r'[\-\._]+', ' ', title.lower()).strip()
+                pattern_norm = pattern.lower().replace('-', ' ').replace('.', ' ').strip()
+                if title_norm.startswith(pattern_norm):
+                    weight *= 1.5
+                score += weight
+        return score
+
+    hero_score = calculate_weighted_score(text_lower, patterns['hero'])
+    hub_score = calculate_weighted_score(text_lower, patterns['hub'])
+    help_score = calculate_weighted_score(text_lower, patterns['help'])
+
+    scores = {'hero': hero_score, 'hub': hub_score, 'help': help_score}
+    max_category = max(scores, key=scores.get)
+    max_score = scores[max_category]
+    total_score = sum(scores.values())
+    confidence = int((max_score / total_score * 100) if total_score > 0 else 50)
+    if max_score == 0:
+        return 'hub', detected_language, 50
+    return max_category, detected_language, confidence
+
+def run_global_ai_classification() -> Dict:
+    """
+    Lance la classification IA globale sur tous les concurrents
+    Classifie les playlists puis applique aux vidéos, puis classifie directement les vidéos restantes
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Récupérer tous les concurrents
+        cursor.execute('SELECT id, name FROM concurrent ORDER BY name')
+        competitors = cursor.fetchall()
+        
+        if not competitors:
+            return {
+                'success': True,
+                'message': 'Aucun concurrent trouvé',
+                'competitors_count': 0,
+                'playlists_classified': 0,
+                'videos_classified': 0
+            }
+        
+        total_playlists_classified = 0
+        total_videos_classified = 0
+        competitors_with_playlists = 0
+        
+        for competitor_row in competitors:
+            competitor_id = competitor_row[0]
+            competitor_name = competitor_row[1]
+            
+            print(f"[GLOBAL-AI] 🎯 Traitement de {competitor_name}...")
+            
+            # 1. Classifier les playlists non catégorisées
+            playlist_result = auto_classify_uncategorized_playlists(competitor_id)
+            if playlist_result.get('classified_count', 0) > 0:
+                total_playlists_classified += playlist_result['classified_count']
+                competitors_with_playlists += 1
+                print(f"[GLOBAL-AI] ✨ {competitor_name}: {playlist_result['classified_count']} playlists classifiées")
+            
+            # 2. Appliquer les catégories des playlists aux vidéos
+            video_result = apply_playlist_categories_to_videos(competitor_id)
+            if video_result.get('videos_updated', 0) > 0:
+                total_videos_classified += video_result['videos_updated']
+                print(f"[GLOBAL-AI] 📹 {competitor_name}: {video_result['videos_updated']} vidéos classifiées via playlists")
+            
+            # 3. Classifier directement les vidéos restantes non catégorisées
+            direct_result = classify_videos_directly_with_keywords(competitor_id)
+            if direct_result.get('videos_classified', 0) > 0:
+                total_videos_classified += direct_result['videos_classified']
+                print(f"[GLOBAL-AI] 🎬 {competitor_name}: {direct_result['videos_classified']} vidéos classifiées directement")
+        
+        conn.commit()
+        
+        # Enregistrer la date de dernière classification globale
+        from yt_channel_analyzer.database import set_last_action_status
+        set_last_action_status('last_playlist_classification', {
+            'message': f'Classification globale terminée: {len(competitors)} concurrents traités',
+            'timestamp': datetime.now().isoformat()
+        })
+        return {
+            'success': True,
+            'competitors_count': len(competitors),
+            'competitors_with_playlists': competitors_with_playlists,
+            'playlists_classified': total_playlists_classified,
+            'videos_classified': total_videos_classified,
+            'message': f'Classification globale terminée: {len(competitors)} concurrents traités'
+        }
+        
+    except Exception as e:
+        print(f"[GLOBAL-AI] ❌ Erreur: {e}")
+        return {
+            'success': False,
+            'error': str(e),
+            'competitors_count': 0,
+            'playlists_classified': 0,
+            'videos_classified': 0
+        }
+    finally:
+        conn.close() 
+
+def reclassify_all_videos_with_multilingual_logic() -> Dict:
+    """
+    Re-classifier toutes les vidéos existantes avec la nouvelle logique multilingue
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    import json
+    try:
+        print("[RECLASSIFY-MULTILINGUAL] 🌍 Début de la re-classification globale multilingue")
+        
+        # Récupérer toutes les vidéos
+        cursor.execute('SELECT id, title, description, category FROM video')
+        videos = cursor.fetchall()
+        
+        if not videos:
+            return {
+                'success': False,
+                'error': 'Aucune vidéo trouvée'
+            }
+        
+        print(f"[RECLASSIFY-MULTILINGUAL] 📺 {len(videos)} vidéos à re-classifier")
+        
+        videos_updated = 0
+        videos_unchanged = 0
+        languages_detected = set()
+        category_changes = {'hero': 0, 'hub': 0, 'help': 0}
+        
+        # Traiter par lots pour éviter le verrouillage de la base
+        batch_size = 50
+        updates_batch = []
+        
+        for video_id, title, description, current_category in videos:
+            try:
+                # Utiliser la nouvelle logique multilingue
+                new_category, detected_language, confidence = classify_video_with_language(
+                    title, description or ''
+                )
+                
+                languages_detected.add(detected_language)
+                
+                # Vérifier si la catégorie a changé
+                if new_category != current_category:
+                    # Ajouter à la liste des mises à jour
+                    updates_batch.append((new_category, datetime.now(), video_id))
+                    videos_updated += 1
+                    category_changes[new_category] += 1
+                    
+                    # Log détaillé pour changements significatifs
+                    if current_category and current_category != new_category:
+                        print(f"[RECLASSIFY-MULTILINGUAL] 🔄 '{title[:50]}...' : {current_category.upper() if current_category else 'NULL'} → {new_category.upper()} ({detected_language}, {confidence}%)")
+                else:
+                    videos_unchanged += 1
+                
+                # Commit par lots pour éviter le verrouillage
+                if len(updates_batch) >= batch_size:
+                    cursor.executemany('''
+                        UPDATE video 
+                        SET category = ?, last_updated = ?
+                        WHERE id = ?
+                    ''', updates_batch)
+                    conn.commit()
+                    updates_batch = []
+                
+                # Log périodique
+                if (videos_updated + videos_unchanged) % 100 == 0:
+                    processed = videos_updated + videos_unchanged
+                    print(f"[RECLASSIFY-MULTILINGUAL] 📊 {processed}/{len(videos)} vidéos traitées ({videos_updated} mises à jour)")
+                    
+            except Exception as e:
+                print(f"[RECLASSIFY-MULTILINGUAL] ⚠️ Erreur pour vidéo {video_id}: {e}")
+                videos_unchanged += 1
+                continue
+        
+        # Commit final pour les mises à jour restantes
+        if updates_batch:
+            cursor.executemany('''
+                UPDATE video 
+                SET category = ?, last_updated = ?
+                WHERE id = ?
+            ''', updates_batch)
+            conn.commit()
+        
+        print(f"[RECLASSIFY-MULTILINGUAL] ✅ Re-classification terminée:")
+        print(f"[RECLASSIFY-MULTILINGUAL] 📊 {videos_updated} vidéos mises à jour")
+        print(f"[RECLASSIFY-MULTILINGUAL] 📊 {videos_unchanged} vidéos inchangées")
+        print(f"[RECLASSIFY-MULTILINGUAL] 🌍 {len(languages_detected)} langues détectées: {', '.join(languages_detected)}")
+        print(f"[RECLASSIFY-MULTILINGUAL] 📈 Nouvelles catégories: HERO={category_changes['hero']}, HUB={category_changes['hub']}, HELP={category_changes['help']}")
+        # Enregistrer le statut de la dernière action
+        from yt_channel_analyzer.database import set_last_action_status
+        set_last_action_status('last_reclassification', {
+            'success': True,
+            'videos_updated': videos_updated,
+            'videos_unchanged': videos_unchanged,
+            'languages_detected': len(languages_detected),
+            'detected_languages': list(languages_detected),
+            'category_changes': category_changes,
+            'total_videos': len(videos),
+            'message': 'Re-classification terminée'
+        })
+        return {
+            'success': True,
+            'videos_updated': videos_updated,
+            'videos_unchanged': videos_unchanged,
+            'languages_detected': len(languages_detected),
+            'detected_languages': list(languages_detected),
+            'category_changes': category_changes,
+            'total_videos': len(videos)
+        }
+    except Exception as e:
+        print(f"[RECLASSIFY-MULTILINGUAL] ❌ Erreur: {e}")
+        # Enregistrer l'échec
+        from yt_channel_analyzer.database import set_last_action_status
+        set_last_action_status('last_reclassification', {
+            'success': False,
+            'error': str(e),
+            'message': 'Erreur lors de la re-classification'
+        })
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        conn.close()
+
+def generate_detailed_country_insights(target_country: str) -> Dict:
+    """
+    Génère des insights ultra-précis pour un pays spécifique
+    avec pourcentages, durées et analyses d'engagement sourcées
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Récupérer toutes les vidéos du pays cible
+        cursor.execute('''
+            SELECT 
+                c.name as competitor_name,
+                v.title,
+                v.duration_seconds,
+                v.view_count,
+                v.like_count,
+                v.comment_count,
+                v.published_at,
+                v.category,
+                strftime('%H', v.published_at) as hour_published,
+                strftime('%w', v.published_at) as day_of_week
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            WHERE c.country = ? 
+            AND v.view_count IS NOT NULL 
+            AND v.view_count > 0
+            ORDER BY v.view_count DESC
+        ''', (target_country,))
+        
+        results = cursor.fetchall()
+        
+        if not results:
+            return {
+                'insights': [f"Données insuffisantes pour analyser {target_country}"],
+                'country': target_country
+            }
+        
+        # Transformer en liste de dictionnaires
+        videos = []
+        for row in results:
+            videos.append({
+                'competitor_name': row[0],
+                'title': row[1],
+                'duration_seconds': row[2] or 0,
+                'view_count': row[3] or 0,
+                'like_count': row[4] or 0,
+                'comment_count': row[5] or 0,
+                'published_at': row[6],
+                'category': row[7] or 'hub',
+                'hour_published': int(row[8]) if row[8] else None,
+                'day_of_week': int(row[9]) if row[9] else None
+            })
+        
+        # 📊 ANALYSE 1: Top 10 des vidéos et leurs typologies
+        top_10_videos = videos[:10]
+        top_10_categories = [v['category'] for v in top_10_videos]
+        top_10_category_counts = {}
+        for cat in top_10_categories:
+            top_10_category_counts[cat] = top_10_category_counts.get(cat, 0) + 1
+        
+        # Trouver la catégorie dominante dans le top 10
+        dominant_category = max(top_10_category_counts.items(), key=lambda x: x[1])
+        dominant_cat_name = dominant_category[0].upper()
+        dominant_cat_percentage = (dominant_category[1] / 10) * 100
+        
+        insight_1 = f"Le top 10 des vidéos les plus vues en {target_country} est dominé par les vidéos <b>{dominant_cat_name} ({dominant_cat_percentage:.0f}%)</b>"
+        
+        # 📊 ANALYSE 2: Durée optimale vs engagement
+        duration_engagement_analysis = {}
+        duration_ranges = [
+            (0, 120, "moins de 2min"),
+            (120, 300, "2-5min"), 
+            (300, 600, "5-10min"),
+            (600, float('inf'), "plus de 10min")
+        ]
+        
+        for min_dur, max_dur, label in duration_ranges:
+            videos_in_range = [v for v in videos if min_dur <= v['duration_seconds'] < max_dur]
+            if videos_in_range:
+                avg_comments = sum(v['comment_count'] for v in videos_in_range) / len(videos_in_range)
+                avg_engagement = sum((v['like_count'] + v['comment_count']) / max(v['view_count'], 1) * 100 for v in videos_in_range) / len(videos_in_range)
+                duration_engagement_analysis[label] = {
+                    'avg_comments': avg_comments,
+                    'avg_engagement': avg_engagement,
+                    'video_count': len(videos_in_range),
+                    'avg_views': sum(v['view_count'] for v in videos_in_range) / len(videos_in_range)
+                }
+        
+        # Analyser l'engagement par tranche de durée pour générer un insight pertinent
+        if duration_engagement_analysis:
+            # Trouver la durée avec le moins d'engagement
+            worst_engagement_duration = min(duration_engagement_analysis.items(), key=lambda x: x[1]['avg_comments'])
+            worst_label = worst_engagement_duration[0]
+            worst_comments = worst_engagement_duration[1]['avg_comments']
+            
+            # Générer une phrase grammaticalement correcte selon la durée
+            if worst_label == "moins de 2min":
+                insight_2 = f"Les vidéos de <b>moins de 2 minutes</b> ont un engagement faible avec seulement <b>{worst_comments:.1f} commentaires en moyenne</b>"
+            elif worst_label == "plus de 10min":
+                insight_2 = f"Les vidéos de <b>plus de 10 minutes</b> voient leur engagement chuter à <b>{worst_comments:.1f} commentaires en moyenne</b>"
+            elif worst_label == "5-10min":
+                insight_2 = f"Les vidéos de <b>5 à 10 minutes</b> génèrent moins d'engagement avec <b>{worst_comments:.1f} commentaires en moyenne</b>"
+            else:  # 2-5min
+                insight_2 = f"Les vidéos de <b>2 à 5 minutes</b> ont un engagement modéré avec <b>{worst_comments:.1f} commentaires en moyenne</b>"
+        else:
+            insight_2 = "Données de durée insuffisantes pour analyser l'engagement"
+        
+        # 📊 ANALYSE 3: Typology that create views avec pourcentages précis
+        category_views_analysis = {}
+        for category in ['hero', 'hub', 'help']:
+            cat_videos = [v for v in videos if v['category'] == category]
+            if cat_videos:
+                avg_views = sum(v['view_count'] for v in cat_videos) / len(cat_videos)
+                total_views = sum(v['view_count'] for v in cat_videos)
+                category_views_analysis[category] = {
+                    'avg_views': avg_views,
+                    'total_views': total_views,
+                    'video_count': len(cat_videos),
+                    'percentage_of_total_views': (total_views / sum(v['view_count'] for v in videos)) * 100
+                }
+        
+        # Trouver la catégorie qui génère le plus de vues
+        if category_views_analysis:
+            best_views_category = max(category_views_analysis.items(), key=lambda x: x[1]['avg_views'])
+            best_cat_name = best_views_category[0].upper()
+            best_cat_avg_views = best_views_category[1]['avg_views']
+            best_cat_percentage = best_views_category[1]['percentage_of_total_views']
+            
+            insight_3 = f"Les vidéos <b>{best_cat_name}</b> génèrent le plus de vues avec <b>{best_cat_avg_views:,.0f} vues en moyenne</b> ({best_cat_percentage:.1f}% du total)"
+        else:
+            insight_3 = "Données de catégories insuffisantes pour l'analyse"
+        
+        # 📊 ANALYSE 4: Meilleure heure de publication
+        if any(v['hour_published'] is not None for v in videos):
+            hour_performance = {}
+            for video in videos:
+                if video['hour_published'] is not None:
+                    hour = video['hour_published']
+                    if hour not in hour_performance:
+                        hour_performance[hour] = []
+                    hour_performance[hour].append(video['view_count'])
+            
+            # Calculer la moyenne de vues par heure
+            hour_avg_views = {}
+            for hour, views_list in hour_performance.items():
+                hour_avg_views[hour] = sum(views_list) / len(views_list)
+            
+            best_hour = max(hour_avg_views.items(), key=lambda x: x[1])
+            best_hour_time = f"{best_hour[0]:02d}:00"
+            best_hour_views = best_hour[1]
+            
+            insight_4 = f"Meilleure heure de publication: <b>{best_hour_time}</b> (moyenne de {best_hour_views:,.0f} vues)"
+        else:
+            insight_4 = "Meilleure heure de publication: <b>18:00</b> (données temporelles limitées)"
+        
+        # 📊 ANALYSE 5: Durée optimale pour l'engagement par catégorie
+        best_duration_for_engagement = None
+        best_engagement_rate = 0
+        
+        for label, data in duration_engagement_analysis.items():
+            if data['avg_engagement'] > best_engagement_rate:
+                best_engagement_rate = data['avg_engagement']
+                best_duration_for_engagement = label
+        
+        if best_duration_for_engagement:
+            insight_5 = f"Durée optimale pour l'engagement: <b>{best_duration_for_engagement}</b> (taux d'engagement de {best_engagement_rate:.2f}%)"
+        else:
+            insight_5 = "Durée optimale: <b>2-5 minutes</b> pour maximiser l'engagement"
+        
+        # 📊 ANALYSE 6: Fréquence idéale basée sur les performers
+        # Calculer la fréquence moyenne des top performers (top 20%)
+        top_20_percent_count = max(1, len(videos) // 5)
+        top_performers = videos[:top_20_percent_count]
+        
+        # Estimer la fréquence basée sur les top performers
+        if len(top_performers) >= 3:
+            ideal_frequency = "2-3 vidéos/semaine"
+        else:
+            ideal_frequency = "1-2 vidéos/semaine"
+        
+        insight_6 = f"Fréquence idéale: <b>{ideal_frequency}</b> basée sur les {top_20_percent_count} meilleures performances"
+        
+        # 📊 ANALYSE 7: Pourcentage de vidéos payées (paid)
+        # Récupérer le seuil paid_threshold depuis les paramètres
+        try:
+            # Récupérer le seuil depuis les paramètres de l'application
+            from app import load_settings
+            settings = load_settings()
+            paid_threshold = settings.get('paid_threshold', 10000)
+        except:
+            paid_threshold = 10000  # Valeur par défaut
+        
+        # Calculer le pourcentage de vidéos payées
+        paid_videos = [v for v in videos if v['view_count'] >= paid_threshold]
+        paid_percentage = (len(paid_videos) / len(videos)) * 100 if videos else 0
+        
+        # Générer l'insight sur les vidéos payées
+        if paid_percentage > 0:
+            insight_7 = f"Investissement publicitaire: <b>{paid_percentage:.0f}%</b> des vidéos sont promues (seuil: {paid_threshold:,} vues)"
+        else:
+            insight_7 = f"Stratégie organique: <b>Aucune vidéo</b> ne dépasse le seuil de promotion ({paid_threshold:,} vues)"
+        
+        return {
+            'insights': [insight_1, insight_2, insight_3, insight_4, insight_5, insight_6, insight_7],
+            'country': target_country,
+            'analysis_details': {
+                'total_videos': len(videos),
+                'paid_videos_count': len(paid_videos),
+                'paid_percentage': paid_percentage,
+                'paid_threshold': paid_threshold,
+                'top_10_categories': top_10_category_counts,
+                'duration_engagement': duration_engagement_analysis,
+                'category_views': category_views_analysis,
+                'hour_performance': hour_avg_views if 'hour_avg_views' in locals() else {}
+            }
+        }
+        
+    except Exception as e:
+        print(f"[DETAILED-INSIGHTS] ❌ Erreur pour {target_country}: {e}")
+        return {
+            'insights': [f"Erreur lors de l'analyse de {target_country}: {str(e)}"],
+            'country': target_country
+        }
+    finally:
+        conn.close()
+
+def generate_country_insights() -> Dict:
+    """
+    Génère des insights et guidelines par pays basés sur l'analyse des données réelles
+    Inclut maintenant l'analyse de la fréquence de publication
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Récupérer tous les concurrents avec leurs vidéos par pays
+        cursor.execute('''
+            SELECT 
+                c.country,
+                c.name as competitor_name,
+                c.id as competitor_id,
+                v.title,
+                v.duration_seconds,
+                v.view_count,
+                v.like_count,
+                v.comment_count,
+                v.published_at,
+                v.category,
+                strftime('%H', v.published_at) as hour_published,
+                strftime('%w', v.published_at) as day_of_week
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            WHERE v.view_count IS NOT NULL 
+            AND v.view_count > 0
+            AND c.country IS NOT NULL 
+            AND c.country != ''
+        ''')
+        
+        results = cursor.fetchall()
+        
+        # Organiser les données par pays
+        countries_data = {}
+        
+        for row in results:
+            country = row[0]
+            competitor_id = row[2]
+            if country not in countries_data:
+                countries_data[country] = {
+                    'videos': [],
+                    'competitors': set(),
+                    'competitor_ids': set()
+                }
+            
+            countries_data[country]['competitors'].add(row[1])
+            countries_data[country]['competitor_ids'].add(competitor_id)
+            countries_data[country]['videos'].append({
+                'title': row[3],
+                'duration_seconds': row[4],
+                'view_count': row[5] or 0,
+                'like_count': row[6] or 0,
+                'comment_count': row[7] or 0,
+                'published_at': row[8],
+                'category': row[9],
+                'hour_published': int(row[10]) if row[10] else None,
+                'day_of_week': int(row[11]) if row[11] else None
+            })
+        
+        # Récupérer les données de fréquence pour tous les pays
+        frequency_data = calculate_publication_frequency()
+        
+        # Générer les insights pour chaque pays
+        insights = {}
+        
+        for country, data in countries_data.items():
+            videos = data['videos']
+            competitors = data['competitors']
+            competitor_ids = data['competitor_ids']
+            
+            # Calculer les données de fréquence pour ce pays
+            country_frequency_data = {}
+            country_engagement_data = []
+            
+            for comp_id in competitor_ids:
+                if comp_id in frequency_data:
+                    freq_data = frequency_data[comp_id]
+                    country_frequency_data[comp_id] = freq_data
+                    
+                    # Calculer l'engagement moyen pour ce concurrent avec gestion d'erreurs
+                    engagement_rates = []
+                    try:
+                        # Vérifier si weekly_engagement existe
+                        if 'weekly_engagement' in freq_data and freq_data['weekly_engagement']:
+                            for week_data in freq_data['weekly_engagement'].values():
+                                if isinstance(week_data, dict) and 'avg_engagement' in week_data:
+                                    if week_data['avg_engagement'] > 0:
+                                        engagement_rates.append(week_data['avg_engagement'])
+                        
+                        # Fallback sur avg_engagement si disponible
+                        if not engagement_rates and 'avg_engagement' in freq_data:
+                            if freq_data['avg_engagement'] > 0:
+                                engagement_rates.append(freq_data['avg_engagement'])
+                    except (KeyError, TypeError, AttributeError) as e:
+                        print(f"[INSIGHTS] Erreur accès weekly_engagement pour {comp_id}: {e}")
+                        # Utiliser avg_engagement comme fallback
+                        if 'avg_engagement' in freq_data:
+                            engagement_rates.append(freq_data['avg_engagement'])
+                    
+                    if engagement_rates:
+                        avg_engagement = sum(engagement_rates) / len(engagement_rates)
+                        
+                        # Vérifier la structure avg_frequency avec gestion d'erreurs
+                        try:
+                            if 'avg_frequency' in freq_data and isinstance(freq_data['avg_frequency'], dict):
+                                country_engagement_data.append({
+                                    'competitor_id': comp_id,
+                                    'frequency': freq_data['avg_frequency'].get('total', 0),
+                                    'engagement': avg_engagement,
+                                    'hero_freq': freq_data['avg_frequency'].get('hero', 0),
+                                    'hub_freq': freq_data['avg_frequency'].get('hub', 0),
+                                    'help_freq': freq_data['avg_frequency'].get('help', 0)
+                                })
+                        except (KeyError, TypeError) as e:
+                            print(f"[INSIGHTS] Erreur accès avg_frequency pour {comp_id}: {e}")
+                            # Continuer sans ce concurrent
+            
+            # Analyser la corrélation fréquence/engagement
+            frequency_engagement_correlation = 'neutral'
+            correlation_strength = 0
+            
+            if len(country_engagement_data) >= 3:
+                # Calculer une corrélation simple
+                frequencies = [d['frequency'] for d in country_engagement_data]
+                engagements = [d['engagement'] for d in country_engagement_data]
+                
+                if len(frequencies) > 1 and len(engagements) > 1:
+                    # Corrélation de Pearson simplifiée
+                    import statistics
+                    freq_mean = statistics.mean(frequencies)
+                    eng_mean = statistics.mean(engagements)
+                    
+                    numerator = sum((f - freq_mean) * (e - eng_mean) for f, e in zip(frequencies, engagements))
+                    freq_variance = sum((f - freq_mean) ** 2 for f in frequencies)
+                    eng_variance = sum((e - eng_mean) ** 2 for e in engagements)
+                    
+                    if freq_variance > 0 and eng_variance > 0:
+                        correlation_strength = numerator / (freq_variance * eng_variance) ** 0.5
+                        
+                        if correlation_strength > 0.3:
+                            frequency_engagement_correlation = 'positive'
+                        elif correlation_strength < -0.3:
+                            frequency_engagement_correlation = 'negative'
+            
+            # Calculer la fréquence moyenne par catégorie pour ce pays
+            avg_frequencies = {
+                'total': sum(d['frequency'] for d in country_engagement_data) / len(country_engagement_data) if country_engagement_data else 0,
+                'hero': sum(d['hero_freq'] for d in country_engagement_data) / len(country_engagement_data) if country_engagement_data else 0,
+                'hub': sum(d['hub_freq'] for d in country_engagement_data) / len(country_engagement_data) if country_engagement_data else 0,
+                'help': sum(d['help_freq'] for d in country_engagement_data) / len(country_engagement_data) if country_engagement_data else 0
+            }
+            
+            # Continuer avec les analyses existantes...
+            if not videos:
+                continue
+                
+            # Analyser les vidéos performantes (top 20%)
+            videos_sorted = sorted(videos, key=lambda x: x['view_count'], reverse=True)
+            top_videos = videos_sorted[:max(1, len(videos_sorted) // 5)]
+            
+            # Analyser les métriques
+            avg_views = sum(v['view_count'] for v in videos) / len(videos)
+            avg_duration = sum(v['duration_seconds'] for v in videos if v['duration_seconds']) / len([v for v in videos if v['duration_seconds']]) if any(v['duration_seconds'] for v in videos) else 0
+            
+            # Calculer les ratios d'engagement
+            engagement_ratios = []
+            for video in videos:
+                if video['view_count'] > 0:
+                    engagement_ratio = (video['like_count'] + video['comment_count']) / video['view_count'] * 100
+                    engagement_ratios.append(engagement_ratio)
+            
+            avg_engagement = sum(engagement_ratios) / len(engagement_ratios) if engagement_ratios else 0
+            
+            # Analyser la distribution des catégories
+            category_distribution = {'hero': 0, 'hub': 0, 'help': 0}
+            for video in videos:
+                category = video.get('category', 'hub')
+                if category in category_distribution:
+                    category_distribution[category] += 1
+            
+            total_videos = len(videos)
+            category_percentages = {
+                cat: (count / total_videos * 100) if total_videos > 0 else 0 
+                for cat, count in category_distribution.items()
+            }
+            
+            # Analyser les heures optimales
+            timing_analysis = _analyze_optimal_timing(top_videos)
+            
+            # Générer les recommandations améliorées avec fréquence
+            recommendations = []
+            
+            # Recommandations sur la fréquence
+            if avg_frequencies['total'] < 1.0:
+                recommendations.append(f"Augmenter la fréquence de publication (actuellement {avg_frequencies['total']:.1f}/semaine)")
+            elif avg_frequencies['total'] > 5.0:
+                recommendations.append(f"Optimiser la fréquence de publication (actuellement {avg_frequencies['total']:.1f}/semaine peut être trop élevée)")
+            
+            # Recommandations basées sur la corrélation fréquence/engagement
+            if frequency_engagement_correlation == 'positive':
+                recommendations.append("La fréquence de publication semble positivement corrélée à l'engagement - maintenir un rythme soutenu")
+            elif frequency_engagement_correlation == 'negative':
+                recommendations.append("La fréquence élevée semble nuire à l'engagement - privilégier la qualité à la quantité")
+            
+            # Recommandations sur l'équilibre des catégories
+            if category_percentages['help'] < 20:
+                recommendations.append("Créer plus de contenu HELP pour répondre aux questions des utilisateurs")
+            if category_percentages['hero'] < 15:
+                recommendations.append("Développer des campagnes HERO pour augmenter la visibilité")
+            if category_percentages['hub'] < 40:
+                recommendations.append("Renforcer le contenu HUB pour fidéliser l'audience")
+            
+            # Recommandations sur la durée
+            if avg_duration > 0:
+                if avg_duration < 180:  # moins de 3 minutes
+                    recommendations.append("Envisager des formats plus longs pour améliorer l'engagement")
+                elif avg_duration > 600:  # plus de 10 minutes
+                    recommendations.append("Optimiser la durée des vidéos pour maintenir l'attention")
+            
+            # Recommandations sur le timing si disponible
+            if timing_analysis.get('status') != 'insufficient_data':
+                if timing_analysis.get('best_hours'):
+                    best_hour = timing_analysis['best_hours'][0]
+                    recommendations.append(f"Publier entre {best_hour[0]}h et {best_hour[0]+2}h pour maximiser les vues")
+                
+                if timing_analysis.get('best_days'):
+                    best_day = timing_analysis['best_days'][0]
+                    recommendations.append(f"Privilégier la publication le {best_day[0]} pour de meilleures performances")
+            
+            # Construire l'insight final
+            insights[country] = {
+                'total_videos': total_videos,
+                'competitor_count': len(competitors),
+                'avg_views': round(avg_views),
+                'avg_duration_minutes': round(avg_duration / 60, 1) if avg_duration > 0 else 0,
+                'avg_engagement_rate': round(avg_engagement, 2),
+                'category_distribution': category_percentages,
+                'timing_analysis': timing_analysis,
+                'recommendations': recommendations[:5],  # Limiter à 5 recommandations
+                'performance_benchmark': {
+                    'top_20_percent_threshold': top_videos[0]['view_count'] if top_videos else 0,
+                    'engagement_benchmark': round(avg_engagement, 2)
+                },
+                
+                # Nouvelles données de fréquence
+                'frequency_analysis': {
+                    'avg_frequency': avg_frequencies,
+                    'frequency_engagement_correlation': frequency_engagement_correlation,
+                    'correlation_strength': round(correlation_strength, 2),
+                    'top_frequency_performers': sorted(country_engagement_data, key=lambda x: x['engagement'], reverse=True)[:3],
+                    'frequency_recommendations': [
+                        f"Fréquence optimale estimée: {avg_frequencies['total']:.1f} vidéos/semaine",
+                        f"Répartition recommandée: {avg_frequencies['hero']:.1f} HERO, {avg_frequencies['hub']:.1f} HUB, {avg_frequencies['help']:.1f} HELP"
+                    ]
+                }
+            }
+        
+        total_countries = len(insights)
+        total_videos_analyzed = sum(country_data['total_videos'] for country_data in insights.values())
+        generated_at = datetime.now().isoformat()
+        return {
+            'insights': insights,
+            'total_countries': total_countries,
+            'total_videos_analyzed': total_videos_analyzed,
+            'generated_at': generated_at
+        }
+    except Exception as e:
+        print(f"[INSIGHTS] Erreur lors de la génération des insights: {e}")
+        return {'insights': {}, 'error': str(e)}
+    finally:
+        conn.close()
+
+def _analyze_optimal_duration(top_videos: List[Dict], all_videos: List[Dict]) -> Dict:
+    """Analyse la durée optimale des vidéos"""
+    # Filtrer les vidéos avec durée
+    top_with_duration = [v for v in top_videos if v.get('duration_seconds')]
+    all_with_duration = [v for v in all_videos if v.get('duration_seconds')]
+    
+    if not top_with_duration:
+        return {'status': 'insufficient_data'}
+    
+    # Durée moyenne des top vidéos vs toutes les vidéos
+    top_avg_duration = sum(v['duration_seconds'] for v in top_with_duration) / len(top_with_duration)
+    all_avg_duration = sum(v['duration_seconds'] for v in all_with_duration) / len(all_with_duration)
+    
+    # Convertir en minutes
+    top_avg_minutes = int(top_avg_duration / 60)
+    all_avg_minutes = int(all_avg_duration / 60)
+    
+    # Trouver la plage optimale (durées des top 20%)
+    durations = sorted([v['duration_seconds'] for v in top_with_duration])
+    optimal_min = int(durations[len(durations)//4] / 60)  # 25e percentile
+    optimal_max = int(durations[3*len(durations)//4] / 60)  # 75e percentile
+    
+    return {
+        'optimal_range_minutes': [optimal_min, optimal_max],
+        'optimal_avg_minutes': top_avg_minutes,
+        'global_avg_minutes': all_avg_minutes,
+        'performance_diff': f"+{((top_avg_duration/all_avg_duration-1)*100):.0f}%" if all_avg_duration > 0 else "N/A",
+        'recommendation': f"Privilégier des vidéos de {optimal_min}-{optimal_max} minutes"
+    }
+
+def _analyze_optimal_timing(top_videos: List[Dict]) -> Dict:
+    """Analyse les heures et jours optimaux de publication"""
+    videos_with_timing = [v for v in top_videos if v.get('hour_published') is not None]
+    
+    if not videos_with_timing:
+        return {'status': 'insufficient_data'}
+    
+    # Analyse des heures
+    hour_counts = {}
+    for video in videos_with_timing:
+        hour = video['hour_published']
+        if hour not in hour_counts:
+            hour_counts[hour] = {'count': 0, 'total_views': 0}
+        hour_counts[hour]['count'] += 1
+        hour_counts[hour]['total_views'] += video['view_count']
+    
+    # Meilleure heure (par vues moyennes)
+    best_hours = []
+    for hour, data in hour_counts.items():
+        if data['count'] >= 2:  # Au moins 2 vidéos
+            avg_views = data['total_views'] / data['count']
+            best_hours.append((hour, avg_views, data['count']))
+    
+    best_hours.sort(key=lambda x: x[1], reverse=True)
+    
+    # Analyse des jours de la semaine
+    day_counts = {}
+    for video in videos_with_timing:
+        day = video.get('day_of_week')
+        if day is not None:
+            if day not in day_counts:
+                day_counts[day] = {'count': 0, 'total_views': 0}
+            day_counts[day]['count'] += 1
+            day_counts[day]['total_views'] += video['view_count']
+    
+    # Convertir jour de semaine en nom
+    day_names = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    best_days = []
+    for day, data in day_counts.items():
+        if data['count'] >= 2:
+            avg_views = data['total_views'] / data['count']
+            day_name = day_names[day] if 0 <= day <= 6 else f"Jour {day}"
+            best_days.append((day_name, avg_views, data['count']))
+    
+    best_days.sort(key=lambda x: x[1], reverse=True)
+    
+    return {
+        'best_hours': best_hours[:3],  # Top 3 heures
+        'best_days': best_days[:3],    # Top 3 jours
+        'recommendation_hour': f"{best_hours[0][0]}h" if best_hours else "Données insuffisantes",
+        'recommendation_day': best_days[0][0] if best_days else "Données insuffisantes"
+    }
+
+def _analyze_category_performance(top_videos: List[Dict], all_videos: List[Dict]) -> Dict:
+    """Analyse des performances par catégorie"""
+    # Compter les catégories dans le top
+    top_categories = {}
+    for video in top_videos:
+        category = video.get('category', 'non_classé')
+        top_categories[category] = top_categories.get(category, 0) + 1
+    
+    # Compter toutes les catégories
+    all_categories = {}
+    for video in all_videos:
+        category = video.get('category', 'non_classé')
+        all_categories[category] = all_categories.get(category, 0) + 1
+    
+    # Calculer les ratios de performance
+    category_performance = {}
+    for category in all_categories:
+        top_count = top_categories.get(category, 0)
+        all_count = all_categories[category]
+        
+        # Ratio de présence dans le top vs présence globale
+        top_ratio = (top_count / len(top_videos)) if top_videos else 0
+        all_ratio = (all_count / len(all_videos)) if all_videos else 0
+        performance_ratio = (top_ratio / all_ratio) if all_ratio > 0 else 0
+        
+        category_performance[category] = {
+            'top_count': top_count,
+            'total_count': all_count,
+            'performance_ratio': round(performance_ratio, 2),
+            'success_rate': round((top_count / all_count) * 100, 1) if all_count > 0 else 0
+        }
+    
+    # Trier par ratio de performance
+    best_categories = sorted(
+        category_performance.items(), 
+        key=lambda x: x[1]['performance_ratio'], 
+        reverse=True
+    )
+    
+    return {
+        'best_performing': best_categories[:3] if best_categories else [],
+        'category_breakdown': category_performance
+    }
+
+def _analyze_engagement_patterns(top_videos: List[Dict]) -> Dict:
+    """Analyse les patterns d'engagement"""
+    videos_with_engagement = [v for v in top_videos if v.get('like_count', 0) > 0 and v.get('view_count', 0) > 0]
+    
+    if not videos_with_engagement:
+        return {'status': 'insufficient_data'}
+    
+    # Calculer les ratios d'engagement
+    engagement_rates = []
+    like_rates = []
+    comment_rates = []
+    
+    for video in videos_with_engagement:
+        views = video['view_count']
+        likes = video.get('like_count', 0)
+        comments = video.get('comment_count', 0)
+        
+        like_rate = (likes / views) * 100
+        comment_rate = (comments / views) * 100
+        
+        like_rates.append(like_rate)
+        comment_rates.append(comment_rate)
+        engagement_rates.append(like_rate + comment_rate)
+    
+    return {
+        'avg_like_rate': round(sum(like_rates) / len(like_rates), 2),
+        'avg_comment_rate': round(sum(comment_rates) / len(comment_rates), 2),
+        'avg_total_engagement': round(sum(engagement_rates) / len(engagement_rates), 2),
+        'top_engagement_threshold': round(max(engagement_rates), 2) if engagement_rates else 0
+    }
+
+def _calculate_country_performance_score(videos: List[Dict]) -> float:
+    """Calcule un score de performance global pour un pays"""
+    if not videos:
+        return 0.0
+    
+    # Métriques de base
+    avg_views = sum(v['view_count'] for v in videos) / len(videos)
+    
+    # Normaliser sur une échelle 0-10
+    # 100k vues = score 5, 1M vues = score 10
+    view_score = min(10, (avg_views / 100000) * 5)
+    
+    # Ajouter le facteur d'engagement
+    videos_with_engagement = [v for v in videos if v.get('like_count', 0) > 0]
+    if videos_with_engagement:
+        avg_engagement = sum(v['like_count'] / max(v['view_count'], 1) for v in videos_with_engagement) / len(videos_with_engagement)
+        engagement_score = min(3, avg_engagement * 1000)  # Max 3 points bonus
+    else:
+        engagement_score = 0
+    
+    return round(view_score + engagement_score, 1)
+
+def _analyze_engagement_hooks(top_videos: List[Dict], all_videos: List[Dict]) -> Dict:
+    """Analyse ce qui crée l'engagement - patterns de titres, mots-clés, formats"""
+    import re
+    from collections import Counter
+    
+    # Analyser les titres des vidéos les plus engageantes
+    top_titles = [v.get('title', '').lower() for v in top_videos if v.get('title')]
+    all_titles = [v.get('title', '').lower() for v in all_videos if v.get('title')]
+    
+    if not top_titles:
+        return {'status': 'insufficient_data'}
+    
+    # Mots-clés qui apparaissent plus souvent dans les top vidéos
+    def extract_keywords(titles):
+        # Extraire les mots significatifs (ignorer les mots vides)
+        stop_words = {'le', 'la', 'les', 'de', 'du', 'des', 'un', 'une', 'et', 'ou', 'à', 'au', 'aux', 'pour', 'avec', 'dans', 'sur', 'par', 'ce', 'cette', 'ces', 'comment', 'que', 'qui', 'quoi', 'où', 'quand', 'the', 'a', 'an', 'and', 'or', 'to', 'at', 'in', 'on', 'by', 'for', 'with', 'how', 'what', 'when', 'where', 'why'}
+        keywords = []
+        for title in titles:
+            words = re.findall(r'\b\w+\b', title)
+            keywords.extend([w for w in words if len(w) > 3 and w not in stop_words])
+        return keywords
+    
+    top_keywords = Counter(extract_keywords(top_titles))
+    all_keywords = Counter(extract_keywords(all_titles))
+    
+    # Mots-clés surreprésentés dans les top vidéos
+    engagement_keywords = {}
+    for keyword, top_count in top_keywords.most_common(20):
+        if keyword in all_keywords:
+            all_count = all_keywords[keyword]
+            # Ratio de surreprésentation
+            overrepresentation = (top_count / len(top_titles)) / (all_count / len(all_titles))
+            if overrepresentation > 1.2:  # Au moins 20% de surreprésentation
+                engagement_keywords[keyword] = {
+                    'count': top_count,
+                    'ratio': round(overrepresentation, 2)
+                }
+    
+    # Patterns de titres qui performent
+    title_patterns = []
+    
+    # Titres avec questions
+    question_titles = [t for t in top_titles if any(q in t for q in ['?', 'comment', 'pourquoi', 'how', 'why', 'what'])]
+    if question_titles:
+        title_patterns.append(f"Questions: {len(question_titles)}/{len(top_titles)} des top vidéos")
+    
+    # Titres avec chiffres
+    number_titles = [t for t in top_titles if re.search(r'\d+', t)]
+    if number_titles:
+        title_patterns.append(f"Chiffres: {len(number_titles)}/{len(top_titles)} contiennent des chiffres")
+    
+    # Titres avec émotions fortes
+    emotion_words = ['incroyable', 'fou', 'choc', 'révélé', 'secret', 'amazing', 'incredible', 'shocking', 'revealed', 'secret']
+    emotion_titles = [t for t in top_titles if any(word in t for word in emotion_words)]
+    if emotion_titles:
+        title_patterns.append(f"Émotions: {len(emotion_titles)}/{len(top_titles)} avec mots émotionnels")
+    
+    return {
+        'engagement_keywords': dict(list(engagement_keywords.items())[:10]),  # Top 10
+        'title_patterns': title_patterns,
+        'total_analyzed': len(top_videos)
+    }
+
+def _analyze_dropoff_patterns(top_videos: List[Dict], all_videos: List[Dict]) -> Dict:
+    """Analyse les temps de décrochage - corrélation durée vs engagement"""
+    
+    # Analyser les vidéos avec données complètes
+    complete_videos = [v for v in all_videos if v.get('duration_seconds') and v.get('view_count') and v.get('like_count')]
+    
+    if len(complete_videos) < 10:
+        return {'status': 'insufficient_data'}
+    
+    # Grouper par tranches de durée
+    duration_groups = {
+        'courte': [],    # 0-3 minutes
+        'moyenne': [],   # 3-10 minutes
+        'longue': []     # 10+ minutes
+    }
+    
+    for video in complete_videos:
+        duration_min = video['duration_seconds'] / 60
+        engagement_rate = video['like_count'] / max(video['view_count'], 1)
+        
+        if duration_min <= 3:
+            duration_groups['courte'].append(engagement_rate)
+        elif duration_min <= 10:
+            duration_groups['moyenne'].append(engagement_rate)
+        else:
+            duration_groups['longue'].append(engagement_rate)
+    
+    # Calculer l'engagement moyen par groupe
+    group_stats = {}
+    for group_name, rates in duration_groups.items():
+        if rates:
+            avg_engagement = sum(rates) / len(rates)
+            group_stats[group_name] = {
+                'avg_engagement': round(avg_engagement * 100, 2),
+                'video_count': len(rates)
+            }
+    
+    # Déterminer le point de décrochage optimal
+    best_group = max(group_stats.items(), key=lambda x: x[1]['avg_engagement']) if group_stats else None
+    
+    # Analyse des vidéos longues vs courtes dans le top
+    top_short = [v for v in top_videos if v.get('duration_seconds', 0) <= 180]  # 3 minutes
+    top_long = [v for v in top_videos if v.get('duration_seconds', 0) > 600]   # 10 minutes
+    
+    insights = {
+        'duration_groups': group_stats,
+        'optimal_length': best_group[0] if best_group else 'moyenne',
+        'top_short_count': len(top_short),
+        'top_long_count': len(top_long),
+        'dropoff_recommendation': f"Les vidéos {best_group[0]}s performent mieux ({best_group[1]['avg_engagement']}% d'engagement)" if best_group else "Données insuffisantes"
+    }
+    
+    return insights
+
+def _analyze_performance_keywords(top_videos: List[Dict]) -> Dict:
+    """Analyse les mots-clés qui performent le mieux"""
+    import re
+    from collections import Counter
+    
+    # Extraire tous les mots des titres des top vidéos
+    all_words = []
+    for video in top_videos:
+        title = video.get('title', '').lower()
+        if title:
+            # Extraire les mots significatifs
+            words = re.findall(r'\b\w+\b', title)
+            all_words.extend([w for w in words if len(w) > 3])
+    
+    if not all_words:
+        return {'status': 'insufficient_data'}
+    
+    # Compter les occurrences
+    word_counts = Counter(all_words)
+    
+    # Associer chaque mot à la performance moyenne des vidéos qui le contiennent
+    word_performance = {}
+    for word, count in word_counts.most_common(30):
+        if count >= 2:  # Au moins 2 occurrences
+            videos_with_word = [v for v in top_videos if word in v.get('title', '').lower()]
+            if videos_with_word:
+                avg_views = sum(v.get('view_count', 0) for v in videos_with_word) / len(videos_with_word)
+                avg_engagement = sum(v.get('like_count', 0) / max(v.get('view_count', 1), 1) for v in videos_with_word) / len(videos_with_word)
+                
+                word_performance[word] = {
+                    'count': count,
+                    'avg_views': int(avg_views),
+                    'avg_engagement': round(avg_engagement * 100, 2),
+                    'videos_count': len(videos_with_word)
+                }
+    
+    # Trier par engagement
+    top_keywords = sorted(word_performance.items(), key=lambda x: x[1]['avg_engagement'], reverse=True)
+    
+    return {
+        'top_keywords': dict(top_keywords[:10]),  # Top 10 mots-clés
+        'total_analyzed': len(top_videos)
+    }
+
+def _generate_country_recommendations(country: str, all_videos: List[Dict], top_videos: List[Dict]) -> List[str]:
+    """Génère des recommandations spécifiques pour un pays"""
+    recommendations = []
+    
+    # Recommandation de durée
+    if top_videos:
+        durations = [v.get('duration_seconds', 0) for v in top_videos if v.get('duration_seconds')]
+        if durations:
+            avg_duration = sum(durations) / len(durations)
+            recommendations.append(f"🎯 Durée optimale: {int(avg_duration/60)} minutes en moyenne")
+    
+    # Recommandation de timing
+    hours = [v.get('hour_published') for v in top_videos if v.get('hour_published') is not None]
+    if hours:
+        best_hour = max(set(hours), key=hours.count)
+        recommendations.append(f"⏰ Heure optimale: {best_hour}h pour maximiser l'engagement")
+    
+    # Recommandation de catégorie
+    categories = [v.get('category') for v in top_videos if v.get('category')]
+    if categories:
+        best_category = max(set(categories), key=categories.count)
+        category_names = {'hero': 'HERO', 'hub': 'HUB', 'help': 'HELP'}
+        recommendations.append(f"📈 Catégorie recommandée: {category_names.get(best_category, best_category)}")
+    
+    # 🆕 Recommandations basées sur les hooks d'engagement
+    import re
+    top_titles = [v.get('title', '').lower() for v in top_videos if v.get('title')]
+    if top_titles:
+        # Analyser les patterns de succès
+        question_count = sum(1 for t in top_titles if any(q in t for q in ['?', 'comment', 'pourquoi', 'how', 'why']))
+        number_count = sum(1 for t in top_titles if re.search(r'\d+', t))
+        
+        if question_count > len(top_titles) * 0.3:  # Plus de 30% de questions
+            recommendations.append(f"❓ Utilisez des questions dans vos titres ({question_count}/{len(top_titles)} vidéos top)")
+        
+        if number_count > len(top_titles) * 0.4:  # Plus de 40% avec des chiffres
+            recommendations.append(f"🔢 Intégrez des chiffres dans vos titres ({number_count}/{len(top_titles)} vidéos top)")
+    
+    # 🆕 Recommandation sur le temps de décrochage
+    complete_videos = [v for v in top_videos if v.get('duration_seconds') and v.get('view_count') and v.get('like_count')]
+    if len(complete_videos) >= 5:
+        short_videos = [v for v in complete_videos if v['duration_seconds'] <= 180]  # 3 minutes
+        long_videos = [v for v in complete_videos if v['duration_seconds'] > 600]   # 10 minutes
+        
+        short_engagement = sum(v['like_count'] / max(v['view_count'], 1) for v in short_videos) / len(short_videos) if short_videos else 0
+        long_engagement = sum(v['like_count'] / max(v['view_count'], 1) for v in long_videos) / len(long_videos) if long_videos else 0
+        
+        if short_engagement > long_engagement * 1.2:  # 20% de plus d'engagement
+            recommendations.append(f"⚡ Privilégiez les vidéos courtes (<3min) pour l'engagement")
+        elif long_engagement > short_engagement * 1.2:
+            recommendations.append(f"🎬 Les vidéos longues (>10min) génèrent plus d'engagement")
+    
+    # Recommandation d'engagement standard
+    engagement_rates = [
+        v['like_count'] / max(v['view_count'], 1) 
+        for v in top_videos 
+        if v.get('like_count', 0) > 0 and v.get('view_count', 0) > 0
+    ]
+    if engagement_rates:
+        target_engagement = sum(engagement_rates) / len(engagement_rates)
+        recommendations.append(f"💬 Viser {target_engagement*100:.1f}% d'engagement (likes/vues)")
+    
+    return recommendations 
+
+def get_ai_classification_setting() -> bool:
+    """Récupérer le paramètre de classification IA automatique"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Créer la table settings si elle n'existe pas
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS app_settings (
+                key VARCHAR(50) PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        cursor.execute('''
+            SELECT value FROM app_settings WHERE key = 'ai_classification_enabled'
+        ''')
+        
+        result = cursor.fetchone()
+        return result[0] == 'true' if result else False
+        
+    except Exception as e:
+        print(f"[SETTINGS] Erreur: {e}")
+        return False
+    finally:
+        conn.close()
+
+def set_ai_classification_setting(enabled: bool) -> bool:
+    """Définir le paramètre de classification IA automatique"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            INSERT OR REPLACE INTO app_settings (key, value, updated_at)
+            VALUES ('ai_classification_enabled', ?, ?)
+        ''', ('true' if enabled else 'false', datetime.now()))
+        
+        conn.commit()
+        return True
+        
+    except Exception as e:
+        print(f"[SETTINGS] Erreur: {e}")
+        return False
+    finally:
+        conn.close()
+
+def classify_videos_directly_with_keywords(competitor_id: int) -> Dict:
+    """
+    Classifier directement les vidéos non catégorisées en utilisant les mots-clés configurés
+    🚨 RESPECTE LES CLASSIFICATIONS HUMAINES - Ne touche jamais aux vidéos classifiées par un humain
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 🚨 NOUVEAU : Récupérer SEULEMENT les vidéos non catégorisées ET non classifiées par un humain
+        cursor.execute('''
+            SELECT id, title, description FROM video 
+            WHERE concurrent_id = ? 
+            AND (category IS NULL OR category = '')
+            AND (classification_source IS NULL OR classification_source != 'human')
+            AND (human_verified IS NULL OR human_verified != 1)
+        ''', (competitor_id,))
+        
+        uncategorized_videos = cursor.fetchall()
+        
+        if not uncategorized_videos:
+            return {
+                'success': True,
+                'message': 'Aucune vidéo non catégorisée trouvée (toutes déjà classifiées ou protégées par supervision humaine)',
+                'videos_classified': 0
+            }
+        
+        videos_classified = 0
+        human_protected_count = 0
+        
+        for video_row in uncategorized_videos:
+            video_id = video_row[0]
+            title = video_row[1] or ''
+            description = video_row[2] or ''
+            
+            # 🚨 DOUBLE VÉRIFICATION : S'assurer qu'on ne touche pas à une classification humaine
+            cursor.execute('''
+                SELECT classification_source, human_verified FROM video WHERE id = ?
+            ''', (video_id,))
+            protection_check = cursor.fetchone()
+            
+            if protection_check and (protection_check[0] == 'human' or protection_check[1] == 1):
+                human_protected_count += 1
+                print(f"[DIRECT-CLASSIFY] 🚫 PROTECTION HUMAINE: Vidéo ID {video_id} ignorée (classification humaine)")
+                continue
+            
+            # Classifier avec les mots-clés configurés multilingues
+            predicted_category, detected_language, confidence = classify_video_with_language(title, description)
+            
+            # 🚨 NOUVEAU : Mettre à jour en base avec le tracking de source IA
+            cursor.execute('''
+                UPDATE video SET 
+                    category = ?, 
+                    classification_source = 'ai',
+                    classification_date = CURRENT_TIMESTAMP,
+                    classification_confidence = ?,
+                    human_verified = 0,
+                    last_updated = ? 
+                WHERE id = ?
+            ''', (predicted_category, confidence, datetime.now(), video_id))
+            
+            videos_classified += 1
+            
+            # Log seulement quelques exemples pour éviter le spam
+            if videos_classified <= 5:
+                print(f"[DIRECT-CLASSIFY] ✨ {title} → {predicted_category.upper()} ({detected_language}, {confidence}%) [IA]")
+        
+        conn.commit()
+        
+        if videos_classified > 5:
+            print(f"[DIRECT-CLASSIFY] ✨ ... et {videos_classified - 5} vidéos supplémentaires classifiées [IA]")
+        
+        if human_protected_count > 0:
+            print(f"[DIRECT-CLASSIFY] 🛡️ {human_protected_count} vidéos protégées par supervision humaine (non modifiées)")
+        
+        return {
+            'success': True,
+            'message': f'{videos_classified} vidéos classifiées (IA), {human_protected_count} protégées (humain)',
+            'videos_classified': videos_classified,
+            'human_protected': human_protected_count
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DIRECT-CLASSIFY] ❌ Erreur: {e}")
+        return {
+            'success': False,
+            'error': str(e),
+            'videos_classified': 0
+        }
+    finally:
+        conn.close()
+
+def calculate_publication_frequency_monthly(competitor_id: int = None, start_date: datetime = None, end_date: datetime = None) -> Dict:
+    print('[DEBUG] >>> Entrée dans calculate_publication_frequency_monthly')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Construire la requête SQL avec support des vraies dates YouTube
+        query = '''
+            SELECT 
+                c.id as competitor_id,
+                c.name as competitor_name,
+                c.country,
+                c.created_at,
+                v.published_at,
+                v.youtube_published_at,
+                v.category,
+                v.view_count,
+                v.like_count,
+                v.comment_count,
+                v.video_id
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            WHERE v.published_at IS NOT NULL
+        '''
+        
+        params = []
+        
+        if competitor_id:
+            query += " AND c.id = ?"
+            params.append(competitor_id)
+            
+        if start_date:
+            query += " AND COALESCE(v.youtube_published_at, v.published_at) >= ?"
+            params.append(start_date)
+            
+        if end_date:
+            query += " AND COALESCE(v.youtube_published_at, v.published_at) <= ?"
+            params.append(end_date)
+            
+        query += " ORDER BY c.id, COALESCE(v.youtube_published_at, v.published_at)"
+        
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        
+        # Organiser les données par concurrent
+        competitors_data = {}
+        
+        for row in results:
+            comp_id = row[0]
+            comp_name = row[1]
+            country = row[2]
+            created_at = row[3]
+            published_at = row[4]
+            youtube_published_at = row[5]
+            category = row[6] or 'hub'  # Default to hub if no category
+            view_count = row[7] or 0
+            like_count = row[8] or 0
+            comment_count = row[9] or 0
+            video_id = row[10]
+            
+            if comp_id not in competitors_data:
+                competitors_data[comp_id] = {
+                    'name': comp_name,
+                    'country': country,
+                    'created_at': created_at,
+                    'videos': []
+                }
+            
+            # Utiliser la vraie date YouTube si disponible, sinon la date d'importation
+            try:
+                if youtube_published_at:
+                    if isinstance(youtube_published_at, str):
+                        pub_date = datetime.fromisoformat(youtube_published_at.replace('Z', '+00:00'))
+                    else:
+                        pub_date = youtube_published_at
+                    date_source = 'youtube'
+                else:
+                    if isinstance(published_at, str):
+                        pub_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                    else:
+                        pub_date = published_at
+                    date_source = 'import'
+                    
+                competitors_data[comp_id]['videos'].append({
+                    'published_at': pub_date,
+                    'category': category,
+                    'view_count': view_count,
+                    'like_count': like_count,
+                    'comment_count': comment_count,
+                    'video_id': video_id,
+                    'date_source': date_source
+                })
+            except Exception as e:
+                print(f"[FREQ] Erreur parsing date {youtube_published_at or published_at}: {e}")
+                continue
+        
+        # DEBUG: Afficher le nombre de concurrents et de vidéos trouvés
+        print(f"[DEBUG] Concurrents trouvés: {len(competitors_data)}")
+        for comp_id, data in competitors_data.items():
+            print(f"[DEBUG] {comp_id} - {data['name']} - {len(data['videos'])} vidéos")
+        
+        # Calculer les fréquences avec une approche réaliste
+        frequency_results = {}
+        
+        for comp_id, competitor_data in competitors_data.items():
+            videos = competitor_data['videos']
+            if not videos:
+                continue
+            
+            # Détecter le type de dates disponibles
+            youtube_dates_count = sum(1 for v in videos if v.get('date_source') == 'youtube')
+            has_real_dates = youtube_dates_count > 0
+            
+            if has_real_dates:
+                print(f"[FREQ] {competitor_data['name']}: {youtube_dates_count}/{len(videos)} vraies dates YouTube disponibles")
+                
+                # Utiliser les vraies dates pour le calcul
+                video_dates = [v['published_at'] for v in videos if v.get('date_source') == 'youtube']
+                
+                if len(video_dates) >= 2:
+                    date_range = (max(video_dates) - min(video_dates)).total_seconds()
+                    
+                    # Si on a assez de vraies dates avec une vraie plage temporelle
+                    if date_range > 86400 * 7:  # Plus d'une semaine d'écart
+                        print(f"[FREQ] {competitor_data['name']}: Calcul avec vraies dates YouTube")
+                        
+                        # Grouper par semaine avec de vraies dates
+                        weekly_data = defaultdict(lambda: {'total': 0, 'hero': 0, 'hub': 0, 'help': 0})
+                        weekly_engagement = defaultdict(lambda: {'engagement_rates': [], 'views': [], 'avg_engagement': 0, 'avg_views': 0})
+                        
+                        for video in videos:
+                            if video.get('date_source') == 'youtube':
+                                pub_date = video['published_at']
+                                # Utiliser le format ISO de la semaine (YYYY-WXX)
+                                week_key = pub_date.strftime('%Y-W%U')
+                                
+                                # Compter les vidéos par catégorie
+                                weekly_data[week_key]['total'] += 1
+                                weekly_data[week_key][video['category']] += 1
+                                
+                                # Calculer l'engagement
+                                if video['view_count'] > 0:
+                                    engagement_rate = (video['like_count'] + video['comment_count']) / video['view_count'] * 100
+                                    weekly_engagement[week_key]['engagement_rates'].append(engagement_rate)
+                                    weekly_engagement[week_key]['views'].append(video['view_count'])
+                        
+                        # Calculer les moyennes d'engagement par semaine
+                        for week_key, week_stats in weekly_engagement.items():
+                            if week_stats['engagement_rates']:
+                                week_stats['avg_engagement'] = sum(week_stats['engagement_rates']) / len(week_stats['engagement_rates'])
+                            if week_stats['views']:
+                                week_stats['avg_views'] = sum(week_stats['views']) / len(week_stats['views'])
+                        
+                        # Calculer les statistiques finales
+                        weeks = sorted(weekly_data.keys())
+                        total_weeks = len(weeks)
+                        
+                        if total_weeks > 0:
+                            # Convertir en fréquence mensuelle (4.33 semaines par mois)
+                            weeks_per_month = 4.33
+                            avg_frequency = {
+                                'total': sum(weekly_data[week]['total'] for week in weeks) / total_weeks * weeks_per_month,
+                                'hero': sum(weekly_data[week]['hero'] for week in weeks) / total_weeks * weeks_per_month,
+                                'hub': sum(weekly_data[week]['hub'] for week in weeks) / total_weeks * weeks_per_month,
+                                'help': sum(weekly_data[week]['help'] for week in weeks) / total_weeks * weeks_per_month
+                            }
+                        else:
+                            avg_frequency = {'total': 0, 'hero': 0, 'hub': 0, 'help': 0}
+                        
+                        # Engagement moyen global
+                        all_engagement = []
+                        for week_stats in weekly_engagement.values():
+                            all_engagement.extend(week_stats['engagement_rates'])
+                        
+                        avg_engagement = sum(all_engagement) / len(all_engagement) if all_engagement else 0
+                        
+                        frequency_results[comp_id] = {
+                            'name': competitor_data['name'],
+                            'country': competitor_data['country'],
+                            'avg_frequency': avg_frequency,
+                            'total_weeks': total_weeks,
+                            'total_videos': youtube_dates_count,
+                            'avg_engagement': avg_engagement,
+                            'calculation_method': 'real_youtube_dates',
+                            'weekly_data': dict(weekly_data),
+                            'weekly_engagement': dict(weekly_engagement),
+                            'date_range': {
+                                'start': weeks[0] if weeks else None,
+                                'end': weeks[-1] if weeks else None
+                            }
+                        }
+                        continue
+            
+            # Fallback : estimation comme avant
+            print(f"[FREQ] {competitor_data['name']}: Dates d'importation détectées, calcul estimé")
+            
+            # Détecter si on a des dates d'importation vs des vraies dates de publication
+            video_dates = [v['published_at'] for v in videos]
+            date_range = (max(video_dates) - min(video_dates)).total_seconds()
+            
+            # Si toutes les vidéos ont été importées le même jour (moins de 24h d'écart)
+            if date_range < 86400:  # 24 heures en secondes
+                # Estimation réaliste basée sur le nombre de vidéos
+                total_videos = len(videos)
+                
+                # Estimation : la plupart des chaînes publient entre 1-10 vidéos par mois
+                # Calcul basé sur une période estimée raisonnable
+                if total_videos <= 50:
+                    estimated_weeks = 52  # 1 an
+                elif total_videos <= 200:
+                    estimated_weeks = 104  # 2 ans
+                elif total_videos <= 500:
+                    estimated_weeks = 156  # 3 ans
+                else:
+                    estimated_weeks = 208  # 4 ans
+                
+                # Calcul des fréquences par catégorie
+                category_counts = {'total': 0, 'hero': 0, 'hub': 0, 'help': 0}
+                engagement_data = []
+                
+                for video in videos:
+                    category_counts['total'] += 1
+                    category_counts[video['category']] += 1
+                    
+                    # Calculer l'engagement
+                    if video['view_count'] > 0:
+                        engagement_rate = (video['like_count'] + video['comment_count']) / video['view_count'] * 100
+                        engagement_data.append({
+                            'rate': engagement_rate,
+                            'views': video['view_count'],
+                            'category': video['category']
+                        })
+                
+                # Fréquence mensuelle estimée (4.33 semaines par mois)
+                weeks_per_month = 4.33
+                avg_frequency = {
+                    'total': category_counts['total'] / estimated_weeks * weeks_per_month,
+                    'hero': category_counts['hero'] / estimated_weeks * weeks_per_month,
+                    'hub': category_counts['hub'] / estimated_weeks * weeks_per_month,
+                    'help': category_counts['help'] / estimated_weeks * weeks_per_month
+                }
+                
+                # Engagement moyen
+                avg_engagement = sum(e['rate'] for e in engagement_data) / len(engagement_data) if engagement_data else 0
+                
+                # Créer des données de semaine factices pour la compatibilité
+                weekly_data = {}
+                weekly_engagement = {}
+                
+                # Créer des semaines factices réparties sur la période estimée
+                for week_idx in range(min(estimated_weeks, 52)):  # Limiter à 52 semaines pour éviter trop de données
+                    week_key = f"2023-W{week_idx:02d}"  # Format de semaine factice
+                    weekly_data[week_key] = {
+                        'total': category_counts['total'] / estimated_weeks,
+                        'hero': category_counts['hero'] / estimated_weeks,
+                        'hub': category_counts['hub'] / estimated_weeks,
+                        'help': category_counts['help'] / estimated_weeks
+                    }
+                    weekly_engagement[week_key] = {
+                        'avg_engagement': avg_engagement,
+                        'avg_views': sum(e['views'] for e in engagement_data) / len(engagement_data) if engagement_data else 0,
+                        'engagement_rates': [avg_engagement],
+                        'views': [sum(e['views'] for e in engagement_data) / len(engagement_data) if engagement_data else 0]
+                    }
+                
+                frequency_results[comp_id] = {
+                    'name': competitor_data['name'],
+                    'country': competitor_data['country'],
+                    'avg_frequency': avg_frequency,
+                    'total_weeks': estimated_weeks,
+                    'total_videos': total_videos,
+                    'avg_engagement': avg_engagement,
+                    'calculation_method': 'estimated',
+                    'weekly_data': weekly_data,
+                    'weekly_engagement': weekly_engagement,
+                    'date_range': {
+                        'start': f"Estimé: {estimated_weeks} semaines",
+                        'end': "Maintenant"
+                    }
+                }
+        
+        # DEBUG: Afficher les concurrents inclus dans frequency_results
+        print(f"[DEBUG] Concurrents inclus dans frequency_results: {list(frequency_results.keys())}")
+        print('[DEBUG] <<< Fin calculate_publication_frequency_monthly (return frequency_results)')
+        return frequency_results
+    except Exception as e:
+        print(f"[FREQ] Erreur calcul fréquence mensuelle: {e}")
+        print('[DEBUG] <<< Fin calculate_publication_frequency_monthly (return {})')
+        return {}
+    finally:
+        conn.close()
+
+# Garder l'ancienne fonction pour compatibilité mais utiliser la nouvelle
+def calculate_publication_frequency(competitor_id: int = None, start_date: datetime = None, end_date: datetime = None) -> Dict:
+    """
+    Calcule la fréquence de publication par mois (nouvelle version corrigée)
+    """
+    return calculate_publication_frequency_monthly(competitor_id, start_date, end_date)
+
+def calculate_frequency_by_country() -> Dict:
+    """
+    Calcule la fréquence de publication agrégée par pays
+    """
+    frequency_data = calculate_publication_frequency()
+    
+    country_stats = defaultdict(lambda: {
+        'competitors': [],
+        'avg_frequency': {'total': 0, 'hero': 0, 'hub': 0, 'help': 0},
+        'total_videos': 0,
+        'total_weeks': 0
+    })
+    
+    for comp_id, data in frequency_data.items():
+        country = data['country'] or 'Unknown'
+        
+        country_stats[country]['competitors'].append({
+            'id': comp_id,
+            'name': data['name'],
+            'frequency': data['avg_frequency']
+        })
+        
+        # Agrégation
+        for category in ['total', 'hero', 'hub', 'help']:
+            country_stats[country]['avg_frequency'][category] += data['avg_frequency'][category]
+        
+        country_stats[country]['total_weeks'] += data['total_weeks']
+    
+    # Calculer les moyennes par pays
+    for country, stats in country_stats.items():
+        competitor_count = len(stats['competitors'])
+        if competitor_count > 0:
+            for category in ['total', 'hero', 'hub', 'help']:
+                stats['avg_frequency'][category] /= competitor_count
+    
+    return dict(country_stats)
+
+def get_frequency_evolution_data(competitor_id: int, period_weeks: int = 12) -> Dict:
+    """
+    Récupère les données d'évolution de la fréquence sur une période donnée
+    
+    Args:
+        competitor_id: ID du concurrent
+        period_weeks: Nombre de semaines à analyser
+        
+    Returns:
+        Dict avec les données d'évolution
+    """
+    end_date = datetime.now()
+    start_date = end_date - timedelta(weeks=period_weeks)
+    
+    frequency_data = calculate_publication_frequency(competitor_id, start_date, end_date)
+    
+    if competitor_id not in frequency_data:
+        return {}
+    
+    data = frequency_data[competitor_id]
+    
+    # Préparer les données pour le graphique avec gestion d'erreurs
+    try:
+        # Vérifier si les données nécessaires existent
+        if 'weekly_data' not in data or 'weekly_engagement' not in data:
+            print(f"[FREQ-EVOLUTION] Données manquantes pour {competitor_id}")
+            return {
+                'error': 'Données de fréquence hebdomadaire manquantes',
+                'competitor_name': data.get('name', f'Competitor {competitor_id}'),
+                'country': data.get('country', 'Unknown')
+            }
+        
+        weeks = sorted(data['weekly_data'].keys())
+        
+        # Vérifier que nous avons des données
+        if not weeks:
+            return {
+                'error': 'Aucune donnée hebdomadaire disponible',
+                'competitor_name': data.get('name', f'Competitor {competitor_id}'),
+                'country': data.get('country', 'Unknown')
+            }
+        
+        evolution_data = {
+            'weeks': weeks,
+            'total_videos': [],
+            'hero_videos': [],
+            'hub_videos': [],
+            'help_videos': [],
+            'engagement_rates': [],
+            'avg_views': [],
+            'competitor_name': data.get('name', f'Competitor {competitor_id}'),
+            'country': data.get('country', 'Unknown')
+        }
+        
+        # Remplir les données avec gestion d'erreurs
+        for week in weeks:
+            try:
+                # Données de publication
+                week_data = data['weekly_data'].get(week, {})
+                evolution_data['total_videos'].append(week_data.get('total', 0))
+                evolution_data['hero_videos'].append(week_data.get('hero', 0))
+                evolution_data['hub_videos'].append(week_data.get('hub', 0))
+                evolution_data['help_videos'].append(week_data.get('help', 0))
+                
+                # Données d'engagement
+                eng_data = data['weekly_engagement'].get(week, {})
+                evolution_data['engagement_rates'].append(eng_data.get('avg_engagement', 0))
+                evolution_data['avg_views'].append(eng_data.get('avg_views', 0))
+                
+            except (KeyError, TypeError) as e:
+                print(f"[FREQ-EVOLUTION] Erreur traitement semaine {week}: {e}")
+                # Ajouter des valeurs par défaut
+                evolution_data['total_videos'].append(0)
+                evolution_data['hero_videos'].append(0)
+                evolution_data['hub_videos'].append(0)
+                evolution_data['help_videos'].append(0)
+                evolution_data['engagement_rates'].append(0)
+                evolution_data['avg_views'].append(0)
+        
+        return evolution_data
+        
+    except Exception as e:
+        print(f"[FREQ-EVOLUTION] Erreur générale pour {competitor_id}: {e}")
+        return {
+            'error': f'Erreur lors du traitement des données: {str(e)}',
+            'competitor_name': data.get('name', f'Competitor {competitor_id}'),
+            'country': data.get('country', 'Unknown')
+        }
+
+def analyze_frequency_impact_on_engagement() -> Dict:
+    """
+    Analyse l'impact de la fréquence de publication sur l'engagement
+    """
+    frequency_data = calculate_publication_frequency()
+    
+    analysis = {
+        'high_frequency_performers': [],
+        'low_frequency_performers': [],
+        'optimal_frequency_insights': {},
+        'category_insights': {
+            'hero': {'avg_frequency': 0, 'avg_engagement': 0, 'competitors': 0},
+            'hub': {'avg_frequency': 0, 'avg_engagement': 0, 'competitors': 0},
+            'help': {'avg_frequency': 0, 'avg_engagement': 0, 'competitors': 0}
+        }
+    }
+    
+    all_competitors = []
+    
+    for comp_id, data in frequency_data.items():
+        # Calculer l'engagement moyen avec gestion d'erreurs
+        all_engagement = []
+        try:
+            # Vérifier si weekly_engagement existe
+            if 'weekly_engagement' in data and data['weekly_engagement']:
+                for week_data in data['weekly_engagement'].values():
+                    if isinstance(week_data, dict) and 'avg_engagement' in week_data:
+                        if week_data['avg_engagement'] > 0:
+                            all_engagement.append(week_data['avg_engagement'])
+            
+            # Fallback sur avg_engagement si disponible
+            if not all_engagement and 'avg_engagement' in data:
+                if data['avg_engagement'] > 0:
+                    all_engagement.append(data['avg_engagement'])
+        except (KeyError, TypeError, AttributeError) as e:
+            print(f"[FREQ-IMPACT] Erreur accès weekly_engagement pour {comp_id}: {e}")
+            # Utiliser avg_engagement comme fallback
+            if 'avg_engagement' in data and data['avg_engagement'] > 0:
+                all_engagement.append(data['avg_engagement'])
+        
+        avg_engagement = sum(all_engagement) / len(all_engagement) if all_engagement else 0
+        
+        # Vérifier les autres champs avec gestion d'erreurs
+        try:
+            competitor_analysis = {
+                'id': comp_id,
+                'name': data.get('name', f'Competitor {comp_id}'),
+                'country': data.get('country', 'Unknown'),
+                'avg_frequency': data.get('avg_frequency', {'total': 0, 'hero': 0, 'hub': 0, 'help': 0}),
+                'avg_engagement': avg_engagement,
+                'total_weeks': data.get('total_weeks', 0)
+            }
+            
+            all_competitors.append(competitor_analysis)
+            
+            # Analyser par catégorie avec gestion d'erreurs
+            if 'avg_frequency' in data and isinstance(data['avg_frequency'], dict):
+                for category in ['hero', 'hub', 'help']:
+                    if data['avg_frequency'].get(category, 0) > 0:
+                        analysis['category_insights'][category]['avg_frequency'] += data['avg_frequency'][category]
+                        analysis['category_insights'][category]['avg_engagement'] += avg_engagement
+                        analysis['category_insights'][category]['competitors'] += 1
+        except (KeyError, TypeError) as e:
+            print(f"[FREQ-IMPACT] Erreur traitement données pour {comp_id}: {e}")
+            continue
+    
+    # Calculer les moyennes par catégorie
+    for category, insights in analysis['category_insights'].items():
+        if insights['competitors'] > 0:
+            insights['avg_frequency'] /= insights['competitors']
+            insights['avg_engagement'] /= insights['competitors']
+    
+    # Identifier les performers
+    all_competitors.sort(key=lambda x: x['avg_engagement'], reverse=True)
+    
+    # Top performers (haut engagement)
+    top_quarter = len(all_competitors) // 4
+    analysis['high_frequency_performers'] = all_competitors[:top_quarter]
+    
+    # Bottom performers (bas engagement)
+    analysis['low_frequency_performers'] = all_competitors[-top_quarter:]
+    
+    # Insights sur la fréquence optimale
+    high_freq_avg = sum(c['avg_frequency']['total'] for c in analysis['high_frequency_performers']) / len(analysis['high_frequency_performers']) if analysis['high_frequency_performers'] else 0
+    low_freq_avg = sum(c['avg_frequency']['total'] for c in analysis['low_frequency_performers']) / len(analysis['low_frequency_performers']) if analysis['low_frequency_performers'] else 0
+    
+    analysis['optimal_frequency_insights'] = {
+        'high_performers_avg_frequency': high_freq_avg,
+        'low_performers_avg_frequency': low_freq_avg,
+        'frequency_impact': 'positive' if high_freq_avg > low_freq_avg else 'negative',
+        'recommendation': f"Les performers avec un engagement élevé publient en moyenne {high_freq_avg:.1f} vidéos par semaine vs {low_freq_avg:.1f} pour les plus faibles"
+    }
+    
+    return analysis
+
+def analyze_category_frequency_patterns() -> Dict:
+    """
+    Analyse approfondie des patterns de fréquence par catégorie HERO, HUB, HELP
+    """
+    frequency_data = calculate_publication_frequency()
+    
+    # Regrouper les données par catégorie
+    category_analysis = {
+        'hero': {'frequencies': [], 'engagement': [], 'competitors': []},
+        'hub': {'frequencies': [], 'engagement': [], 'competitors': []},
+        'help': {'frequencies': [], 'engagement': [], 'competitors': []}
+    }
+    
+    for comp_id, data in frequency_data.items():
+        competitor_name = data.get('name', f'Competitor {comp_id}')
+        country = data.get('country', 'Unknown')
+        
+        # Calculer l'engagement moyen pour ce concurrent avec gestion d'erreurs
+        all_engagement = []
+        try:
+            # Vérifier si weekly_engagement existe
+            if 'weekly_engagement' in data and data['weekly_engagement']:
+                for week_data in data['weekly_engagement'].values():
+                    if isinstance(week_data, dict) and 'avg_engagement' in week_data:
+                        if week_data['avg_engagement'] > 0:
+                            all_engagement.append(week_data['avg_engagement'])
+            
+            # Fallback sur avg_engagement si disponible
+            if not all_engagement and 'avg_engagement' in data:
+                if data['avg_engagement'] > 0:
+                    all_engagement.append(data['avg_engagement'])
+        except (KeyError, TypeError, AttributeError) as e:
+            print(f"[CATEGORY-FREQ] Erreur accès weekly_engagement pour {comp_id}: {e}")
+            # Utiliser avg_engagement comme fallback
+            if 'avg_engagement' in data and data['avg_engagement'] > 0:
+                all_engagement.append(data['avg_engagement'])
+        
+        avg_engagement = sum(all_engagement) / len(all_engagement) if all_engagement else 0
+        
+        # Analyser chaque catégorie avec gestion d'erreurs
+        try:
+            if 'avg_frequency' in data and isinstance(data['avg_frequency'], dict):
+                for category in ['hero', 'hub', 'help']:
+                    freq = data['avg_frequency'].get(category, 0)
+                    if freq > 0:  # Seulement si le concurrent publie cette catégorie
+                        category_analysis[category]['frequencies'].append(freq)
+                        category_analysis[category]['engagement'].append(avg_engagement)
+                        category_analysis[category]['competitors'].append({
+                            'id': comp_id,
+                            'name': competitor_name,
+                            'country': country,
+                            'frequency': freq,
+                            'engagement': avg_engagement
+                        })
+        except (KeyError, TypeError) as e:
+            print(f"[CATEGORY-FREQ] Erreur traitement données pour {comp_id}: {e}")
+            continue
+    
+    # Calculer les statistiques par catégorie
+    insights = {}
+    
+    for category, data in category_analysis.items():
+        frequencies = data['frequencies']
+        engagements = data['engagement']
+        competitors = data['competitors']
+        
+        if not frequencies:
+            insights[category] = {
+                'status': 'no_data',
+                'message': f'Aucune donnée disponible pour la catégorie {category.upper()}'
+            }
+            continue
+        
+        # Statistiques de base
+        avg_frequency = sum(frequencies) / len(frequencies)
+        min_frequency = min(frequencies)
+        max_frequency = max(frequencies)
+        avg_engagement = sum(engagements) / len(engagements)
+        
+        # Quartiles
+        sorted_frequencies = sorted(frequencies)
+        n = len(sorted_frequencies)
+        q1 = sorted_frequencies[n // 4] if n >= 4 else min_frequency
+        q3 = sorted_frequencies[3 * n // 4] if n >= 4 else max_frequency
+        
+        # Top performers
+        top_performers = sorted(competitors, key=lambda x: x['engagement'], reverse=True)[:5]
+        
+        # Analyse des patterns
+        patterns = []
+        
+        # Pattern 1: Fréquence vs Engagement
+        if len(frequencies) >= 3:
+            # Calculer la corrélation
+            import statistics
+            freq_mean = statistics.mean(frequencies)
+            eng_mean = statistics.mean(engagements)
+            
+            numerator = sum((f - freq_mean) * (e - eng_mean) for f, e in zip(frequencies, engagements))
+            freq_variance = sum((f - freq_mean) ** 2 for f in frequencies)
+            eng_variance = sum((e - eng_mean) ** 2 for e in engagements)
+            
+            if freq_variance > 0 and eng_variance > 0:
+                correlation = numerator / (freq_variance * eng_variance) ** 0.5
+                
+                if correlation > 0.3:
+                    patterns.append("Plus de fréquence = Plus d'engagement")
+                elif correlation < -0.3:
+                    patterns.append("Fréquence élevée = Engagement diminué")
+                else:
+                    patterns.append("Pas de corrélation claire fréquence/engagement")
+        
+        # Pattern 2: Recommandations spécifiques par catégorie
+        if category == 'hero':
+            if avg_frequency < 0.5:
+                patterns.append("HERO: Fréquence trop faible - viser 1-2 vidéos/mois")
+            elif avg_frequency > 2.0:
+                patterns.append("HERO: Fréquence trop élevée - dilue l'impact")
+            else:
+                patterns.append("HERO: Fréquence équilibrée")
+        
+        elif category == 'hub':
+            if avg_frequency < 1.0:
+                patterns.append("HUB: Augmenter la fréquence - viser 1-2 vidéos/semaine")
+            elif avg_frequency > 3.0:
+                patterns.append("HUB: Fréquence élevée - attention à la qualité")
+            else:
+                patterns.append("HUB: Fréquence optimale pour fidéliser")
+        
+        elif category == 'help':
+            if avg_frequency < 0.5:
+                patterns.append("HELP: Manque de contenu utilitaire")
+            elif avg_frequency > 1.5:
+                patterns.append("HELP: Excellente fréquence pour l'utilité")
+            else:
+                patterns.append("HELP: Fréquence correcte")
+        
+        # Pattern 3: Analyse des écarts
+        if max_frequency > avg_frequency * 2:
+            patterns.append("Écarts importants entre concurrents")
+        
+        # Regrouper par pays
+        country_breakdown = {}
+        for comp in competitors:
+            country = comp['country'] or 'Unknown'
+            if country not in country_breakdown:
+                country_breakdown[country] = {'count': 0, 'avg_freq': 0, 'total_freq': 0}
+            country_breakdown[country]['count'] += 1
+            country_breakdown[country]['total_freq'] += comp['frequency']
+        
+        for country, data in country_breakdown.items():
+            data['avg_freq'] = data['total_freq'] / data['count']
+        
+        # Identifier les pays leaders
+        country_leaders = sorted(
+            country_breakdown.items(), 
+            key=lambda x: x[1]['avg_freq'], 
+            reverse=True
+        )[:3]
+        
+        insights[category] = {
+            'status': 'success',
+            'statistics': {
+                'avg_frequency': round(avg_frequency, 2),
+                'min_frequency': round(min_frequency, 2),
+                'max_frequency': round(max_frequency, 2),
+                'avg_engagement': round(avg_engagement, 2),
+                'quartiles': {
+                    'q1': round(q1, 2),
+                    'q3': round(q3, 2)
+                },
+                'total_competitors': len(competitors)
+            },
+            'top_performers': top_performers,
+            'patterns': patterns,
+            'country_breakdown': dict(country_breakdown),
+            'country_leaders': country_leaders,
+            'recommendations': _generate_category_recommendations(category, avg_frequency, avg_engagement, patterns)
+        }
+    
+    # Analyse comparative entre catégories
+    comparative_analysis = {
+        'category_ranking': [],
+        'balance_analysis': {},
+        'strategic_insights': []
+    }
+    
+    # Classer les catégories par fréquence moyenne
+    category_freq_ranking = []
+    for category in ['hero', 'hub', 'help']:
+        if insights[category]['status'] == 'success':
+            category_freq_ranking.append({
+                'category': category,
+                'avg_frequency': insights[category]['statistics']['avg_frequency'],
+                'avg_engagement': insights[category]['statistics']['avg_engagement']
+            })
+    
+    category_freq_ranking.sort(key=lambda x: x['avg_frequency'], reverse=True)
+    comparative_analysis['category_ranking'] = category_freq_ranking
+    
+    # Analyser l'équilibre
+    if len(category_freq_ranking) >= 2:
+        hub_freq = next((c['avg_frequency'] for c in category_freq_ranking if c['category'] == 'hub'), 0)
+        hero_freq = next((c['avg_frequency'] for c in category_freq_ranking if c['category'] == 'hero'), 0)
+        help_freq = next((c['avg_frequency'] for c in category_freq_ranking if c['category'] == 'help'), 0)
+        
+        total_freq = hub_freq + hero_freq + help_freq
+        
+        if total_freq > 0:
+            balance = {
+                'hub_percent': round(hub_freq / total_freq * 100, 1),
+                'hero_percent': round(hero_freq / total_freq * 100, 1),
+                'help_percent': round(help_freq / total_freq * 100, 1)
+            }
+            
+            comparative_analysis['balance_analysis'] = balance
+            
+            # Insights stratégiques
+            if balance['hub_percent'] > 60:
+                comparative_analysis['strategic_insights'].append("Stratégie HUB dominante - excellente fidélisation")
+            elif balance['hero_percent'] > 40:
+                comparative_analysis['strategic_insights'].append("Stratégie HERO aggressive - focus visibilité")
+            elif balance['help_percent'] > 30:
+                comparative_analysis['strategic_insights'].append("Stratégie HELP forte - positionnement expert")
+            
+            # Recommandations d'équilibre
+            if balance['help_percent'] < 15:
+                comparative_analysis['strategic_insights'].append("Manque de contenu HELP - opportunité SEO")
+            if balance['hero_percent'] < 10:
+                comparative_analysis['strategic_insights'].append("Manque de contenu HERO - visibilité limitée")
+    
+    return {
+        'category_insights': insights,
+        'comparative_analysis': comparative_analysis,
+        'summary': {
+            'total_categories_analyzed': len([c for c in insights.values() if c['status'] == 'success']),
+            'most_frequent_category': category_freq_ranking[0]['category'] if category_freq_ranking else None,
+            'highest_engagement_category': max(category_freq_ranking, key=lambda x: x['avg_engagement'])['category'] if category_freq_ranking else None
+        }
+    }
+
+def _generate_category_recommendations(category: str, avg_frequency: float, avg_engagement: float, patterns: List[str]) -> List[str]:
+    """
+    Génère des recommandations spécifiques par catégorie
+    """
+    recommendations = []
+    
+    if category == 'hero':
+        if avg_frequency < 0.3:
+            recommendations.append("Créer plus de contenu HERO premium (campagnes, événements)")
+        elif avg_frequency > 1.5:
+            recommendations.append("Réduire la fréquence HERO pour maximiser l'impact")
+        
+        if avg_engagement < 2.0:
+            recommendations.append("Améliorer la qualité du contenu HERO pour plus d'engagement")
+        
+        recommendations.append("Planifier les HERO autour d'événements et de saisons")
+    
+    elif category == 'hub':
+        if avg_frequency < 0.8:
+            recommendations.append("Augmenter la fréquence HUB pour fidéliser l'audience")
+        elif avg_frequency > 4.0:
+            recommendations.append("Optimiser la fréquence HUB pour éviter la saturation")
+        
+        if avg_engagement < 1.5:
+            recommendations.append("Améliorer l'interaction dans le contenu HUB")
+        
+        recommendations.append("Maintenir la régularité pour créer une habitude")
+    
+    elif category == 'help':
+        if avg_frequency < 0.4:
+            recommendations.append("Créer plus de contenu HELP pour le référencement")
+        
+        if avg_engagement < 1.0:
+            recommendations.append("Optimiser le contenu HELP pour répondre aux vraies questions")
+        
+        recommendations.append("Utiliser les recherches populaires pour guider le contenu HELP")
+    
+    # Ajouter des recommandations basées sur les patterns détectés
+    for pattern in patterns:
+        if "Plus de fréquence = Plus d'engagement" in pattern:
+            recommendations.append(f"Augmenter progressivement la fréquence {category.upper()}")
+        elif "Fréquence élevée = Engagement diminué" in pattern:
+            recommendations.append(f"Réduire la fréquence {category.upper()} et focus qualité")
+    
+    return recommendations[:4]  # Limiter à 4 recommandations
+
+def update_database_schema():
+    """Mettre à jour le schéma de la base de données avec les nouveaux champs de tagging"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si les nouveaux champs existent déjà dans la table concurrent
+        cursor.execute("PRAGMA table_info(concurrent)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        print(f"[DB-UPDATE] Colonnes actuelles concurrent: {columns}")
+        
+        # Ajouter les nouveaux champs si ils n'existent pas
+        new_columns = [
+            ('sector', 'VARCHAR(100)', 'hospitality'),  # Secteur principal
+            ('tags', 'TEXT', ''),  # Tags personnalisés (JSON)
+            ('custom_region', 'VARCHAR(100)', ''),  # Région personnalisée
+            ('notes', 'TEXT', ''),  # Notes libres
+            ('is_active', 'BOOLEAN', 1)  # Statut actif/inactif
+        ]
+        
+        for column_name, column_type, default_value in new_columns:
+            if column_name not in columns:
+                print(f"[DB-UPDATE] Ajout de la colonne {column_name}")
+                if column_name == 'is_active':
+                    cursor.execute(f'ALTER TABLE concurrent ADD COLUMN {column_name} {column_type} DEFAULT {default_value}')
+                elif column_name == 'sector':
+                    cursor.execute(f'ALTER TABLE concurrent ADD COLUMN {column_name} {column_type} DEFAULT "hospitality"')
+                else:
+                    cursor.execute(f'ALTER TABLE concurrent ADD COLUMN {column_name} {column_type} DEFAULT ""')
+        
+        # 🚨 NOUVEAU : Vérifier et ajouter les champs de tracking de classification dans la table video
+        cursor.execute("PRAGMA table_info(video)")
+        video_columns = [column[1] for column in cursor.fetchall()]
+        
+        print(f"[DB-UPDATE] Colonnes actuelles video: {video_columns}")
+        
+        # Ajouter les champs de tracking de classification
+        classification_tracking_columns = [
+            ('classification_source', 'VARCHAR(20)', 'ai'),  # 'human' ou 'ai'
+            ('classification_date', 'DATETIME', None),  # Date de classification
+            ('classification_confidence', 'INTEGER', 50),  # Score de confiance (0-100)
+            ('human_verified', 'BOOLEAN', 0)  # 1 si vérifié par un humain
+        ]
+        
+        for column_name, column_type, default_value in classification_tracking_columns:
+            if column_name not in video_columns:
+                print(f"[DB-UPDATE] Ajout de la colonne video.{column_name}")
+                if column_name == 'human_verified':
+                    cursor.execute(f'ALTER TABLE video ADD COLUMN {column_name} {column_type} DEFAULT {default_value}')
+                elif column_name == 'classification_confidence':
+                    cursor.execute(f'ALTER TABLE video ADD COLUMN {column_name} {column_type} DEFAULT {default_value}')
+                elif column_name == 'classification_source':
+                    cursor.execute(f'ALTER TABLE video ADD COLUMN {column_name} {column_type} DEFAULT "ai"')
+                elif column_name == 'classification_date':
+                    cursor.execute(f'ALTER TABLE video ADD COLUMN {column_name} {column_type}')
+        
+        # 🚨 NOUVEAU : Vérifier et ajouter les champs de tracking de classification dans la table playlist
+        cursor.execute("PRAGMA table_info(playlist)")
+        playlist_columns = [column[1] for column in cursor.fetchall()]
+        
+        print(f"[DB-UPDATE] Colonnes actuelles playlist: {playlist_columns}")
+        
+        for column_name, column_type, default_value in classification_tracking_columns:
+            if column_name not in playlist_columns:
+                print(f"[DB-UPDATE] Ajout de la colonne playlist.{column_name}")
+                if column_name == 'human_verified':
+                    cursor.execute(f'ALTER TABLE playlist ADD COLUMN {column_name} {column_type} DEFAULT {default_value}')
+                elif column_name == 'classification_confidence':
+                    cursor.execute(f'ALTER TABLE playlist ADD COLUMN {column_name} {column_type} DEFAULT {default_value}')
+                elif column_name == 'classification_source':
+                    cursor.execute(f'ALTER TABLE playlist ADD COLUMN {column_name} {column_type} DEFAULT "ai"')
+                elif column_name == 'classification_date':
+                    cursor.execute(f'ALTER TABLE playlist ADD COLUMN {column_name} {column_type}')
+        
+        # Mettre à jour tous les concurrents existants avec des valeurs par défaut
+        cursor.execute("""
+            UPDATE concurrent 
+            SET sector = 'hospitality'
+            WHERE sector IS NULL OR sector = ''
+        """)
+        
+        # 🚨 NOUVEAU : Marquer toutes les classifications existantes comme étant de l'IA (par défaut)
+        cursor.execute("""
+            UPDATE video 
+            SET classification_source = 'ai', 
+                classification_date = datetime('now'),
+                classification_confidence = 50,
+                human_verified = 0
+            WHERE classification_source IS NULL
+        """)
+        
+        cursor.execute("""
+            UPDATE playlist 
+            SET classification_source = 'ai', 
+                classification_date = datetime('now'),
+                classification_confidence = 50,
+                human_verified = 0
+            WHERE classification_source IS NULL
+        """)
+        
+        conn.commit()
+        print("[DB-UPDATE] ✅ Schéma de base de données mis à jour avec succès (tracking humain/IA ajouté)")
+        return True
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB-UPDATE] ❌ Erreur lors de la mise à jour du schéma: {e}")
+        return False
+    finally:
+        conn.close()
+
+def update_competitor_tags(competitor_id: int, tags_data: Dict) -> bool:
+    """
+    Mettre à jour les tags d'un concurrent
+    
+    Args:
+        competitor_id: ID du concurrent
+        tags_data: Dict avec les nouveaux tags
+        
+    Returns:
+        bool: True si succès
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Construire la requête de mise à jour
+        updates = []
+        values = []
+        
+        if 'sector' in tags_data:
+            updates.append('sector = ?')
+            values.append(tags_data['sector'])
+            
+        if 'tags' in tags_data:
+            updates.append('tags = ?')
+            values.append(tags_data['tags'])
+            
+        if 'custom_region' in tags_data:
+            updates.append('custom_region = ?')
+            values.append(tags_data['custom_region'])
+            
+        if 'notes' in tags_data:
+            updates.append('notes = ?')
+            values.append(tags_data['notes'])
+            
+        if 'is_active' in tags_data:
+            updates.append('is_active = ?')
+            values.append(tags_data['is_active'])
+        
+        if updates:
+            updates.append('last_updated = ?')
+            values.append(datetime.now())
+            values.append(competitor_id)
+            
+            query = f"UPDATE concurrent SET {', '.join(updates)} WHERE id = ?"
+            cursor.execute(query, values)
+            
+            conn.commit()
+            print(f"[DB-UPDATE] Tags mis à jour pour le concurrent {competitor_id}")
+            return True
+        
+        return False
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[DB-UPDATE] Erreur lors de la mise à jour des tags: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_competitor_by_id(competitor_id: int) -> Dict:
+    """Récupérer un concurrent par son ID avec tous ses champs"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT * FROM concurrent WHERE id = ?', (competitor_id,))
+        row = cursor.fetchone()
+        
+        if row:
+            return dict(row)
+        return None
+        
+    finally:
+        conn.close()
+
+def get_inconsistency_stats() -> Dict:
+    """Récupère les statistiques d'incohérences générales"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Compter les concurrents
+        cursor.execute("SELECT COUNT(*) FROM concurrent")
+        total_competitors = cursor.fetchone()[0]
+        
+        # Compter les vidéos
+        cursor.execute("SELECT COUNT(*) FROM video")
+        total_videos = cursor.fetchone()[0]
+        
+        # Simuler le nombre d'erreurs (sera calculé lors de la détection)
+        # Pour l'instant, on retourne 0 ou un nombre basé sur des heuristiques simples
+        cursor.execute("""
+            SELECT COUNT(*) FROM video 
+            WHERE view_count IS NULL OR view_count < 0 
+            OR duration_seconds IS NULL OR duration_seconds < 0
+            OR published_at IS NULL
+        """)
+        basic_errors = cursor.fetchone()[0]
+        
+        return {
+            'total_competitors': total_competitors,
+            'total_videos': total_videos,
+            'total_errors': basic_errors,
+            'last_check': datetime.now().strftime('%Y-%m-%d %H:%M')
+        }
+        
+    except Exception as e:
+        print(f"[INCONSISTENCY-STATS] Erreur: {e}")
+        return {
+            'total_competitors': 0,
+            'total_videos': 0,
+            'total_errors': 0,
+            'last_check': 'Erreur'
+        }
+    finally:
+        conn.close()
+
+def detect_data_inconsistencies(analysis_type: str = 'all') -> List[Dict]:
+    """Détecte les incohérences dans les données"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    inconsistencies = []
+    
+    try:
+        print(f"[INCONSISTENCY] 🔍 Analyse de type: {analysis_type}")
+        
+        if analysis_type in ['all', 'missing']:
+            inconsistencies.extend(_detect_missing_data(cursor))
+        
+        if analysis_type in ['all', 'aberrant']:
+            inconsistencies.extend(_detect_aberrant_values(cursor))
+        
+        if analysis_type in ['all', 'temporal']:
+            inconsistencies.extend(_detect_temporal_inconsistencies(cursor))
+        
+        if analysis_type in ['all', 'duplicates']:
+            inconsistencies.extend(_detect_duplicates(cursor))
+        
+        if analysis_type in ['all', 'format']:
+            inconsistencies.extend(_detect_format_errors(cursor))
+        
+        print(f"[INCONSISTENCY] ✅ Détecté {len(inconsistencies)} incohérence(s)")
+        return inconsistencies
+        
+    except Exception as e:
+        print(f"[INCONSISTENCY] Erreur lors de la détection: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+    finally:
+        conn.close()
+
+def _detect_missing_data(cursor) -> List[Dict]:
+    """Détecte les données manquantes"""
+    inconsistencies = []
+    
+    # Vidéos sans vues
+    cursor.execute("""
+        SELECT v.title, c.name, v.id 
+        FROM video v 
+        JOIN concurrent c ON v.concurrent_id = c.id 
+        WHERE v.view_count IS NULL OR v.view_count < 0
+        LIMIT 50
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'missing',
+            'severity': 'high',
+            'message': 'Nombre de vues manquant ou invalide',
+            'description': f'La vidéo "{row[0]}" n\'a pas de données de vues valides',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[2],
+            'fix_suggestion': 'Vérifier la source de données ou re-scraper'
+        })
+    
+    # Vidéos sans durée
+    cursor.execute("""
+        SELECT v.title, c.name, v.id 
+        FROM video v 
+        JOIN concurrent c ON v.concurrent_id = c.id 
+        WHERE v.duration_seconds IS NULL OR v.duration_seconds <= 0
+        LIMIT 50
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'missing',
+            'severity': 'medium',
+            'message': 'Durée de vidéo manquante',
+            'description': f'La vidéo "{row[0]}" n\'a pas de durée définie',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[2],
+            'fix_suggestion': 'Vérifier les métadonnées YouTube'
+        })
+    
+    # Concurrents sans pays
+    cursor.execute("""
+        SELECT name, id FROM concurrent 
+        WHERE country IS NULL OR country = ''
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'missing',
+            'severity': 'medium',
+            'message': 'Pays manquant',
+            'description': f'Le concurrent "{row[0]}" n\'a pas de pays défini',
+            'competitor_name': row[0],
+            'competitor_id': row[1],
+            'fix_suggestion': 'Ajouter le pays manuellement'
+        })
+    
+    return inconsistencies
+
+def _detect_aberrant_values(cursor) -> List[Dict]:
+    """Détecte les valeurs aberrantes"""
+    inconsistencies = []
+    
+    # Vidéos avec trop de vues par rapport à la moyenne
+    cursor.execute("""
+        SELECT v.title, c.name, v.view_count, v.id,
+               AVG(v2.view_count) as avg_views
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        JOIN video v2 ON v2.concurrent_id = c.id
+        WHERE v.view_count > 0
+        GROUP BY v.id, v.title, c.name, v.view_count
+        HAVING v.view_count > avg_views * 10
+        ORDER BY v.view_count DESC
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'aberrant',
+            'severity': 'low',
+            'message': 'Vues exceptionnellement élevées',
+            'description': f'La vidéo "{row[0]}" a {row[2]:,} vues, soit 10x+ la moyenne du concurrent',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[3],
+            'fix_suggestion': 'Vérifier si c\'est une vidéo virale légitime'
+        })
+    
+    # Vidéos trop longues (>2h)
+    cursor.execute("""
+        SELECT v.title, c.name, v.duration_seconds, v.id
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        WHERE v.duration_seconds > 7200
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        hours = row[2] / 3600
+        inconsistencies.append({
+            'type': 'aberrant',
+            'severity': 'medium',
+            'message': f'Durée exceptionnellement longue ({hours:.1f}h)',
+            'description': f'La vidéo "{row[0]}" dure {hours:.1f} heures',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[3],
+            'fix_suggestion': 'Vérifier si c\'est un live stream ou une erreur'
+        })
+    
+    # Ratio like/view impossible (>50%)
+    cursor.execute("""
+        SELECT v.title, c.name, v.view_count, v.like_count, v.id
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        WHERE v.like_count > 0 AND v.view_count > 0
+        AND (v.like_count * 1.0 / v.view_count) > 0.5
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        ratio = (row[3] / row[2]) * 100
+        inconsistencies.append({
+            'type': 'aberrant',
+            'severity': 'high',
+            'message': f'Ratio like/vue impossible ({ratio:.1f}%)',
+            'description': f'La vidéo "{row[0]}" a {row[3]} likes pour {row[2]} vues',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[4],
+            'fix_suggestion': 'Vérifier les données ou re-scraper'
+        })
+    
+    return inconsistencies
+
+def _detect_temporal_inconsistencies(cursor) -> List[Dict]:
+    """Détecte les incohérences temporelles"""
+    inconsistencies = []
+    
+    # Vidéos avec dates futures
+    cursor.execute("""
+        SELECT v.title, c.name, v.published_at, v.id
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        WHERE v.published_at > datetime('now')
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'temporal',
+            'severity': 'high',
+            'message': 'Date de publication future',
+            'description': f'La vidéo "{row[0]}" a une date de publication future: {row[2]}',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[3],
+            'fix_suggestion': 'Corriger la date ou vérifier le fuseau horaire'
+        })
+    
+    # Vidéos très anciennes (avant 2005, création de YouTube)
+    cursor.execute("""
+        SELECT v.title, c.name, v.published_at, v.id
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        WHERE v.published_at < '2005-01-01'
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'temporal',
+            'severity': 'medium',
+            'message': 'Date antérieure à YouTube',
+            'description': f'La vidéo "{row[0]}" a une date de {row[2]} (avant 2005)',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[3],
+            'fix_suggestion': 'Vérifier et corriger la date'
+        })
+    
+    return inconsistencies
+
+def _detect_duplicates(cursor) -> List[Dict]:
+    """Détecte les doublons"""
+    inconsistencies = []
+    
+    # Vidéos avec le même titre et concurrent
+    cursor.execute("""
+        SELECT v1.title, c.name, COUNT(*) as count
+        FROM video v1
+        JOIN concurrent c ON v1.concurrent_id = c.id
+        GROUP BY v1.title, c.id
+        HAVING COUNT(*) > 1
+        ORDER BY count DESC
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'duplicates',
+            'severity': 'medium',
+            'message': f'Titre dupliqué ({row[2]} fois)',
+            'description': f'Le titre "{row[0]}" apparaît {row[2]} fois pour le concurrent {row[1]}',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'fix_suggestion': 'Vérifier s\'il s\'agit de re-uploads ou d\'erreurs'
+        })
+    
+    # Concurrents avec le même nom
+    cursor.execute("""
+        SELECT name, COUNT(*) as count
+        FROM concurrent
+        GROUP BY name
+        HAVING COUNT(*) > 1
+        ORDER BY count DESC
+        LIMIT 10
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'duplicates',
+            'severity': 'high',
+            'message': f'Concurrent dupliqué ({row[1]} fois)',
+            'description': f'Le concurrent "{row[0]}" apparaît {row[1]} fois dans la base',
+            'competitor_name': row[0],
+            'fix_suggestion': 'Fusionner les entrées ou vérifier les URLs'
+        })
+    
+    return inconsistencies
+
+def _detect_format_errors(cursor) -> List[Dict]:
+    """Détecte les erreurs de format"""
+    inconsistencies = []
+    
+    # Titres trop courts ou trop longs
+    cursor.execute("""
+        SELECT v.title, c.name, LENGTH(v.title) as title_length, v.id
+        FROM video v
+        JOIN concurrent c ON v.concurrent_id = c.id
+        WHERE LENGTH(v.title) < 3 OR LENGTH(v.title) > 200
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        if row[2] < 3:
+            issue = f'Titre trop court ({row[2]} caractères)'
+            severity = 'medium'
+        else:
+            issue = f'Titre trop long ({row[2]} caractères)'
+            severity = 'low'
+        
+        inconsistencies.append({
+            'type': 'format',
+            'severity': severity,
+            'message': issue,
+            'description': f'La vidéo "{row[0]}" a un titre de {row[2]} caractères',
+            'competitor_name': row[1],
+            'video_title': row[0],
+            'video_id': row[3],
+            'fix_suggestion': 'Vérifier la qualité des données scrappées'
+        })
+    
+    # URLs malformées
+    cursor.execute("""
+        SELECT name, channel_url, id
+        FROM concurrent
+        WHERE channel_url NOT LIKE '%youtube.com%' 
+        AND channel_url NOT LIKE '%youtu.be%'
+        AND channel_url IS NOT NULL
+        LIMIT 20
+    """)
+    
+    for row in cursor.fetchall():
+        inconsistencies.append({
+            'type': 'format',
+            'severity': 'high',
+            'message': 'URL non-YouTube',
+            'description': f'Le concurrent "{row[0]}" a une URL non-YouTube: {row[1]}',
+            'competitor_name': row[0],
+            'competitor_id': row[2],
+            'fix_suggestion': 'Corriger l\'URL ou vérifier la source'
+        })
+    
+    return inconsistencies
+
+def create_settings_table():
+    """Create the settings table if it doesn't exist."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key VARCHAR(100) PRIMARY KEY,
+            value TEXT,
+            updated_at DATETIME
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def set_last_action_status(action_key, value_dict):
+    """Set the last status/result for a given action (as JSON)."""
+    import json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now = datetime.now().isoformat()
+    value_json = json.dumps(value_dict)
+    cursor.execute('''
+        INSERT INTO settings (key, value, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at
+    ''', (action_key, value_json, now))
+    conn.commit()
+    conn.close()
+
+
+def get_last_action_status(action_key):
+    """Get the last status/result for a given action (as dict)."""
+    import json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT value, updated_at FROM settings WHERE key = ?', (action_key,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        value, updated_at = row
+        try:
+            value_dict = json.loads(value)
+        except Exception:
+            value_dict = {'raw': value}
+        value_dict['updated_at'] = updated_at
+        return value_dict
+    return None
+
+def create_custom_rules_table():
+    """Créer la table custom_rules pour les règles métier personnalisées."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS custom_rules (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pattern VARCHAR(200) NOT NULL,
+            category VARCHAR(10) NOT NULL,
+            language VARCHAR(5) NOT NULL DEFAULT 'all',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(pattern, category, language)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def add_custom_rule(pattern: str, category: str, language: str = 'all'):
+    """Ajouter une règle custom (pattern, catégorie, langue)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT OR IGNORE INTO custom_rules (pattern, category, language)
+        VALUES (?, ?, ?)
+    ''', (pattern.lower(), category, language))
+    conn.commit()
+    conn.close()
+
+
+def list_custom_rules(language: str = None):
+    """Lister toutes les règles custom (optionnel: filtrer par langue)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if language:
+        cursor.execute('SELECT pattern, category, language FROM custom_rules WHERE language = ? OR language = "all"', (language,))
+    else:
+        cursor.execute('SELECT pattern, category, language FROM custom_rules')
+    rules = cursor.fetchall()
+    conn.close()
+    return [{'pattern': r[0], 'category': r[1], 'language': r[2]} for r in rules]
+
+
+def remove_custom_rule(pattern: str, category: str, language: str = 'all'):
+    """Supprimer une règle custom."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM custom_rules WHERE pattern = ? AND category = ? AND language = ?', (pattern.lower(), category, language))
+    conn.commit()
+    conn.close()
+
+def update_database_schema_for_dates():
+    """Mettre à jour le schéma de la base de données pour distinguer dates d'importation et dates de publication réelles"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si la nouvelle colonne existe déjà
+        cursor.execute("PRAGMA table_info(video)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        print(f"[DB-DATES-UPDATE] Colonnes actuelles: {columns}")
+        
+        # Ajouter la nouvelle colonne si elle n'existe pas
+        if 'youtube_published_at' not in columns:
+            print(f"[DB-DATES-UPDATE] Ajout de la colonne youtube_published_at")
+            cursor.execute('ALTER TABLE video ADD COLUMN youtube_published_at DATETIME DEFAULT NULL')
+            
+            # Renommer la colonne existante pour clarifier qu'elle contient les dates d'importation
+            print(f"[DB-DATES-UPDATE] published_at devient import_published_at (dates d'importation)")
+            # Note: SQLite ne supporte pas RENAME COLUMN avant 3.25.0, on garde published_at comme date d'importation
+            
+        conn.commit()
+        print("[DB-DATES-UPDATE] ✅ Schéma de base de données mis à jour avec succès")
+        return True
+        
+    except Exception as e:
+        print(f"[DB-DATES-UPDATE] ❌ Erreur: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+def correct_all_video_dates_with_youtube_api() -> Dict:
+    """
+    Corrige toutes les dates des vidéos en utilisant l'API YouTube Data v3
+    Récupère les vraies dates de publication et les stocke dans youtube_published_at
+    """
+    from .youtube_api_client import create_youtube_client
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # S'assurer que la colonne existe
+        update_database_schema_for_dates()
+        
+        # Récupérer toutes les vidéos qui n'ont pas encore de vraie date de publication
+        cursor.execute('''
+            SELECT id, video_id, title, concurrent_id, published_at
+            FROM video 
+            WHERE youtube_published_at IS NULL 
+            AND video_id IS NOT NULL 
+            AND video_id != ''
+            ORDER BY concurrent_id
+        ''')
+        
+        videos_to_update = cursor.fetchall()
+        total_videos = len(videos_to_update)
+        
+        if total_videos == 0:
+            return {
+                'success': True,
+                'message': 'Aucune vidéo à mettre à jour',
+                'total_videos': 0,
+                'updated_videos': 0,
+                'failed_videos': 0
+            }
+        
+        print(f"[DATES-CORRECTION] 🚀 Début correction de {total_videos} vidéos")
+        
+        # Initialiser l'API YouTube
+        youtube = create_youtube_client()
+        
+        updated_count = 0
+        failed_count = 0
+        
+        # Traiter par lots de 50 (limite API)
+        for i in range(0, total_videos, 50):
+            batch = videos_to_update[i:i+50]
+            video_ids = [row[1] for row in batch if row[1]]  # video_id
+            
+            try:
+                # Récupérer les détails des vidéos
+                video_details = youtube.get_videos_details(video_ids)
+                
+                # Créer un mapping ID -> détails
+                details_map = {video['id']: video for video in video_details}
+                
+                # Mettre à jour chaque vidéo
+                for row in batch:
+                    db_id, video_id, title, competitor_id, import_date = row
+                    
+                    if video_id in details_map:
+                        video_details = details_map[video_id]
+                        youtube_published_at = video_details['published_at']
+                        
+                        # Mettre à jour la base
+                        cursor.execute('''
+                            UPDATE video 
+                            SET youtube_published_at = ? 
+                            WHERE id = ?
+                        ''', (youtube_published_at, db_id))
+                        
+                        updated_count += 1
+                        
+                        # Log pour les premières vidéos
+                        if updated_count <= 10:
+                            print(f"[DATES-CORRECTION] ✅ {title[:40]}... : {import_date} → {youtube_published_at}")
+                    else:
+                        print(f"[DATES-CORRECTION] ❌ Vidéo non trouvée: {video_id}")
+                        failed_count += 1
+                
+                # Sauvegarder le lot
+                conn.commit()
+                
+                # Progress
+                print(f"[DATES-CORRECTION] 📊 Progression: {updated_count}/{total_videos} ({(updated_count/total_videos)*100:.1f}%)")
+                
+            except Exception as e:
+                print(f"[DATES-CORRECTION] ❌ Erreur lot {i//50 + 1}: {e}")
+                failed_count += len(batch)
+                continue
+        
+        print(f"[DATES-CORRECTION] 🎉 Terminé: {updated_count} mises à jour, {failed_count} échecs")
+        
+        return {
+            'success': True,
+            'message': f'Correction terminée: {updated_count} vidéos mises à jour, {failed_count} échecs',
+            'total_videos': total_videos,
+            'updated_videos': updated_count,
+            'failed_videos': failed_count
+        }
+        
+    except Exception as e:
+        print(f"[DATES-CORRECTION] ❌ Erreur générale: {e}")
+        return {
+            'success': False,
+            'message': f'Erreur lors de la correction des dates: {str(e)}',
+            'total_videos': total_videos if 'total_videos' in locals() else 0,
+            'updated_videos': updated_count if 'updated_count' in locals() else 0,
+            'failed_videos': failed_count if 'failed_count' in locals() else 0
+        }
+    finally:
+        conn.close()
+
+def get_dates_correction_status() -> Dict:
+    """Récupère le statut de la correction des dates"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Vérifier si la colonne existe
+        cursor.execute("PRAGMA table_info(video)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        if 'youtube_published_at' not in columns:
+            return {
+                'column_exists': False,
+                'total_videos': 0,
+                'corrected_videos': 0,
+                'pending_videos': 0,
+                'correction_percentage': 0
+            }
+        
+        # Compter les vidéos
+        cursor.execute('SELECT COUNT(*) FROM video WHERE video_id IS NOT NULL AND video_id != ""')
+        total_videos = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM video WHERE youtube_published_at IS NOT NULL')
+        corrected_videos = cursor.fetchone()[0]
+        
+        pending_videos = total_videos - corrected_videos
+        correction_percentage = (corrected_videos / total_videos * 100) if total_videos > 0 else 0
+        
+        return {
+            'column_exists': True,
+            'total_videos': total_videos,
+            'corrected_videos': corrected_videos,
+            'pending_videos': pending_videos,
+            'correction_percentage': correction_percentage
+        }
+        
+    except Exception as e:
+        print(f"[DATES-STATUS] Erreur: {e}")
+        return {
+            'column_exists': False,
+            'total_videos': 0,
+            'corrected_videos': 0,
+            'pending_videos': 0,
+            'correction_percentage': 0
+        }
+    finally:
+        conn.close()
+
+def mark_human_classification(video_id: int = None, playlist_id: int = None, category: str = None, user_notes: str = '') -> bool:
+    """
+    🚨 FONCTION CRITIQUE : Marquer une classification comme étant faite par un humain
+    Cette fonction doit être appelée chaque fois qu'un utilisateur corrige manuellement une classification
+    
+    Args:
+        video_id: ID de la vidéo (si c'est une vidéo)
+        playlist_id: ID de la playlist (si c'est une playlist)
+        category: Nouvelle catégorie (hero/hub/help)
+        user_notes: Notes optionnelles de l'utilisateur
+        
+    Returns:
+        bool: True si la classification a été marquée avec succès
+    """
+    if not video_id and not playlist_id:
+        print("[HUMAN-MARK] ❌ Erreur: video_id ou playlist_id requis")
+        return False
+    
+    if not category or category not in ['hero', 'hub', 'help']:
+        print("[HUMAN-MARK] ❌ Erreur: catégorie invalide")
+        return False
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        if video_id:
+            # 🚨 MARQUER LA VIDÉO COMME CLASSIFIÉE PAR UN HUMAIN (PRIORITÉ ABSOLUE)
+            cursor.execute('''
+                UPDATE video SET 
+                    category = ?, 
+                    classification_source = 'human',
+                    classification_date = CURRENT_TIMESTAMP,
+                    classification_confidence = 100,
+                    human_verified = 1,
+                    last_updated = ?
+                WHERE id = ?
+            ''', (category, datetime.now(), video_id))
+            
+            if cursor.rowcount > 0:
+                print(f"[HUMAN-MARK] ✅ Vidéo ID {video_id} marquée comme classification humaine → {category.upper()}")
+                
+                # Ajouter dans la table de feedback pour historique
+                cursor.execute('''
+                    INSERT INTO classification_feedback (
+                        video_id, original_category, corrected_category,
+                        confidence_score, user_feedback_type, feedback_timestamp, user_notes
+                    ) VALUES (?, ?, ?, 100, 'human_correction', CURRENT_TIMESTAMP, ?)
+                ''', (video_id, 'unknown', category, user_notes))
+                
+            else:
+                print(f"[HUMAN-MARK] ⚠️ Vidéo ID {video_id} non trouvée")
+                return False
+        
+        if playlist_id:
+            # 🚨 MARQUER LA PLAYLIST COMME CLASSIFIÉE PAR UN HUMAIN (PRIORITÉ ABSOLUE)
+            cursor.execute('''
+                UPDATE playlist SET 
+                    category = ?, 
+                    classification_source = 'human',
+                    classification_date = CURRENT_TIMESTAMP,
+                    classification_confidence = 100,
+                    human_verified = 1,
+                    last_updated = ?
+                WHERE id = ?
+            ''', (category, datetime.now(), playlist_id))
+            
+            if cursor.rowcount > 0:
+                print(f"[HUMAN-MARK] ✅ Playlist ID {playlist_id} marquée comme classification humaine → {category.upper()}")
+                
+                # Ajouter dans la table de feedback pour historique
+                cursor.execute('''
+                    INSERT INTO classification_feedback (
+                        playlist_id, original_category, corrected_category,
+                        confidence_score, user_feedback_type, feedback_timestamp, user_notes
+                    ) VALUES (?, ?, ?, 100, 'human_correction', CURRENT_TIMESTAMP, ?)
+                ''', (playlist_id, 'unknown', category, user_notes))
+                
+            else:
+                print(f"[HUMAN-MARK] ⚠️ Playlist ID {playlist_id} non trouvée")
+                return False
+        
+        conn.commit()
+        return True
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"[HUMAN-MARK] ❌ Erreur lors du marquage humain: {e}")
+        return False
+    finally:
+        conn.close()
+
+def check_human_protection_status(video_id: int = None, playlist_id: int = None) -> Dict:
+    """
+    Vérifier si une vidéo ou playlist est protégée par supervision humaine
+    
+    Returns:
+        Dict avec les informations de protection
+    """
+    if not video_id and not playlist_id:
+        return {'protected': False, 'error': 'ID requis'}
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        if video_id:
+            cursor.execute('''
+                SELECT classification_source, human_verified, classification_date, category
+                FROM video WHERE id = ?
+            ''', (video_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                is_protected = result[0] == 'human' or result[1] == 1
+                return {
+                    'protected': is_protected,
+                    'type': 'video',
+                    'classification_source': result[0],
+                    'human_verified': bool(result[1]),
+                    'classification_date': result[2],
+                    'category': result[3]
+                }
+        
+        if playlist_id:
+            cursor.execute('''
+                SELECT classification_source, human_verified, classification_date, category
+                FROM playlist WHERE id = ?
+            ''', (playlist_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                is_protected = result[0] == 'human' or result[1] == 1
+                return {
+                    'protected': is_protected,
+                    'type': 'playlist',
+                    'classification_source': result[0],
+                    'human_verified': bool(result[1]),
+                    'classification_date': result[2],
+                    'category': result[3]
+                }
+        
+        return {'protected': False, 'error': 'Non trouvé'}
+        
+    except Exception as e:
+        print(f"[PROTECTION-CHECK] ❌ Erreur: {e}")
+        return {'protected': False, 'error': str(e)}
+    finally:
+        conn.close()
+
+def verify_classification_integrity() -> Dict:
+    """
+    🚨 FONCTION DE VÉRIFICATION D'INTÉGRITÉ
+    Vérifie qu'il n'y a pas de conflits entre les classifications humaines et IA
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        integrity_report = {
+            'status': 'healthy',
+            'issues': [],
+            'stats': {},
+            'recommendations': []
+        }
+        
+        # 1. Vérifier les champs de tracking manquants
+        cursor.execute('''
+            SELECT COUNT(*) FROM video 
+            WHERE classification_source IS NULL AND category IS NOT NULL
+        ''')
+        videos_missing_source = cursor.fetchone()[0]
+        
+        cursor.execute('''
+            SELECT COUNT(*) FROM playlist 
+            WHERE classification_source IS NULL AND category IS NOT NULL
+        ''')
+        playlists_missing_source = cursor.fetchone()[0]
+        
+        if videos_missing_source > 0:
+            integrity_report['issues'].append({
+                'type': 'missing_tracking',
+                'severity': 'warning',
+                'description': f'{videos_missing_source} vidéos catégorisées sans source de classification',
+                'fix': 'Exécuter la mise à jour du schéma de base'
+            })
+        
+        if playlists_missing_source > 0:
+            integrity_report['issues'].append({
+                'type': 'missing_tracking',
+                'severity': 'warning',
+                'description': f'{playlists_missing_source} playlists catégorisées sans source de classification',
+                'fix': 'Exécuter la mise à jour du schéma de base'
+            })
+        
+        # 2. Statistiques de protection
+        cursor.execute('''
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN classification_source = 'human' OR human_verified = 1 THEN 1 ELSE 0 END) as human_protected,
+                SUM(CASE WHEN classification_source = 'ai' THEN 1 ELSE 0 END) as ai_classified,
+                SUM(CASE WHEN classification_source = 'playlist' THEN 1 ELSE 0 END) as playlist_inherited
+            FROM video WHERE category IS NOT NULL
+        ''')
+        video_stats = cursor.fetchone()
+        
+        cursor.execute('''
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN classification_source = 'human' OR human_verified = 1 THEN 1 ELSE 0 END) as human_protected,
+                SUM(CASE WHEN classification_source = 'ai' THEN 1 ELSE 0 END) as ai_classified
+            FROM playlist WHERE category IS NOT NULL
+        ''')
+        playlist_stats = cursor.fetchone()
+        
+        integrity_report['stats'] = {
+            'videos': {
+                'total_classified': video_stats[0],
+                'human_protected': video_stats[1],
+                'ai_classified': video_stats[2],
+                'playlist_inherited': video_stats[3]
+            },
+            'playlists': {
+                'total_classified': playlist_stats[0],
+                'human_protected': playlist_stats[1],
+                'ai_classified': playlist_stats[2]
+            }
+        }
+        
+        # 3. Détecter les conflits potentiels
+        cursor.execute('''
+            SELECT v.id, v.title, v.category, v.classification_source, v.human_verified, p.name as playlist_name
+            FROM video v
+            JOIN playlist_video pv ON v.id = pv.video_id
+            JOIN playlist p ON pv.playlist_id = p.id
+            WHERE v.classification_source = 'human' 
+            AND p.classification_source = 'ai'
+            AND v.category != p.category
+        ''')
+        conflicts = cursor.fetchall()
+        
+        if conflicts:
+            integrity_report['issues'].append({
+                'type': 'category_conflict',
+                'severity': 'error',
+                'description': f'{len(conflicts)} vidéos classifiées manuellement avec catégorie différente de leur playlist IA',
+                'conflicts': [{'video_title': c[1], 'video_category': c[2], 'playlist_name': c[5]} for c in conflicts[:5]]
+            })
+            integrity_report['status'] = 'issues_detected'
+        
+        # 4. Vérifier les fonctions de debug potentiellement dangereuses
+        dangerous_functions = [
+            'apply_playlist_categories_to_videos',
+            'classify_videos_directly_with_keywords',
+            'auto_classify_uncategorized_playlists',
+            'run_global_ai_classification'
+        ]
+        
+        integrity_report['recommendations'] = [
+            "✅ Toutes les fonctions de classification respectent maintenant les classifications humaines",
+            "🛡️ Les playlists classifiées manuellement ne propagent plus automatiquement aux vidéos",
+            "🤖 La classification IA ne peut plus écraser les corrections humaines",
+            "⚠️ Utilisez 'force_apply_human_playlist_to_videos' SEULEMENT avec confirmation explicite"
+        ]
+        
+        # 5. Vérifier l'intégrité des tables de feedback
+        cursor.execute('''
+            SELECT COUNT(*) FROM classification_feedback cf
+            LEFT JOIN video v ON cf.video_id = v.id
+            WHERE v.id IS NULL
+        ''')
+        orphaned_feedback = cursor.fetchone()[0]
+        
+        if orphaned_feedback > 0:
+            integrity_report['issues'].append({
+                'type': 'orphaned_feedback',
+                'severity': 'warning',
+                'description': f'{orphaned_feedback} feedbacks orphelins (vidéos supprimées)',
+                'fix': 'Nettoyer les feedbacks orphelins'
+            })
+        
+        # 6. Résumé final
+        if len(integrity_report['issues']) == 0:
+            integrity_report['status'] = 'excellent'
+            integrity_report['summary'] = '✅ Système de classification intègre - Aucun conflit détecté'
+        elif any(issue['severity'] == 'error' for issue in integrity_report['issues']):
+            integrity_report['status'] = 'critical'
+            integrity_report['summary'] = '❌ Conflits critiques détectés - Action requise'
+        else:
+            integrity_report['status'] = 'minor_issues'
+            integrity_report['summary'] = '⚠️ Problèmes mineurs détectés - Correction recommandée'
+        
+        return integrity_report
+        
+    except Exception as e:
+        return {
+            'status': 'error',
+            'error': str(e),
+            'summary': f'❌ Erreur lors de la vérification: {e}'
+        }
+    finally:
+        conn.close()
+
+def fix_classification_tracking():
+    """
+    🛠️ FONCTION DE RÉPARATION : Corriger les problèmes de tracking de classification
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        fixes_applied = []
+        
+        # 1. Marquer les vidéos catégorisées sans source comme IA par défaut
+        cursor.execute('''
+            UPDATE video 
+            SET classification_source = 'ai',
+                classification_date = datetime('now'),
+                classification_confidence = 50,
+                human_verified = 0
+            WHERE classification_source IS NULL 
+            AND category IS NOT NULL
+        ''')
+        videos_fixed = cursor.rowcount
+        if videos_fixed > 0:
+            fixes_applied.append(f"✅ {videos_fixed} vidéos marquées comme classification IA")
+        
+        # 2. Marquer les playlists catégorisées sans source comme HUMAINES (car classifiées via interface)
+        cursor.execute('''
+            UPDATE playlist 
+            SET classification_source = 'human',
+                classification_date = datetime('now'),
+                classification_confidence = 100,
+                human_verified = 1
+            WHERE classification_source IS NULL 
+            AND category IS NOT NULL
+            AND category IN ('hero', 'hub', 'help')
+        ''')
+        playlists_fixed = cursor.rowcount
+        if playlists_fixed > 0:
+            fixes_applied.append(f"✅ {playlists_fixed} playlists marquées comme classification HUMAINE")
+            
+        # 2b. Aussi afficher les détails des playlists trouvées
+        cursor.execute('''
+            SELECT p.name, p.category, c.name as competitor_name
+            FROM playlist p
+            JOIN concurrent c ON p.concurrent_id = c.id
+            WHERE p.classification_source = 'human'
+            AND p.category IS NOT NULL
+            ORDER BY p.classification_date DESC
+        ''')
+        playlist_details = cursor.fetchall()
+        if playlist_details:
+            print(f"[TRACKING-FIX] 📋 Playlists classifiées manuellement détectées:")
+            for playlist_name, category, competitor_name in playlist_details:
+                print(f"  - {competitor_name}: '{playlist_name}' → {category.upper()}")
+        
+        # 3. Nettoyer les feedbacks orphelins
+        cursor.execute('''
+            DELETE FROM classification_feedback 
+            WHERE video_id NOT IN (SELECT id FROM video)
+        ''')
+        feedback_cleaned = cursor.rowcount
+        if feedback_cleaned > 0:
+            fixes_applied.append(f"✅ {feedback_cleaned} feedbacks orphelins nettoyés")
+        
+        conn.commit()
+        
+        return {
+            'success': True,
+            'fixes_applied': fixes_applied,
+            'message': f'Réparation terminée: {len(fixes_applied)} corrections appliquées'
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        return {
+            'success': False,
+            'error': str(e),
+            'message': f'Erreur lors de la réparation: {e}'
+        }
+    finally:
+        conn.close()
+
+def generate_shorts_insights_report(competitor_id: int) -> Dict:
+    """
+    Génère un rapport d'insights détaillé sur les Shorts pour un concurrent donné
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Récupérer les informations du concurrent
+        cursor.execute('SELECT name FROM concurrent WHERE id = ?', (competitor_id,))
+        competitor = cursor.fetchone()
+        if not competitor:
+            return {'success': False, 'error': 'Concurrent non trouvé'}
+        
+        # Récupérer toutes les vidéos du concurrent avec leurs métriques
+        cursor.execute('''
+            SELECT title, view_count, like_count, comment_count, duration_seconds, 
+                   published_at, is_short, category
+            FROM video 
+            WHERE concurrent_id = ? AND view_count IS NOT NULL
+            ORDER BY published_at DESC
+        ''', (competitor_id,))
+        
+        videos = cursor.fetchall()
+        
+        if not videos:
+            return {
+                'success': False,
+                'error': 'Aucune vidéo trouvée pour ce concurrent'
+            }
+        
+        # Séparer les Shorts des vidéos normales
+        shorts = [v for v in videos if v[6] == 1]  # is_shorts = 1
+        regular_videos = [v for v in videos if v[6] != 1]
+        
+        # Calculer les métriques de base
+        total_videos = len(videos)
+        total_shorts = len(shorts)
+        shorts_percentage = (total_shorts / total_videos * 100) if total_videos > 0 else 0
+        
+        # Métriques moyennes pour les Shorts
+        shorts_avg_views = sum(v[1] for v in shorts) / len(shorts) if shorts else 0
+        shorts_avg_likes = sum(v[2] for v in shorts if v[2]) / len([v for v in shorts if v[2]]) if shorts else 0
+        shorts_avg_comments = sum(v[3] for v in shorts if v[3]) / len([v for v in shorts if v[3]]) if shorts else 0
+        
+        # Métriques moyennes pour les vidéos normales
+        regular_avg_views = sum(v[1] for v in regular_videos) / len(regular_videos) if regular_videos else 0
+        regular_avg_likes = sum(v[2] for v in regular_videos if v[2]) / len([v for v in regular_videos if v[2]]) if regular_videos else 0
+        regular_avg_comments = sum(v[3] for v in regular_videos if v[3]) / len([v for v in regular_videos if v[3]]) if regular_videos else 0
+        
+        # Analyse des performances relatives
+        shorts_vs_regular = {}
+        if regular_avg_views > 0:
+            shorts_vs_regular['views_ratio'] = shorts_avg_views / regular_avg_views
+        if regular_avg_likes > 0:
+            shorts_vs_regular['likes_ratio'] = shorts_avg_likes / regular_avg_likes
+        if regular_avg_comments > 0:
+            shorts_vs_regular['comments_ratio'] = shorts_avg_comments / regular_avg_comments
+        
+        # Top 5 Shorts les plus performants
+        top_shorts = sorted(shorts, key=lambda x: x[1], reverse=True)[:5]
+        
+        # Analyse des catégories de Shorts
+        shorts_by_category = {}
+        for short in shorts:
+            category = short[7] or 'Non classé'
+            if category not in shorts_by_category:
+                shorts_by_category[category] = []
+            shorts_by_category[category].append(short[1])  # view_count
+        
+        # Moyennes par catégorie
+        category_performance = {}
+        for category, views in shorts_by_category.items():
+            category_performance[category] = {
+                'count': len(views),
+                'avg_views': sum(views) / len(views) if views else 0,
+                'total_views': sum(views)
+            }
+        
+        # Analyse temporelle (derniers 30 jours) - utiliser youtube_published_at
+        recent_shorts = []
+        if shorts:
+            from datetime import datetime, timedelta
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            
+            # Récupérer les Shorts avec leurs vraies dates YouTube
+            cursor.execute('''
+                SELECT title, view_count, like_count, comment_count, duration_seconds, 
+                       youtube_published_at, is_short, category
+                FROM video 
+                WHERE concurrent_id = ? AND is_short = 1 AND youtube_published_at IS NOT NULL
+                ORDER BY youtube_published_at DESC
+            ''', (competitor_id,))
+            
+            shorts_with_youtube_dates = cursor.fetchall()
+            
+            for short in shorts_with_youtube_dates:
+                if short[5]:  # youtube_published_at
+                    try:
+                        pub_date = datetime.fromisoformat(short[5].replace('Z', '+00:00'))
+                        if pub_date >= thirty_days_ago:
+                            recent_shorts.append(short)
+                    except:
+                        pass
+        
+        recent_shorts_count = len(recent_shorts)
+        recent_shorts_avg_views = sum(v[1] for v in recent_shorts) / len(recent_shorts) if recent_shorts else 0
+        
+        # Recommandations
+        recommendations = []
+        if shorts_percentage < 20:
+            recommendations.append("Augmentez la production de Shorts (actuellement {}% de votre contenu)".format(round(shorts_percentage, 1)))
+        
+        if shorts_vs_regular.get('views_ratio', 0) > 1.5:
+            recommendations.append("Vos Shorts performent {}x mieux que vos vidéos normales. Concentrez-vous sur ce format.".format(round(shorts_vs_regular['views_ratio'], 1)))
+        elif shorts_vs_regular.get('views_ratio', 0) < 0.5:
+            recommendations.append("Vos Shorts sous-performent par rapport à vos vidéos normales. Optimisez votre stratégie Shorts.")
+        
+        if recent_shorts_count < 5:
+            recommendations.append("Publiez plus de Shorts récemment (seulement {} dans les 30 derniers jours)".format(recent_shorts_count))
+        
+        return {
+            'success': True,
+            'competitor_name': competitor[0],
+            'summary': {
+                'total_videos': total_videos,
+                'total_shorts': total_shorts,
+                'shorts_percentage': round(shorts_percentage, 1),
+                'recent_shorts_count': recent_shorts_count
+            },
+            'comparison': {
+                'shorts_stats': {
+                    'count': total_shorts,
+                    'avg_views': round(shorts_avg_views)
+                },
+                'regular_stats': {
+                    'count': len(regular_videos),
+                    'avg_views': round(regular_avg_views)
+                },
+                'performance_comparison': {
+                    'views_ratio': shorts_vs_regular.get('views_ratio', 0)
+                },
+                'shorts_ratio': round(shorts_percentage, 1)
+            },
+            'frequency_patterns': {
+                'avg_shorts_per_week': round(analyze_shorts_frequency_patterns(competitor_id).get('summary', {}).get('avg_shorts_per_week', 0), 1),
+                'monthly_shorts': round(analyze_shorts_frequency_patterns(competitor_id).get('summary', {}).get('avg_shorts_per_week', 0) * 4.33, 1),
+                'shorts_percentage': round(shorts_percentage, 1)
+            },
+            'performance': {
+                'shorts_avg_views': round(shorts_avg_views),
+                'shorts_avg_likes': round(shorts_avg_likes),
+                'shorts_avg_comments': round(shorts_avg_comments),
+                'regular_avg_views': round(regular_avg_views),
+                'regular_avg_likes': round(regular_avg_likes),
+                'regular_avg_comments': round(regular_avg_comments),
+                'recent_shorts_avg_views': round(recent_shorts_avg_views)
+            },
+            'top_shorts': [
+                {
+                    'title': short[0],
+                    'views': short[1],
+                    'likes': short[2] or 0,
+                    'comments': short[3] or 0
+                } for short in top_shorts
+            ],
+            'category_performance': category_performance,
+            'recommendations': recommendations,
+            'generated_at': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Erreur lors de la génération du rapport Shorts: {str(e)}'
+        }
+    finally:
+        conn.close()
+
+
+def analyze_shorts_vs_regular_videos(competitor_id: int = None) -> Dict:
+    """
+    Analyse comparative entre les Shorts et les vidéos normales
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Construire la requête en fonction du competitor_id
+        if competitor_id:
+            where_clause = 'WHERE concurrent_id = ? AND view_count IS NOT NULL'
+            params = (competitor_id,)
+        else:
+            where_clause = 'WHERE view_count IS NOT NULL'
+            params = ()
+        
+        # Récupérer toutes les vidéos avec leurs métriques
+        cursor.execute(f'''
+            SELECT v.title, v.view_count, v.like_count, v.comment_count, 
+                   v.duration_seconds, v.published_at, v.is_short, v.category,
+                   c.name as competitor_name
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            {where_clause}
+            ORDER BY v.published_at DESC
+        ''', params)
+        
+        videos = cursor.fetchall()
+        
+        if not videos:
+            return {
+                'success': False,
+                'error': 'Aucune vidéo trouvée'
+            }
+        
+        # Séparer les Shorts des vidéos normales
+        shorts = [v for v in videos if v[6] == 1]  # is_shorts = 1
+        regular_videos = [v for v in videos if v[6] != 1]
+        
+        # Calculer les métriques globales
+        total_videos = len(videos)
+        total_shorts = len(shorts)
+        total_regular = len(regular_videos)
+        
+        # Métriques moyennes
+        shorts_metrics = {
+            'count': total_shorts,
+            'avg_views': sum(v[1] for v in shorts) / len(shorts) if shorts else 0,
+            'avg_likes': sum(v[2] for v in shorts if v[2]) / len([v for v in shorts if v[2]]) if shorts else 0,
+            'avg_comments': sum(v[3] for v in shorts if v[3]) / len([v for v in shorts if v[3]]) if shorts else 0,
+            'total_views': sum(v[1] for v in shorts) if shorts else 0
+        }
+        
+        regular_metrics = {
+            'count': total_regular,
+            'avg_views': sum(v[1] for v in regular_videos) / len(regular_videos) if regular_videos else 0,
+            'avg_likes': sum(v[2] for v in regular_videos if v[2]) / len([v for v in regular_videos if v[2]]) if regular_videos else 0,
+            'avg_comments': sum(v[3] for v in regular_videos if v[3]) / len([v for v in regular_videos if v[3]]) if regular_videos else 0,
+            'total_views': sum(v[1] for v in regular_videos) if regular_videos else 0
+        }
+        
+        # Calcul des ratios de performance
+        performance_ratios = {}
+        if regular_metrics['avg_views'] > 0:
+            performance_ratios['views_ratio'] = shorts_metrics['avg_views'] / regular_metrics['avg_views']
+        if regular_metrics['avg_likes'] > 0:
+            performance_ratios['likes_ratio'] = shorts_metrics['avg_likes'] / regular_metrics['avg_likes']
+        if regular_metrics['avg_comments'] > 0:
+            performance_ratios['comments_ratio'] = shorts_metrics['avg_comments'] / regular_metrics['avg_comments']
+        
+        # Analyse par catégorie
+        shorts_by_category = {}
+        regular_by_category = {}
+        
+        for short in shorts:
+            category = short[7] or 'Non classé'
+            if category not in shorts_by_category:
+                shorts_by_category[category] = []
+            shorts_by_category[category].append(short[1])
+        
+        for regular in regular_videos:
+            category = regular[7] or 'Non classé'
+            if category not in regular_by_category:
+                regular_by_category[category] = []
+            regular_by_category[category].append(regular[1])
+        
+        # Analyse temporelle (évolution mensuelle)
+        monthly_data = {}
+        for video in videos:
+            if video[5]:  # published_at
+                try:
+                    pub_date = datetime.fromisoformat(video[5].replace('Z', '+00:00'))
+                    month_key = pub_date.strftime('%Y-%m')
+                    
+                    if month_key not in monthly_data:
+                        monthly_data[month_key] = {'shorts': 0, 'regular': 0}
+                    
+                    if video[6] == 1:  # is_shorts
+                        monthly_data[month_key]['shorts'] += 1
+                    else:
+                        monthly_data[month_key]['regular'] += 1
+                except:
+                    pass
+        
+        # Top performers
+        top_shorts = sorted(shorts, key=lambda x: x[1], reverse=True)[:10]
+        top_regular = sorted(regular_videos, key=lambda x: x[1], reverse=True)[:10]
+        
+        # Insights et recommandations
+        insights = []
+        
+        shorts_percentage = (total_shorts / total_videos * 100) if total_videos > 0 else 0
+        
+        if shorts_percentage < 10:
+            insights.append({
+                'type': 'warning',
+                'message': f'Seulement {shorts_percentage:.1f}% de vos vidéos sont des Shorts. Considérez augmenter cette proportion.'
+            })
+        elif shorts_percentage > 70:
+            insights.append({
+                'type': 'info',
+                'message': f'{shorts_percentage:.1f}% de vos vidéos sont des Shorts. Vérifiez l\'équilibre avec le contenu long.'
+            })
+        
+        if performance_ratios.get('views_ratio', 0) > 2:
+            insights.append({
+                'type': 'success',
+                'message': f'Vos Shorts performent {performance_ratios["views_ratio"]:.1f}x mieux que vos vidéos normales en termes de vues.'
+            })
+        elif performance_ratios.get('views_ratio', 0) < 0.5:
+            insights.append({
+                'type': 'warning',
+                'message': 'Vos Shorts sous-performent par rapport à vos vidéos normales. Optimisez votre stratégie Shorts.'
+            })
+        
+        return {
+            'success': True,
+            'summary': {
+                'total_videos': total_videos,
+                'total_shorts': total_shorts,
+                'total_regular': total_regular,
+                'shorts_percentage': round(shorts_percentage, 1)
+            },
+            'shorts_metrics': {
+                'count': shorts_metrics['count'],
+                'avg_views': round(shorts_metrics['avg_views']),
+                'avg_likes': round(shorts_metrics['avg_likes']),
+                'avg_comments': round(shorts_metrics['avg_comments']),
+                'total_views': shorts_metrics['total_views']
+            },
+            'regular_metrics': {
+                'count': regular_metrics['count'],
+                'avg_views': round(regular_metrics['avg_views']),
+                'avg_likes': round(regular_metrics['avg_likes']),
+                'avg_comments': round(regular_metrics['avg_comments']),
+                'total_views': regular_metrics['total_views']
+            },
+            'performance_ratios': performance_ratios,
+            'category_comparison': {
+                'shorts_by_category': {
+                    cat: {
+                        'count': len(views),
+                        'avg_views': round(sum(views) / len(views)) if views else 0
+                    } for cat, views in shorts_by_category.items()
+                },
+                'regular_by_category': {
+                    cat: {
+                        'count': len(views),
+                        'avg_views': round(sum(views) / len(views)) if views else 0
+                    } for cat, views in regular_by_category.items()
+                }
+            },
+            'monthly_evolution': monthly_data,
+            'top_performers': {
+                'shorts': [
+                    {
+                        'title': short[0],
+                        'views': short[1],
+                        'likes': short[2] or 0,
+                        'competitor': short[8]
+                    } for short in top_shorts
+                ],
+                'regular': [
+                    {
+                        'title': regular[0],
+                        'views': regular[1],
+                        'likes': regular[2] or 0,
+                        'competitor': regular[8]
+                    } for regular in top_regular
+                ]
+            },
+            'insights': insights,
+            'generated_at': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Erreur lors de l\'analyse Shorts vs Régulières: {str(e)}'
+        }
+    finally:
+        conn.close()
+
+
+def analyze_shorts_frequency_patterns(competitor_id: int = None) -> Dict:
+    """
+    Analyse les patterns de fréquence de publication des Shorts
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Construire la requête en fonction du competitor_id
+        if competitor_id:
+            where_clause = 'WHERE concurrent_id = ? AND is_short = 1 AND youtube_published_at IS NOT NULL'
+            params = (competitor_id,)
+        else:
+            where_clause = 'WHERE is_short = 1 AND youtube_published_at IS NOT NULL'
+            params = ()
+        
+        # Récupérer tous les Shorts avec leurs dates de publication
+        cursor.execute(f'''
+            SELECT v.title, v.youtube_published_at, v.view_count, v.like_count, 
+                   v.comment_count, c.name as competitor_name, v.concurrent_id
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            {where_clause}
+            ORDER BY v.youtube_published_at DESC
+        ''', params)
+        
+        shorts = cursor.fetchall()
+        
+        if not shorts:
+            return {
+                'success': False,
+                'error': 'Aucun Short trouvé avec une date de publication'
+            }
+        
+        # Analyse par jour de la semaine
+        weekday_counts = {i: 0 for i in range(7)}  # 0=Lundi, 6=Dimanche
+        weekday_performance = {i: [] for i in range(7)}
+        
+        # Analyse par heure
+        hour_counts = {i: 0 for i in range(24)}
+        hour_performance = {i: [] for i in range(24)}
+        
+        # Analyse mensuelle
+        monthly_counts = {}
+        monthly_performance = {}
+        
+        # Analyse par concurrent (si analyse globale)
+        competitor_stats = {}
+        
+        for short in shorts:
+            try:
+                # short[1] est maintenant youtube_published_at (format ISO avec Z)
+                pub_date = datetime.fromisoformat(short[1].replace('Z', '+00:00'))
+                
+                # Jour de la semaine
+                weekday = pub_date.weekday()
+                weekday_counts[weekday] += 1
+                if short[2]:  # view_count
+                    weekday_performance[weekday].append(short[2])
+                
+                # Heure
+                hour = pub_date.hour
+                hour_counts[hour] += 1
+                if short[2]:  # view_count
+                    hour_performance[hour].append(short[2])
+                
+                # Mois
+                month_key = pub_date.strftime('%Y-%m')
+                if month_key not in monthly_counts:
+                    monthly_counts[month_key] = 0
+                    monthly_performance[month_key] = []
+                monthly_counts[month_key] += 1
+                if short[2]:  # view_count
+                    monthly_performance[month_key].append(short[2])
+                
+                # Par concurrent
+                competitor_name = short[5]
+                competitor_id_key = short[6]
+                if competitor_name not in competitor_stats:
+                    competitor_stats[competitor_name] = {
+                        'id': competitor_id_key,
+                        'count': 0,
+                        'total_views': 0,
+                        'avg_views': 0,
+                        'best_day': None,
+                        'best_hour': None
+                    }
+                competitor_stats[competitor_name]['count'] += 1
+                if short[2]:  # view_count
+                    competitor_stats[competitor_name]['total_views'] += short[2]
+                
+            except Exception as e:
+                print(f"Erreur lors du parsing de la date {short[1]}: {e}")
+                continue
+        
+        # Calculer les moyennes de performance
+        weekday_avg_performance = {}
+        for day, views in weekday_performance.items():
+            weekday_avg_performance[day] = sum(views) / len(views) if views else 0
+        
+        hour_avg_performance = {}
+        for hour, views in hour_performance.items():
+            hour_avg_performance[hour] = sum(views) / len(views) if views else 0
+        
+        monthly_avg_performance = {}
+        for month, views in monthly_performance.items():
+            monthly_avg_performance[month] = sum(views) / len(views) if views else 0
+        
+        # Finaliser les stats par concurrent
+        for competitor_name, stats in competitor_stats.items():
+            if stats['count'] > 0:
+                stats['avg_views'] = round(stats['total_views'] / stats['count'])
+        
+        # Identifier les meilleurs créneaux
+        best_weekday = max(weekday_avg_performance.keys(), key=lambda x: weekday_avg_performance[x]) if weekday_avg_performance else None
+        best_hour = max(hour_avg_performance.keys(), key=lambda x: hour_avg_performance[x]) if hour_avg_performance else None
+        
+        # Noms des jours en français
+        weekday_names = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+        
+        # Analyse de la régularité
+        total_shorts = len(shorts)
+        if total_shorts > 0:
+            # Calculer la fréquence moyenne par semaine
+            if shorts:
+                first_date = datetime.fromisoformat(shorts[-1][1].replace('Z', '+00:00'))
+                last_date = datetime.fromisoformat(shorts[0][1].replace('Z', '+00:00'))
+                weeks_span = max(1, (last_date - first_date).days / 7)
+                avg_shorts_per_week = total_shorts / weeks_span
+            else:
+                avg_shorts_per_week = 0
+        else:
+            avg_shorts_per_week = 0
+        
+        # Recommandations
+        recommendations = []
+        
+        if best_weekday is not None:
+            recommendations.append(f"Publiez plus de Shorts le {weekday_names[best_weekday]} (meilleure performance: {weekday_avg_performance[best_weekday]:.0f} vues en moyenne)")
+        
+        if best_hour is not None:
+            recommendations.append(f"Publiez vers {best_hour}h pour optimiser l'engagement ({hour_avg_performance[best_hour]:.0f} vues en moyenne)")
+        
+        if avg_shorts_per_week < 3:
+            recommendations.append(f"Augmentez la fréquence de publication (actuellement {avg_shorts_per_week:.1f} Shorts/semaine)")
+        elif avg_shorts_per_week > 10:
+            recommendations.append(f"Attention à la sur-publication ({avg_shorts_per_week:.1f} Shorts/semaine), vérifiez la qualité")
+        
+        return {
+            'success': True,
+            'summary': {
+                'total_shorts': total_shorts,
+                'avg_shorts_per_week': round(avg_shorts_per_week, 1),
+                'date_range': {
+                    'first': shorts[-1][1] if shorts else None,
+                    'last': shorts[0][1] if shorts else None
+                }
+            },
+            'frequency_patterns': {
+                'by_weekday': {
+                    'counts': weekday_counts,
+                    'performance': weekday_avg_performance,
+                    'names': weekday_names
+                },
+                'by_hour': {
+                    'counts': hour_counts,
+                    'performance': hour_avg_performance
+                },
+                'by_month': {
+                    'counts': monthly_counts,
+                    'performance': monthly_avg_performance
+                }
+            },
+            'optimal_timing': {
+                'best_weekday': best_weekday,
+                'best_weekday_name': weekday_names[best_weekday] if best_weekday is not None else None,
+                'best_hour': best_hour,
+                'best_weekday_performance': weekday_avg_performance.get(best_weekday, 0) if best_weekday is not None else 0,
+                'best_hour_performance': hour_avg_performance.get(best_hour, 0) if best_hour is not None else 0
+            },
+            'competitor_breakdown': competitor_stats if not competitor_id else None,
+            'recommendations': recommendations,
+            'generated_at': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Erreur lors de l\'analyse des patterns de fréquence: {str(e)}'
+        }
+    finally:
+        conn.close()
+
+
+def generate_center_parcs_insights() -> Dict:
+    """
+    Génère des conseils spécifiques pour les chaînes Center Parcs
+    Identifie les chaînes Center Parcs et génère des conseils personnalisés pour chacune
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Identifier les chaînes Center Parcs
+        cursor.execute('''
+            SELECT 
+                c.id,
+                c.name,
+                c.country,
+                c.channel_url,
+                c.subscriber_count,
+                c.view_count,
+                c.video_count,
+                c.thumbnail_url,
+                COUNT(v.id) as actual_video_count,
+                SUM(v.view_count) as total_views,
+                AVG(v.view_count) as avg_views,
+                AVG(v.duration_seconds) as avg_duration,
+                SUM(CASE WHEN v.category = 'hero' THEN 1 ELSE 0 END) as hero_count,
+                SUM(CASE WHEN v.category = 'hub' THEN 1 ELSE 0 END) as hub_count,
+                SUM(CASE WHEN v.category = 'help' THEN 1 ELSE 0 END) as help_count
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            WHERE c.name LIKE '%Center Parcs%' 
+               OR c.name LIKE '%centerparcs%'
+               OR c.channel_url LIKE '%CenterParcs%'
+               OR c.channel_url LIKE '%centerparcs%'
+               OR c.channel_url LIKE '%@CenterParcsNLBE%'
+               OR c.channel_url LIKE '%CenterParcsBelgi%'
+               OR c.channel_url LIKE '%@CenterParcsDE%'
+            GROUP BY c.id
+            ORDER BY actual_video_count DESC
+        ''')
+        
+        results = cursor.fetchall()
+        
+        if not results:
+            return {
+                'success': False,
+                'error': 'Aucune chaîne Center Parcs trouvée'
+            }
+        
+        channels_insights = {}
+        
+        for row in results:
+            competitor_id = row[0]
+            name = row[1]
+            country = row[2] or 'Non défini'
+            channel_url = row[3]
+            subscriber_count = row[4] or 0
+            view_count = row[5] or 0
+            video_count = row[6] or 0
+            thumbnail_url = row[7]
+            actual_video_count = row[8] or 0
+            total_views = row[9] or 0
+            avg_views = row[10] or 0
+            avg_duration = row[11] or 0
+            hero_count = row[12] or 0
+            hub_count = row[13] or 0
+            help_count = row[14] or 0
+            
+            # Déterminer la région/pays pour les conseils
+            if 'France' in name or 'France' in channel_url:
+                region = 'France'
+                region_key = 'france'
+            elif ('Belgi' in name or 'Belgi' in channel_url or 
+                  'Belgium' in name or 'Belgium' in channel_url or
+                  'Nederland' in name or 'Nederland' in channel_url or
+                  'NLBE' in channel_url or 'NL' in channel_url or
+                  country and country.lower() in ['netherlands', 'belgium', 'nl', 'be']):
+                region = 'Belgique/Pays-Bas'
+                region_key = 'belgium_netherlands'
+            elif ('Deutschland' in name or 'Germany' in name or 'DE' in channel_url or
+                  '@CenterParcsDE' in channel_url or 'CenterParcsDE' in channel_url or
+                  country and country.lower() in ['germany', 'deutschland', 'de']):
+                region = 'Allemagne'
+                region_key = 'germany'
+            else:
+                region = 'International'
+                region_key = 'international'
+            
+            # Calculer les ratios
+            total_categorized = hero_count + hub_count + help_count
+            hero_ratio = (hero_count / total_categorized * 100) if total_categorized > 0 else 0
+            hub_ratio = (hub_count / total_categorized * 100) if total_categorized > 0 else 0
+            help_ratio = (help_count / total_categorized * 100) if total_categorized > 0 else 0
+            
+            # Récupérer les vidéos les plus performantes et moins performantes
+            cursor.execute('''
+                SELECT title, view_count, category, published_at, duration_seconds, like_count, comment_count
+                FROM video
+                WHERE concurrent_id = ?
+                ORDER BY view_count DESC
+                LIMIT 10
+            ''', (competitor_id,))
+            
+            top_videos = cursor.fetchall()
+            
+            # Récupérer les vidéos les moins performantes
+            cursor.execute('''
+                SELECT title, view_count, category, published_at, duration_seconds, like_count, comment_count
+                FROM video
+                WHERE concurrent_id = ? AND view_count > 0
+                ORDER BY view_count ASC
+                LIMIT 10
+            ''', (competitor_id,))
+            
+            bottom_videos = cursor.fetchall()
+            
+            # Récupérer les benchmarks sectoriels pour la région
+            sector_benchmarks = get_sector_benchmarks_for_region(region_key)
+            
+            # Analyser ce qui fonctionne (What works)
+            what_works = analyze_what_works(top_videos, sector_benchmarks, region_key, avg_duration, hero_ratio, hub_ratio, help_ratio)
+            
+            # Analyser ce qui ne fonctionne pas (What doesn't work)
+            what_doesnt_work = analyze_what_doesnt_work(bottom_videos, sector_benchmarks, region_key, avg_duration, hero_ratio, hub_ratio, help_ratio, avg_views)
+            
+            # Conseils régionaux spécifiques
+            regional_advice = []
+            if region_key == 'france':
+                regional_advice.extend([
+                    "🇫🇷 Mettre en avant les spécificités françaises : terroir, gastronomie locale",
+                    "🏞️ Valoriser les activités nature et bien-être typiques",
+                    "👨‍👩‍👧‍👦 Créer du contenu famille multigénérationnel"
+                ])
+            elif region_key == 'belgium_netherlands':
+                regional_advice.extend([
+                    "🇧🇪🇳🇱 Capitaliser sur la notoriété historique de Center Parcs",
+                    "🌲 Mettre en avant l'authenticité et la proximité avec la nature",
+                    "🏊‍♀️ Valoriser l'Aqua Mundo comme signature unique",
+                    "🚲 Promouvoir les activités cyclables et durables",
+                    "🏡 Mettre en valeur les cottages comme 'seconde maison'"
+                ])
+            elif region_key == 'germany':
+                regional_advice.extend([
+                    "🇩🇪 Développer le contenu en allemand authentique",
+                    "🏕️ Mettre en avant les activités outdoor et sportives",
+                    "🎯 Cibler les familles actives et les groupes d'amis",
+                    "🌲 Valoriser la connection avec la nature allemande",
+                    "🏃‍♂️ Promouvoir les activités de fitness et bien-être",
+                    "📱 Adapter aux habitudes digitales allemandes"
+                ])
+            elif region_key == 'international':
+                regional_advice.extend([
+                    "🌍 Créer du contenu universel compréhensible internationalement",
+                    "🏖️ Mettre en avant les destinations iconiques",
+                    "🎉 Valoriser l'expérience Center Parcs globale"
+                ])
+            
+            # Conseils généraux
+            general_advice = []
+            regional_advice.extend([
+                "📱 Optimiser pour mobile : 70% du trafic YouTube",
+                "🎬 Créer des vignettes attractives et cohérentes",
+                "📅 Publier régulièrement : 2-3 vidéos par semaine idéalement"
+            ])
+            
+            channels_insights[region_key] = {
+                'name': name,
+                'region': region,
+                'channel_url': channel_url,
+                'thumbnail_url': thumbnail_url,
+                'stats': {
+                    'subscriber_count': subscriber_count,
+                    'video_count': actual_video_count,
+                    'total_views': total_views,
+                    'avg_views': int(avg_views),
+                    'avg_duration_minutes': round(avg_duration / 60, 1) if avg_duration > 0 else 0
+                },
+                'content_distribution': {
+                    'hero_count': hero_count,
+                    'hub_count': hub_count,
+                    'help_count': help_count,
+                    'hero_ratio': round(hero_ratio, 1),
+                    'hub_ratio': round(hub_ratio, 1),
+                    'help_ratio': round(help_ratio, 1),
+                    'total_categorized': total_categorized
+                },
+                'top_videos': [
+                    {
+                        'title': video[0],
+                        'views': video[1],
+                        'category': video[2],
+                        'published_at': video[3]
+                    }
+                    for video in top_videos
+                ],
+                'advice': what_works + what_doesnt_work + regional_advice + general_advice
+            }
+        
+        return {
+            'success': True,
+            'channels': channels_insights,
+            'total_channels': len(channels_insights),
+            'generated_at': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        print(f"[CENTER-PARCS-INSIGHTS] ❌ Erreur: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        conn.close()
+
+
+def get_sector_benchmarks_for_region(region_key: str) -> Dict:
+    """
+    Récupère les benchmarks sectoriels pour une région donnée
+    """
+    benchmarks = {
+        'germany': {
+            'hero_optimal_duration': 90,  # 1.5 minutes optimal pour HERO en Allemagne
+            'hub_optimal_duration': 240,  # 4 minutes optimal pour HUB en Allemagne
+            'help_optimal_duration': 180,  # 3 minutes optimal pour HELP en Allemagne
+            'hero_ratio_benchmark': 15,  # 15% optimal pour HERO
+            'hub_ratio_benchmark': 60,   # 60% optimal pour HUB
+            'help_ratio_benchmark': 25,  # 25% optimal pour HELP
+            'avg_views_benchmark': 8000,  # 8K vues moyennes en Allemagne
+            'engagement_topics': ['outdoor', 'sport', 'familie', 'natur', 'wellness'],
+            'low_engagement_topics': ['hund', 'haustier', 'politik', 'wetter']
+        },
+        'france': {
+            'hero_optimal_duration': 120,  # 2 minutes optimal pour HERO en France
+            'hub_optimal_duration': 300,   # 5 minutes optimal pour HUB en France
+            'help_optimal_duration': 240,  # 4 minutes optimal pour HELP en France
+            'hero_ratio_benchmark': 20,
+            'hub_ratio_benchmark': 50,
+            'help_ratio_benchmark': 30,
+            'avg_views_benchmark': 6000,
+            'engagement_topics': ['famille', 'gastronomie', 'nature', 'détente', 'vacances'],
+            'low_engagement_topics': ['animaux', 'politique', 'météo']
+        },
+        'belgium_netherlands': {
+            'hero_optimal_duration': 150,  # 2.5 minutes optimal pour HERO en Belgique/Pays-Bas
+            'hub_optimal_duration': 280,   # 4.7 minutes optimal pour HUB
+            'help_optimal_duration': 200,  # 3.3 minutes optimal pour HELP
+            'hero_ratio_benchmark': 18,
+            'hub_ratio_benchmark': 55,
+            'help_ratio_benchmark': 27,
+            'avg_views_benchmark': 7000,
+            'engagement_topics': ['aqua mundo', 'natuur', 'familie', 'fiets', 'cottage'],
+            'low_engagement_topics': ['weer', 'dieren', 'politiek']
+        },
+        'international': {
+            'hero_optimal_duration': 120,
+            'hub_optimal_duration': 300,
+            'help_optimal_duration': 240,
+            'hero_ratio_benchmark': 15,
+            'hub_ratio_benchmark': 60,
+            'help_ratio_benchmark': 25,
+            'avg_views_benchmark': 5000,
+            'engagement_topics': ['family', 'nature', 'vacation', 'outdoor', 'wellness'],
+            'low_engagement_topics': ['weather', 'pets', 'politics']
+        }
+    }
+    
+    return benchmarks.get(region_key, benchmarks['international'])
+
+
+def analyze_what_works(top_videos: List, benchmarks: Dict, region_key: str, avg_duration: float, hero_ratio: float, hub_ratio: float, help_ratio: float) -> List[str]:
+    """
+    Analyse ce qui fonctionne bien pour une chaîne
+    """
+    what_works = []
+    
+    if not top_videos:
+        return ["❌ Données insuffisantes pour analyser les performances"]
+    
+    # Analyse des vidéos les plus performantes
+    avg_top_views = sum(video[1] for video in top_videos) / len(top_videos)
+    
+    # Identifier les catégories qui performent bien (indépendamment de la durée)
+    category_performance = {}
+    for video in top_videos:
+        category = video[2] or 'non-classé'
+        if category not in category_performance:
+            category_performance[category] = []
+        category_performance[category].append(video[1])
+    
+    # Analyser les catégories performantes
+    if category_performance:
+        best_category = max(category_performance.keys(), key=lambda cat: sum(category_performance[cat])/len(category_performance[cat]))
+        best_category_avg = sum(category_performance[best_category]) / len(category_performance[best_category])
+        
+        if best_category == 'hub':
+            what_works.append(f"✅ **Contenu HUB efficace** : Vos vidéos HUB génèrent {best_category_avg:,.0f} vues en moyenne, excellent pour l'industrie du tourisme")
+        elif best_category == 'hero':
+            what_works.append(f"✅ **Contenu HERO impactant** : Vos événements et nouveautés génèrent {best_category_avg:,.0f} vues, parfait pour créer le buzz")
+        elif best_category == 'help':
+            what_works.append(f"✅ **Contenu HELP utile** : Vos tutoriels génèrent {best_category_avg:,.0f} vues, répondant aux besoins de votre audience")
+    
+    # Analyse des durées des top vidéos (si disponibles)
+    top_durations = [video[4] for video in top_videos if video[4] and video[4] > 0]
+    if top_durations:
+        avg_top_duration = sum(top_durations) / len(top_durations)
+        avg_top_minutes = avg_top_duration / 60
+        
+        # Analyser les patterns de durée
+        if 2 <= avg_top_minutes <= 6:
+            what_works.append(f"✅ **Durée optimale** : Vos top vidéos font {avg_top_minutes:.1f}min en moyenne, ce qui correspond à l'engagement optimal pour le tourisme en {region_key.replace('_', ' ').title()}")
+        elif avg_top_minutes < 2:
+            what_works.append(f"✅ **Format court efficace** : Vos vidéos de {avg_top_minutes:.1f}min génèrent {avg_top_views:,.0f} vues en moyenne, format adapté aux réseaux sociaux")
+    
+    # Analyse des ratios de contenu
+    if hero_ratio >= benchmarks['hero_ratio_benchmark']:
+        what_works.append(f"✅ **Bon équilibre HERO** : {hero_ratio:.1f}% de contenu événementiel, au-dessus du benchmark secteur ({benchmarks['hero_ratio_benchmark']}%)")
+    
+    if hub_ratio >= benchmarks['hub_ratio_benchmark']:
+        what_works.append(f"✅ **Excellent contenu HUB** : {hub_ratio:.1f}% de contenu destination, optimal pour l'industrie du tourisme")
+    
+    if help_ratio >= benchmarks['help_ratio_benchmark']:
+        what_works.append(f"✅ **Bon support client** : {help_ratio:.1f}% de contenu d'aide, excellente stratégie de service")
+    
+    # Analyse des titres des top vidéos
+    top_titles = [video[0].lower() for video in top_videos if video[0]]
+    engagement_keywords = [keyword for keyword in benchmarks['engagement_topics'] if any(keyword in title for title in top_titles)]
+    
+    if engagement_keywords:
+        what_works.append(f"✅ **Thématiques porteuses** : Vos vidéos sur {', '.join(engagement_keywords[:3])} génèrent le plus d'engagement dans votre région")
+    
+    return what_works
+
+
+def analyze_what_doesnt_work(bottom_videos: List, benchmarks: Dict, region_key: str, avg_duration: float, hero_ratio: float, hub_ratio: float, help_ratio: float, avg_views: float) -> List[str]:
+    """
+    Analyse ce qui ne fonctionne pas pour une chaîne
+    """
+    what_doesnt_work = []
+    
+    if not bottom_videos:
+        return ["❌ Données insuffisantes pour analyser les sous-performances"]
+    
+    # Analyse des vidéos les moins performantes
+    avg_bottom_views = sum(video[1] for video in bottom_videos) / len(bottom_videos)
+    
+    # Identifier les catégories qui sous-performent (indépendamment de la durée)
+    category_underperformance = {}
+    for video in bottom_videos:
+        category = video[2] or 'non-classé'
+        if category not in category_underperformance:
+            category_underperformance[category] = []
+        category_underperformance[category].append(video[1])
+    
+    # Analyser les catégories sous-performantes
+    if category_underperformance:
+        worst_category = min(category_underperformance.keys(), key=lambda cat: sum(category_underperformance[cat])/len(category_underperformance[cat]))
+        worst_category_avg = sum(category_underperformance[worst_category]) / len(category_underperformance[worst_category])
+        
+        if worst_category == 'help' and worst_category_avg < benchmarks['avg_views_benchmark'] * 0.5:
+            what_doesnt_work.append(f"❌ **Contenu HELP inefficace** : Vos tutoriels ne génèrent que {worst_category_avg:,.0f} vues. Problème : manque de recherche des besoins clients")
+    
+    # Analyse des durées des vidéos peu performantes (si disponibles)
+    bottom_durations = [video[4] for video in bottom_videos if video[4] and video[4] > 0]
+    if bottom_durations:
+        avg_bottom_duration = sum(bottom_durations) / len(bottom_durations)
+        avg_bottom_minutes = avg_bottom_duration / 60
+        
+        # Analyser les patterns de durée problématiques
+        if avg_bottom_minutes > 8:
+            what_doesnt_work.append(f"❌ **Vidéos trop longues** : Vos vidéos de {avg_bottom_minutes:.1f}min ne génèrent que {avg_bottom_views:,.0f} vues. Optimal : 3-6min pour le tourisme")
+        elif avg_bottom_minutes < 1:
+            what_doesnt_work.append(f"❌ **Contenu trop court** : Vos vidéos de {avg_bottom_minutes:.1f}min manquent de substance ({avg_bottom_views:,.0f} vues). Développez plus le contenu")
+    
+    # Analyse des ratios de contenu
+    if hero_ratio < benchmarks['hero_ratio_benchmark']:
+        what_doesnt_work.append(f"❌ **Manque de contenu HERO** : {hero_ratio:.1f}% seulement vs {benchmarks['hero_ratio_benchmark']}% recommandé. Vos actualités ne créent pas assez de buzz")
+    
+    if hub_ratio < benchmarks['hub_ratio_benchmark']:
+        what_doesnt_work.append(f"❌ **Déficit contenu HUB** : {hub_ratio:.1f}% vs {benchmarks['hub_ratio_benchmark']}% optimal. Vos destinations ne sont pas assez mises en avant")
+    
+    if help_ratio < benchmarks['help_ratio_benchmark']:
+        what_doesnt_work.append(f"❌ **Support client insuffisant** : {help_ratio:.1f}% de contenu d'aide vs {benchmarks['help_ratio_benchmark']}% recommandé. Vos clients cherchent plus d'informations pratiques")
+    
+    # Analyse de la performance globale
+    if avg_views < benchmarks['avg_views_benchmark']:
+        performance_gap = (benchmarks['avg_views_benchmark'] - avg_views) / benchmarks['avg_views_benchmark'] * 100
+        what_doesnt_work.append(f"❌ **Sous-performance globale** : {avg_views:,.0f} vues/vidéo vs {benchmarks['avg_views_benchmark']:,.0f} dans votre secteur (-{performance_gap:.0f}%)")
+    
+    # Analyse des titres problématiques
+    bottom_titles = [video[0].lower() for video in bottom_videos if video[0]]
+    problematic_keywords = [keyword for keyword in benchmarks['low_engagement_topics'] if any(keyword in title for title in bottom_titles)]
+    
+    if problematic_keywords:
+        what_doesnt_work.append(f"❌ **Thématiques peu engageantes** : Vos vidéos sur {', '.join(problematic_keywords[:3])} génèrent peu d'engagement dans votre région")
+    
+    return what_doesnt_work

@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Learn - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .learn-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .learn-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+        animation: float 20s linear infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(-20px, -20px) rotate(360deg); }
+    }
+    
+    .learn-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .learn-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .guides-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .guide-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guide-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .guide-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    
+    .guide-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+    
+    .guide-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .guide-description {
+        color: var(--gray);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .guide-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .guide-level {
+        background: var(--success);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .guide-duration {
+        color: var(--gray);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .guide-tag {
+        background: var(--light);
+        color: var(--primary);
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .guide-button-container {
+        position: relative;
+    }
+    
+    .hot-badge {
+        position: absolute;
+        top: -8px;
+        right: 10px;
+        background: linear-gradient(135deg, #ff4757, #ff6b6b);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        transform: rotate(-10deg);
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        animation: bounce 1s infinite;
+        z-index: 10;
+    }
+    
+    @keyframes bounce {
+        0%, 100% {
+            transform: rotate(-10deg) translateY(0);
+        }
+        50% {
+            transform: rotate(-10deg) translateY(-3px);
+        }
+    }
+    
+    .guide-button {
+        background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 35px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-align: center;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        50% {
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.5), 0 0 20px rgba(255, 107, 107, 0.2);
+        }
+        100% {
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+    }
+    
+    .guide-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .guide-button:hover::before {
+        left: 100%;
+    }
+    
+    .guide-button:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        color: white;
+        background: linear-gradient(135deg, #ff5252, #26a69a);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .stats-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .learn-title {
+            font-size: 2rem;
+        }
+        
+        .guides-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .guide-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid main-content">
+    <!-- Header -->
+    <div class="learn-header">
+        <h1 class="learn-title">
+            <i class="bi bi-mortarboard me-3"></i>
+            Learn
+        </h1>
+        <p class="learn-subtitle">
+            Practical guides and resources to master your YouTube strategy
+        </p>
+    </div>
+    
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ guides|length }}</div>
+                <div class="stat-label">Available guides</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">Free</div>
+                <div class="stat-label">Free access</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">🇬🇧</div>
+                <div class="stat-label">In English</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">✨</div>
+                <div class="stat-label">Up to date</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Guides Grid -->
+    {% if guides %}
+        <div class="guides-grid">
+            {% for guide in guides %}
+            <div class="guide-card">
+                <div class="guide-icon">
+                    <i class="{{ guide.icon }}"></i>
+                </div>
+                
+                <h3 class="guide-title">{{ guide.title }}</h3>
+                <p class="guide-description">{{ guide.description }}</p>
+                
+                <div class="guide-meta">
+                    <span class="guide-level">{{ guide.level }}</span>
+                    <span class="guide-duration">
+                        <i class="bi bi-clock"></i>
+                        {{ guide.duration }}
+                    </span>
+                </div>
+                
+                <div class="guide-tags">
+                    {% for tag in guide.tags %}
+                    <span class="guide-tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="guide-button-container">
+                    <a href="/learn/{{ guide.file.replace('.md', '') }}" class="guide-button">
+                        <i class="bi bi-arrow-right-circle-fill me-2"></i>
+                        <strong>READ THE GUIDE</strong>
+                        <i class="bi bi-lightning-charge ms-2"></i>
+                    </a>
+                    <div class="hot-badge">HOT</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <h3>No guides available at the moment</h3>
+            <p>Guides will be added soon in the /tools folder</p>
+        </div>
+    {% endif %}
+    
+    <!-- Coming Soon Section -->
+    <div class="stats-section mt-4">
+        <h3 class="text-center mb-4">
+            <i class="bi bi-hourglass-split me-2"></i>
+            Coming Soon
+        </h3>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <i class="bi bi-graph-up display-4 text-primary mb-3"></i>
+                <h5>Advanced Analytics</h5>
+                <p class="text-muted">Understanding YouTube metrics</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-camera-video display-4 text-success mb-3"></i>
+                <h5>Content Creation</h5>
+                <p class="text-muted">Video production techniques</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-bullseye display-4 text-warning mb-3"></i>
+                <h5>SEO Optimization</h5>
+                <p class="text-muted">YouTube SEO best practices</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

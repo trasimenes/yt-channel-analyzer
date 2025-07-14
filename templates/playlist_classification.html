@@ -1,0 +1,1069 @@
+{% extends "base.html" %}
+
+{% block title %}Classification des Playlists - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .playlist-classification-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .playlist-classification-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+    }
+    
+    .playlist-classification-hero .content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .playlist-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .playlist-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .playlist-card.selected {
+        border-color: #667eea;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+    
+    .playlist-header {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .playlist-thumbnail {
+        width: 80px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 1rem;
+    }
+    
+    .playlist-info {
+        flex: 1;
+    }
+    
+    .playlist-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .playlist-meta {
+        font-size: 0.9rem;
+        color: #6b7280;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .playlist-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .category-selector {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .category-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid transparent;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.7);
+        color: #6b7280;
+    }
+    
+    .category-btn.hero {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    .category-btn.hero.active {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .category-btn.hub {
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+    
+    .category-btn.hub.active {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .category-btn.help {
+        border-color: #10b981;
+        color: #10b981;
+    }
+    
+    .category-btn.help.active {
+        background: #10b981;
+        color: white;
+    }
+    
+    .category-btn.clear {
+        border-color: #6b7280;
+        color: #6b7280;
+    }
+    
+    .category-btn.clear.active {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .impact-preview {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    
+    .impact-preview.will-affect {
+        background: rgba(59, 130, 246, 0.1);
+        color: #1e40af;
+    }
+    
+    .impact-preview.human-protected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+    }
+    
+    .bulk-actions {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bulk-actions h5 {
+        color: #1f2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .bulk-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .select-all-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .select-all-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .classification-templates {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .template-btn {
+        background: rgba(255, 255, 255, 0.7);
+        border: 2px solid #e5e7eb;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    
+    .template-btn:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .apply-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-left: auto;
+    }
+    
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .apply-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .stats-summary {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    .human-indicator {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    
+    .ai-indicator {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    
+    .playlist-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 1rem;
+        cursor: pointer;
+    }
+    
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .filter-select {
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        z-index: 1060;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+        transform: translateX(0);
+    }
+    
+    .notification.success {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .notification.error {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .notification.info {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .playlist-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .playlist-controls {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .category-selector {
+            flex-wrap: wrap;
+        }
+        
+        .bulk-controls {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .classification-templates {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .apply-btn {
+            width: 100%;
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="playlist-classification-hero">
+            <div class="content">
+                <h1><i class="bi bi-collection-play me-2"></i>Classification des Playlists</h1>
+                <p class="lead">
+                    Classifiez vos playlists en HERO/HUB/HELP et propagez automatiquement aux vidéos<br>
+                    <strong>🛡️ Primauté humaine garantie</strong> - Vous gardez le contrôle total
+                </p>
+                {% if competitor %}
+                <small>Chaîne : {{ competitor.name }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p class="mt-3">Chargement des playlists...</p>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="stats-summary" id="stats-summary">
+            <h5><i class="bi bi-graph-up me-2"></i>Statistiques</h5>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="total-playlists">0</div>
+                    <div class="stat-label">Playlists totales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="total-videos">0</div>
+                    <div class="stat-label">Vidéos totales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="classified-playlists">0</div>
+                    <div class="stat-label">Playlists classifiées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="human-classifications">0</div>
+                    <div class="stat-label">Classifications humaines</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-controls">
+                <input type="text" class="filter-input" id="search-filter" placeholder="Rechercher une playlist...">
+                <select class="filter-select" id="category-filter">
+                    <option value="">Toutes les catégories</option>
+                    <option value="hero">HERO</option>
+                    <option value="hub">HUB</option>
+                    <option value="help">HELP</option>
+                    <option value="unclassified">Non classifiées</option>
+                </select>
+                <select class="filter-select" id="source-filter">
+                    <option value="">Toutes les sources</option>
+                    <option value="human">Classifications humaines</option>
+                    <option value="ai">Classifications IA</option>
+                    <option value="unclassified">Non classifiées</option>
+                </select>
+                <button class="select-all-btn" id="refresh-btn">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Actualiser
+                </button>
+                <button class="select-all-btn" id="sort-btn" title="Trier par nombre de vidéos">
+                    <i class="bi bi-sort-numeric-down me-2"></i>
+                    <span id="sort-text">Plus de vidéos</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions">
+            <h5><i class="bi bi-check2-square me-2"></i>Actions en lot</h5>
+            <div class="bulk-controls">
+                <button class="select-all-btn" id="select-all-btn">
+                    <i class="bi bi-check-all me-2"></i>
+                    Tout sélectionner
+                </button>
+                
+                <div class="classification-templates">
+                    <button class="template-btn" data-template="educational">
+                        <i class="bi bi-book me-2"></i>Éducationnel → HELP
+                    </button>
+                    <button class="template-btn" data-template="entertainment">
+                        <i class="bi bi-play-circle me-2"></i>Divertissement → HUB
+                    </button>
+                    <button class="template-btn" data-template="promotional">
+                        <i class="bi bi-megaphone me-2"></i>Promotionnel → HERO
+                    </button>
+                    <button class="template-btn" data-template="tutorials">
+                        <i class="bi bi-question-circle me-2"></i>Tutoriels → HELP
+                    </button>
+                    <button class="template-btn" data-template="brand_content">
+                        <i class="bi bi-building me-2"></i>Marque → HUB
+                    </button>
+                    <button class="template-btn" data-template="product_launch">
+                        <i class="bi bi-rocket me-2"></i>Lancement → HERO
+                    </button>
+                </div>
+                
+                <button class="apply-btn" id="apply-bulk-btn" disabled>
+                    <i class="bi bi-lightning me-2"></i>
+                    Appliquer (<span id="selected-count">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Playlists List -->
+        <div id="playlists-container">
+            <!-- Les playlists seront chargées ici via JavaScript -->
+        </div>
+
+        <!-- No Data Message -->
+        <div id="no-playlists" class="text-center py-5" style="display: none;">
+            <i class="bi bi-collection-play" style="font-size: 4rem; color: #9ca3af;"></i>
+            <h4 class="mt-3">Aucune playlist trouvée</h4>
+            <p class="text-muted">Récupérez d'abord les playlists de cette chaîne pour commencer la classification.</p>
+            <a href="{{ url_for('competitor_detail', competitor_id=competitor.id) }}" class="btn btn-primary mt-3">
+                <i class="bi bi-arrow-left me-2"></i>Retour à la chaîne
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let currentCompetitorId = {{ competitor.id if competitor else 'null' }};
+let allPlaylists = [];
+let selectedPlaylists = new Set();
+let currentFilters = {
+    search: '',
+    category: '',
+    source: ''
+};
+let sortBy = 'video_count'; // 'video_count' ou 'name'
+let sortOrder = 'desc'; // 'asc' ou 'desc'
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    loadPlaylists();
+    setupEventListeners();
+});
+
+// Configuration des écouteurs d'événements
+function setupEventListeners() {
+    // Filtres
+    document.getElementById('search-filter').addEventListener('input', handleFilters);
+    document.getElementById('category-filter').addEventListener('change', handleFilters);
+    document.getElementById('source-filter').addEventListener('change', handleFilters);
+    
+    // Actions en lot
+    document.getElementById('select-all-btn').addEventListener('click', toggleSelectAll);
+    document.getElementById('apply-bulk-btn').addEventListener('click', applyBulkClassification);
+    document.getElementById('refresh-btn').addEventListener('click', loadPlaylists);
+    
+    // Tri
+    document.getElementById('sort-btn').addEventListener('click', function() {
+        // Basculer l'ordre de tri
+        if (sortOrder === 'desc') {
+            sortOrder = 'asc';
+            document.querySelector('#sort-btn i').className = 'bi bi-sort-numeric-up me-2';
+            document.getElementById('sort-text').textContent = 'Moins de vidéos';
+        } else {
+            sortOrder = 'desc';
+            document.querySelector('#sort-btn i').className = 'bi bi-sort-numeric-down me-2';
+            document.getElementById('sort-text').textContent = 'Plus de vidéos';
+        }
+        renderPlaylists();
+    });
+    
+    // Templates
+    document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            applyTemplate(this.dataset.template);
+        });
+    });
+}
+
+// Chargement des playlists
+async function loadPlaylists() {
+    if (!currentCompetitorId) return;
+    
+    showLoading(true);
+    
+    try {
+        const response = await fetch(`/api/competitor/${currentCompetitorId}/playlists`);
+        const data = await response.json();
+        
+        if (data.success) {
+            allPlaylists = data.playlists;
+            updateStatistics();
+            renderPlaylists();
+        } else {
+            showNotification('Erreur lors du chargement des playlists', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('Erreur de connexion', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Mise à jour des statistiques
+function updateStatistics() {
+    const totalPlaylists = allPlaylists.length;
+    const totalVideos = allPlaylists.reduce((sum, p) => sum + (p.video_count || 0), 0);
+    const classifiedPlaylists = allPlaylists.filter(p => p.category).length;
+    const humanClassifications = allPlaylists.filter(p => p.classification_source === 'human').length;
+    
+    document.getElementById('total-playlists').textContent = totalPlaylists;
+    document.getElementById('total-videos').textContent = totalVideos.toLocaleString();
+    document.getElementById('classified-playlists').textContent = classifiedPlaylists;
+    document.getElementById('human-classifications').textContent = humanClassifications;
+}
+
+// Rendu des playlists
+function renderPlaylists() {
+    const container = document.getElementById('playlists-container');
+    const noDataDiv = document.getElementById('no-playlists');
+    
+    if (allPlaylists.length === 0) {
+        container.innerHTML = '';
+        noDataDiv.style.display = 'block';
+        return;
+    }
+    
+    noDataDiv.style.display = 'none';
+    
+    // Filtrage
+    const filteredPlaylists = allPlaylists.filter(playlist => {
+        const matchesSearch = !currentFilters.search || 
+            playlist.name.toLowerCase().includes(currentFilters.search.toLowerCase());
+        
+        const matchesCategory = !currentFilters.category || 
+            (currentFilters.category === 'unclassified' ? !playlist.category : playlist.category === currentFilters.category);
+        
+        const matchesSource = !currentFilters.source || 
+            (currentFilters.source === 'unclassified' ? !playlist.classification_source : playlist.classification_source === currentFilters.source);
+        
+        return matchesSearch && matchesCategory && matchesSource;
+    });
+    
+    // Tri
+    filteredPlaylists.sort((a, b) => {
+        let valueA, valueB;
+        
+        if (sortBy === 'video_count') {
+            valueA = a.video_count || 0;
+            valueB = b.video_count || 0;
+        } else if (sortBy === 'name') {
+            valueA = a.name.toLowerCase();
+            valueB = b.name.toLowerCase();
+        }
+        
+        if (sortOrder === 'desc') {
+            return valueB > valueA ? 1 : -1;
+        } else {
+            return valueA > valueB ? 1 : -1;
+        }
+    });
+    
+    // Génération du HTML
+    container.innerHTML = filteredPlaylists.map(playlist => createPlaylistCard(playlist)).join('');
+    
+    // Ajout des écouteurs d'événements
+    setupPlaylistEventListeners();
+}
+
+// Création d'une carte de playlist
+function createPlaylistCard(playlist) {
+    const isSelected = selectedPlaylists.has(playlist.id);
+    const isHuman = playlist.classification_source === 'human';
+    const thumbnailUrl = playlist.thumbnail_url || '/static/images/default-playlist.png';
+    
+    return `
+        <div class="playlist-card ${isSelected ? 'selected' : ''}" data-playlist-id="${playlist.id}">
+            <div class="playlist-header">
+                <input type="checkbox" class="playlist-checkbox" ${isSelected ? 'checked' : ''}>
+                <img src="${thumbnailUrl}" alt="${playlist.name}" class="playlist-thumbnail">
+                <div class="playlist-info">
+                    <div class="playlist-title">
+                        ${playlist.name}
+                        <div class="d-flex gap-2 mt-1">
+                            ${getCategoryBadge(playlist.category)}
+                            ${playlist.classification_source === 'human' || playlist.human_verified ? 
+                                '<span class="badge bg-success">👤 HUMAIN</span>' : 
+                                '<span class="badge bg-warning">🤖 IA</span>'
+                            }
+                        </div>
+                    </div>
+                    <div class="playlist-meta">
+                        <span><i class="bi bi-play-circle me-1"></i>${playlist.video_count || 0} vidéos</span>
+                        <span><i class="bi bi-calendar me-1"></i>${formatDate(playlist.created_at)}</span>
+                    </div>
+                </div>
+                <!-- Classification rapide supprimée - Interface allégée pour visualisation uniquement -->
+            </div>
+            <div class="impact-preview ${getImpactClass(playlist)}">
+                ${getImpactText(playlist)}
+            </div>
+        </div>
+    `;
+}
+
+// Configuration des écouteurs pour les playlists
+function setupPlaylistEventListeners() {
+    // Checkboxes
+    document.querySelectorAll('.playlist-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const playlistId = parseInt(this.closest('.playlist-card').dataset.playlistId);
+            if (this.checked) {
+                selectedPlaylists.add(playlistId);
+            } else {
+                selectedPlaylists.delete(playlistId);
+            }
+            updateSelection();
+        });
+    });
+    
+    // Boutons de catégorie supprimés - Interface allégée
+}
+
+// Classification d'une playlist
+async function classifyPlaylist(playlistId, category) {
+    try {
+        const response = await fetch('/api/tag-playlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                playlist_id: playlistId,
+                category: category || null,
+                competitor_id: currentCompetitorId,
+                force_propagate: false
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(`✅ Playlist classifiée: ${category ? category.toUpperCase() : 'Effacée'}`, 'success');
+            
+            // Mettre à jour la playlist dans la liste
+            const playlistIndex = allPlaylists.findIndex(p => p.id === playlistId);
+            if (playlistIndex !== -1) {
+                allPlaylists[playlistIndex].category = category;
+                allPlaylists[playlistIndex].classification_source = 'human';
+                allPlaylists[playlistIndex].human_verified = 1;
+            }
+            
+            // Rafraîchir l'affichage
+            updateStatistics();
+            renderPlaylists();
+        } else {
+            showNotification(`❌ Erreur: ${data.error}`, 'error');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('❌ Erreur de connexion', 'error');
+    }
+}
+
+// Gestion des filtres
+function handleFilters() {
+    currentFilters.search = document.getElementById('search-filter').value;
+    currentFilters.category = document.getElementById('category-filter').value;
+    currentFilters.source = document.getElementById('source-filter').value;
+    
+    renderPlaylists();
+}
+
+// Sélection/désélection de toutes les playlists
+function toggleSelectAll() {
+    const allVisible = document.querySelectorAll('.playlist-card:not([style*="display: none"]) .playlist-checkbox');
+    const allSelected = Array.from(allVisible).every(cb => cb.checked);
+    
+    allVisible.forEach(checkbox => {
+        const playlistId = parseInt(checkbox.closest('.playlist-card').dataset.playlistId);
+        checkbox.checked = !allSelected;
+        
+        if (!allSelected) {
+            selectedPlaylists.add(playlistId);
+        } else {
+            selectedPlaylists.delete(playlistId);
+        }
+    });
+    
+    updateSelection();
+}
+
+// Mise à jour de la sélection
+function updateSelection() {
+    document.getElementById('selected-count').textContent = selectedPlaylists.size;
+    document.getElementById('apply-bulk-btn').disabled = selectedPlaylists.size === 0;
+    
+    // Mettre à jour les classes des cartes
+    document.querySelectorAll('.playlist-card').forEach(card => {
+        const playlistId = parseInt(card.dataset.playlistId);
+        card.classList.toggle('selected', selectedPlaylists.has(playlistId));
+    });
+}
+
+// Application d'un template
+function applyTemplate(template) {
+    if (selectedPlaylists.size === 0) {
+        showNotification('⚠️ Aucune playlist sélectionnée', 'info');
+        return;
+    }
+    
+    const templateMappings = {
+        'educational': 'help',
+        'entertainment': 'hub',
+        'promotional': 'hero',
+        'tutorials': 'help',
+        'brand_content': 'hub',
+        'product_launch': 'hero',
+        'seasonal': 'hero',
+        'community': 'hub',
+        'behind_scenes': 'hub',
+        'testimonials': 'hero'
+    };
+    
+    const category = templateMappings[template];
+    if (!category) return;
+    
+    // Appliquer à toutes les playlists sélectionnées
+    selectedPlaylists.forEach(playlistId => {
+        const playlist = allPlaylists.find(p => p.id === playlistId);
+        if (playlist) {
+            playlist.category = category;
+            playlist.classification_source = 'human';
+            playlist.human_verified = 1;
+        }
+    });
+    
+    showNotification(`📝 Template "${template}" → ${category.toUpperCase()} appliqué à ${selectedPlaylists.size} playlist(s)`, 'info');
+    updateStatistics();
+    renderPlaylists();
+}
+
+// Application en lot
+async function applyBulkClassification() {
+    if (selectedPlaylists.size === 0) return;
+    
+    const playlistsToUpdate = Array.from(selectedPlaylists).map(id => {
+        const playlist = allPlaylists.find(p => p.id === id);
+        return {
+            id: id,
+            category: playlist.category,
+            name: playlist.name
+        };
+    });
+    
+    // Vérifier que toutes les playlists ont une catégorie
+    const unclassifiedCount = playlistsToUpdate.filter(p => !p.category).length;
+    if (unclassifiedCount > 0) {
+        showNotification(`⚠️ ${unclassifiedCount} playlist(s) sans catégorie. Utilisez d'abord un template ou classifiez individuellement.`, 'info');
+        return;
+    }
+    
+    // Prévisualiser l'impact
+    try {
+        showLoading(true);
+        
+        const previewResponse = await fetch('/api/playlists/propagate-preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                playlist_ids: Array.from(selectedPlaylists)
+            })
+        });
+        
+        const previewData = await previewResponse.json();
+        
+        if (!previewData.success) {
+            throw new Error(previewData.error);
+        }
+        
+        const { summary } = previewData;
+        
+        const confirmed = confirm(
+            `🛡️ PRIMAUTÉ HUMAINE - CLASSIFICATION EN LOT\n\n` +
+            `📊 Impact prévu :\n` +
+            `• ${summary.total_playlists} playlist(s) à classifier\n` +
+            `• ${summary.total_videos} vidéos au total\n` +
+            `• ${summary.protected_videos} vidéos protégées (classifications humaines)\n` +
+            `• ${summary.affected_videos} vidéos seront affectées\n\n` +
+            `✅ Vos classifications seront marquées comme "humaines" et protégées\n` +
+            `⚠️ Voulez-vous aussi propager aux vidéos immédiatement ?\n\n` +
+            `Continuer ?`
+        );
+        
+        if (!confirmed) return;
+        
+        // Demander si propagation immédiate
+        const shouldPropagate = confirm(
+            `🔄 PROPAGATION IMMÉDIATE\n\n` +
+            `Voulez-vous propager immédiatement aux ${summary.affected_videos} vidéos ?\n\n` +
+            `✅ OUI = Classification + Propagation immédiate\n` +
+            `❌ NON = Classification seulement (propagation manuelle plus tard)`
+        );
+        
+        // Utiliser la nouvelle API de classification en lot
+        const response = await fetch('/api/playlists/bulk-classify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                playlist_ids: Array.from(selectedPlaylists),
+                competitor_id: currentCompetitorId,
+                force_propagate: shouldPropagate
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            selectedPlaylists.clear();
+            updateSelection();
+            loadPlaylists(); // Recharger pour voir les changements
+        } else {
+            showNotification(`❌ Erreur: ${result.error}`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('❌ Erreur lors de la classification en lot', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Fonctions utilitaires
+function getImpactClass(playlist) {
+    if (playlist.classification_source === 'human') {
+        return 'human-protected';
+    }
+    return playlist.category ? 'will-affect' : '';
+}
+
+function getImpactText(playlist) {
+    if (playlist.classification_source === 'human') {
+        return `🛡️ Classification humaine protégée • ${playlist.video_count || 0} vidéos`;
+    }
+    
+    if (playlist.category) {
+        return `📈 Propagera aux ${playlist.video_count || 0} vidéos de cette playlist`;
+    }
+    
+    return `⚪ Aucune classification • ${playlist.video_count || 0} vidéos`;
+}
+
+function getCategoryBadge(category) {
+    console.log('🔍 getCategoryBadge called with:', category, 'type:', typeof category);
+    
+    if (!category || category === null || category === 'null' || category === undefined) {
+        console.log('❌ Category is empty/null, returning Non catégorisé');
+        return '<span class="badge bg-secondary">Non catégorisé</span>';
+    }
+    
+    console.log('✅ Processing category:', category);
+    
+    switch (category) {
+        case 'hero':
+            console.log('🔥 Returning HERO badge');
+            return '<span class="badge bg-danger">🔥 HERO</span>';
+        case 'hub':
+            console.log('🏠 Returning HUB badge');
+            return '<span class="badge bg-primary">🏠 HUB</span>';
+        case 'help':
+            console.log('🆘 Returning HELP badge');
+            return '<span class="badge bg-info">🆘 HELP</span>';
+        default:
+            console.log('⚠️ Unknown category, using default:', category);
+            return `<span class="badge bg-secondary">${category.toUpperCase()}</span>`;
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Date inconnue';
+    return new Date(dateString).toLocaleDateString('fr-FR');
+}
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.getElementById('notification-container').appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 5000);
+}
+</script>
+{% endblock %} 

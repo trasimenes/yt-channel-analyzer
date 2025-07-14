@@ -1,1714 +1,230 @@
 {% extends "base.html" %}
 
-{% block title %}YT Analyzer - YouTube Channel Analysis{% endblock %}
+{% block title %}Dashboard - YT Analyzer{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Override the main content padding for home page */
-    .main-content {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-    
-    .hero-section {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-        opacity: 0.5;
-    }
-    
-    .hero-content {
-        position: relative;
-        z-index: 2;
-    }
-    
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
+    .search-hero {
+        background: rgba(102, 126, 234, 0.25);
+        border-radius: 20px;
         color: white;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .hero-subtitle {
-        font-size: 1.25rem;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 3rem;
-    }
-    
-    .analysis-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px) saturate(150%);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        padding: clamp(1.5rem, 4vw, 3rem);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        width: clamp(320px, 90vw, 500px);
-        margin: 2rem auto;
+        padding: 4rem 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
         position: relative;
-        z-index: 1;
         overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     
-    .analysis-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        border-radius: 20px;
-        z-index: -1;
+    .search-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     
-    .analysis-card:hover {
-        transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateY(-10px);
-        box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.4), 
-                    0 0 40px rgba(99, 102, 241, 0.3);
+    .search-hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.85);
     }
     
-    .analysis-card:hover::before {
-        opacity: 1;
+    .search-form {
+        display: flex;
+        justify-content: center;
     }
     
-    .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        padding: 0.75rem 1rem;
+    .search-form-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .search-input-wrapper {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
         font-size: 1rem;
         transition: all 0.3s ease;
     }
     
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
     }
-    
-    .btn-analyze {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        border: none;
-        border-radius: 12px;
-        padding: 1rem 3rem;
-        font-size: 1.1rem;
-        font-weight: 600;
+
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .analysis-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+    }
+
+    .options-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .form-select {
+        background-color: rgba(255, 255, 255, 0.2);
         color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+    }
+
+    .form-select:focus {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        box-shadow: none;
     }
     
+    .form-select option {
+        color: #333;
+    }
+
+    .btn-analyze {
+        background: linear-gradient(135deg, #a855f7, #e879f9);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
     .btn-analyze:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 35px -5px rgba(99, 102, 241, 0.6);
-        color: white;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
-    
-    .feature-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-    }
-    
-    .feature-icon:hover {
-        transform: translateY(-5px) scale(1.1);
-        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.5);
-    }
-    
-    .feature-card {
-        transition: all 0.3s ease;
-        border-radius: 15px;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-3px);
-        background: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    .autocomplete-item {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #e2e8f0;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: white;
-    }
-    
-    .autocomplete-item:hover {
-        background: rgba(99, 102, 241, 0.1) !important;
-        transform: translateX(5px);
-        border-left: 3px solid var(--primary);
-    }
-    
-    .autocomplete-item:last-child {
-        border-bottom: none;
-        border-radius: 0 0 12px 12px;
-    }
-    
-    .autocomplete-item:first-child {
-        border-radius: 12px 12px 0 0;
-    }
-    
-    .channel-thumbnail {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .autocomplete-item:hover .channel-thumbnail {
-        border-color: var(--primary);
-        transform: scale(1.1);
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-    
-    .thumbnail-fallback {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 600;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s ease;
-        flex-shrink: 0;
-    }
-    
-    .autocomplete-item:hover .thumbnail-fallback {
-        border-color: var(--primary);
-        transform: scale(1.05);
-    }
-    
-    .hero-floating-shapes {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        z-index: 1;
-    }
-    
-    .hero-shape {
-        position: absolute;
-        opacity: 0.1;
-        animation: float 6s ease-in-out infinite;
-    }
-    
-    .hero-shape:nth-child(1) {
-        top: 20%;
-        left: 10%;
-        animation-delay: 0s;
-    }
-    
-    .hero-shape:nth-child(2) {
-        top: 60%;
-        right: 15%;
-        animation-delay: 2s;
-    }
-    
-    .hero-shape:nth-child(3) {
-        bottom: 20%;
-        left: 20%;
-        animation-delay: 4s;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(5deg); }
-    }
-    
-    @keyframes cardGlow {
-        0%, 100% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-        50% { box-shadow: 0 35px 80px -15px rgba(99, 102, 241, 0.4); }
-    }
-    
-    .analysis-card {
-        animation: cardGlow 4s ease-in-out infinite;
-    }
-    
-    .analysis-card:hover {
-        animation: none;
-    }
-    
-    /* Advanced 3D Card Effects - Inspiré de Robin Delaporte CodePen */
-    .analysis-card:not(.entering) {
-        perspective: 1000px;
-        transform-style: preserve-3d;
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-        will-change: transform;
-        cursor: pointer;
-        position: relative;
-        transform-origin: center center;
-        /* État de repos avec perspective subtile */
-        transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);
-    }
-    
-    /* Effet de brillance/reflet qui suit la souris */
-    .analysis-card:not(.entering)::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at var(--shine-x, 50%) var(--shine-y, 50%), 
-            rgba(255,255,255,0.2) 0%, 
-            rgba(255,255,255,0.1) 30%, 
-            transparent 60%
-        );
-        border-radius: 20px;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-        z-index: 2;
-        mix-blend-mode: overlay;
-    }
-    
-    /* Brillance visible au survol */
-    .analysis-card:not(.entering):hover::after {
-        opacity: 1;
-    }
-    
-    /* Ombre dynamique qui suit les transformations */
-    .analysis-card:not(.entering):hover {
-        box-shadow: 
-            0 35px 80px -15px rgba(0, 0, 0, 0.4), 
-            0 0 40px rgba(99, 102, 241, 0.3),
-            0 20px 40px rgba(0,0,0,0.1),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-        z-index: 10;
-    }
-    
-    /* Effets 3D pour les cartes de fonctionnalités */
-    .feature-card:not(.entering) {
-        perspective: 800px;
-        transform-style: preserve-3d;
-        transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
-        will-change: transform;
-        cursor: pointer;
-        position: relative;
-        transform-origin: center center;
-        transform: perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0px);
-    }
-    
-    /* Effet de brillance pour les cartes de fonctionnalités */
-    .feature-card:not(.entering)::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at var(--shine-x, 50%) var(--shine-y, 50%), 
-            rgba(255,255,255,0.15) 0%, 
-            rgba(255,255,255,0.05) 30%, 
-            transparent 60%
-        );
-        border-radius: 15px;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-        z-index: 2;
-        mix-blend-mode: overlay;
-    }
-    
-    .feature-card:not(.entering):hover::before {
-        opacity: 1;
-    }
-    
-    /* Ombre dynamique pour les cartes de fonctionnalités */
-    .feature-card:not(.entering):hover {
-        box-shadow: 
-            0 15px 30px rgba(0, 0, 0, 0.2),
-            0 10px 20px rgba(99, 102, 241, 0.2),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-        z-index: 5;
-    }
-    
-    /* Glass card overlays avec gradients colorés pour l'analysis card */
-    .analysis-card .card-texture::before {
-        content: "";
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-        border-radius: 50%;
-        opacity: 0.08;
-        z-index: -1;
-        transition: all 0.3s ease;
-    }
-    
-    .analysis-card:hover .card-texture::before {
-        opacity: 0.15;
-        transform: scale(1.2);
-    }
-    
-    /* Texture subtile pour l'analysis card */
-    .analysis-card .card-texture {
-        position: absolute;
-        content: "";
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        border-radius: 20px;
-        background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="1" result="noise" seed="1"/><feColorMatrix in="noise" type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.03"/></svg>');
-        background-repeat: repeat;
-        background-size: 64px;
-        opacity: 0.3;
-        z-index: -1;
-        pointer-events: none;
-    }
-    
-    .alert-custom {
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
         border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.5rem;
-        }
-        
-        .analysis-card {
-            padding: clamp(1rem, 5vw, 1.5rem);
-            margin: 1rem;
-            width: auto;
-        }
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        color: #333;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    /* New responsive autocomplete styles */
-    .autocomplete-wrapper {
-        position: relative;
-        width: 100%;
-        max-width: 100%;
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
-    
-    .autocomplete-input {
-        width: 100%;
-        padding: 1rem 3rem 1rem 1rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
+
+    .stat-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        color: #667eea;
+    }
+
+    .stat-card .card-title {
         font-size: 1.1rem;
-        transition: all 0.3s ease;
-        background: white;
-        box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    
-         .autocomplete-input:focus {
-         outline: none;
-         border-color: var(--primary);
-         box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25), 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-     }
-     
-     .autocomplete-input::placeholder {
-         color: #9ca3af;
-         font-weight: 400;
-     }
-     
-     .autocomplete-input:focus::placeholder {
-         color: #d1d5db;
-     }
-    
-    .autocomplete-search-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6b7280;
-        font-size: 1.2rem;
-        pointer-events: none;
-        transition: all 0.3s ease;
-    }
-    
-    .autocomplete-input:focus + .autocomplete-search-icon {
-        color: var(--primary);
-    }
-    
-    .autocomplete-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        max-height: 300px;
-        overflow-y: auto;
-        z-index: 9999;
-        margin-top: 0.5rem;
-        border: 1px solid rgba(99, 102, 241, 0.1);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .autocomplete-results.show {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .autocomplete-results::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .autocomplete-results::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 3px;
-    }
-    
-    .autocomplete-results::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.3);
-        border-radius: 3px;
-    }
-    
-    .autocomplete-results::-webkit-scrollbar-thumb:hover {
-        background: rgba(99, 102, 241, 0.5);
-    }
-    
-    .autocomplete-item-modern {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-         .autocomplete-item-modern:hover,
-     .autocomplete-item-modern.highlighted {
-         background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
-         transform: translateX(3px);
-         border-left: 3px solid var(--primary);
-         padding-left: calc(1rem - 3px);
-     }
-     
-     .autocomplete-item-modern:hover .autocomplete-title,
-     .autocomplete-item-modern.highlighted .autocomplete-title {
-         color: #1e293b;
-     }
-     
-     .autocomplete-item-modern:hover .autocomplete-url,
-     .autocomplete-item-modern.highlighted .autocomplete-url {
-         color: #475569;
-     }
-     
-     .autocomplete-item-modern:focus {
-         outline: 2px solid #6366f1;
-         outline-offset: 2px;
-     }
-     
-     .autocomplete-item-modern:active {
-         transform: translateX(2px) scale(0.98);
-     }
-    
-    .autocomplete-item-modern:last-child {
-        border-bottom: none;
-        border-radius: 0 0 12px 12px;
-    }
-    
-    .autocomplete-item-modern:first-child {
-        border-radius: 12px 12px 0 0;
-    }
-    
-    .autocomplete-thumbnail {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        background: #f8fafc;
-    }
-    
-    .autocomplete-item-modern:hover .autocomplete-thumbnail {
-        border-color: var(--primary);
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px -3px rgba(99, 102, 241, 0.4);
-    }
-    
-    .autocomplete-thumbnail-fallback {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 700;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-        text-transform: uppercase;
-    }
-    
-    .autocomplete-item-modern:hover .autocomplete-thumbnail-fallback {
-        border-color: var(--primary);
-        transform: scale(1.05);
-        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    }
-    
-    .autocomplete-content {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .autocomplete-title {
         font-weight: 600;
-        font-size: 0.95rem;
-        color: #1e293b;
-        margin-bottom: 0.25rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .autocomplete-url {
-        font-size: 0.8rem;
-        color: #64748b;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .autocomplete-description {
-        color: #64748b !important;
-        font-size: 0.75rem;
-        line-height: 1.3;
-        max-height: 2.6rem;
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        font-style: italic;
-        margin-top: 0.2rem;
-    }
-    
-         .autocomplete-loading {
-         padding: 1rem;
-         text-align: center;
-         color: #475569;
-         font-size: 0.9rem;
-         font-weight: 500;
-         background: rgba(248, 250, 252, 0.5);
-     }
-    
-    .autocomplete-loading::before {
-        content: "";
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid #e2e8f0;
-        border-top: 2px solid var(--primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 0.5rem;
-    }
-    
-         .autocomplete-no-results {
-         padding: 1rem;
-         text-align: center;
-         color: #64748b;
-         font-style: italic;
-         background: rgba(248, 250, 252, 0.5);
-     }
-    
-         .autocomplete-info {
-         padding: 0.75rem 1rem;
-         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-         color: #475569;
-         font-size: 0.85rem;
-         font-weight: 500;
-         border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-         border-radius: 12px 12px 0 0;
-     }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .autocomplete-results {
-            max-height: 250px;
-            margin-top: 0.25rem;
-        }
-        
-        .autocomplete-item-modern {
-            padding: 0.75rem;
-        }
-        
-        .autocomplete-thumbnail {
-            width: 40px;
-            height: 40px;
-        }
-        
-        .autocomplete-title {
-            font-size: 0.9rem;
-        }
-        
-        .autocomplete-url {
-            font-size: 0.75rem;
-        }
-    }
-    
-    /* 🌈 Styles pour les cartes avec fond d'image et flou gaussien */
-    .autocomplete-with-bg {
-        background-size: cover !important;
-        background-position: center !important;
-        background-repeat: no-repeat !important;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .autocomplete-blur-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(15px) saturate(180%) brightness(1.1);
-        -webkit-backdrop-filter: blur(15px) saturate(180%) brightness(1.1);
-        border-radius: inherit;
-        z-index: 1;
-        transition: all 0.3s ease;
-    }
-    
-    .autocomplete-with-bg:hover .autocomplete-blur-overlay {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px) saturate(200%) brightness(1.2);
-        -webkit-backdrop-filter: blur(20px) saturate(200%) brightness(1.2);
-    }
-    
-    .autocomplete-with-bg .d-flex {
-        position: relative;
-        z-index: 2;
-    }
-    
-    .autocomplete-with-bg .autocomplete-title {
-        color: #1e293b !important;
-        font-weight: 700 !important;
-        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
-    }
-    
-    .autocomplete-with-bg .autocomplete-url {
-        color: #475569 !important;
-        font-weight: 600 !important;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-    }
-    
-    .autocomplete-with-bg .autocomplete-description {
-        color: #64748b !important;
-        font-weight: 500 !important;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-    }
-    
-    .autocomplete-with-bg .autocomplete-thumbnail {
-        border: 3px solid rgba(255, 255, 255, 0.8) !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    .autocomplete-with-bg .autocomplete-thumbnail-fallback {
-        border: 3px solid rgba(255, 255, 255, 0.8) !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    .autocomplete-with-bg:hover .autocomplete-thumbnail {
-        border-color: rgba(99, 102, 241, 0.8) !important;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-    
-    .autocomplete-with-bg:hover .autocomplete-thumbnail-fallback {
-        border-color: rgba(99, 102, 241, 0.8) !important;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        color: #555;
     }
 
-    /* 🎯 Styles pour les chaînes déjà analysées */
-    .analyzed-channel {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%) !important;
-        border-left: 4px solid #22c55e !important;
-        padding-left: calc(1rem - 4px) !important;
-    }
-    
-    .analyzed-channel:hover {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.08) 100%) !important;
-        transform: translateX(3px);
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-    }
-    
-    /* 🌈 Styles spéciaux pour les chaînes analysées avec fond */
-    .analyzed-channel.autocomplete-with-bg .autocomplete-blur-overlay {
-        background: rgba(34, 197, 94, 0.15) !important;
-        backdrop-filter: blur(15px) saturate(180%) brightness(1.1);
-        -webkit-backdrop-filter: blur(15px) saturate(180%) brightness(1.1);
-    }
-    
-    .analyzed-channel.autocomplete-with-bg:hover .autocomplete-blur-overlay {
-        background: rgba(34, 197, 94, 0.25) !important;
-        backdrop-filter: blur(20px) saturate(200%) brightness(1.2);
-        -webkit-backdrop-filter: blur(20px) saturate(200%) brightness(1.2);
-    }
-    
-    .analyzed-badge .badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .analyzed-badge small {
-        font-size: 0.75rem;
-    }
-    
-    .autocomplete-action .btn {
-        font-size: 0.8rem;
-        padding: 0.35rem 0.8rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    
-    .autocomplete-action .btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-    }
-    
-    .autocomplete-item-modern .channel-thumbnail {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s ease;
-    }
-    
-    .autocomplete-item-modern .thumbnail-fallback {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 600;
-        border: 2px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s ease;
-    }
-    
-    .analyzed-channel .channel-thumbnail,
-    .analyzed-channel .thumbnail-fallback {
-        border-color: rgba(34, 197, 94, 0.3);
-    }
-    
-    .analyzed-channel:hover .channel-thumbnail,
-    .analyzed-channel:hover .thumbnail-fallback {
-        border-color: #22c55e;
-        transform: scale(1.05);
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="hero-floating-shapes">
-        <div class="hero-shape">
-            <i class="bi bi-play-circle-fill" style="font-size: 4rem; color: white;"></i>
-        </div>
-        <div class="hero-shape">
-            <i class="bi bi-graph-up-arrow" style="font-size: 3rem; color: white;"></i>
-        </div>
-        <div class="hero-shape">
-            <i class="bi bi-bar-chart-line-fill" style="font-size: 3.5rem; color: white;"></i>
-        </div>
-    </div>
-    
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="hero-title animated fadeInUp">
-                    <i class="bi bi-youtube text-white me-3" style="font-size: 3rem;"></i>
-                    Analyze YouTube Channels
-                </h1>
-                <p class="hero-subtitle animated fadeInUp" style="animation-delay: 0.2s;">
-                    Discover competitor performance, analyze their content strategies, and optimize your YouTube presence with our advanced analytics tool.
-                </p>
-                
-                <!-- Features Preview -->
-                <div class="row g-4 mb-4 animated fadeInUp" style="animation-delay: 0.4s;">
-                    <div class="col-md-4">
-                        <div class="feature-card d-flex align-items-center text-white">
-                            <div class="feature-icon me-3">
-                                <i class="bi bi-lightning-charge-fill"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0"><i class="bi bi-speedometer2 me-1"></i>Fast Analysis</h6>
-                                <small class="opacity-75">Native YouTube API</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card d-flex align-items-center text-white">
-                            <div class="feature-icon me-3">
-                                <i class="bi bi-graph-up-arrow"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0"><i class="bi bi-lightbulb me-1"></i>Smart Insights</h6>
-                                <small class="opacity-75">HUB•HERO•HELP Matrix</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card d-flex align-items-center text-white">
-                            <div class="feature-icon me-3">
-                                <i class="bi bi-cloud-arrow-up-fill"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0"><i class="bi bi-cpu me-1"></i>Background Tasks</h6>
-                                <small class="opacity-75">Async processing</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="container-fluid mt-4">
+
+    <!-- Search Hero Section -->
+    <div class="search-hero">
+        <h1>Analyse de Chaîne YouTube</h1>
+        <p>Entrez l'URL ou l'ID d'une chaîne pour commencer</p>
+        <form action="{{ url_for('analyze_channel') }}" method="post" class="search-form-container">
+            <div class="search-input-wrapper">
+                <input type="text" name="query" class="search-input" placeholder="Ex: https://www.youtube.com/c/mrbeast6000">
             </div>
             
-            <div class="col-lg-6">
-                <div class="analysis-card animated fadeInRight">
-                    <div class="card-texture"></div>
-                    <h3 class="mb-4 text-center">
-                        <i class="bi bi-search-heart me-2 text-primary"></i>
-                        Which channel to analyze?
-                    </h3>
-                    
-                    <!-- Search Input -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            <i class="bi bi-search me-1"></i>
-                            Search by name
-                        </label>
-                        <div class="autocomplete-wrapper">
-                            <input type="text" class="autocomplete-input" id="search-chaine" 
-                                   placeholder="Start typing a channel name..." autocomplete="off">
-                            <i class="bi bi-search autocomplete-search-icon"></i>
-                            <div class="autocomplete-results" id="autocomplete-results"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- URL Input -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            <i class="bi bi-link-45deg me-1"></i>
-                            Direct URL
-                        </label>
-                        <input type="url" class="form-control" id="channel-url" 
-                               placeholder="https://www.youtube.com/@channel..." required>
-                    </div>
-                    
-                    <!-- Video Limit -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-camera-video me-1"></i>
-                                Number of videos
-                            </label>
-                            <select class="form-select" id="max-videos">
-                                <option value="10">📹 10 videos (fast)</option>
-                                <option value="30" selected>🎯 30 videos (recommended)</option>
-                                <option value="50">📊 50 videos</option>
-                                <option value="100">📈 100 videos</option>
-                                <option value="500">🚀 500 videos</option>
-                                <option value="1000">💯 1000 videos (max)</option>
-                                <option value="0">🔥 ALL videos (unlimited mode)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-calendar-range me-1"></i>
-                                Analysis period
-                            </label>
-                            <select class="form-select" id="filter_period">
-                                <option value="all">📅 All time</option>
-                                <option value="last_30">⏰ Last 30 days</option>
-                                <option value="last_90">📊 Last 90 days</option>
-                                <option value="last_year">📈 Last year</option>
-                                <option value="year">🗓️ Specific year</option>
-                                <option value="month">📆 Specific month</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Date Filters (Hidden by default) -->
-                    <div class="row g-3 mb-4" id="date-filters" style="display: none;">
-                        <div class="col-md-6" id="year_select_container">
-                            <select class="form-select" id="filter_year">
-                                <option value="">Choose a year</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6" id="month_select_container" style="display: none;">
-                            <select class="form-select" id="filter_month">
-                                <option value="">Choose a month</option>
-                                <option value="1">January</option>
-                                <option value="2">February</option>
-                                <option value="3">March</option>
-                                <option value="4">April</option>
-                                <option value="5">May</option>
-                                <option value="6">June</option>
-                                <option value="7">July</option>
-                                <option value="8">August</option>
-                                <option value="9">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Analysis Button -->
-                    <div class="d-grid">
-                        <button class="btn btn-analyze" onclick="startBackgroundAnalysis()">
-                            <i class="bi bi-rocket-takeoff me-2"></i>
-                            <span id="btn-text">Start Analysis</span>
-                            <div class="spinner-border spinner-border-sm ms-2" id="loading-spinner" style="display: none;"></div>
-                        </button>
-                    </div>
-                    
-                    <!-- Quick Access -->
-                    <div class="mt-4 text-center">
-                        <small class="text-muted">
-                            <i class="bi bi-lightning me-1"></i>
-                            Quick access: 
-                            <a href="/tasks" class="text-decoration-none">View Tasks</a> • 
-                            <a href="/concurrents" class="text-decoration-none">Competitors</a>
-                        </small>
-                    </div>
+            <div class="analysis-options">
+                <div class="options-group">
+                    <label for="max_videos">Nombre de vidéos à rapatrier :</label>
+                    <select name="max_videos" id="max_videos" class="form-select">
+                        <option value="30">Les 30 dernières</option>
+                        <option value="50" selected>Les 50 dernières</option>
+                        <option value="100">Les 100 dernières</option>
+                        <option value="0">Toutes les vidéos</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-analyze">
+                    <i class="bi bi-arrow-right-circle-fill"></i> Lancer l'analyse
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill stat-icon"></i>
+                    <h5 class="card-title">Concurrents Suivis</h5>
+                    <p class="stat-value">{{ stats.get('total_competitors', 'N/A') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-camera-video-fill stat-icon"></i>
+                    <h5 class="card-title">Vidéos Analysées</h5>
+                    <p class="stat-value">{{ "{:,.0f}".format(stats.get('total_videos', 0)).replace(',', ' ') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-collection-play-fill stat-icon"></i>
+                    <h5 class="card-title">Playlists Analysées</h5>
+                    <p class="stat-value">{{ "{:,.0f}".format(stats.get('total_playlists', 0)).replace(',', ' ') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-eye-fill stat-icon"></i>
+                    <h5 class="card-title">Vues Cumulées</h5>
+                    <p class="stat-value">{{ stats.get('total_views_formatted', 'N/A') }}</p>
                 </div>
             </div>
         </div>
     </div>
-</section>
-
-<!-- Alert Container -->
-<div id="alert-container" class="position-fixed" style="top: 100px; right: 20px; z-index: 9999;"></div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    let isAnalyzing = false;
-
-    function startAnalysis() {
-        if (isAnalyzing) return;
-        
-        const channelUrl = document.getElementById('channel-url').value.trim();
-        const maxVideos = document.getElementById('max-videos').value;
-        const filterPeriod = document.getElementById('filter_period').value;
-        const filterYear = document.getElementById('filter_year').value;
-        const filterMonth = document.getElementById('filter_month').value;
-        
-        // Validation
-        if (!channelUrl) {
-            showAlert('Please enter a YouTube channel URL', 'warning');
-            return;
-        }
-        
-        if (!isValidYouTubeURL(channelUrl)) {
-            showAlert('Please enter a valid YouTube channel URL', 'warning');
-            return;
-        }
-        
-        // Show loading state
-        setLoadingState(true);
-        
-        // Prepare data
-        const data = {
-            channel_url: channelUrl,
-            max_videos: parseInt(maxVideos),
-            filter_period: filterPeriod
-        };
-        
-        if (filterPeriod === 'year' && filterYear) {
-            data.filter_year = parseInt(filterYear);
-        }
-        
-        if (filterPeriod === 'month' && filterYear && filterMonth) {
-            data.filter_year = parseInt(filterYear);
-            data.filter_month = parseInt(filterMonth);
-        }
-        
-        // Start background analysis
-                            fetch('/api/simple-analysis', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                showAlert('Analysis started! Redirecting to tasks...', 'success');
-                setTimeout(() => {
-                    window.location.href = '/tasks';
-                }, 2000);
-            } else {
-                throw new Error(result.error || 'Unknown error occurred');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error starting analysis: ' + error.message, 'danger');
-            setLoadingState(false);
-        });
-    }
-    
-    function setLoadingState(loading) {
-        isAnalyzing = loading;
-        const button = document.querySelector('.btn-analyze');
-        const buttonText = document.getElementById('btn-text');
-        const spinner = document.getElementById('loading-spinner');
-        
-        if (loading) {
-            button.disabled = true;
-            buttonText.textContent = 'Starting Analysis...';
-            spinner.style.display = 'inline-block';
-            button.classList.add('pe-none');
-        } else {
-            button.disabled = false;
-            buttonText.textContent = 'Start Analysis';
-            spinner.style.display = 'none';
-            button.classList.remove('pe-none');
-        }
-    }
-    
-    function isValidYouTubeURL(url) {
-        const patterns = [
-            /^https?:\/\/(www\.)?(youtube\.com\/(channel\/|c\/|user\/|@)|youtu\.be\/)/i,
-            /^https?:\/\/(www\.)?youtube\.com\/@[\w-]+/i
-        ];
-        return patterns.some(pattern => pattern.test(url));
-    }
-    
-    function showAlert(message, type) {
-        const alertContainer = document.createElement('div');
-        alertContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertContainer.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px; max-width: 500px;';
-        alertContainer.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="bi bi-${getAlertIcon(type)} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        document.body.appendChild(alertContainer);
-        
-        // Auto dismiss after 5 seconds
-        setTimeout(() => {
-            if (alertContainer.parentNode) {
-                alertContainer.remove();
-            }
-        }, 5000);
-    }
-    
-    function getAlertIcon(type) {
-        const icons = {
-            'success': 'check-circle-fill',
-            'danger': 'exclamation-triangle-fill',
-            'warning': 'exclamation-triangle-fill',
-            'info': 'info-circle-fill'
-        };
-        return icons[type] || 'info-circle-fill';
-    }
-    
-    // Handle filter period changes
-    document.getElementById('filter_period').addEventListener('change', function() {
-        const value = this.value;
-        const dateFilters = document.getElementById('date-filters');
-        const yearContainer = document.getElementById('year_select_container');
-        const monthContainer = document.getElementById('month_select_container');
-        
-        if (value === 'year' || value === 'month') {
-            dateFilters.style.display = 'block';
-            
-            // Populate years
-            const yearSelect = document.getElementById('filter_year');
-            yearSelect.innerHTML = '<option value="">Choose a year</option>';
-            const currentYear = new Date().getFullYear();
-            for (let year = currentYear; year >= 2005; year--) {
-                yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
-            }
-            
-            if (value === 'month') {
-                monthContainer.style.display = 'block';
-            } else {
-                monthContainer.style.display = 'none';
-            }
-        } else {
-            dateFilters.style.display = 'none';
-        }
-    });
-    
-    // Enhanced autocomplete system
-    class ModernAutocomplete {
-        constructor(inputId, resultsId) {
-            this.input = document.getElementById(inputId);
-            this.results = document.getElementById(resultsId);
-            this.currentIndex = -1;
-            this.searchTimeout = null;
-            this.isLoading = false;
-            this.suggestions = [];
-            
-            this.init();
-        }
-        
-        init() {
-            this.input.addEventListener('input', this.handleInput.bind(this));
-            this.input.addEventListener('keydown', this.handleKeydown.bind(this));
-            this.input.addEventListener('focus', this.handleFocus.bind(this));
-            this.input.addEventListener('blur', this.handleBlur.bind(this));
-            
-            // Hide results when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!this.input.contains(e.target) && !this.results.contains(e.target)) {
-                    this.hideResults();
-                }
-            });
-        }
-        
-        handleInput(e) {
-            const query = e.target.value.trim();
-            
-            if (query.length < 2) {
-                this.hideResults();
-                return;
-            }
-            
-            // Clear previous timeout
-            if (this.searchTimeout) {
-                clearTimeout(this.searchTimeout);
-            }
-            
-            // Show loading state
-            this.showLoading();
-            
-            // Debounce the search
-            this.searchTimeout = setTimeout(() => {
-                this.search(query);
-            }, 300);
-        }
-        
-        handleKeydown(e) {
-            if (!this.results.classList.contains('show')) return;
-            
-            switch (e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    this.navigateDown();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    this.navigateUp();
-                    break;
-                case 'Enter':
-                    e.preventDefault();
-                    this.selectCurrent();
-                    break;
-                case 'Escape':
-                    this.hideResults();
-                    this.input.blur();
-                    break;
-            }
-        }
-        
-        handleFocus() {
-            if (this.suggestions.length > 0 && this.input.value.trim().length >= 2) {
-                this.showResults();
-            }
-        }
-        
-        handleBlur() {
-            // Delay hiding to allow clicking on results
-            setTimeout(() => {
-                if (document.activeElement !== this.input && !this.results.contains(document.activeElement)) {
-                    this.hideResults();
-                }
-            }, 150);
-        }
-        
-        async search(query) {
-            this.isLoading = true;
-            
-            try {
-                const response = await fetch(`/autocomplete?q=${encodeURIComponent(query)}`);
-                const suggestions = await response.json();
-                
-                this.suggestions = suggestions || [];
-                this.displaySuggestions(suggestions, query);
-            } catch (error) {
-                console.error('Autocomplete error:', error);
-                this.showError();
-            } finally {
-                this.isLoading = false;
-            }
-        }
-        
-        displaySuggestions(suggestions, query) {
-            const html = suggestions.map((suggestion, index) => {
-                const name = this.highlightQuery(suggestion.name, query);
-                const url = suggestion.url;
-                const thumbnail = suggestion.thumbnail;
-                
-                // 🎨 Créer l'élément de miniature avec vraie image ou fallback réduit
-                const thumbnailElement = thumbnail && thumbnail.trim() !== '' ? 
-                    `<img src="${thumbnail}" alt="${suggestion.name}" class="autocomplete-thumbnail me-3" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                     <div class="autocomplete-thumbnail-fallback me-3" style="display: none;">${suggestion.name.charAt(0).toUpperCase()}</div>` :
-                    `<div class="autocomplete-thumbnail-fallback me-3">${suggestion.name.charAt(0).toUpperCase()}</div>`;
-                
-                // 🌈 Créer le style de fond avec flou gaussien
-                const backgroundStyle = thumbnail && thumbnail.trim() !== '' ? 
-                    `style="background-image: url('${thumbnail}'); background-size: cover; background-position: center;"` : 
-                    `style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));"`;
-                
-                // 🔍 Gérer les chaînes déjà analysées
-                if (suggestion.is_analyzed) {
-                    return `
-                        <div class="autocomplete-item-modern analyzed-channel autocomplete-with-bg" ${backgroundStyle} onclick="window.autocomplete.viewExistingAnalysis('${suggestion.competitor_id}', '${suggestion.name}')" data-index="${index}">
-                            <div class="autocomplete-blur-overlay"></div>
-                            <div class="d-flex align-items-center w-100 position-relative">
-                                ${thumbnailElement}
-                                <div class="flex-grow-1">
-                                    <div class="autocomplete-title fw-semibold">${name}</div>
-                                    <div class="autocomplete-url text-muted small">${url}</div>
-                                    <div class="analyzed-badge mt-1">
-                                        <span class="badge bg-success me-2">
-                                            <i class="bi bi-check-circle me-1"></i>
-                                            Déjà analysé
-                                        </span>
-                                        <small class="text-success fw-semibold">
-                                            ${suggestion.video_count} vidéos • ${suggestion.analysis_date}
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="autocomplete-action">
-                                    <span class="btn btn-success btn-sm">
-                                        <i class="bi bi-eye me-1"></i>
-                                        Voir l'analyse
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="autocomplete-item-modern autocomplete-with-bg" ${backgroundStyle} onclick="window.autocomplete.selectItem(${index})" data-index="${index}">
-                            <div class="autocomplete-blur-overlay"></div>
-                            <div class="d-flex align-items-center w-100 position-relative">
-                                ${thumbnailElement}
-                                <div class="flex-grow-1">
-                                    <div class="autocomplete-title fw-semibold">${name}</div>
-                                    <div class="autocomplete-url text-muted small">${url}</div>
-                                    ${suggestion.description ? `<div class="autocomplete-description text-muted small mt-1">${suggestion.description}</div>` : ''}
-                                </div>
-                                <div class="autocomplete-action">
-                                    <span class="text-primary">
-                                        <i class="bi bi-plus-circle"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }).join('');
-            
-            this.results.innerHTML = html;
-            this.showResults();
-        }
-        
-        highlightQuery(text, query) {
-            const regex = new RegExp(`(${query})`, 'gi');
-            return text.replace(regex, '<strong style="color: #6366f1; background: rgba(99, 102, 241, 0.1); padding: 0.1rem 0.2rem; border-radius: 3px;">$1</strong>');
-        }
-        
-        showLoading() {
-            this.results.innerHTML = '<div class="autocomplete-loading">Searching channels...</div>';
-            this.showResults();
-        }
-        
-        showNoResults(query) {
-            this.results.innerHTML = `
-                <div class="autocomplete-no-results">
-                    <i class="bi bi-search-heart me-2"></i>
-                    No channels found for "${query}"
-                </div>
-            `;
-            this.showResults();
-        }
-        
-        showError() {
-            this.results.innerHTML = `
-                <div class="autocomplete-no-results">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Search temporarily unavailable
-                </div>
-            `;
-            this.showResults();
-        }
-        
-        showResults() {
-            this.results.classList.add('show');
-        }
-        
-        hideResults() {
-            this.results.classList.remove('show');
-            this.currentIndex = -1;
-        }
-        
-        navigateDown() {
-            const items = this.results.querySelectorAll('.autocomplete-item-modern');
-            if (items.length === 0) return;
-            
-            // Remove previous highlight
-            if (this.currentIndex >= 0) {
-                items[this.currentIndex].classList.remove('highlighted');
-            }
-            
-            this.currentIndex = (this.currentIndex + 1) % items.length;
-            items[this.currentIndex].classList.add('highlighted');
-            
-            // Scroll into view if needed
-            items[this.currentIndex].scrollIntoView({ block: 'nearest' });
-        }
-        
-        navigateUp() {
-            const items = this.results.querySelectorAll('.autocomplete-item-modern');
-            if (items.length === 0) return;
-            
-            // Remove previous highlight
-            if (this.currentIndex >= 0) {
-                items[this.currentIndex].classList.remove('highlighted');
-            }
-            
-            this.currentIndex = this.currentIndex <= 0 ? items.length - 1 : this.currentIndex - 1;
-            items[this.currentIndex].classList.add('highlighted');
-            
-            // Scroll into view if needed
-            items[this.currentIndex].scrollIntoView({ block: 'nearest' });
-        }
-        
-        selectCurrent() {
-            if (this.currentIndex >= 0 && this.currentIndex < this.suggestions.length) {
-                this.selectItem(this.currentIndex);
-            }
-        }
-        
-        selectItem(index) {
-            const suggestion = this.suggestions[index];
-            if (suggestion) {
-                this.input.value = suggestion.name;
-                document.getElementById('channel-url').value = suggestion.url;
-                this.hideResults();
-                
-                // Add visual feedback
-                this.input.style.borderColor = 'var(--success)';
-                setTimeout(() => {
-                    this.input.style.borderColor = '';
-                }, 2000);
-            }
-        }
-        
-        viewExistingAnalysis(competitorId, channelName) {
-            // Afficher un message d'information
-            showAlert(`L'analyse de "${channelName}" existe déjà. Économie d'API → Redirection vers l'analyse existante...`, 'success');
-            
-            // Rediriger vers la page de détail du concurrent
-            setTimeout(() => {
-                window.location.href = `/competitor/${competitorId}`;
-            }, 1500);
-        }
-    }
-    
-    // Initialize the modern autocomplete
-    const autocomplete = new ModernAutocomplete('search-chaine', 'autocomplete-results');
-    
-    // Rendre l'autocomplete accessible globalement
-    window.autocomplete = autocomplete;
-    
-    // Background Analysis Function
-    async function startBackgroundAnalysis() {
-        const channelUrl = document.getElementById('channel-url').value.trim();
-        const searchChaine = document.getElementById('search-chaine').value.trim();
-        
-        if (!channelUrl) {
-            showAlert('Please enter a YouTube channel URL', 'danger');
-            return;
-        }
-        
-        // 🔍 Vérifier si cette chaîne est déjà analysée avant de continuer
-        try {
-            const cache_response = await fetch('/autocomplete?q=' + encodeURIComponent(searchChaine || channelUrl));
-            const cache_results = await cache_response.json();
-            
-            // Chercher si l'URL correspond à une chaîne déjà analysée
-            const existingAnalysis = cache_results.find(result => 
-                result.url === channelUrl && result.is_analyzed
-            );
-            
-            if (existingAnalysis) {
-                showAlert(`Cette chaîne "${existingAnalysis.name}" est déjà analysée (${existingAnalysis.video_count} vidéos). Économie d'API → Redirection vers l'analyse existante...`, 'warning');
-                setTimeout(() => {
-                    window.location.href = `/competitor/${existingAnalysis.competitor_id}`;
-                }, 2000);
-                return;
-            }
-        } catch (error) {
-            console.log('Erreur vérification cache:', error);
-            // Continuer l'analyse même en cas d'erreur de vérification
-        }
-        
-        const channelName = searchChaine || 'Unknown Channel';
-        
-        // Show loading state
-        const button = document.querySelector('.btn-analyze');
-        const btnText = document.getElementById('btn-text');
-        const spinner = document.getElementById('loading-spinner');
-        const originalText = btnText.textContent;
-        
-        btnText.textContent = 'Starting Analysis...';
-        spinner.style.display = 'inline-block';
-        button.disabled = true;
-        
-        try {
-                            const response = await fetch('/api/simple-analysis', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    channel_url: channelUrl,
-                    channel_name: channelName
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                btnText.textContent = 'Analysis Started!';
-                showAlert(`Background analysis started for "${channelName}"`, 'success');
-                
-                // Redirect to tasks page after 2 seconds
-                setTimeout(() => {
-                    window.location.href = '/tasks';
-                }, 2000);
-            } else {
-                btnText.textContent = originalText;
-                spinner.style.display = 'none';
-                button.disabled = false;
-                showAlert('Error starting analysis: ' + (result.error || 'Unknown error'), 'danger');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            btnText.textContent = originalText;
-            spinner.style.display = 'none';
-            button.disabled = false;
-            showAlert('Error starting background analysis', 'danger');
-        }
-    }
-    
-    // ========================================
-    // Advanced 3D Card Effects pour Home
-    // ========================================
-    
-    function initAdvanced3DHomeCards() {
-        const analysisCard = document.querySelector(".analysis-card");
-        const featureCards = document.querySelectorAll(".feature-card");
-        
-        console.log(`🎮 Initialisation des effets 3D avancés sur la home`);
-        console.log(`- Carte d'analyse: ${analysisCard ? '✅' : '❌'}`);
-        console.log(`- Cartes de fonctionnalités: ${featureCards.length}`);
-        
-        // Configuration pour la carte d'analyse principale
-        if (analysisCard) {
-            setupAdvanced3DCard(analysisCard, {
-                maxRotateX: 10,
-                maxRotateY: 10,
-                scale: 1.02,
-                translateZ: 15,
-                perspective: 1000,
-                name: 'carte d\'analyse'
-            });
-        }
-        
-        // Configuration pour les cartes de fonctionnalités
-        featureCards.forEach((card, index) => {
-            setupAdvanced3DCard(card, {
-                maxRotateX: 8,
-                maxRotateY: 8,
-                scale: 1.05,
-                translateZ: 10,
-                perspective: 800,
-                name: `fonctionnalité ${index + 1}`
-            });
-        });
-    }
-    
-    function setupAdvanced3DCard(card, config) {
-        // Ignorer les cartes en animation d'entrée
-        if (card.classList.contains('entering')) {
-            return;
-        }
-        
-        let bounds = card.getBoundingClientRect();
-        
-        // Recalculer les bounds au resize
-        const updateBounds = () => {
-            bounds = card.getBoundingClientRect();
-        };
-        window.addEventListener('resize', updateBounds);
-        
-        // Handler de mouvement de souris avec calculs avancés
-        const handleMouseMove = (e) => {
-            updateBounds();
-            
-            // Position relative de la souris dans la carte (0-1)
-            const mouseX = (e.clientX - bounds.left) / bounds.width;
-            const mouseY = (e.clientY - bounds.top) / bounds.height;
-            
-            // Centrer les coordonnées (-0.5 à 0.5)
-            const centerX = mouseX - 0.5;
-            const centerY = mouseY - 0.5;
-            
-            // Calculs de rotation (plus fluides)
-            const rotateX = centerY * -config.maxRotateX;
-            const rotateY = centerX * config.maxRotateY;
-            
-            // Calcul de l'élévation basée sur la distance du centre
-            const distance = Math.sqrt(centerX * centerX + centerY * centerY);
-            const scale = 1 + (distance * (config.scale - 1));
-            const translateZ = distance * config.translateZ;
-            
-            // Application des transformations
-            card.style.transform = `
-                perspective(${config.perspective}px) 
-                rotateX(${rotateX}deg) 
-                rotateY(${rotateY}deg) 
-                scale(${scale}) 
-                translateZ(${translateZ}px)
-            `;
-            
-            // Effet de brillance qui suit la souris
-            const shineX = mouseX * 100;
-            const shineY = mouseY * 100;
-            card.style.setProperty('--shine-x', `${shineX}%`);
-            card.style.setProperty('--shine-y', `${shineY}%`);
-        };
-        
-        // Gestion des événements
-        card.addEventListener('mouseenter', () => {
-            console.log(`✨ Survol avancé ${config.name}`);
-            card.style.transition = 'none'; // Désactiver transition pendant le mouvement
-            card.addEventListener('mousemove', handleMouseMove);
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            console.log(`🚀 Sortie avancée ${config.name}`);
-            card.removeEventListener('mousemove', handleMouseMove);
-            
-            // Rétablir transition et retour à l'état normal
-            card.style.transition = 'all 0.4s cubic-bezier(0.23, 1, 0.320, 1)';
-            card.style.transform = `perspective(${config.perspective}px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0px)`;
-        });
-        
-        // Animation de clic sophistiquée
-        card.addEventListener('click', (e) => {
-            // Ne pas déclencher l'animation si on clique sur un élément interactif
-            if (e.target.closest('input') || e.target.closest('button') || e.target.closest('select')) return;
-            
-            console.log(`🎪 Animation clic avancée ${config.name}`);
-            
-            // Animation de "pulse" 3D
-            card.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-            card.style.transform = `perspective(${config.perspective}px) scale(1.05) translateZ(20px)`;
-            
-            setTimeout(() => {
-                card.style.transform = `perspective(${config.perspective}px) scale(1) translateZ(0px)`;
-            }, 150);
-            
-            setTimeout(() => {
-                card.style.transition = 'all 0.4s cubic-bezier(0.23, 1, 0.320, 1)';
-                card.style.transform = `perspective(${config.perspective}px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0px)`;
-            }, 300);
-        });
-    }
-    
-    // Initialisation des effets 3D pour la home
-    function startAdvanced3DHomeEffects() {
-        console.log('🚀 Démarrage des effets 3D avancés pour la home...');
-        
-        // Retirer immédiatement les classes d'animation d'entrée
-        document.querySelectorAll('.analysis-card.entering, .feature-card.entering').forEach((card, index) => {
-            card.classList.remove('entering');
-            console.log(`✨ Classe 'entering' retirée de la carte ${index + 1}`);
-        });
-        
-        // Initialiser les effets 3D avancés
-        setTimeout(initAdvanced3DHomeCards, 100);
-    }
-    
-    // Lancer immédiatement si le DOM est prêt
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startAdvanced3DHomeEffects);
-    } else {
-        startAdvanced3DHomeEffects();
-    }
-    
-    // Force l'initialisation après un court délai comme fallback
-    setTimeout(startAdvanced3DHomeEffects, 500);
-</script>
+</div>
 {% endblock %}

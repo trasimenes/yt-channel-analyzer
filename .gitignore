@@ -52,6 +52,7 @@ geckodriver.log
 chromedriver.log
 
 # Virtual environment
+.venv/
 venv/
 env/
 ENV/
@@ -82,3 +83,85 @@ subscriber_data_backup_*.csv
 *blade*
 *hook*
 *internal*
+
+# Tests et debug - patterns génériques pour éviter la création future
+**/test_*.py
+**/debug_*.py
+**/demo_*.py
+**/*_test.py
+**/*_debug.py
+*_debug.json
+*_debug.log
+test_scan*/
+*_scans/
+debug/
+tests/
+demos/
+scanners/
+**/restore_*.py
+**/clean_*.py
+**/insert_*_data.py
+the-youtube-scraper-master/
+
+# ==============================================
+# PyTorch et Machine Learning - Fichiers volumineux
+# ==============================================
+
+# Modèles PyTorch
+*.pt
+*.pth
+*.pkl
+*.pickle
+*.dylib
+*.so
+
+# Modèles Transformers et HuggingFace
+*.safetensors
+*.bin
+*.onnx
+*.h5
+*.tflite
+*.pb
+
+# Cache et données de modèles
+transformers_cache/
+models/
+model_cache/
+.cache/
+*.cache
+**/.cache/
+
+# Répertoires de modèles spécifiques
+transformers_models/
+models--*/
+snapshots/
+blobs/
+refs/
+
+# Données d'entraînement
+training_data/
+datasets/
+data/embeddings/
+embeddings/
+*.npy
+*.npz
+
+# Checkpoints et sauvegardes de modèles
+checkpoint*/
+checkpoints/
+runs/
+wandb/
+tensorboard/
+*.ckpt
+
+# Environnement virtuel sémantique
+venv_semantic/
+venv_semantic_*/
+
+# Jupyter et notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Fichiers de configuration ML
+ai_training_metadata.json
+transformer_stats.json

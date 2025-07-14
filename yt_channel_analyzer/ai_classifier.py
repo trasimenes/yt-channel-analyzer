@@ -80,9 +80,15 @@ DEFAULT_HUB_PATTERNS = [
 ]
 
 class HubHeroHelpClassifier:
-    """Classifier basé sur des patterns configurables pour catégoriser les vidéos YouTube"""
+    """
+    Classifier basé sur des patterns configurables pour catégoriser les vidéos YouTube
+    
+    DEPRECATED: Cette classe est conservée pour compatibilité mais utilise maintenant
+    la nouvelle logique multilingue de database.py
+    """
     
     def __init__(self, patterns_file="patterns.json"):
+        print("[AI-CLASSIFIER] ⚠️ DEPRECATED: HubHeroHelpClassifier utilise maintenant la logique multilingue")
         self.patterns_file = patterns_file
         self.patterns = self.load_patterns()
         
@@ -149,6 +155,8 @@ class HubHeroHelpClassifier:
         """
         Classifie une vidéo selon HUB/HERO/HELP
         
+        DEPRECATED: Utilise maintenant la logique multilingue quand possible
+        
         Args:
             title: Titre de la vidéo
             description: Description (optionnelle)
@@ -158,6 +166,20 @@ class HubHeroHelpClassifier:
         Returns:
             Tuple (catégorie, pourcentage de confiance)
         """
+        # Essayer d'abord la nouvelle logique multilingue
+        try:
+            from yt_channel_analyzer.database import classify_video_with_language
+            category, detected_language, confidence = classify_video_with_language(title, description)
+            
+            print(f"[AI-CLASSIFIER] 🌍 Utilisation de la logique multilingue: {category.upper()} ({detected_language}, {confidence}%)")
+            return category, confidence
+            
+        except Exception as e:
+            print(f"[AI-CLASSIFIER] ⚠️ Fallback vers logique legacy: {e}")
+            # Fallback vers l'ancienne logique
+            pass
+        
+        # Ancienne logique (conservée pour compatibilité)
         title_lower = title.lower()
         desc_lower = description.lower() if description else ""
         text_combined = f"{title_lower} {desc_lower}"
@@ -338,6 +360,7 @@ def calculate_performance_score(video, category, distribution_type):
 def classify_videos_batch(videos: List[Dict], paid_threshold: int = 10000) -> List[Dict]:
     """
     Classifie une liste de vidéos selon HUB/HERO/HELP et Organic/Paid
+    Utilise la nouvelle logique multilingue pour une classification plus précise
     
     Args:
         videos: Liste de dictionnaires avec au minimum 'title'
@@ -346,9 +369,8 @@ def classify_videos_batch(videos: List[Dict], paid_threshold: int = 10000) -> Li
     Returns:
         Liste des vidéos enrichies avec classifications et scores
     """
-    classifier = HubHeroHelpClassifier()
-    
     classified_videos = []
+    
     for video in videos:
         title = video.get('title', '')
         description = video.get('description', '')
@@ -357,8 +379,19 @@ def classify_videos_batch(videos: List[Dict], paid_threshold: int = 10000) -> Li
         views_numeric = extract_views_number(video.get('views', 0))
         likes_numeric = extract_views_number(video.get('likes', 0))
         
-        # Classification HUB/HERO/HELP
-        category, confidence = classifier.classify_video(title, description, views_numeric, likes_numeric)
+        # Classification HUB/HERO/HELP avec logique multilingue
+        try:
+            from yt_channel_analyzer.database import classify_video_with_language
+            category, detected_language, confidence = classify_video_with_language(title, description)
+            
+            print(f"[AI-CLASSIFIER] 🌍 Vidéo '{title[:50]}...' → {category.upper()} ({detected_language}, {confidence}%)")
+            
+        except Exception as e:
+            print(f"[AI-CLASSIFIER] ⚠️ Erreur classification multilingue: {e}")
+            # Fallback vers l'ancienne logique
+            classifier = HubHeroHelpClassifier()
+            category, confidence = classifier.classify_video(title, description, views_numeric, likes_numeric)
+            detected_language = 'fr'  # Langue par défaut
         
         # Classification Organic vs Paid
         distribution_type = 'paid' if views_numeric > paid_threshold else 'organic'
@@ -375,7 +408,8 @@ def classify_videos_batch(videos: List[Dict], paid_threshold: int = 10000) -> Li
             'views_numeric': views_numeric,
             'likes_numeric': likes_numeric,
             'performance_score': performance_score,
-            'paid_threshold': paid_threshold
+            'paid_threshold': paid_threshold,
+            'detected_language': detected_language  # Ajouter la langue détectée
         })
         
         classified_videos.append(video_classified)

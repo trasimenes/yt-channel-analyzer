@@ -1,0 +1,944 @@
+{% extends "base.html" %}
+
+{% block title %}Apprentissage Supervisé - Classification{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Apprentissage Supervisé</h1>
+                <div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Stratégie de Priorisation
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item {% if strategy == 'global_top' %}active{% endif %}" href="{{ url_for('supervised_learning_page', strategy='global_top') }}">Top Global (Vues/Likes)</a></li>
+                            <li><a class="dropdown-item {% if strategy == 'competitor_top' %}active{% endif %}" href="{{ url_for('supervised_learning_page', strategy='competitor_top') }}">Top par Concurrent</a></li>
+                            <li><a class="dropdown-item {% if strategy == 'low_confidence' %}active{% endif %}" href="{{ url_for('supervised_learning_page', strategy='low_confidence') }}">Confiance Faible</a></li>
+                            <li><a class="dropdown-item {% if strategy == 'balanced' %}active{% endif %}" href="{{ url_for('supervised_learning_page', strategy='balanced') }}">Équilibré (recommandé)</a></li>
+                        </ul>
+                    </div>
+                    <a href="{{ url_for('supervised_learning_stats') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-graph-up"></i> Statistiques d'Apprentissage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics and Instructions Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiques</h5>
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="small text-muted">Vidéos classifiées</div>
+                        <div class="fw-bold">{{ stats.total_videos|default(0) }}</div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="small text-muted">Corrections soumises</div>
+                        <div class="fw-bold">{{ stats.total_feedbacks|default(0) }}</div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="small text-muted">Précision actuelle</div>
+                        <div class="fw-bold">{{ "%.1f"|format(stats.accuracy_rate|default(0) * 100) }}%</div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="small text-muted">Patterns appris</div>
+                        <div class="fw-bold">{{ stats.total_learned_patterns|default(0) }}</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-hero" role="progressbar" style="width: {{ (video_distribution.hero|default(0) * 100)|round }}%"></div>
+                        <div class="progress-bar bg-hub" role="progressbar" style="width: {{ (video_distribution.hub|default(0) * 100)|round }}%"></div>
+                        <div class="progress-bar bg-help" role="progressbar" style="width: {{ (video_distribution.help|default(0) * 100)|round }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <div class="small"><span class="badge bg-hero">HERO</span> {{ "%.1f"|format(video_distribution.hero|default(0) * 100) }}%</div>
+                        <div class="small"><span class="badge bg-hub">HUB</span> {{ "%.1f"|format(video_distribution.hub|default(0) * 100) }}%</div>
+                        <div class="small"><span class="badge bg-help">HELP</span> {{ "%.1f"|format(video_distribution.help|default(0) * 100) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Instructions</h5>
+                    <p>Vous pouvez aider à améliorer notre système de classification en validant ou en corrigeant les classifications proposées. Notre système d'apprentissage supervisé utilisera vos retours pour améliorer ses performances.</p>
+                    
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Rappel des catégories</h6>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-4">
+                                <div class="card bg-hero text-white">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title">HERO</h6>
+                                        <p class="card-text small">Contenu exceptionnel, campagnes, lancements, événements spéciaux.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-hub text-white">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title">HUB</h6>
+                                        <p class="card-text small">Contenu régulier, séries, épisodes, vlogs, contenu de fidélisation.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-help text-white">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title">HELP</h6>
+                                        <p class="card-text small">Tutoriels, guides, réponses aux questions, résolution de problèmes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <ul class="nav nav-tabs card-header-tabs" id="supervisionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button" role="tab" aria-controls="videos" aria-selected="true">
+                                <i class="bi bi-play-circle me-2"></i>Vidéos
+                                <span class="badge bg-primary ms-2" id="videosCount">{{ videos|length }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="playlists-tab" data-bs-toggle="tab" data-bs-target="#playlists" type="button" role="tab" aria-controls="playlists" aria-selected="false">
+                                <i class="bi bi-collection-play me-2"></i>Playlists
+                                <span class="badge bg-warning ms-2" id="playlistsCount">{{ playlists|length }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="tab-content" id="supervisionTabsContent">
+                        <!-- ONGLET VIDÉOS -->
+                        <div class="tab-pane fade show active" id="videos" role="tabpanel" aria-labelledby="videos-tab">
+                            <div class="p-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Vidéos à Valider</h6>
+                                    <div>
+                                        <div class="form-check form-switch d-inline-block me-3">
+                                            <input class="form-check-input" type="checkbox" id="viewModeSwitch" checked>
+                                            <label class="form-check-label" for="viewModeSwitch">Vue Compacte</label>
+                                        </div>
+                                        <button id="validateAllVideosBtn" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check-all"></i> Valider Tout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-0" id="videoGrid">
+                                {% for video in videos %}
+                                <div class="col-12 col-md-6 col-xl-4 video-card" data-video-id="{{ video.id }}">
+                                    <div class="card m-2 h-100 border {% if video.source == 'global_top' %}border-success{% elif video.source == 'competitor_top' %}border-primary{% elif video.source == 'low_confidence' %}border-warning{% else %}border-light{% endif %}">
+                                        <div class="row g-0">
+                                            <div class="col-md-5 position-relative">
+                                                <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" rel="noopener noreferrer" class="video-thumb-link" data-video-id="{{ video.video_id }}">
+                                                    <img src="{{ video.thumbnail_url }}" class="img-fluid rounded-start video-thumb" alt="{{ video.title }}">
+                                                </a>
+                                                <div class="position-absolute top-0 start-0 p-2">
+                                                    {% if video.source == 'global_top' %}
+                                                    <span class="badge bg-success">Top Global</span>
+                                                    {% elif video.source == 'competitor_top' %}
+                                                    <span class="badge bg-primary">Top Concurrent</span>
+                                                    {% elif video.source == 'low_confidence' %}
+                                                    <span class="badge bg-warning text-dark">Confiance Faible</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="card-body">
+                                                    <h6 class="card-title mb-1 text-truncate" title="{{ video.title }}">{{ video.title }}</h6>
+                                                    <p class="card-text small text-muted mb-2">{{ video.competitor_name }}</p>
+                                                    
+                                                    <div class="d-flex mb-2 small">
+                                                        <div class="me-3"><i class="bi bi-eye"></i> {{ video.view_count|format_number }}</div>
+                                                        {% if video.like_count %}
+                                                        <div><i class="bi bi-hand-thumbs-up"></i> {{ video.like_count|format_number }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <div class="current-classification mb-3">
+                                                        <span class="small text-muted">Classification actuelle:</span>
+                                                        <span class="badge bg-{{ video.category }} text-white">{{ video.category|upper }}</span>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-wrap">
+                                                        <button class="btn btn-sm btn-hero category-btn me-1 mb-1 {% if video.category == 'hero' %}active selected-category{% endif %}" data-category="hero" data-video-id="{{ video.id }}">
+                                                            HERO {% if video.category == 'hero' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-hub category-btn me-1 mb-1 {% if video.category == 'hub' %}active selected-category{% endif %}" data-category="hub" data-video-id="{{ video.id }}">
+                                                            HUB {% if video.category == 'hub' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-help category-btn me-1 mb-1 {% if video.category == 'help' %}active selected-category{% endif %}" data-category="help" data-video-id="{{ video.id }}">
+                                                            HELP {% if video.category == 'help' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <button class="btn btn-success validate-btn d-none" data-video-id="{{ video.id }}" data-selected-category="">
+                                                            <i class="bi bi-check-lg me-1"></i>
+                                                            Valider cette classification
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-12 text-center py-5">
+                                    <div class="py-5">
+                                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                                        <h4 class="mt-3">Aucune vidéo à valider</h4>
+                                        <p class="text-muted">Toutes les vidéos ont été validées selon la stratégie actuelle.</p>
+                                        <a href="{{ url_for('supervised_learning_page', strategy='balanced') }}" class="btn btn-primary mt-2">
+                                            Essayer une autre stratégie
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Load More Button for Videos -->
+                            {% if videos|length >= 12 %}
+                            <div class="text-center p-4">
+                                <button id="loadMoreVideosBtn" class="btn btn-outline-primary" data-offset="12">
+                                    <i class="bi bi-arrow-down-circle"></i> Charger plus de vidéos
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- ONGLET PLAYLISTS -->
+                        <div class="tab-pane fade" id="playlists" role="tabpanel" aria-labelledby="playlists-tab">
+                            <div class="p-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Playlists à Valider</h6>
+                                    <div>
+                                        <div class="form-check form-switch d-inline-block me-3">
+                                            <input class="form-check-input" type="checkbox" id="playlistViewModeSwitch" checked>
+                                            <label class="form-check-label" for="playlistViewModeSwitch">Vue Compacte</label>
+                                        </div>
+                                        <button id="validateAllPlaylistsBtn" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check-all"></i> Valider Toutes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-0" id="playlistGrid">
+                                {% for playlist in playlists %}
+                                <div class="col-12 col-md-6 col-xl-4 playlist-card" data-playlist-id="{{ playlist.id }}">
+                                    <div class="card m-2 h-100 border {% if playlist.source == 'global_top' %}border-success{% elif playlist.source == 'competitor_top' %}border-primary{% elif playlist.source == 'low_confidence' %}border-warning{% else %}border-light{% endif %}">
+                                        <div class="row g-0">
+                                            <div class="col-md-5 position-relative">
+                                                <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" target="_blank" rel="noopener noreferrer" class="playlist-thumb-link">
+                                                    <img src="{{ playlist.thumbnail_url or '/static/playlist-default.png' }}" class="img-fluid rounded-start playlist-thumb" alt="{{ playlist.name }}">
+                                                </a>
+                                                <div class="position-absolute top-0 start-0 p-2">
+                                                    {% if playlist.source == 'global_top' %}
+                                                    <span class="badge bg-success">Top Global</span>
+                                                    {% elif playlist.source == 'competitor_top' %}
+                                                    <span class="badge bg-primary">Top Concurrent</span>
+                                                    {% elif playlist.source == 'low_confidence' %}
+                                                    <span class="badge bg-warning text-dark">Confiance Faible</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="card-body">
+                                                    <h6 class="card-title mb-1 text-truncate" title="{{ playlist.name }}">{{ playlist.name }}</h6>
+                                                    <p class="card-text small text-muted mb-2">{{ playlist.competitor_name }}</p>
+                                                    
+                                                    <div class="d-flex mb-2 small">
+                                                        <div class="me-3"><i class="bi bi-collection-play"></i> {{ playlist.video_count }} vidéos</div>
+                                                        <div><i class="bi bi-bar-chart"></i> {{ playlist.confidence }}% confiance</div>
+                                                    </div>
+                                                    
+                                                    <div class="current-classification mb-3">
+                                                        <span class="small text-muted">Classification actuelle:</span>
+                                                        <span class="badge bg-{{ playlist.category or 'secondary' }} text-white">{{ (playlist.category or 'Non classé')|upper }}</span>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-wrap">
+                                                        <button class="btn btn-sm btn-hero playlist-category-btn me-1 mb-1 {% if playlist.category == 'hero' %}active selected-category{% endif %}" data-category="hero" data-playlist-id="{{ playlist.id }}">
+                                                            HERO {% if playlist.category == 'hero' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-hub playlist-category-btn me-1 mb-1 {% if playlist.category == 'hub' %}active selected-category{% endif %}" data-category="hub" data-playlist-id="{{ playlist.id }}">
+                                                            HUB {% if playlist.category == 'hub' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-help playlist-category-btn me-1 mb-1 {% if playlist.category == 'help' %}active selected-category{% endif %}" data-category="help" data-playlist-id="{{ playlist.id }}">
+                                                            HELP {% if playlist.category == 'help' %}<i class="bi bi-check-circle-fill ms-1"></i>{% endif %}
+                                                        </button>
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <button class="btn btn-success playlist-validate-btn d-none" data-playlist-id="{{ playlist.id }}" data-selected-category="">
+                                                            <i class="bi bi-check-lg me-1"></i>
+                                                            Valider cette classification
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-12 text-center py-5">
+                                    <div class="py-5">
+                                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                                        <h4 class="mt-3">Aucune playlist à valider</h4>
+                                        <p class="text-muted">Toutes les playlists ont été validées selon la stratégie actuelle.</p>
+                                        <a href="{{ url_for('supervised_learning_page', strategy='balanced') }}" class="btn btn-primary mt-2">
+                                            Essayer une autre stratégie
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Load More Button for Playlists -->
+                            {% if playlists|length >= 12 %}
+                            <div class="text-center p-4">
+                                <button id="loadMorePlaylistsBtn" class="btn btn-outline-primary" data-offset="12">
+                                    <i class="bi bi-arrow-down-circle"></i> Charger plus de playlists
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals and Toasts -->
+<div class="modal fade" id="learningSuccessModal" tabindex="-1" aria-labelledby="learningSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="learningSuccessModalLabel">
+                    <i class="bi bi-check-circle text-success"></i> Apprentissage Réussi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Votre feedback a été pris en compte et notre système a appris de nouvelles informations !</p>
+                <div class="alert alert-info" id="learningDetails">
+                    <h6>Détails de l'apprentissage :</h6>
+                    <ul class="mb-0" id="learnedPatternsList">
+                        <!-- Patterns ajoutés ici dynamiquement -->
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continuer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+  <div id="classificationToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Classification mise à jour avec succès !
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    .bg-hero, .btn-hero {
+        background-color: #ff385c;
+        color: white;
+    }
+    .bg-hub, .btn-hub {
+        background-color: #0066ff;
+        color: white;
+    }
+    .bg-help, .btn-help {
+        background-color: #00a651;
+        color: white;
+    }
+    .video-card.validated, .playlist-card.validated {
+        opacity: 0.6;
+    }
+    .selected-category {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+        border-color: #0d6efd !important;
+        font-weight: bold;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+    }
+    .playlist-thumb {
+        height: 100px;
+        object-fit: cover;
+    }
+    .video-thumb {
+        height: 100px;
+        object-fit: cover;
+    }
+    .nav-tabs .nav-link {
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    .nav-tabs .nav-link.active {
+        background-color: #f8f9fa;
+        border-color: #dee2e6 #dee2e6 #f8f9fa;
+    }
+    #loadMoreVideosBtn, #loadMorePlaylistsBtn {
+        min-width: 200px;
+    }
+    #loadMoreVideosBtn.loading, #loadMorePlaylistsBtn.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Variables globales pour la pagination
+        let currentStrategy = '{{ strategy }}';
+        let videosOffset = 12;
+        let playlistsOffset = 12;
+        
+        // Mode d'affichage (compact/détaillé)
+        $('#viewModeSwitch').change(function() {
+            if($(this).is(':checked')) {
+                $('#videoGrid').removeClass('video-grid-detailed');
+            } else {
+                $('#videoGrid').addClass('video-grid-detailed');
+            }
+        });
+        
+        $('#playlistViewModeSwitch').change(function() {
+            if($(this).is(':checked')) {
+                $('#playlistGrid').removeClass('playlist-grid-detailed');
+            } else {
+                $('#playlistGrid').addClass('playlist-grid-detailed');
+            }
+        });
+        
+        // Gestion des boutons de catégorie pour les vidéos (sélection seulement)
+        $(document).on('click', '.category-btn', function() {
+            const videoId = $(this).data('video-id');
+            const category = $(this).data('category');
+            const $card = $(`.video-card[data-video-id="${videoId}"]`);
+            
+            // Mise à jour visuelle
+            $card.find('.category-btn').removeClass('active selected-category');
+            $(this).addClass('active selected-category');
+            
+            // Mettre à jour les icônes
+            $card.find('.category-btn i').remove();
+            $(this).append('<i class="bi bi-check-circle-fill ms-1"></i>');
+            
+            // Afficher le bouton de validation
+            const $validateBtn = $card.find('.validate-btn');
+            $validateBtn.removeClass('d-none').attr('data-selected-category', category);
+            
+            console.log(`[SELECTION] Vidéo ${videoId} sélectionnée comme ${category.toUpperCase()}`);
+        });
+        
+        // Gestion du bouton de validation pour les vidéos
+        $(document).on('click', '.validate-btn', function() {
+            const videoId = $(this).data('video-id');
+            const category = $(this).data('selected-category');
+            const $card = $(`.video-card[data-video-id="${videoId}"]`);
+            
+            if (!category) {
+                alert('Veuillez d\'abord sélectionner une catégorie');
+                return;
+            }
+            
+            // Mettre à jour l'affichage de la classification actuelle
+            const currentBadge = $card.find('.current-classification .badge');
+            currentBadge.removeClass('bg-hero bg-hub bg-help bg-secondary');
+            currentBadge.addClass(`bg-${category}`);
+            currentBadge.text(category.toUpperCase());
+            
+            // Masquer le bouton de validation
+            $(this).addClass('d-none');
+            
+            // Envoyer le feedback à l'API
+            console.log(`[VALIDATION] Validation de la vidéo ${videoId} comme ${category.toUpperCase()}`);
+            submitFeedback(videoId, category, 'correction');
+        });
+        
+        // Gestion des boutons de catégorie pour les playlists (sélection seulement)
+        $(document).on('click', '.playlist-category-btn', function() {
+            const playlistId = $(this).data('playlist-id');
+            const category = $(this).data('category');
+            const $card = $(`.playlist-card[data-playlist-id="${playlistId}"]`);
+            
+            // Mise à jour visuelle
+            $card.find('.playlist-category-btn').removeClass('active selected-category');
+            $(this).addClass('active selected-category');
+            
+            // Mettre à jour les icônes
+            $card.find('.playlist-category-btn i').remove();
+            $(this).append('<i class="bi bi-check-circle-fill ms-1"></i>');
+            
+            // Afficher le bouton de validation
+            const $validateBtn = $card.find('.playlist-validate-btn');
+            $validateBtn.removeClass('d-none').attr('data-selected-category', category);
+            
+            console.log(`[SELECTION] Playlist ${playlistId} sélectionnée comme ${category.toUpperCase()}`);
+        });
+        
+        // Gestion du bouton de validation pour les playlists
+        $(document).on('click', '.playlist-validate-btn', function() {
+            const playlistId = $(this).data('playlist-id');
+            let category = $(this).data('selected-category');
+            const $card = $(`.playlist-card[data-playlist-id="${playlistId}"]`);
+            
+            // Si pas de catégorie sélectionnée, prendre la catégorie actuelle
+            if (!category) {
+                category = $card.find('.current-classification .badge').text().toLowerCase();
+            }
+            
+            if (!category || category === 'non classé') {
+                alert('Veuillez d\'abord sélectionner une catégorie');
+                return;
+            }
+            
+            // Désactiver le bouton pour éviter les doubles clics
+            $(this).prop('disabled', true).html('<i class="bi bi-arrow-repeat"></i> Validation...');
+            
+            // Mettre à jour l'affichage de la classification actuelle
+            const currentBadge = $card.find('.current-classification .badge');
+            currentBadge.removeClass('bg-hero bg-hub bg-help bg-secondary');
+            currentBadge.addClass(`bg-${category}`);
+            currentBadge.text(category.toUpperCase());
+            
+            // Envoyer le feedback à l'API
+            console.log(`[VALIDATION] Validation de la playlist ${playlistId} comme ${category.toUpperCase()}`);
+            
+            // Appel API avec gestion d'erreurs améliorée
+            $.ajax({
+                url: '/api/supervised/playlist-feedback',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    playlist_id: playlistId,
+                    category: category.toLowerCase(),
+                    feedback_type: 'correction'
+                }),
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Masquer le bouton de validation définitivement
+                        $(`.playlist-card[data-playlist-id="${playlistId}"] .playlist-validate-btn`).addClass('d-none');
+                        
+                        // Marquer comme validé
+                        $card.addClass('validated');
+                        
+                        // Afficher un toast de succès
+                        const toast = new bootstrap.Toast(document.getElementById('classificationToast'));
+                        toast.show();
+                        
+                        console.log(`[SUCCESS] Playlist ${playlistId} validée avec succès`);
+                    } else {
+                        console.error('Erreur lors de la validation:', response.message);
+                        alert('Erreur: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de la validation:', error);
+                    alert('Erreur de communication avec le serveur');
+                },
+                complete: function() {
+                    // Réactiver le bouton en cas d'erreur
+                    $(`.playlist-card[data-playlist-id="${playlistId}"] .playlist-validate-btn`)
+                        .prop('disabled', false)
+                        .html('<i class="bi bi-check"></i> Valider cette classification');
+                }
+            });
+        });
+        
+        // Validation des vidéos (sans correction)
+        $(document).on('click', '.validate-btn', function() {
+            const videoId = $(this).data('video-id');
+            const currentCategory = $(`.video-card[data-video-id="${videoId}"] .current-classification .badge`).text().toLowerCase();
+            
+            // Envoyer la validation à l'API
+            submitFeedback(videoId, currentCategory, 'validation');
+            
+            // Marquer comme validé visuellement
+            $(`.video-card[data-video-id="${videoId}"]`).addClass('validated');
+        });
+        
+
+        
+        // Valider toutes les vidéos
+        $('#validateAllVideosBtn').click(function() {
+            if(!confirm('Êtes-vous sûr de vouloir valider toutes les classifications de vidéos actuelles ?')) {
+                return;
+            }
+            
+            $('.video-card:not(.validated)').each(function() {
+                const videoId = $(this).data('video-id');
+                const currentCategory = $(this).find('.current-classification .badge').text().toLowerCase();
+                
+                // Envoyer la validation à l'API
+                submitFeedback(videoId, currentCategory, 'validation');
+                
+                // Marquer comme validé visuellement
+                $(this).addClass('validated');
+            });
+        });
+        
+        // Valider toutes les playlists
+        $('#validateAllPlaylistsBtn').click(function() {
+            if(!confirm('Êtes-vous sûr de vouloir valider toutes les classifications de playlists actuelles ?')) {
+                return;
+            }
+            
+            $('.playlist-card:not(.validated)').each(function() {
+                const playlistId = $(this).data('playlist-id');
+                const currentCategory = $(this).find('.current-classification .badge').text().toLowerCase();
+                
+                // Envoyer la validation à l'API
+                submitPlaylistFeedback(playlistId, currentCategory, 'validation');
+                
+                // Marquer comme validé visuellement
+                $(this).addClass('validated');
+            });
+        });
+        
+        // Charger plus de vidéos
+        $('#loadMoreVideosBtn').click(function() {
+            const btn = $(this);
+            btn.addClass('loading');
+            btn.html('<i class="bi bi-arrow-repeat"></i> Chargement...');
+            
+            $.ajax({
+                url: '/api/supervised/load-more-videos',
+                type: 'GET',
+                data: {
+                    strategy: currentStrategy,
+                    offset: videosOffset,
+                    limit: 12
+                },
+                success: function(response) {
+                    if(response.status === 'success' && response.videos.length > 0) {
+                        // Ajouter les nouvelles vidéos
+                        response.videos.forEach(video => {
+                            const videoHtml = createVideoCard(video);
+                            $('#videoGrid').append(videoHtml);
+                        });
+                        
+                        // Mettre à jour l'offset
+                        videosOffset += response.videos.length;
+                        
+                        // Mettre à jour le compteur
+                        const currentCount = parseInt($('#videosCount').text());
+                        $('#videosCount').text(currentCount + response.videos.length);
+                        
+                        // Masquer le bouton si plus de données
+                        if(!response.has_more) {
+                            btn.hide();
+                        }
+                    } else {
+                        btn.hide();
+                    }
+                },
+                error: function() {
+                    alert('Erreur lors du chargement des vidéos');
+                },
+                complete: function() {
+                    btn.removeClass('loading');
+                    btn.html('<i class="bi bi-arrow-down-circle"></i> Charger plus de vidéos');
+                }
+            });
+        });
+        
+        // Charger plus de playlists
+        $('#loadMorePlaylistsBtn').click(function() {
+            const btn = $(this);
+            btn.addClass('loading');
+            btn.html('<i class="bi bi-arrow-repeat"></i> Chargement...');
+            
+            $.ajax({
+                url: '/api/supervised/load-more-playlists',
+                type: 'GET',
+                data: {
+                    strategy: currentStrategy,
+                    offset: playlistsOffset,
+                    limit: 12
+                },
+                success: function(response) {
+                    if(response.status === 'success' && response.playlists.length > 0) {
+                        // Ajouter les nouvelles playlists
+                        response.playlists.forEach(playlist => {
+                            const playlistHtml = createPlaylistCard(playlist);
+                            $('#playlistGrid').append(playlistHtml);
+                        });
+                        
+                        // Mettre à jour l'offset
+                        playlistsOffset += response.playlists.length;
+                        
+                        // Mettre à jour le compteur
+                        const currentCount = parseInt($('#playlistsCount').text());
+                        $('#playlistsCount').text(currentCount + response.playlists.length);
+                        
+                        // Masquer le bouton si plus de données
+                        if(!response.has_more) {
+                            btn.hide();
+                        }
+                    } else {
+                        btn.hide();
+                    }
+                },
+                error: function() {
+                    alert('Erreur lors du chargement des playlists');
+                },
+                complete: function() {
+                    btn.removeClass('loading');
+                    btn.html('<i class="bi bi-arrow-down-circle"></i> Charger plus de playlists');
+                }
+            });
+        });
+        
+        // Fonction pour créer une carte vidéo
+        function createVideoCard(video) {
+            const sourceClass = video.source === 'global_top' ? 'border-success' : 
+                               video.source === 'competitor_top' ? 'border-primary' : 
+                               video.source === 'low_confidence' ? 'border-warning' : 'border-light';
+            
+            const sourceBadge = video.source === 'global_top' ? '<span class="badge bg-success">Top Global</span>' : 
+                               video.source === 'competitor_top' ? '<span class="badge bg-primary">Top Concurrent</span>' : 
+                               video.source === 'low_confidence' ? '<span class="badge bg-warning text-dark">Confiance Faible</span>' : '';
+            
+            return `
+                <div class="col-12 col-md-6 col-xl-4 video-card" data-video-id="${video.id}">
+                    <div class="card m-2 h-100 border ${sourceClass}">
+                        <div class="row g-0">
+                            <div class="col-md-5 position-relative">
+                                <a href="https://www.youtube.com/watch?v=${video.video_id}" target="_blank" rel="noopener noreferrer" class="video-thumb-link" data-video-id="${video.video_id}">
+                                    <img src="${video.thumbnail_url}" class="img-fluid rounded-start video-thumb" alt="${video.title}">
+                                </a>
+                                <div class="position-absolute top-0 start-0 p-2">
+                                    ${sourceBadge}
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1 text-truncate" title="${video.title}">${video.title}</h6>
+                                    <p class="card-text small text-muted mb-2">${video.competitor_name}</p>
+                                    
+                                    <div class="d-flex mb-2 small">
+                                        <div class="me-3"><i class="bi bi-eye"></i> ${formatNumber(video.view_count)}</div>
+                                        ${video.like_count ? `<div><i class="bi bi-hand-thumbs-up"></i> ${formatNumber(video.like_count)}</div>` : ''}
+                                    </div>
+                                    
+                                    <div class="current-classification mb-3">
+                                        <span class="small text-muted">Classification actuelle:</span>
+                                        <span class="badge bg-${video.category} text-white">${video.category.toUpperCase()}</span>
+                                    </div>
+                                    
+                                    <div class="d-flex">
+                                        <button class="btn btn-sm btn-hero category-btn me-1 ${video.category === 'hero' ? 'active selected-category' : ''}" data-category="hero" data-video-id="${video.id}">
+                                            HERO ${video.category === 'hero' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-hub category-btn me-1 ${video.category === 'hub' ? 'active selected-category' : ''}" data-category="hub" data-video-id="${video.id}">
+                                            HUB ${video.category === 'hub' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-help category-btn me-1 ${video.category === 'help' ? 'active selected-category' : ''}" data-category="help" data-video-id="${video.id}">
+                                            HELP ${video.category === 'help' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success validate-btn" data-video-id="${video.id}">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fonction pour créer une carte playlist
+        function createPlaylistCard(playlist) {
+            const sourceClass = playlist.source === 'global_top' ? 'border-success' : 
+                               playlist.source === 'competitor_top' ? 'border-primary' : 
+                               playlist.source === 'low_confidence' ? 'border-warning' : 'border-light';
+            
+            const sourceBadge = playlist.source === 'global_top' ? '<span class="badge bg-success">Top Global</span>' : 
+                               playlist.source === 'competitor_top' ? '<span class="badge bg-primary">Top Concurrent</span>' : 
+                               playlist.source === 'low_confidence' ? '<span class="badge bg-warning text-dark">Confiance Faible</span>' : '';
+            
+            return `
+                <div class="col-12 col-md-6 col-xl-4 playlist-card" data-playlist-id="${playlist.id}">
+                    <div class="card m-2 h-100 border ${sourceClass}">
+                        <div class="row g-0">
+                            <div class="col-md-5 position-relative">
+                                <a href="https://www.youtube.com/playlist?list=${playlist.playlist_id}" target="_blank" rel="noopener noreferrer" class="playlist-thumb-link">
+                                    <img src="${playlist.thumbnail_url || '/static/playlist-default.png'}" class="img-fluid rounded-start playlist-thumb" alt="${playlist.name}">
+                                </a>
+                                <div class="position-absolute top-0 start-0 p-2">
+                                    ${sourceBadge}
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1 text-truncate" title="${playlist.name}">${playlist.name}</h6>
+                                    <p class="card-text small text-muted mb-2">${playlist.competitor_name}</p>
+                                    
+                                    <div class="d-flex mb-2 small">
+                                        <div class="me-3"><i class="bi bi-collection-play"></i> ${playlist.video_count} vidéos</div>
+                                        <div><i class="bi bi-bar-chart"></i> ${playlist.confidence}% confiance</div>
+                                    </div>
+                                    
+                                    <div class="current-classification mb-3">
+                                        <span class="small text-muted">Classification actuelle:</span>
+                                        <span class="badge bg-${playlist.category || 'secondary'} text-white">${(playlist.category || 'Non classé').toUpperCase()}</span>
+                                    </div>
+                                    
+                                    <div class="d-flex">
+                                        <button class="btn btn-sm btn-hero playlist-category-btn me-1 ${playlist.category === 'hero' ? 'active selected-category' : ''}" data-category="hero" data-playlist-id="${playlist.id}">
+                                            HERO ${playlist.category === 'hero' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-hub playlist-category-btn me-1 ${playlist.category === 'hub' ? 'active selected-category' : ''}" data-category="hub" data-playlist-id="${playlist.id}">
+                                            HUB ${playlist.category === 'hub' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-help playlist-category-btn me-1 ${playlist.category === 'help' ? 'active selected-category' : ''}" data-category="help" data-playlist-id="${playlist.id}">
+                                            HELP ${playlist.category === 'help' ? '<i class="bi bi-check-circle-fill ms-1"></i>' : ''}
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success playlist-validate-btn" data-playlist-id="${playlist.id}">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fonction pour formater les nombres
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+        
+        // Fonction pour soumettre le feedback des vidéos
+        function submitFeedback(videoId, category, feedbackType = 'correction') {
+            // S'assurer que la catégorie est en minuscules
+            const categoryLower = category.toLowerCase();
+            
+            console.log(`[SUBMIT-VIDEO] Envoi à l'API: video_id=${videoId}, category=${categoryLower}, feedback_type=${feedbackType}`);
+            
+            $.ajax({
+                url: '/api/supervised/feedback',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    video_id: videoId,
+                    category: categoryLower,
+                    feedback_type: feedbackType
+                }),
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Marquer comme validé
+                        $(`.video-card[data-video-id="${videoId}"]`).addClass('validated');
+                        
+                        // Afficher les détails d'apprentissage si des patterns ont été appris
+                        if(response.learning_result && response.learning_result.patterns_saved && response.learning_result.patterns_saved.length > 0) {
+                            $('#learnedPatternsList').empty();
+                            response.learning_result.patterns_saved.forEach(pattern => {
+                                $('#learnedPatternsList').append(`<li>Pattern appris: "<strong>${pattern}</strong>" pour ${category.toUpperCase()}</li>`);
+                            });
+                            
+                            // Afficher le modal
+                            const learningModal = new bootstrap.Modal(document.getElementById('learningSuccessModal'));
+                            learningModal.show();
+                        }
+                    } else {
+                        console.error('Erreur lors de la soumission du feedback:', response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de la soumission du feedback:', error);
+                }
+            });
+        }
+        
+        // Fonction pour soumettre le feedback des playlists
+        function submitPlaylistFeedback(playlistId, category, feedbackType = 'correction') {
+            // S'assurer que la catégorie est en minuscules
+            const categoryLower = category.toLowerCase();
+            
+            console.log(`[SUBMIT-PLAYLIST] Envoi à l'API: playlist_id=${playlistId}, category=${categoryLower}, feedback_type=${feedbackType}`);
+            
+            $.ajax({
+                url: '/api/supervised/playlist-feedback',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    playlist_id: playlistId,
+                    category: categoryLower,
+                    feedback_type: feedbackType
+                }),
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Marquer comme validé
+                        $(`.playlist-card[data-playlist-id="${playlistId}"]`).addClass('validated');
+                        
+                        // Afficher un toast de succès
+                        const toast = new bootstrap.Toast(document.getElementById('classificationToast'));
+                        toast.show();
+                        
+                        // Afficher les détails d'apprentissage si des patterns ont été appris
+                        if(response.learning_result && response.learning_result.patterns_saved && response.learning_result.patterns_saved.length > 0) {
+                            $('#learnedPatternsList').empty();
+                            response.learning_result.patterns_saved.forEach(pattern => {
+                                $('#learnedPatternsList').append(`<li>Pattern appris: "<strong>${pattern}</strong>" pour ${category.toUpperCase()}</li>`);
+                            });
+                            
+                            // Afficher le modal
+                            const learningModal = new bootstrap.Modal(document.getElementById('learningSuccessModal'));
+                            learningModal.show();
+                        }
+                    } else {
+                        console.error('Erreur lors de la soumission du feedback playlist:', response.message);
+                        alert('Erreur: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erreur lors de la soumission du feedback playlist:', error);
+                    alert('Erreur de communication avec le serveur');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -23,6 +23,8 @@
         color: #1e293b;
         border-radius: 6px;
         transition: all 0.2s ease;
+        position: relative;
+        z-index: 1000;
     }
     
     .country-selector .form-select-sm:focus {
@@ -297,51 +299,60 @@
         color: white;
     }
     
+    /* Nouveau style pour les filtres plus visibles */
     .filter-pills {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
+        gap: 0.8rem;
         flex-wrap: wrap;
+        margin-top: 1rem;
     }
     
     .filter-pill {
         position: relative;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 0.4rem 0.8rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
+        gap: 0.6rem;
+        font-size: 1rem;
+        font-weight: 500;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
+        min-height: 42px;
+        min-width: 120px;
     }
     
     .filter-pill:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
-        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
     
     .filter-pill.active {
-        background: rgba(59, 130, 246, 0.3);
-        border-color: rgba(59, 130, 246, 0.4);
+        background: rgba(59, 130, 246, 0.4);
+        border-color: rgba(59, 130, 246, 0.6);
         color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
     }
     
     .pill-label {
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
         text-transform: capitalize;
+        font-size: 1rem;
     }
     
     .pill-arrow {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.7rem;
-        transition: transform 0.2s ease;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
     }
     
     .filter-pill.active .pill-arrow {
@@ -350,19 +361,19 @@
     
     .pill-dropdown {
         position: absolute;
-        top: calc(100% + 8px);
+        top: calc(100% + 10px);
         left: 0;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 16px;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
         z-index: 1000;
-        min-width: 160px;
+        min-width: 200px;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(-10px);
+        transform: translateY(-15px);
         transition: all 0.3s ease;
         overflow: hidden;
     }
@@ -374,14 +385,12 @@
     }
     
     .pill-option {
-        padding: 0.6rem 1rem;
-        cursor: pointer;
-        color: #334155;
-        font-size: 0.85rem;
+        padding: 0.75rem 1.25rem;
+        color: #374151;
         font-weight: 500;
+        cursor: pointer;
         transition: all 0.2s ease;
-        border-bottom: 1px solid rgba(226, 232, 240, 0.3);
-        text-transform: capitalize;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .pill-option:last-child {
@@ -394,39 +403,76 @@
     }
     
     .reset-filters {
-        background: rgba(220, 38, 38, 0.2);
-        border: 1px solid rgba(220, 38, 38, 0.3);
-        border-radius: 20px;
-        padding: 0.4rem 0.8rem;
+        background: rgba(239, 68, 68, 0.2);
+        border: 2px solid rgba(239, 68, 68, 0.4);
+        color: rgba(255, 255, 255, 0.9);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        gap: 0.5rem;
+        min-height: 42px;
     }
     
     .reset-filters:hover {
-        background: rgba(220, 38, 38, 0.3);
-        border-color: rgba(220, 38, 38, 0.4);
-        color: white;
-        transform: translateY(-1px);
+        background: rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.6);
+        transform: translateY(-2px);
     }
     
     .search-results-info {
-        margin-top: 1rem;
-        padding: 0.75rem 1rem;
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 12px;
+        padding: 0.75rem 1.25rem;
+        margin-top: 1rem;
         color: rgba(255, 255, 255, 0.9);
-        font-size: 0.9rem;
-        text-align: center;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        font-size: 0.95rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .search-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-size: 1rem;
+        font-weight: 500;
+        min-width: 300px;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        outline: none;
+    }
+    
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        font-style: italic;
+    }
+    
+    .search-icon {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .search-input-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
     
     /* Responsive */
@@ -495,7 +541,7 @@
             </div>
             
             <!-- Interface de recherche élégante et discrète -->
-            <div class="elegant-search-bar">
+            <div class="elegant-search-bar" style="margin-top: 3rem;">
                 <div class="search-container">
                     <div class="search-input-group">
                         <i class="bi bi-search search-icon"></i>
@@ -506,43 +552,90 @@
                         
                         <!-- Pills de filtres -->
                         <div class="filter-pills">
-                            <div class="filter-pill" id="sector-pill">
-                                <span class="pill-label">hospitality</span>
-                                <i class="bi bi-chevron-down pill-arrow"></i>
-                                <div class="pill-dropdown">
-                                    <div class="pill-option" data-value="hospitality">hospitality</div>
-                                    <div class="pill-option" data-value="travel">travel</div>
-                                    <div class="pill-option" data-value="tech">tech</div>
-                                    <div class="pill-option" data-value="retail">retail</div>
-                                    <div class="pill-option" data-value="finance">finance</div>
-                                    <div class="pill-option" data-value="automotive">automotive</div>
-                                    <div class="pill-option" data-value="food">food & beverage</div>
-                                    <div class="pill-option" data-value="fashion">fashion</div>
-                                    <div class="pill-option" data-value="health">health & wellness</div>
-                                    <div class="pill-option" data-value="education">education</div>
-                                    <div class="pill-option" data-value="entertainment">entertainment</div>
-                                    <div class="pill-option" data-value="all">all sectors</div>
-                                </div>
+                            <div class="filter-pill" data-filter="all" onclick="filterCompetitors('all')">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                <span>Tous</span>
+                                <div class="filter-count">{{ competitors|length }}</div>
                             </div>
                             
-                            <div class="filter-pill" id="region-pill">
-                                <span class="pill-label">Europe</span>
-                                <i class="bi bi-chevron-down pill-arrow"></i>
-                                <div class="pill-dropdown">
-                                    <div class="pill-option" data-value="france">France</div>
-                                    <div class="pill-option" data-value="belgium">Belgium</div>
-                                    <div class="pill-option" data-value="europe">Europe</div>
-                                    <div class="pill-option" data-value="north-america">North America</div>
-                                    <div class="pill-option" data-value="asia">Asia</div>
-                                    <div class="pill-option" data-value="worldwide">Worldwide</div>
-                                </div>
+                            <div class="filter-pill" data-filter="hospitality" onclick="filterCompetitors('hospitality')">
+                                <i class="bi bi-building"></i>
+                                <span>Hospitalité</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'hospitality')|list|length }}</div>
                             </div>
                             
-                            <button class="reset-filters" id="reset-filters" style="display: none;">
-                                <i class="bi bi-x-circle"></i>
-                                Clear
-                            </button>
+                            <div class="filter-pill" data-filter="tourism" onclick="filterCompetitors('tourism')">
+                                <i class="bi bi-airplane"></i>
+                                <span>Tourisme</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'tourism')|list|length }}</div>
+                            </div>
+                            
+                            <div class="filter-pill" data-filter="food" onclick="filterCompetitors('food')">
+                                <i class="bi bi-cup-hot"></i>
+                                <span>Restauration</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'food')|list|length }}</div>
+                            </div>
+                            
+                            <div class="filter-pill" data-filter="retail" onclick="filterCompetitors('retail')">
+                                <i class="bi bi-shop"></i>
+                                <span>Commerce</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'retail')|list|length }}</div>
+                            </div>
+                            
+                            <div class="filter-pill" data-filter="service" onclick="filterCompetitors('service')">
+                                <i class="bi bi-gear"></i>
+                                <span>Service</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'service')|list|length }}</div>
+                            </div>
+                            
+                            <div class="filter-pill" data-filter="other" onclick="filterCompetitors('other')">
+                                <i class="bi bi-question-circle"></i>
+                                <span>Autre</span>
+                                <div class="filter-count">{{ competitors|selectattr('sector', 'equalto', 'other')|list|length }}</div>
+                            </div>
                         </div>
+                        
+                        <!-- 🌍 Nouveau sélecteur par pays -->
+                        <div class="filter-pills mt-3">
+                            <div class="filter-pill" id="country-filter-pill" onclick="toggleCountryFilter()">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span class="pill-label" id="country-label">Tous les pays</span>
+                                <i class="bi bi-chevron-down pill-arrow"></i>
+                                
+                                <div class="pill-dropdown" id="country-dropdown">
+                                    <div class="pill-option" data-country="all" onclick="filterByCountry('all')">
+                                        <i class="bi bi-globe2 me-2"></i>
+                                        Tous les pays ({{ competitors|length }})
+                                    </div>
+                                    <div class="pill-option" data-country="France" onclick="filterByCountry('France')">
+                                        🇫🇷 France ({{ competitors|selectattr('country', 'equalto', 'France')|list|length }})
+                                    </div>
+                                    <div class="pill-option" data-country="Belgium" onclick="filterByCountry('Belgium')">
+                                        🇧🇪 Belgique ({{ competitors|selectattr('country', 'equalto', 'Belgium')|list|length }})
+                                    </div>
+                                    <div class="pill-option" data-country="International" onclick="filterByCountry('International')">
+                                        🌍 International ({{ competitors|selectattr('country', 'equalto', 'International')|list|length }})
+                                    </div>
+                                    <div class="pill-option" data-country="Netherlands" onclick="filterByCountry('Netherlands')">
+                                        🇳🇱 Netherlands ({{ competitors|selectattr('country', 'equalto', 'Netherlands')|list|length }})
+                                    </div>
+                                    <div class="pill-option" data-country="United Kingdom" onclick="filterByCountry('United Kingdom')">
+                                        🇬🇧 United Kingdom ({{ competitors|selectattr('country', 'equalto', 'United Kingdom')|list|length }})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="reset-filters" id="reset-filters" style="display: none;">
+                            <i class="bi bi-x-circle"></i>
+                            Clear Filters
+                        </button>
+                    </div>
+                    
+                    <!-- Message de résultats -->
+                    <div class="search-results-message mt-2" style="display: none;">
+                        <i class="bi bi-search me-2"></i>
+                        Chargement...
                     </div>
                     
                     <!-- Résultats de recherche discrets -->
@@ -552,23 +645,41 @@
                 </div>
             </div>
             
-            {% if concurrents %}
+            {% if competitors %}
                 <div class="glass-grid" style="padding: 2rem 1rem;">
-                {% for competitor_key, competitor_data in concurrents %}
-                    <div class="glass-card" 
-                         data-competitor-id="{{ competitor_key }}"
-                         data-name="{{ competitor_data.get('name', '').lower() }}"
-                         data-industry="{{ competitor_data.get('industry', '').lower() }}"
-                         data-region="{{ competitor_data.get('region', 'europe').lower() }}"
-                         data-description="{{ competitor_data.get('description', '').lower() }}">
+                {% for competitor in competitors %}
+                    <div class="glass-card position-relative" 
+                         data-name="{{ competitor.name }}" 
+                         data-sector="{{ competitor.sector or 'hospitality' }}" 
+                         data-region="{{ competitor.custom_region or competitor.country or 'Unknown' }}"
+                         data-tags="{{ competitor.tags or '' }}"
+                         data-country="{{ competitor.country or 'Unknown' }}"
+                         data-views="{{ competitor.total_views or 0 }}"
+                         data-videos="{{ competitor.total_videos or 0 }}"
+                         data-subscribers="{{ competitor.subscriber_count or 0 }}"
+                         data-frequency="{{ competitor.frequency_total or 0 }}"
+                         data-last-updated="{{ competitor.last_updated or '' }}"
+                         data-active="{{ competitor.is_active or 1 }}">
                         
                         <!-- Avatar circulaire principal -->
                         <div class="channel-avatar-circle">
-                            {% if competitor_data.get('thumbnail') %}
-                                <img src="{{ competitor_data.get('thumbnail') }}" 
-                                     alt="{{ competitor_data.get('name', 'Channel') }}" 
+                            {% if competitor.thumbnail_local %}
+                                <img src="{{ competitor.thumbnail_local }}" 
+                                     alt="{{ competitor.name }}" 
                                      class="avatar-image"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                     loading="lazy"
+                                     crossorigin="anonymous"
+                                     onerror="console.log('Image failed:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="avatar-fallback" style="display: none;">
+                                    <i class="bi bi-play-circle"></i>
+                                </div>
+                            {% elif competitor.thumbnail_url %}
+                                <img src="{{ competitor.thumbnail_url }}" 
+                                     alt="{{ competitor.name }}" 
+                                     class="avatar-image"
+                                     loading="lazy"
+                                     crossorigin="anonymous"
+                                     onerror="console.log('Image failed:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 <div class="avatar-fallback" style="display: none;">
                                     <i class="bi bi-play-circle"></i>
                                 </div>
@@ -581,11 +692,11 @@
                         
                         <!-- Contenu minimal -->
                         <div class="glass-content">
-                            <h3 class="channel-name">{{ competitor_data.get('name', 'Nom inconnu') }}</h3>
+                            <h3 class="channel-name">{{ competitor.name }}</h3>
                             <p class="channel-meta">
-                                {{ competitor_data.get('videos')|length if competitor_data.get('videos') else 0 }} vidéos
-                                {% if competitor_data.get('total_views') %}
-                                • {{ "{:,}".format(competitor_data.get('total_views')) }} vues
+                                {{ competitor.total_videos }} vidéos
+                                {% if competitor.total_views %}
+                                • {{ "{:,}".format(competitor.total_views) }} vues
                                 {% endif %}
                             </p>
                             
@@ -593,15 +704,65 @@
                             <div class="meta-line">
                                 <span class="meta-item">
                                     <i class="bi bi-geo-alt"></i>
-                                    {{ competitor_data.get('region', 'Europe') }}
+                                    {% set country = competitor.country or 'Unknown' %}
+                                    {% if country == 'France' %}🇫🇷
+                                    {% elif country == 'Belgium' %}🇧🇪
+                                    {% elif country == 'United States' %}🇺🇸
+                                    {% elif country == 'United Kingdom' %}🇬🇧
+                                    {% elif country == 'Germany' %}🇩🇪
+                                    {% elif country == 'Spain' %}🇪🇸
+                                    {% elif country == 'Italy' %}🇮🇹
+                                    {% elif country == 'Netherlands' %}🇳🇱
+                                    {% elif country == 'Canada' %}🇨🇦
+                                    {% elif country == 'Australia' %}🇦🇺
+                                    {% elif country == 'International' %}🌍
+                                    {% else %}🏳️
+                                    {% endif %}
+                                    {{ country }}
                                 </span>
-                                {% if competitor_data.get('industry') %}
                                 <span class="meta-separator">•</span>
                                 <span class="meta-item">
-                                    <i class="bi bi-briefcase"></i>
-                                    {{ competitor_data.get('industry') }}
+                                    <i class="bi bi-calendar-week"></i>
+                                    {{ "%.1f"|format(competitor.frequency_total) }}/sem
+                                </span>
+                                {% if competitor.subscriber_count %}
+                                <span class="meta-separator">•</span>
+                                <span class="meta-item">
+                                    <i class="bi bi-people"></i>
+                                    {{ "{:,}".format(competitor.subscriber_count) }}
                                 </span>
                                 {% endif %}
+                            </div>
+
+                            <!-- Fréquence par catégorie -->
+                            <div class="meta-line">
+                                <span class="meta-item">
+                                    <i class="bi bi-fire" style="color: #dc3545;"></i>
+                                    {{ "%.1f"|format(competitor.hero_percentage) }}% HERO
+                                </span>
+                                <span class="meta-separator">•</span>
+                                <span class="meta-item">
+                                    <i class="bi bi-house" style="color: #198754;"></i>
+                                    {{ "%.1f"|format(competitor.hub_percentage) }}% HUB
+                                </span>
+                                <span class="meta-separator">•</span>
+                                <span class="meta-item">
+                                    <i class="bi bi-question-circle" style="color: #ffc107;"></i>
+                                    {{ "%.1f"|format(competitor.help_percentage) }}% HELP
+                                </span>
+                            </div>
+
+                            <!-- Engagement -->
+                            <div class="meta-line">
+                                <span class="meta-item">
+                                    <i class="bi bi-heart-fill" style="color: #fd79a8;"></i>
+                                    {{ "%.2f"|format(competitor.engagement_rate) }}% engagement
+                                </span>
+                                <span class="meta-separator">•</span>
+                                <span class="meta-item">
+                                    <i class="bi bi-eye"></i>
+                                    {{ "{:,.0f}".format(competitor.avg_views).replace(',', ' ') }} vues moy.
+                                </span>
                             </div>
                             
                             <!-- Sélecteur de pays -->
@@ -611,38 +772,39 @@
                                     Pays:
                                 </label>
                                 <select class="form-select form-select-sm" 
-                                        onchange="updateCompetitorCountry(this, '{{ competitor_key }}')"
-                                        data-competitor-id="{{ competitor_key }}">
+                                        onchange="updateCompetitorCountry(this, '{{ competitor.id }}')"
+                                        data-competitor-id="{{ competitor.id }}">
                                     <option value="">Sélectionner un pays</option>
-                                    <option value="France" {% if competitor_data.get('country') == 'France' %}selected{% endif %}>🇫🇷 France</option>
-                                    <option value="United States" {% if competitor_data.get('country') == 'United States' %}selected{% endif %}>🇺🇸 États-Unis</option>
-                                    <option value="United Kingdom" {% if competitor_data.get('country') == 'United Kingdom' %}selected{% endif %}>🇬🇧 Royaume-Uni</option>
-                                    <option value="Germany" {% if competitor_data.get('country') == 'Germany' %}selected{% endif %}>🇩🇪 Allemagne</option>
-                                    <option value="Spain" {% if competitor_data.get('country') == 'Spain' %}selected{% endif %}>🇪🇸 Espagne</option>
-                                    <option value="Italy" {% if competitor_data.get('country') == 'Italy' %}selected{% endif %}>🇮🇹 Italie</option>
-                                    <option value="Netherlands" {% if competitor_data.get('country') == 'Netherlands' %}selected{% endif %}>🇳🇱 Pays-Bas</option>
-                                    <option value="Canada" {% if competitor_data.get('country') == 'Canada' %}selected{% endif %}>🇨🇦 Canada</option>
-                                    <option value="Australia" {% if competitor_data.get('country') == 'Australia' %}selected{% endif %}>🇦🇺 Australie</option>
-                                    <option value="International" {% if competitor_data.get('country') == 'International' %}selected{% endif %}>🌍 International</option>
+                                    <option value="France" {% if competitor.country == 'France' %}selected{% endif %}>🇫🇷 France</option>
+                                    <option value="Belgium" {% if competitor.country == 'Belgium' %}selected{% endif %}>🇧🇪 Belgique</option>
+                                    <option value="United States" {% if competitor.country == 'United States' %}selected{% endif %}>🇺🇸 États-Unis</option>
+                                    <option value="United Kingdom" {% if competitor.country == 'United Kingdom' %}selected{% endif %}>🇬🇧 Royaume-Uni</option>
+                                    <option value="Germany" {% if competitor.country == 'Germany' %}selected{% endif %}>🇩🇪 Allemagne</option>
+                                    <option value="Spain" {% if competitor.country == 'Spain' %}selected{% endif %}>🇪🇸 Espagne</option>
+                                    <option value="Italy" {% if competitor.country == 'Italy' %}selected{% endif %}>🇮🇹 Italie</option>
+                                    <option value="Netherlands" {% if competitor.country == 'Netherlands' %}selected{% endif %}>🇳🇱 Pays-Bas</option>
+                                    <option value="Canada" {% if competitor.country == 'Canada' %}selected{% endif %}>🇨🇦 Canada</option>
+                                    <option value="Australia" {% if competitor.country == 'Australia' %}selected{% endif %}>🇦🇺 Australie</option>
+                                    <option value="International" {% if competitor.country == 'International' %}selected{% endif %}>🌍 International</option>
                                 </select>
                             </div>
                             
                             <!-- Actions minimalistes -->
                             <div class="glass-actions">
-                                <a href="/competitor/{{ competitor_key }}" class="glass-btn primary">
+                                <a href="/competitor/{{ competitor.id }}" class="glass-btn primary">
                                     <i class="bi bi-bar-chart-line"></i>
                                     Résultats
                                 </a>
                                 <button class="glass-btn secondary" 
-                                        data-competitor-id="{{ competitor_key }}"
-                                        data-channel-url="{{ competitor_data.get('channel_url', '') }}"
+                                        data-competitor-id="{{ competitor.id }}"
+                                        data-channel-url="{{ competitor.channel_url }}"
                                         onclick="refreshCompetitorData(this)"
                                         title="Rafraîchir les données">
                                     <i class="bi bi-arrow-repeat"></i>
                                 </button>
 
                                 <button class="glass-btn danger" 
-                                        onclick="deleteCompetitor('{{ competitor_key }}')"
+                                        onclick="deleteCompetitor('{{ competitor.id }}')"
                                         title="Supprimer">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -875,8 +1037,8 @@
         
         // Éléments de l'interface
         const searchInput = document.getElementById('elegant-search-input');
-        const sectorPill = document.getElementById('sector-pill');
-        const regionPill = document.getElementById('region-pill');
+        const sectorPill = document.querySelector('.filter-pill[data-filter="all"]'); // Assuming 'All Sectors' pill is the first one
+        const regionPill = document.querySelector('.filter-pill[data-filter="all"]'); // Assuming 'All Regions' pill is the first one
         const resetBtn = document.getElementById('reset-filters');
         const resultsInfo = document.getElementById('search-results-info');
         
@@ -886,18 +1048,20 @@
         }
         
         // Variables pour les filtres actifs
-        let currentSector = 'hospitality';
-        let currentRegion = 'europe';
+        let currentSector = 'all';
+        let currentRegion = 'all';
         let searchText = '';
         
         // Initialiser les pills de filtre
         initFilterPill(sectorPill, currentSector, (value, text) => {
             currentSector = value;
+            updatePillDisplay(sectorPill, text);
             performSearch();
         });
         
         initFilterPill(regionPill, currentRegion, (value, text) => {
             currentRegion = value;
+            updatePillDisplay(regionPill, text);
             performSearch();
         });
         
@@ -913,14 +1077,14 @@
                 console.log('🔄 Reset des filtres');
                 
                 // Réinitialiser les valeurs
-                currentSector = 'hospitality';
-                currentRegion = 'europe';
+                currentSector = 'all';
+                currentRegion = 'all';
                 searchText = '';
                 
                 // Réinitialiser l'interface
                 searchInput.value = '';
-                updatePillDisplay(sectorPill, 'hospitality');
-                updatePillDisplay(regionPill, 'Europe');
+                updatePillDisplay(sectorPill, 'All Sectors');
+                updatePillDisplay(regionPill, 'All Regions');
                 
                 // Masquer les résultats et le bouton reset
                 if (resultsInfo) resultsInfo.style.display = 'none';
@@ -936,25 +1100,28 @@
             const allCards = document.querySelectorAll('.glass-card');
             let visibleCount = 0;
             
+            console.log(`🔍 Recherche: secteur="${currentSector}", région="${currentRegion}", texte="${searchText}"`);
+            
             allCards.forEach(card => {
                 const data = getCompetitorDataFromCard(card);
                 
                 // Filtrage par secteur
                 let sectorMatch = currentSector === 'all' || 
-                                 (data.industry && data.industry.includes(currentSector)) ||
                                  (data.name && data.name.includes(currentSector)) ||
-                                 (data.description && data.description.includes(currentSector));
+                                 (data.sector && data.sector.includes(currentSector)) ||
+                                 (data.tags && data.tags.includes(currentSector));
                 
-                // Filtrage par région
-                let regionMatch = currentRegion === 'worldwide' ||
-                                 (data.region && data.region.includes(currentRegion));
+                // Filtrage par région - améliorer la correspondance
+                let regionMatch = currentRegion === 'all' ||
+                                 (data.region && data.region.includes(currentRegion)) ||
+                                 (data.region && currentRegion.includes(data.region));
                 
                 // Filtrage par texte de recherche
                 let textMatch = !searchText || 
                                data.name.includes(searchText) ||
-                               data.industry.includes(searchText) ||
+                               data.sector.includes(searchText) ||
                                data.region.includes(searchText) ||
-                               data.description.includes(searchText);
+                               data.tags.includes(searchText);
                 
                 // Afficher/masquer la carte
                 if (sectorMatch && regionMatch && textMatch) {
@@ -966,12 +1133,14 @@
                 }
             });
             
+            console.log(`📊 ${visibleCount} concurrents correspondent aux critères`);
+            
             // Afficher les résultats
             showSearchResults(visibleCount, currentSector, currentRegion, searchText);
             
             // Afficher le bouton reset si des filtres sont actifs
             if (resetBtn) {
-                if (currentSector !== 'hospitality' || currentRegion !== 'europe' || searchText) {
+                if (currentSector !== 'all' || currentRegion !== 'all' || searchText) {
                     resetBtn.style.display = 'flex';
                 } else {
                     resetBtn.style.display = 'none';
@@ -984,7 +1153,7 @@
             if (!resultsInfo) return;
             
             const allCards = document.querySelectorAll('.glass-card');
-            if (count === allCards.length && !text && sector === 'hospitality' && region === 'europe') {
+            if (count === allCards.length && !text && sector === 'all' && region === 'all') {
                 resultsInfo.style.display = 'none';
                 return;
             }
@@ -992,17 +1161,17 @@
             let message = `${count} competitor${count !== 1 ? 's' : ''} found`;
             
             if (text) {
-                message += ` for "${text}"`;
+                message += ` matching "${text}"`;
             }
             
-            if (sector !== 'hospitality' || region !== 'europe') {
+            if (sector !== 'all' || region !== 'all') {
                 const sectorDisplay = sector === 'all' ? 'all sectors' : sector;
-                const regionDisplay = region === 'worldwide' ? 'worldwide' : region;
-                message += ` in ${sectorDisplay} (${regionDisplay})`;
+                const regionDisplay = region === 'all' ? 'all regions' : region;
+                message += ` in ${sectorDisplay} • ${regionDisplay}`;
             }
             
             resultsInfo.innerHTML = `
-                <i class="bi bi-check-circle me-2"></i>
+                <i class="bi bi-search me-2"></i>
                 ${message}
             `;
             resultsInfo.style.display = 'block';
@@ -1037,16 +1206,13 @@
                 const value = option.getAttribute('data-value');
                 const text = option.textContent;
                 
-                // Mettre à jour l'affichage
-                updatePillDisplay(pill, text);
-                
-                // Fermer le dropdown
-                pill.classList.remove('active');
-                
                 // Callback
                 if (onSelect) {
                     onSelect(value, text);
                 }
+                
+                // Fermer le dropdown
+                pill.classList.remove('active');
             });
         });
         
@@ -1068,9 +1234,16 @@
     function getCompetitorDataFromCard(card) {
         return {
             name: card.getAttribute('data-name') || '',
-            industry: card.getAttribute('data-industry') || '',
+            sector: card.getAttribute('data-sector') || '',
             region: card.getAttribute('data-region') || '',
-            description: card.getAttribute('data-description') || ''
+            tags: card.getAttribute('data-tags') || '',
+            country: card.getAttribute('data-country') || '',
+            views: card.getAttribute('data-views') || 0,
+            videos: card.getAttribute('data-videos') || 0,
+            subscribers: card.getAttribute('data-subscribers') || 0,
+            frequency: card.getAttribute('data-frequency') || 0,
+            last_updated: card.getAttribute('data-last-updated') || '',
+            active: card.getAttribute('data-active') || 1
         };
     }
     
@@ -1090,6 +1263,268 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadGlassBlurPreference();
         setTimeout(initElegantSearch, 100);
+    });
+
+    // ========================================
+    // FILTRAGE PAR SECTEUR
+    // ========================================
+
+    function filterCompetitors(sector) {
+        const allCards = document.querySelectorAll('.glass-card');
+        const allPills = document.querySelectorAll('.filter-pill');
+        
+        // Mettre à jour l'état actif des pills
+        allPills.forEach(pill => {
+            pill.classList.remove('active');
+        });
+        
+        const activePill = document.querySelector(`[data-filter="${sector}"]`);
+        if (activePill) {
+            activePill.classList.add('active');
+        }
+        
+        // Filtrer les cartes
+        let visibleCount = 0;
+        
+        allCards.forEach(card => {
+            const cardSector = card.getAttribute('data-sector') || 'hospitality';
+            const cardActive = card.getAttribute('data-active') === '1';
+            
+            if (sector === 'all' || cardSector === sector) {
+                if (cardActive) {
+                    card.style.display = 'block';
+                    card.style.opacity = '1';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le message de résultat
+        updateResultsMessage(visibleCount, sector);
+    }
+
+    function updateResultsMessage(count, sector) {
+        const messageElement = document.querySelector('.search-results-message');
+        if (messageElement) {
+            let sectorName = '';
+            switch(sector) {
+                case 'all': sectorName = 'tous secteurs'; break;
+                case 'hospitality': sectorName = 'hospitalité'; break;
+                case 'tourism': sectorName = 'tourisme'; break;
+                case 'food': sectorName = 'restauration'; break;
+                case 'retail': sectorName = 'commerce'; break;
+                case 'service': sectorName = 'service'; break;
+                case 'other': sectorName = 'autre'; break;
+                default: sectorName = sector;
+            }
+            
+            messageElement.innerHTML = `
+                <i class="bi bi-search me-2"></i>
+                ${count} concurrent${count !== 1 ? 's' : ''} trouvé${count !== 1 ? 's' : ''} dans ${sectorName}
+            `;
+            
+            // Afficher le message
+            messageElement.style.display = count > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Initialiser le premier filtre
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            filterCompetitors('all');
+        }, 500);
+    });
+
+    // ========================================
+    // SYNCHRONISATION BASE DE DONNÉES
+    // ========================================
+
+    async function syncAllCompetitorsToDatabase() {
+        try {
+            const response = await fetch('/api/ensure-all-competitors-in-db', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert(`✅ ${result.message}`, 'success');
+                // Recharger la page pour afficher les nouvelles données
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showAlert(`❌ Erreur: ${result.error}`, 'danger');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la synchronisation:', error);
+            showAlert('❌ Erreur lors de la synchronisation des concurrents', 'danger');
+        }
+    }
+
+    // Fonction pour afficher les alertes
+    function showAlert(message, type = 'info') {
+        // Créer un élément d'alerte
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 500px;
+        `;
+        
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Supprimer automatiquement après 5 secondes
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+
+    // ========================================
+    // 🌍 FILTRAGE PAR PAYS
+    // ========================================
+
+    let currentCountryFilter = 'all';
+
+    function toggleCountryFilter() {
+        const pill = document.getElementById('country-filter-pill');
+        pill.classList.toggle('active');
+        
+        // Fermer les autres dropdowns
+        document.querySelectorAll('.filter-pill').forEach(otherPill => {
+            if (otherPill !== pill) {
+                otherPill.classList.remove('active');
+            }
+        });
+    }
+
+    function filterByCountry(country) {
+        currentCountryFilter = country;
+        
+        const allCards = document.querySelectorAll('.glass-card');
+        const countryLabel = document.getElementById('country-label');
+        const countryPill = document.getElementById('country-filter-pill');
+        
+        let visibleCount = 0;
+        
+        // Filtrer les cartes
+        allCards.forEach(card => {
+            const cardCountry = card.getAttribute('data-country') || '';
+            const cardActive = card.getAttribute('data-active') === '1';
+            
+            if (country === 'all' || cardCountry === country) {
+                if (cardActive) {
+                    card.style.display = 'block';
+                    card.style.opacity = '1';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le label
+        if (country === 'all') {
+            countryLabel.textContent = 'Tous les pays';
+            countryPill.classList.remove('active');
+        } else {
+            let flagIcon = '';
+            switch(country) {
+                case 'France': flagIcon = '🇫🇷'; break;
+                case 'Belgium': flagIcon = '🇧🇪'; break;
+                case 'International': flagIcon = '🌍'; break;
+                case 'Netherlands': flagIcon = '🇳🇱'; break;
+                case 'United Kingdom': flagIcon = '🇬🇧'; break;
+                default: flagIcon = '🏳️';
+            }
+            countryLabel.textContent = `${flagIcon} ${country}`;
+            countryPill.classList.add('active');
+        }
+        
+        // Fermer le dropdown
+        countryPill.classList.remove('active');
+        
+        // Mettre à jour le message de résultat
+        updateCountryResultsMessage(visibleCount, country);
+        
+        // Afficher le bouton reset si un filtre est actif
+        const resetButton = document.getElementById('reset-filters');
+        if (country !== 'all') {
+            resetButton.style.display = 'flex';
+        } else {
+            resetButton.style.display = 'none';
+        }
+    }
+
+    function updateCountryResultsMessage(count, country) {
+        const messageElement = document.querySelector('.search-results-message');
+        if (messageElement) {
+            let countryName = '';
+            switch(country) {
+                case 'all': countryName = 'tous les pays'; break;
+                case 'France': countryName = 'France 🇫🇷'; break;
+                case 'Belgium': countryName = 'Belgique 🇧🇪'; break;
+                case 'International': countryName = 'International 🌍'; break;
+                case 'Netherlands': countryName = 'Netherlands 🇳🇱'; break;
+                case 'United Kingdom': countryName = 'United Kingdom 🇬🇧'; break;
+                default: countryName = country;
+            }
+            
+            messageElement.innerHTML = `
+                <i class="bi bi-geo-alt-fill me-2"></i>
+                ${count} concurrent${count !== 1 ? 's' : ''} trouvé${count !== 1 ? 's' : ''} en ${countryName}
+            `;
+            
+            // Afficher le message
+            messageElement.style.display = count > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Fermer le dropdown si on clique ailleurs
+    document.addEventListener('click', function(event) {
+        const countryPill = document.getElementById('country-filter-pill');
+        if (countryPill && !countryPill.contains(event.target)) {
+            countryPill.classList.remove('active');
+        }
+    });
+
+    // Fonction pour réinitialiser tous les filtres
+    function resetAllFilters() {
+        // Réinitialiser le filtre par pays
+        filterByCountry('all');
+        
+        // Réinitialiser le filtre par secteur
+        filterCompetitors('all');
+        
+        // Cacher le bouton reset
+        document.getElementById('reset-filters').style.display = 'none';
+    }
+
+    // Attacher l'événement au bouton reset
+    document.addEventListener('DOMContentLoaded', function() {
+        const resetButton = document.getElementById('reset-filters');
+        if (resetButton) {
+            resetButton.addEventListener('click', resetAllFilters);
+        }
     });
 </script>
 {% endblock %}

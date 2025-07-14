@@ -211,6 +211,9 @@ class YouTubeAPI:
             for item in response.get('items', []):
                 duration = self._parse_duration(item['contentDetails']['duration'])
                 
+                # Détecter si c'est un Short (≤ 60 secondes)
+                is_short = duration <= 60 if duration > 0 else False
+                
                 video = {
                     'id': item['id'],
                     'title': item['snippet']['title'],
@@ -220,6 +223,8 @@ class YouTubeAPI:
                     'channel_title': item['snippet']['channelTitle'],
                     'thumbnail': item['snippet']['thumbnails'].get('high', {}).get('url', ''),
                     'duration': duration,
+                    'duration_seconds': duration,
+                    'is_short': is_short,
                     'view_count': int(item['statistics'].get('viewCount', 0)),
                     'like_count': int(item['statistics'].get('likeCount', 0)),
                     'comment_count': int(item['statistics'].get('commentCount', 0)),

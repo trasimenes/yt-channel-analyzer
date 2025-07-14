@@ -101,7 +101,7 @@
         <div class="col-md-3">
             <div class="card metric-card bg-success text-white">
                 <div class="card-body text-center">
-                    <h3>{{ "{:,}".format(competitor.total_views) if competitor.total_views else "N/A" }}</h3>
+                    <h3>{{ "{:,}".format(stats.total_views) if stats.total_views else "N/A" }}</h3>
                     <p class="mb-0">Vues totales</p>
                 </div>
             </div>
@@ -124,6 +124,190 @@
         </div>
     </div>
 
+    <!-- Section de tagging et métadonnées -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-tags me-2"></i>Tags et Classification</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="competitorSector" class="form-label">Secteur</label>
+                                <select class="form-select" id="competitorSector">
+                                    <option value="hospitality">Hospitalité</option>
+                                    <option value="tourism">Tourisme</option>
+                                    <option value="food">Restauration</option>
+                                    <option value="retail">Commerce</option>
+                                    <option value="service">Service</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="competitorRegion" class="form-label">Région personnalisée</label>
+                                <input type="text" class="form-control" id="competitorRegion" placeholder="Ex: Benelux, Europe du Nord">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="competitorTags" class="form-label">Tags personnalisés</label>
+                                <input type="text" class="form-control" id="competitorTags" placeholder="Ex: luxury, family, budget">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="competitorActive" class="form-label">Statut</label>
+                                <select class="form-select" id="competitorActive">
+                                    <option value="1">Actif</option>
+                                    <option value="0">Inactif</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="mb-3">
+                                <label for="competitorNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="competitorNotes" rows="2" placeholder="Notes libres sur ce concurrent..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" onclick="saveCompetitorTags()">
+                                        <i class="bi bi-save me-2"></i>
+                                        Sauvegarder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zone de résultat -->
+                    <div id="taggingResult" class="mt-3" style="display: none;">
+                        <div class="alert alert-info">
+                            <div id="taggingMessage"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section d'upload CSV -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-file-earmark-spreadsheet me-2"></i>Importer les données d'abonnés (CSV)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form id="csvUploadForm" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="csvFile" class="form-label">Fichier CSV avec les statistiques d'abonnés</label>
+                                    <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv" required>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Format attendu : colonnes "Context" et "Text" avec les dates et nombres d'abonnés
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-upload me-2"></i>
+                                    Importer les données
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 rounded">
+                                <h6><i class="bi bi-info-circle me-2"></i>Format CSV</h6>
+                                <small class="text-muted">
+                                    Le fichier doit contenir :
+                                    <ul class="mt-2 mb-0">
+                                        <li>Colonne "Context" (peut être vide)</li>
+                                        <li>Colonne "Text" avec les dates et nombres d'abonnés</li>
+                                        <li>Format : "Date\nSubscribers\n1,234"</li>
+                                    </ul>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zone de résultat -->
+                    <div id="csvUploadResult" class="mt-3" style="display: none;">
+                        <div class="alert alert-info">
+                            <div id="csvUploadMessage"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======= GRAPHIQUES ANALYTIQUES ======= -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up me-2"></i>Analytics Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Métriques principales -->
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center border-primary">
+                                <div class="card-body">
+                                    <i class="bi bi-play-circle text-primary" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">{{ total_videos }}</h5>
+                                    <p class="card-text text-muted">Vidéos Totales</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <i class="bi bi-eye text-success" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">{{ (stats.total_views / 1000000)|round(1) if stats.total_views else 0 }}M</h5>
+                                    <p class="card-text text-muted">Vues Totales</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center border-warning">
+                                <div class="card-body">
+                                    <i class="bi bi-collection-play text-warning" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">{{ playlists|length if playlists else 0 }}</h5>
+                                    <p class="card-text text-muted">Playlists</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center border-info">
+                                <div class="card-body">
+                                    <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2" id="subscribersCount">
+                                        {% if subscriber_data and subscriber_data.has_data %}
+                                            {{ (subscriber_data.stats.last_count / 1000)|round(1) }}K
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text text-muted">Abonnés</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ======= MODULE PLAYLISTS (SECTION DÉDIÉE) ======= -->
     <div class="row mb-4">
         <div class="col-12">
@@ -136,89 +320,81 @@
                             <span class="badge bg-light text-dark ms-2">{{ playlists|length if playlists else 0 }}</span>
                         </h4>
                         <div>
-                            <button class="btn btn-light btn-sm me-2" onclick="refreshPlaylists()">
+                            <button class="btn btn-primary btn-sm me-2" onclick="window.location.href='/competitor/{{ competitor.id }}/playlists/classify'">
+                                <i class="bi bi-lightning me-1"></i>
+                                Classification Avancée
+                            </button>
+                            <button class="btn btn-light btn-sm me-2" onclick="refreshPlaylists()" title="⚠️ Utilise l'API YouTube (quota limité)">
                                 <i class="bi bi-arrow-repeat me-1"></i>
                                 Actualiser
+                                <small class="text-muted d-block" style="font-size: 0.7em;">⚠️ API YouTube</small>
                             </button>
-                            <button class="btn btn-warning btn-sm" onclick="aiClassifyPlaylists()">
+                            <button class="btn btn-warning btn-sm" onclick="aiClassifyPlaylists()" title="⚠️ Classification automatique par IA">
                                 <i class="bi bi-robot me-1"></i>
                                 IA Auto-Classify
+                                <small class="text-muted d-block" style="font-size: 0.7em;">🤖 IA</small>
                             </button>
                         </div>
                     </div>
-                    
+                    {% if last_playlist_classification %}
+                    <div class="mb-3 text-end">
+                        <small class="text-light">Dernière classification IA : {{ last_playlist_classification }}</small>
+                    </div>
+                    {% endif %}
                     {% if playlists %}
-                    <div class="row">
-                        {% for playlist in playlists %}
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card playlist-card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-start">
-                                        <div class="flex-shrink-0 me-3">
-                                            {% if playlist.thumbnail_url %}
-                                            <img src="{{ playlist.thumbnail_url }}" class="rounded" 
-                                                 alt="{{ playlist.name }}" style="width: 60px; height: 60px; object-fit: cover;">
-                                            {% else %}
-                                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
-                                                 style="width: 60px; height: 60px;">
-                                                <i class="bi bi-collection-play text-muted"></i>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="card-title mb-1">{{ playlist.name }}</h6>
-                                            <p class="text-muted small mb-2">
-                                                {{ playlist.video_count }} vidéos
-                                            </p>
-                                            
-                                            <!-- Catégorie actuelle -->
-                                            <div class="mb-2">
-                                                {% if playlist.category %}
-                                                <span class="badge {% if playlist.category == 'hero' %}hero-badge{% elif playlist.category == 'hub' %}hub-badge{% else %}help-badge{% endif %}">
-                                                    {% if playlist.category == 'hero' %}🔥 HERO{% elif playlist.category == 'hub' %}🏠 HUB{% else %}🆘 HELP{% endif %}
-                                                </span>
-                                                {% else %}
-                                                <span class="badge bg-secondary">Non catégorisé</span>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <!-- Boutons de catégorisation -->
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <button class="btn btn-outline-danger" 
-                                                        onclick="tagPlaylist({{ playlist.id }}, 'hero')"
-                                                        title="Marquer comme HERO">
-                                                    🔥
-                                                </button>
-                                                <button class="btn btn-outline-info" 
-                                                        onclick="tagPlaylist({{ playlist.id }}, 'hub')"
-                                                        title="Marquer comme HUB">
-                                                    🏠
-                                                </button>
-                                                <button class="btn btn-outline-primary" 
-                                                        onclick="tagPlaylist({{ playlist.id }}, 'help')"
-                                                        title="Marquer comme HELP">
-                                                    🆘
-                                                </button>
-                                                <button class="btn btn-outline-secondary" 
-                                                        onclick="tagPlaylist({{ playlist.id }}, null)"
-                                                        title="Supprimer catégorie">
-                                                    <i class="bi bi-x"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {% if playlist.description %}
-                                    <div class="mt-3">
-                                        <small class="text-muted">
-                                            {{ playlist.description[:100] }}{% if playlist.description|length > 100 %}...{% endif %}
-                                        </small>
-                                    </div>
-                                    {% endif %}
-                                </div>
+                    <ul class="nav nav-tabs mb-3" id="playlistTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">Toutes</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="playlist-hero-tab" data-bs-toggle="tab" data-bs-target="#playlist-hero" type="button" role="tab">🔥 HERO</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="playlist-hub-tab" data-bs-toggle="tab" data-bs-target="#playlist-hub" type="button" role="tab">🏠 HUB</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="playlist-help-tab" data-bs-toggle="tab" data-bs-target="#playlist-help" type="button" role="tab">🆘 HELP</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="uncat-tab" data-bs-toggle="tab" data-bs-target="#uncat" type="button" role="tab">Non catégorisé</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="playlistTabsContent">
+                        <div class="tab-pane fade show active" id="all" role="tabpanel">
+                            <div class="row">
+                                {% for playlist in playlists %}
+                                    {% include 'components/playlist_card.html' %}
+                                {% endfor %}
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="tab-pane fade" id="playlist-hero" role="tabpanel">
+                            <div class="row">
+                                {% for playlist in playlists if playlist.category == 'hero' %}
+                                    {% include 'components/playlist_card.html' %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="playlist-hub" role="tabpanel">
+                            <div class="row">
+                                {% for playlist in playlists if playlist.category == 'hub' %}
+                                    {% include 'components/playlist_card.html' %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="playlist-help" role="tabpanel">
+                            <div class="row">
+                                {% for playlist in playlists if playlist.category == 'help' %}
+                                    {% include 'components/playlist_card.html' %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="uncat" role="tabpanel">
+                            <div class="row">
+                                {% for playlist in playlists if not playlist.category %}
+                                    {% include 'components/playlist_card.html' %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                     {% else %}
                     <div class="text-center py-5">
@@ -233,6 +409,103 @@
                         </button>
                     </div>
                     {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Séparateur visuel -->
+    <div class="section-separator"></div>
+
+    <!-- ======= SECTION YOUTUBE SHORTS ======= -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%); color: white;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">
+                            <i class="bi bi-play-circle me-2"></i>
+                            Analyse des YouTube Shorts
+                            <span class="badge bg-light text-dark ms-2" id="shortsCount">...</span>
+                        </h4>
+                        <button class="btn btn-light btn-sm" onclick="loadShortsAnalysis()">
+                            <i class="bi bi-arrow-repeat me-1"></i>
+                            Actualiser
+                        </button>
+                    </div>
+                    
+                    <!-- Métriques Shorts - Disposition horizontale en ligne -->
+                    <div class="d-flex flex-wrap gap-3 mb-4" id="shortsMetrics">
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                <h5 class="mb-1">{{ shorts_data.shorts_percentage or 0 }}%</h5>
+                                <small>Ratio de Shorts</small>
+                            </div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                <h5 class="mb-1">{{ (shorts_data.avg_shorts_views / 1000)|round(1) if shorts_data.avg_shorts_views else 0 }}k</h5>
+                                <small>Vues moy. Shorts</small>
+                            </div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                <h5 class="mb-1">{{ (shorts_data.avg_regular_views / 1000)|round(1) if shorts_data.avg_regular_views else 0 }}k</h5>
+                                <small>Vues moy. Vidéos</small>
+                            </div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                {% if shorts_data.avg_regular_views and shorts_data.avg_shorts_views %}
+                                    {% set ratio = shorts_data.avg_shorts_views / shorts_data.avg_regular_views %}
+                                    {% if ratio > 1.5 %}
+                                        <h5 class="mb-1 text-success">+{{ ((ratio - 1) * 100)|round(0) }}%</h5>
+                                    {% elif ratio < 0.5 %}
+                                        <h5 class="mb-1 text-danger">-{{ ((1 - ratio) * 100)|round(0) }}%</h5>
+                                    {% else %}
+                                        <h5 class="mb-1 text-warning">{{ ((ratio - 1) * 100)|round(0) }}%</h5>
+                                    {% endif %}
+                                {% else %}
+                                    <h5 class="mb-1">N/A</h5>
+                                {% endif %}
+                                <small>Performance relative</small>
+                            </div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                <h5 class="mb-1">{{ ((shorts_data.shorts_count or 0) / 7)|round(1) if shorts_data.shorts_count else 0 }}</h5>
+                                <small>Shorts par semaine</small>
+                            </div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="bg-light text-dark p-2 rounded text-center">
+                                <h5 class="mb-1">{{ ((shorts_data.shorts_count or 0) / 30)|round(1) if shorts_data.shorts_count else 0 }}</h5>
+                                <small>Shorts par mois</small>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Recommandations -->
+                    <div class="row" id="shortsRecommendations">
+                        <div class="col-12">
+                            <div class="bg-light text-dark p-3 rounded">
+                                <h6><i class="bi bi-lightbulb me-2"></i>Recommandations</h6>
+                                <ul id="recommendationsList" class="mb-0">
+                                    <li>Chargement des recommandations...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading state -->
+                    <div id="shortsLoading" class="text-center py-4">
+                        <div class="spinner-border text-light" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Analyse des Shorts en cours...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -316,8 +589,10 @@
                 <div class="card-header">
                     <h5><i class="bi bi-pie-chart me-2"></i>Distribution HUB • HERO • HELP</h5>
                 </div>
-                <div class="card-body" style="height: 300px;">
-                    <canvas id="categoryChart" width="400" height="300"></canvas>
+                <div class="card-body" style="height: 365px;">
+                    <div style="position: relative; height: 365px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -326,8 +601,32 @@
                 <div class="card-header">
                     <h5><i class="bi bi-bar-chart me-2"></i>Organic vs Paid</h5>
                 </div>
-                <div class="card-body" style="height: 300px;">
-                    <canvas id="distributionChart" width="400" height="300"></canvas>
+                <div class="card-body" style="height: 365px;">
+                    <div style="position: relative; height: 365px;">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'évolution des abonnés -->
+    <div class="row mb-4" id="subscriberChartSection">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-graph-up me-2"></i>Évolution des Abonnés</h5>
+                    <div id="subscriberStats" class="text-end">
+                        {% if subscriber_data and subscriber_data.has_data %}
+                        <span class="badge bg-primary me-2">{{ subscriber_data.stats.total_entries }} mois de données</span>
+                        <span class="badge bg-success">{{ (subscriber_data.stats.total_growth / 1000)|round(0)|int }}K+ abonnés</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body" style="height: 440px;">
+                    <div style="position: relative; height: 440px;">
+                        <canvas id="subscriberChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -343,17 +642,17 @@
                 <div class="card-body p-0">
                     <ul class="nav nav-tabs" id="analysisTab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button">
+                            <button class="nav-link active" id="analysis-hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button">
                                 🔥 HERO ({{ stats.hero_count }})
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="hub-tab" data-bs-toggle="tab" data-bs-target="#hub" type="button">
+                            <button class="nav-link" id="analysis-hub-tab" data-bs-toggle="tab" data-bs-target="#hub" type="button">
                                 🏠 HUB ({{ stats.hub_count }})
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="help-tab" data-bs-toggle="tab" data-bs-target="#help" type="button">
+                            <button class="nav-link" id="analysis-help-tab" data-bs-toggle="tab" data-bs-target="#help" type="button">
                                 🆘 HELP ({{ stats.help_count }})
                             </button>
                         </li>
@@ -382,21 +681,33 @@
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div>
-                                                            {{ video.title[:60] }}{% if video.title|length > 60 %}...{% endif %}
+                                                            {{ video['title'][:60] }}{% if video['title']|length > 60 %}...{% endif %}
                                                             <br>
-                                                            <small class="text-muted">Confiance: {{ video.confidence }}%</small>
+                                                            <small class="text-muted">
+                                                                {% if video['classification_confidence'] %}
+                                                                    Confiance: {{ video['classification_confidence'] }}%
+                                                                {% endif %}
+                                                                {% if video['human_verified'] %}
+                                                                    <span class="badge bg-success text-white ms-1">✅ Humain</span>
+                                                                {% endif %}
+                                                            </small>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td>{{ video.views }}</td>
-                                                <td>{{ video.likes }}</td>
+                                                <td>{{ "{:,}".format(video['view_count']) if video['view_count'] else "N/A" }}</td>
+                                                <td>{{ "{:,}".format(video['like_count']) if video['like_count'] else "N/A" }}</td>
                                                 <td>
-                                                    <span class="badge {{ 'paid-badge' if video.distribution_type == 'paid' else 'organic-badge' }}">
-                                                        {{ video.distribution_type|title }}
+                                                    {% set is_paid = video['view_count'] and video['view_count'] >= 10000 %}
+                                                    <span class="badge {{ 'paid-badge' if is_paid else 'organic-badge' }}">
+                                                        {{ 'Paid' if is_paid else 'Organic' }}
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-secondary">{{ video.performance_score }}/10</span>
+                                                    {% if video['is_short'] %}
+                                                        <span class="badge bg-warning text-dark">Short</span>
+                                                    {% else %}
+                                                        <span class="badge bg-info">Vidéo</span>
+                                                    {% endif %}
                                                 </td>
                                                 <td>
                                                     <div class="dropdown">
@@ -404,9 +715,9 @@
                                                             <i class="bi bi-tag"></i>
                                                         </button>
                                                         <ul class="dropdown-menu">
-                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'help')">🆘 HELP</a></li>
-                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hero')">🔥 HERO</a></li>
-                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video.url }}', '{{ video.title }}', 'hub')">🏠 HUB</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video['url'] }}', '{{ video['title'] }}', 'help')">🆘 HELP</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video['url'] }}', '{{ video['title'] }}', 'hero')">🔥 HERO</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="tagVideo('{{ video['url'] }}', '{{ video['title'] }}', 'hub')">🏠 HUB</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -416,9 +727,10 @@
                                     </table>
                                 </div>
                                 {% else %}
-                                <div class="text-center py-5">
-                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                                    <h5 class="text-muted mt-3">Aucune vidéo {{ category.upper() }}</h5>
+                                <div class="text-center py-4">
+                                    <i class="bi bi-collection-play text-muted" style="font-size: 2rem;"></i>
+                                    <h6 class="text-muted mt-2">Aucune vidéo {{ category.upper() }} trouvée</h6>
+                                    <p class="text-muted small">Les vidéos apparaîtront ici une fois classifiées</p>
                                 </div>
                                 {% endif %}
                             </div>
@@ -436,333 +748,242 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Wait for Chart.js to load before creating charts
 document.addEventListener('DOMContentLoaded', function() {
+    // FROM FIRST BLOCK
     // Graphique en camembert pour les catégories
-    const ctx1 = document.getElementById('categoryChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-            labels: ['🔥 HERO', '🏠 HUB', '🆘 HELP'],
-            datasets: [{
-                data: [{{ stats.hero_count or 0 }}, {{ stats.hub_count or 0 }}, {{ stats.help_count or 0 }}],
-                backgroundColor: [
-                    '#ff6b6b',  // Rouge pour HERO
-                    '#4ecdc4',  // Turquoise pour HUB  
-                    '#45b7d1'   // Bleu pour HELP
-                ],
-                borderWidth: 3,
-                borderColor: '#ffffff',
-                hoverBorderWidth: 4,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        font: {
-                            size: 14,
-                            weight: 'bold'
+    const ctx1 = document.getElementById('categoryChart')?.getContext('2d');
+    if (ctx1) {
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['🔥 HERO', '🏠 HUB', '🆘 HELP'],
+                datasets: [{
+                    data: [{{ stats.hero_count or 0 }}, {{ stats.hub_count or 0 }}, {{ stats.help_count or 0 }}],
+                    backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverBorderWidth: 4,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20, font: { size: 14, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} vidéos (${percentage}%)`;
+                            }
                         }
                     }
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return `${context.label}: ${context.parsed} vidéos (${percentage}%)`;
-                        }
-                    }
-                }
-            },
-            animation: {
-                animateRotate: true,
-                duration: 2000
+                animation: { animateRotate: true, duration: 2000 }
             }
-        }
-    });
+        });
+    }
 
     // Graphique en barres pour Organic vs Paid
-    const ctx2 = document.getElementById('distributionChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: ['🌱 Organic', '💰 Paid'],
-            datasets: [{
-                label: 'Nombre de vidéos',
-                data: [{{ stats.organic_count or 0 }}, {{ stats.paid_count or 0 }}],
-                backgroundColor: [
-                    'rgba(39, 174, 96, 0.8)',   // Vert pour Organic
-                    'rgba(243, 156, 18, 0.8)'   // Orange pour Paid
-                ],
-                borderColor: [
-                    'rgba(39, 174, 96, 1)',
-                    'rgba(243, 156, 18, 1)'
-                ],
-                borderWidth: 2,
-                borderRadius: 12,
-                borderSkipped: false,
-                hoverBackgroundColor: [
-                    'rgba(39, 174, 96, 1)',
-                    'rgba(243, 156, 18, 1)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed.y / total) * 100).toFixed(1);
-                            return `${context.parsed.y} vidéos (${percentage}%)`;
-                        }
-                    }
-                }
+    const ctx2 = document.getElementById('distributionChart')?.getContext('2d');
+    if (ctx2) {
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['🌱 Organic', '💰 Paid'],
+                datasets: [{
+                    label: 'Nombre de vidéos',
+                    data: [{{ stats.organic_count or 0 }}, {{ stats.paid_count or 0 }}],
+                    backgroundColor: ['rgba(39, 174, 96, 0.8)', 'rgba(243, 156, 18, 0.8)'],
+                    borderColor: ['rgba(39, 174, 96, 1)', 'rgba(243, 156, 18, 1)'],
+                    borderWidth: 2,
+                    borderRadius: 12,
+                    borderSkipped: false,
+                    hoverBackgroundColor: ['rgba(39, 174, 96, 1)', 'rgba(243, 156, 18, 1)']
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        font: {
-                            weight: 'bold'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                return `${context.parsed.y} vidéos (${percentage}%)`;
+                            }
                         }
                     }
                 },
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 14,
-                            weight: 'bold'
-                        }
-                    }
-                }
-            },
-            animation: {
-                duration: 2000,
-                easing: 'easeOutBounce'
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.1)' }, ticks: { font: { weight: 'bold' } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 14, weight: 'bold' } } }
+                },
+                animation: { duration: 2000, easing: 'easeOutBounce' }
             }
-        }
+        });
+    }
+    
+    // Initialiser le graphique d'abonnés
+    loadSubscriberChartFromServer();
+
+    // Événement pour le formulaire d'upload
+    $('#csvUploadForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        var competitorId = '{{ request.view_args.competitor_id }}';
+        
+        $('#csvUploadMessage').parent().removeClass('alert-success alert-danger').addClass('alert-info').show();
+        $('#csvUploadMessage').html('<i class="bi bi-hourglass-split"></i> Importation en cours...');
+
+        $.ajax({
+            url: `/competitor/${competitorId}/upload_subscribers`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#csvUploadMessage').parent().removeClass('alert-info').addClass('alert-success');
+                $('#csvUploadMessage').html(`<i class="bi bi-check-circle-fill"></i> ${data.message}`);
+                // Recharger le graphique des abonnés
+                loadSubscriberChartFromServer();
+                setTimeout(() => { location.reload(); }, 1500);
+            },
+            error: function(xhr) {
+                const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "Une erreur est survenue.";
+                $('#csvUploadMessage').parent().removeClass('alert-info').addClass('alert-danger');
+                $('#csvUploadMessage').html(`<i class="bi bi-exclamation-triangle-fill"></i> ${errorMessage}`);
+            }
+        });
     });
 });
 
-// Fonction de tagging des vidéos
-async function tagVideo(videoUrl, videoTitle, category) {
-    const competitorId = window.location.pathname.split('/').pop();
+function loadSubscriberChartFromServer() {
+    const subscriberData = {{ subscriber_data|tojson|safe }};
     
-    try {
-        const response = await fetch('/api/tag-video', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                video_url: videoUrl,
-                title: videoTitle,
-                category: category,
-                competitor_id: competitorId
-            })
-        });
+    // Debug: afficher les données dans la console
+    console.log('=== DEBUG SUBSCRIBER CHART ===');
+    console.log('subscriberData:', subscriberData);
+    console.log('has_data:', subscriberData ? subscriberData.has_data : 'undefined');
+    
+    if (subscriberData && subscriberData.has_data) {
+        document.getElementById('subscriberChartSection').style.display = 'block';
+        const statsDiv = document.getElementById('subscriberStats');
+        const stats = subscriberData.stats;
+        statsDiv.innerHTML = `
+            <small class="text-muted">
+                <strong>${stats.total_entries}</strong> points de données<br>
+                <span class="text-${stats.total_growth >= 0 ? 'success' : 'danger'}">
+                    ${stats.total_growth >= 0 ? '+' : ''}${stats.total_growth.toLocaleString()} abonnés 
+                    (${stats.growth_percentage >= 0 ? '+' : ''}${stats.growth_percentage}%)
+                </span><br>
+                <small>${stats.first_date} → ${stats.last_date}</small>
+            </small>
+        `;
         
-        const result = await response.json();
-        if (result.success) {
-            // Afficher un message de succès
-            showAlert(result.message, 'success');
-            // Recharger la page après 1 seconde pour voir les changements
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            showAlert('Erreur lors du tagging', 'danger');
+        const ctx3 = document.getElementById('subscriberChart').getContext('2d');
+        if (window.mySubscriberChart) {
+            window.mySubscriberChart.destroy();
         }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showAlert('Erreur lors du tagging', 'danger');
-    }
-}
-
-function showAlert(message, type) {
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
-    alert.innerHTML = `
-        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alert);
-    
-    // Auto-dismiss après 3 secondes
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 3000);
-}
-
-// Fonction de suppression depuis la page de détail
-function confirmDeleteFromDetail(competitorId, competitorName) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le concurrent "${competitorName}" ?\n\nCette action est irréversible et supprimera toutes les données associées.`)) {
-        deleteCompetitorFromDetail(competitorId, competitorName);
-    }
-}
-
-// Fonctions pour les playlists
-async function refreshPlaylists() {
-    const competitorId = window.location.pathname.split('/').pop();
-    
-    try {
-        const button = document.querySelector('button[onclick="refreshPlaylists()"]');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i> Actualisation...';
-        
-        const response = await fetch(`/api/competitor/${competitorId}/playlists/refresh`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+        try {
+            window.mySubscriberChart = new Chart(ctx3, {
+                type: 'line',
+                data: subscriberData.chart_data,
+                options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top', labels: { font: { size: 14, weight: 'bold' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.y.toLocaleString()} abonnés`;
+                            },
+                            title: function(context) {
+                                const date = new Date(context[0].label);
+                                return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        display: true,
+                        title: { display: true, text: 'Date' }
+                    },
+                    y: { 
+                        beginAtZero: false,
+                        title: { display: true, text: 'Abonnés' }
+                    }
+                }
             }
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            showAlert(`${result.count} playlists récupérées avec succès!`, 'success');
-            // Recharger la page pour voir les nouvelles playlists
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            showAlert('Erreur lors de la récupération des playlists: ' + result.error, 'danger');
+            });
+            console.log('✅ Graphique d\'abonnés créé avec succès');
+        } catch (error) {
+            console.error('❌ Erreur lors de la création du graphique d\'abonnés:', error);
+            console.error('Chart data:', subscriberData.chart_data);
         }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showAlert('Erreur lors de la récupération des playlists', 'danger');
-    } finally {
-        const button = document.querySelector('button[onclick="refreshPlaylists()"]');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        }
+    } else {
+        console.log('❌ Pas de données d\'abonnés ou has_data=false');
+        document.getElementById('subscriberChartSection').style.display = 'none';
     }
 }
 
-async function tagPlaylist(playlistId, category) {
-    const competitorId = window.location.pathname.split('/').pop();
-    
-    try {
-        const response = await fetch('/api/tag-playlist', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                playlist_id: playlistId,
-                category: category,
-                competitor_id: competitorId
-            })
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            showAlert(result.message, 'success');
-            // Recharger la page pour voir les changements
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            showAlert('Erreur lors du tagging: ' + result.error, 'danger');
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showAlert('Erreur lors du tagging de la playlist', 'danger');
-    }
-}
+function saveCompetitorTags() {
+    const competitorId = '{{ request.view_args.competitor_id }}';
+    const data = {
+        sector: $('#competitorSector').val(),
+        region: $('#competitorRegion').val(),
+        tags: $('#competitorTags').val(),
+        active: $('#competitorActive').val(),
+        notes: $('#competitorNotes').val()
+    };
 
-async function aiClassifyPlaylists() {
-    const competitorId = window.location.pathname.split('/').pop();
-    
-    try {
-        const button = document.querySelector('button[onclick="aiClassifyPlaylists()"]');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="bi bi-robot spinner-border spinner-border-sm me-1"></i> Classification IA...';
-        
-        const response = await fetch(`/api/competitor/${competitorId}/playlists/ai-classify`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            if (result.classified_count > 0) {
-                showAlert(`🤖 IA: ${result.classified_count} playlists classifiées automatiquement!`, 'success');
-                // Recharger la page pour voir les changements
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                showAlert('✅ Toutes les playlists sont déjà catégorisées!', 'info');
-            }
-        } else {
-            showAlert('Erreur lors de la classification IA: ' + result.error, 'danger');
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showAlert('Erreur lors de la classification IA', 'danger');
-    } finally {
-        const button = document.querySelector('button[onclick="aiClassifyPlaylists()"]');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        }
-    }
-}
+    $('#taggingMessage').parent().removeClass('alert-success alert-danger').addClass('alert-info').show();
+    $('#taggingMessage').html('<i class="bi bi-hourglass-split"></i> Sauvegarde en cours...');
 
-function deleteCompetitorFromDetail(competitorId, competitorName) {
-    fetch('/api/delete-competitor', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+    $.ajax({
+        url: `/competitor/${competitorId}/update_tags`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            $('#taggingMessage').parent().removeClass('alert-info').addClass('alert-success');
+            $('#taggingMessage').html(`<i class="bi bi-check-circle-fill"></i> ${response.message}`);
         },
-        body: JSON.stringify({
-            competitor_id: competitorId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert(`Concurrent "${competitorName}" supprimé avec succès !`, 'success');
-            // Rediriger vers la page des concurrents après 1.5 secondes
-            setTimeout(() => {
-                window.location.href = '/concurrents';
-            }, 1500);
-        } else {
-            showAlert(`Erreur lors de la suppression : ${data.error || 'Erreur inconnue'}`, 'danger');
+        error: function(xhr) {
+            const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "Erreur lors de la sauvegarde.";
+            $('#taggingMessage').parent().removeClass('alert-info').addClass('alert-danger');
+            $('#taggingMessage').html(`<i class="bi bi-exclamation-triangle-fill"></i> ${errorMessage}`);
         }
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        showAlert('Une erreur est survenue lors de la suppression.', 'danger');
     });
+}
+
+function confirmDeleteFromDetail(competitorId, competitorName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer définitive-ment le concurrent "${competitorName}" et toutes ses données associées ? Cette action est irréversible.`)) {
+        window.location.href = `/competitor/${competitorId}/delete`;
+    }
+}
+
+// Fonctions simplifiées - les petits graphiques ont été supprimés
+
+function onCsvUploadSuccess(data) {
+    document.dispatchEvent(new CustomEvent('csvDataUpdated', { detail: data }));
+    if (data.subscriberCount) {
+        const subscribersCountElement = document.getElementById('subscribersCount');
+        if (subscribersCountElement) {
+            const count = data.subscriberCount >= 1000 ? (data.subscriberCount / 1000).toFixed(1) + 'K' : data.subscriberCount;
+            subscribersCountElement.textContent = count;
+        }
+    }
+    setTimeout(() => { location.reload(); }, 2000);
 }
 </script>
 {% endblock %} 

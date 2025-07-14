@@ -1,0 +1,1334 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord des Transformers - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .status-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .status-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .metric-label {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-container {
+        background: #f7fafc;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar-custom {
+        height: 25px;
+        border-radius: 15px;
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        transition: width 0.3s ease;
+        position: relative;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .model-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+    
+    .model-card.loaded {
+        border-color: #48bb78;
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+    }
+    
+    .model-card.loading {
+        border-color: #4299e1;
+        background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+    }
+    
+    .recommendation-card {
+        border-left: 4px solid #4299e1;
+        background: #f7fafc;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .recommendation-card.warning {
+        border-left-color: #ed8936;
+        background: #fffaf0;
+    }
+    
+    .recommendation-card.success {
+        border-left-color: #48bb78;
+        background: #f0fff4;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    .status-ready { background: #48bb78; }
+    .status-loading { background: #4299e1; }
+    .status-training { background: #ed8936; }
+    .status-error { background: #f56565; }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 300px;
+    }
+    
+    .btn-transformer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-transformer:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .alert-transformer {
+        border: none;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .spinner-transformer {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .category-distribution {
+        display: flex;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #e2e8f0;
+    }
+    
+    .category-hero { background: #f56565; }
+    .category-hub { background: #4299e1; }
+    .category-help { background: #48bb78; }
+    
+    .tab-content {
+        background: white;
+        border-radius: 0 15px 15px 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .nav-tabs .nav-link {
+        border-radius: 15px 15px 0 0;
+        border: none;
+        color: #718096;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: white;
+        color: #2d3748;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Console de Debug */
+    .debug-console {
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        font-family: 'Courier New', monospace;
+        color: #00ff00;
+    }
+    
+    .debug-console h6 {
+        color: #00ff00;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .debug-console-content {
+        background: rgba(0, 0, 0, 0.95);
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 0.9rem;
+    }
+    
+    .debug-console-content.hidden {
+        display: none;
+    }
+    
+    .debug-header {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #555;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .debug-metric {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .debug-label {
+        color: #888;
+    }
+    
+    .debug-value {
+        color: #00ff00;
+        font-weight: 600;
+    }
+    
+    .debug-logs {
+        max-height: 250px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #555 transparent;
+    }
+    
+    .debug-logs::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .debug-logs::-webkit-scrollbar-track {
+        background: #222;
+    }
+    
+    .debug-logs::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
+    }
+    
+    .log-entry {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid transparent;
+        animation: logEntry 0.3s ease-out;
+    }
+    
+    .log-entry.system { border-left-color: #007bff; }
+    .log-entry.info { border-left-color: #17a2b8; }
+    .log-entry.success { border-left-color: #28a745; }
+    .log-entry.warning { border-left-color: #ffc107; }
+    .log-entry.error { border-left-color: #dc3545; }
+    .log-entry.debug { border-left-color: #6f42c1; }
+    
+    .log-timestamp {
+        color: #888;
+        font-size: 0.8rem;
+        min-width: 80px;
+        margin-right: 1rem;
+    }
+    
+    .log-level {
+        font-weight: 600;
+        min-width: 80px;
+        margin-right: 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .log-entry.system .log-level { color: #007bff; }
+    .log-entry.info .log-level { color: #17a2b8; }
+    .log-entry.success .log-level { color: #28a745; }
+    .log-entry.warning .log-level { color: #ffc107; }
+    .log-entry.error .log-level { color: #dc3545; }
+    .log-entry.debug .log-level { color: #6f42c1; }
+    
+    .log-message {
+        color: #f8f9fa;
+        flex: 1;
+        word-wrap: break-word;
+    }
+    
+    @keyframes logEntry {
+        0% { opacity: 0; transform: translateX(-10px); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
+    
+    #debug-status {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px;
+        margin-left: 0.25rem;
+    }
+    
+    .btn-group .btn:first-child {
+        margin-left: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête du tableau de bord -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi bi-cpu me-3"></i>
+                    Tableau de bord des Transformers
+                </h1>
+                <p class="mb-0 opacity-75">
+                    Gestion et monitoring des modèles Python sentence-transformers
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex align-items-center justify-content-end">
+                    <span class="status-indicator status-{{ dashboard_data.system_status.status }}"></span>
+                    <span class="fw-bold">{{ dashboard_data.system_status.status.title() }}</span>
+                </div>
+                <small class="opacity-75">
+                    {{ dashboard_data.system_status.current_operation or 'Prêt' }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métriques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="status-card text-center">
+                <div class="metric-value">{{ dashboard_data.training_stats.total_examples }}</div>
+                <div class="metric-label">Exemples d'entraînement</div>
+                <div class="progress-container mt-3">
+                    {% set examples_progress = (dashboard_data.training_stats.total_examples / 100 * 100) | round(1) %}
+                    <div class="progress">
+                        <div class="progress-bar-custom" style="width: {{ examples_progress }}%;">
+                            <div class="progress-text">{{ examples_progress }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="status-card text-center">
+                <div class="metric-value">{{ dashboard_data.quality_metrics.quality_score }}%</div>
+                <div class="metric-label">Score de qualité</div>
+                <div class="progress-container mt-3">
+                    <div class="progress">
+                        <div class="progress-bar-custom" style="width: {{ dashboard_data.quality_metrics.quality_score }}%;">
+                            <div class="progress-text">{{ dashboard_data.quality_metrics.quality_score }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="status-card text-center">
+                <div class="metric-value">{{ dashboard_data.system_health.models_loaded }}</div>
+                <div class="metric-label">Modèles chargés</div>
+                <div class="mt-3">
+                    <small class="text-muted">sur {{ dashboard_data.system_health.total_models }} disponibles</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="status-card text-center">
+                <div class="metric-value">{{ dashboard_data.system_health.memory_usage | round(1) }}</div>
+                <div class="metric-label">Mémoire utilisée (MB)</div>
+                <div class="mt-3">
+                    {% if dashboard_data.system_health.memory_usage > 0 %}
+                        <small class="text-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Modèle actif
+                        </small>
+                    {% else %}
+                        <small class="text-muted">
+                            <i class="bi bi-circle me-1"></i>
+                            Aucun modèle chargé
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal avec onglets -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="transformersTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview">
+                        <i class="bi bi-graph-up me-2"></i>Vue d'ensemble
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="models-tab" data-bs-toggle="tab" data-bs-target="#models">
+                        <i class="bi bi-cpu me-2"></i>Modèles
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="training-tab" data-bs-toggle="tab" data-bs-target="#training">
+                        <i class="bi bi-gear me-2"></i>Entraînement
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="monitoring-tab" data-bs-toggle="tab" data-bs-target="#monitoring">
+                        <i class="bi bi-activity me-2"></i>Monitoring
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="transformersTabContent">
+                <!-- Onglet Vue d'ensemble -->
+                <div class="tab-pane fade show active" id="overview">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="mb-3">
+                                <i class="bi bi-collection me-2"></i>
+                                Distribution des données d'entraînement
+                            </h4>
+                            
+                            <!-- Distribution des catégories -->
+                            <div class="status-card mb-4">
+                                <h6 class="mb-3">Répartition HERO/HUB/HELP</h6>
+                                {% set total_cat = dashboard_data.training_stats.categories_distribution.hero + dashboard_data.training_stats.categories_distribution.hub + dashboard_data.training_stats.categories_distribution.help %}
+                                {% if total_cat > 0 %}
+                                    <div class="category-distribution mb-3">
+                                        {% set hero_pct = (dashboard_data.training_stats.categories_distribution.hero / total_cat * 100) | round(1) %}
+                                        {% set hub_pct = (dashboard_data.training_stats.categories_distribution.hub / total_cat * 100) | round(1) %}
+                                        {% set help_pct = (dashboard_data.training_stats.categories_distribution.help / total_cat * 100) | round(1) %}
+                                        
+                                        <div class="category-hero" style="width: {{ hero_pct }}%;" title="HERO: {{ hero_pct }}%"></div>
+                                        <div class="category-hub" style="width: {{ hub_pct }}%;" title="HUB: {{ hub_pct }}%"></div>
+                                        <div class="category-help" style="width: {{ help_pct }}%;" title="HELP: {{ help_pct }}%"></div>
+                                    </div>
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="fw-bold text-danger">{{ dashboard_data.training_stats.categories_distribution.hero }}</div>
+                                            <small class="text-muted">HERO ({{ hero_pct }}%)</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-primary">{{ dashboard_data.training_stats.categories_distribution.hub }}</div>
+                                            <small class="text-muted">HUB ({{ hub_pct }}%)</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fw-bold text-success">{{ dashboard_data.training_stats.categories_distribution.help }}</div>
+                                            <small class="text-muted">HELP ({{ help_pct }}%)</small>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Aucune donnée de catégorie disponible
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Métriques de qualité -->
+                            <div class="status-card">
+                                <h6 class="mb-3">Métriques de qualité</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Score d'équilibre</span>
+                                                <span>{{ (dashboard_data.quality_metrics.balance_score * 100) | round(1) }}%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar" style="width: {{ (dashboard_data.quality_metrics.balance_score * 100) | round(1) }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Score de diversité</span>
+                                                <span>{{ (dashboard_data.quality_metrics.diversity_score * 100) | round(1) }}%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar" style="width: {{ (dashboard_data.quality_metrics.diversity_score * 100) | round(1) }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <h4 class="mb-3">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                Recommandations
+                            </h4>
+                            
+                            {% for rec in dashboard_data.recommendations %}
+                                <div class="recommendation-card {{ rec.type }}">
+                                    <div class="fw-bold mb-2">
+                                        {% if rec.type == 'success' %}
+                                            <i class="bi bi-check-circle me-2 text-success"></i>
+                                        {% elif rec.type == 'warning' %}
+                                            <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-info-circle me-2 text-info"></i>
+                                        {% endif %}
+                                        {{ rec.title }}
+                                    </div>
+                                    <p class="mb-2 small">{{ rec.message }}</p>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        {{ rec.action }}
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Modèles -->
+                <div class="tab-pane fade" id="models">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>
+                                    <i class="bi bi-cpu me-2"></i>
+                                    Modèles disponibles
+                                </h4>
+                                <button class="btn btn-transformer" onclick="refreshModels()">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    Actualiser
+                                </button>
+                            </div>
+                            
+                            <div class="row">
+                                {% for model_name, model_config in dashboard_data.available_models.items() %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="model-card {% if dashboard_data.models_info.get(model_name, {}).get('is_loaded') %}loaded{% endif %}">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <h6 class="mb-1">{{ model_name }}</h6>
+                                                    <small class="text-muted">{{ model_config.description }}</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    {% if dashboard_data.models_info.get(model_name, {}).get('is_loaded') %}
+                                                        <span class="badge bg-success">Chargé</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Non chargé</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row small text-muted mb-3">
+                                                <div class="col-6">
+                                                    <strong>Taille:</strong> {{ model_config.size_mb }} MB
+                                                </div>
+                                                <div class="col-6">
+                                                    <strong>Dimensions:</strong> {{ model_config.dimensions }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <strong class="small">Cas d'usage:</strong>
+                                                <div class="small text-muted">{{ model_config.use_case }}</div>
+                                            </div>
+                                            
+                                            {% if dashboard_data.models_info.get(model_name, {}).get('is_loaded') %}
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-success">
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        Utilisé {{ dashboard_data.models_info[model_name].usage_count }} fois
+                                                    </small>
+                                                    <button class="btn btn-sm btn-outline-success" onclick="trainModel('{{ model_name }}')">
+                                                        <i class="bi bi-gear me-1"></i>
+                                                        Entraîner
+                                                    </button>
+                                                </div>
+                                            {% elif dashboard_data.models_info.get(model_name, {}).get('loading_status') == 'downloading' %}
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-primary">
+                                                        <i class="bi bi-download me-1"></i>
+                                                        Téléchargement: {{ dashboard_data.models_info[model_name].download_progress | round(1) }}%
+                                                    </small>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="cancelLoading('{{ model_name }}')">
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        Annuler
+                                                    </button>
+                                                </div>
+                                                <div class="progress mt-2" style="height: 6px;">
+                                                    <div class="progress-bar bg-primary" style="width: {{ dashboard_data.models_info[model_name].download_progress }}%"></div>
+                                                </div>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-transformer w-100" onclick="loadModel('{{ model_name }}')">
+                                                    <i class="bi bi-download me-2"></i>
+                                                    Charger le modèle
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Console de Debug Verbeuse -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="debug-console">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-terminal me-2"></i>
+                                                Console de Debug
+                                                <span class="badge bg-info ms-2" id="debug-status">Prêt</span>
+                                            </h6>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleDebugConsole()">
+                                                    <i class="bi bi-eye" id="debug-toggle-icon"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="clearDebugConsole()">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="exportDebugLogs()">
+                                                    <i class="bi bi-download"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="debug-console-content" class="debug-console-content">
+                                            <div class="debug-header">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <div class="debug-metric">
+                                                            <span class="debug-label">Mémoire:</span>
+                                                            <span class="debug-value" id="debug-memory">{{ dashboard_data.system_health.memory_usage | round(1) }}MB</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="debug-metric">
+                                                            <span class="debug-label">Modèles chargés:</span>
+                                                            <span class="debug-value" id="debug-loaded-models">{{ dashboard_data.models_info.keys() | length }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="debug-metric">
+                                                            <span class="debug-label">Statut système:</span>
+                                                            <span class="debug-value" id="debug-system-status">{{ dashboard_data.system_status.status }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="debug-metric">
+                                                            <span class="debug-label">Dernière MAJ:</span>
+                                                            <span class="debug-value" id="debug-last-update">{{ dashboard_data.system_health.last_update or 'N/A' }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="debug-logs" id="debug-logs">
+                                                <div class="log-entry system">
+                                                    <span class="log-timestamp" id="init-timestamp"></span>
+                                                    <span class="log-level">SYSTEM</span>
+                                                    <span class="log-message">Dashboard des transformers initialisé</span>
+                                                </div>
+                                                <div class="log-entry info">
+                                                    <span class="log-timestamp" id="models-timestamp"></span>
+                                                    <span class="log-level">INFO</span>
+                                                    <span class="log-message">{{ dashboard_data.available_models.keys() | length }} modèles disponibles</span>
+                                                </div>
+                                                {% for model_name, model_info in dashboard_data.models_info.items() %}
+                                                    {% if model_info.is_loaded %}
+                                                        <div class="log-entry success">
+                                                            <span class="log-timestamp" id="model-{{ loop.index }}-timestamp"></span>
+                                                            <span class="log-level">SUCCESS</span>
+                                                            <span class="log-message">Modèle {{ model_name }} chargé ({{ model_info.usage_count }} utilisations)</span>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Entraînement -->
+                <div class="tab-pane fade" id="training">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="mb-3">
+                                <i class="bi bi-gear me-2"></i>
+                                Entraînement du modèle
+                            </h4>
+                            
+                            <!-- Statut d'entraînement -->
+                            <div class="status-card mb-4">
+                                <h6 class="mb-3">Statut actuel</h6>
+                                <div class="d-flex align-items-center mb-3">
+                                    {% if dashboard_data.system_status.status == 'training' %}
+                                        <div class="spinner-transformer"></div>
+                                    {% endif %}
+                                    <strong>{{ dashboard_data.system_status.current_operation }}</strong>
+                                </div>
+                                
+                                {% if dashboard_data.system_status.status == 'training' %}
+                                    <div class="progress-container">
+                                        <div class="progress">
+                                            <div class="progress-bar-custom" style="width: {{ dashboard_data.system_status.progress }}%;">
+                                                <div class="progress-text">{{ dashboard_data.system_status.progress }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Historique d'entraînement -->
+                            <div class="status-card">
+                                <h6 class="mb-3">Historique</h6>
+                                {% if dashboard_data.training_stats.last_training_date %}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-2">
+                                                <strong>Dernier entraînement:</strong>
+                                                <div class="small text-muted">{{ dashboard_data.training_stats.last_training_date }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-2">
+                                                <strong>Précision:</strong>
+                                                <div class="small text-muted">{{ (dashboard_data.training_stats.training_accuracy * 100) | round(1) }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="bi bi-clock-history me-2"></i>
+                                        Aucun entraînement effectué
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="status-card">
+                                <h6 class="mb-3">Actions</h6>
+                                
+                                {% if dashboard_data.training_stats.total_examples >= 20 %}
+                                    <button class="btn btn-transformer w-100 mb-3" onclick="startTraining()">
+                                        <i class="bi bi-play-fill me-2"></i>
+                                        Lancer l'entraînement
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-transformer w-100 mb-3" disabled>
+                                        <i class="bi bi-exclamation-circle me-2"></i>
+                                        Données insuffisantes
+                                    </button>
+                                    <small class="text-muted">
+                                        Minimum 20 exemples requis<br>
+                                        Vous en avez {{ dashboard_data.training_stats.total_examples }}
+                                    </small>
+                                {% endif %}
+                                
+                                <div class="mt-4">
+                                    <h6 class="mb-2">Données d'entraînement</h6>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Entraînement:</span>
+                                            <span>{{ dashboard_data.training_stats.training_examples }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Validation:</span>
+                                            <span>{{ dashboard_data.training_stats.validation_examples }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Monitoring -->
+                <div class="tab-pane fade" id="monitoring">
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="mb-3">
+                                <i class="bi bi-activity me-2"></i>
+                                Monitoring en temps réel
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="status-card">
+                                        <h6 class="mb-3">Santé du système</h6>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Statut:</span>
+                                            <span class="badge bg-{{ 'success' if dashboard_data.system_status.status == 'ready' else 'warning' }}">
+                                                {{ dashboard_data.system_status.status.title() }}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Mémoire:</span>
+                                            <span>{{ dashboard_data.system_health.memory_usage | round(1) }} MB</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Dernière MAJ:</span>
+                                            <span class="small text-muted">{{ dashboard_data.system_health.last_update or 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="status-card">
+                                        <h6 class="mb-3">Logs système</h6>
+                                        <div id="system-logs" class="small text-muted" style="height: 150px; overflow-y: auto; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                            <div>{{ dashboard_data.system_status.current_operation }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de progression -->
+<div class="modal fade" id="progressModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Opération en cours</h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="spinner-transformer"></div>
+                    <span id="progress-message">Initialisation...</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar-custom" id="progress-bar" style="width: 0%;">
+                        <div class="progress-text" id="progress-text">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let refreshInterval;
+
+// Fonctions principales
+function refreshModels() {
+    fetch('/api/transformers/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur lors de l\'actualisation', 'error');
+        });
+}
+
+function loadModel(modelName) {
+    // Logs debug très verbeux
+    addDebugLog('SYSTEM', `Début du chargement du modèle: ${modelName}`);
+    addDebugLog('DEBUG', `Modèle sélectionné: ${modelName}`);
+    addDebugLog('INFO', `Taille estimée du modèle: ${getModelSize(modelName)}MB`);
+    
+    updateDebugStatus('Chargement en cours');
+    showProgressModal('Chargement du modèle', 'Initialisation...');
+    
+    addDebugLog('DEBUG', 'Envoi de la requête POST vers /api/transformers/load-model');
+    addDebugLog('DEBUG', `Payload: ${JSON.stringify({ model_name: modelName })}`);
+    
+    const startTime = Date.now();
+    
+    fetch('/api/transformers/load-model', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ model_name: modelName })
+    })
+    .then(response => {
+        const responseTime = Date.now() - startTime;
+        addDebugLog('DEBUG', `Réponse reçue en ${responseTime}ms`);
+        addDebugLog('DEBUG', `Statut HTTP: ${response.status}`);
+        
+        return response.json();
+    })
+    .then(data => {
+        addDebugLog('DEBUG', `Réponse complète: ${JSON.stringify(data)}`);
+        
+        if (data.success && data.async_loading) {
+            addDebugLog('SUCCESS', `Chargement asynchrone lancé pour ${modelName}`);
+            addDebugLog('INFO', `Message: ${data.message}`);
+            updateDebugStatus('Téléchargement en cours');
+            
+            // Démarrer le suivi du progrès
+            startProgressTracking(modelName);
+            
+        } else if (data.success) {
+            // Chargement synchrone réussi (ancien mode)
+            hideProgressModal();
+            addDebugLog('SUCCESS', `Modèle ${modelName} chargé avec succès!`);
+            updateDebugStatus('Succès');
+            showAlert(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+            
+        } else {
+            hideProgressModal();
+            addDebugLog('ERROR', `Échec du chargement du modèle ${modelName}`);
+            addDebugLog('ERROR', `Erreur: ${data.error || 'Erreur inconnue'}`);
+            updateDebugStatus('Erreur');
+            showAlert(data.error || 'Erreur lors du chargement', 'error');
+        }
+    })
+    .catch(error => {
+        hideProgressModal();
+        const totalTime = Date.now() - startTime;
+        addDebugLog('ERROR', `Erreur fatale après ${totalTime}ms`);
+        addDebugLog('ERROR', `Détails: ${error.message}`);
+        addDebugLog('ERROR', `Stack trace: ${error.stack}`);
+        updateDebugStatus('Erreur fatale');
+        console.error('Erreur:', error);
+        showAlert('Erreur lors du chargement du modèle', 'error');
+    });
+}
+
+function startProgressTracking(modelName) {
+    // Suivi du progrès toutes les 2 secondes
+    const progressInterval = setInterval(() => {
+        fetch(`/api/transformers/loading-progress/${modelName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const progress = data.progress;
+                    const status = progress.status;
+                    const progressPercent = progress.progress;
+                    
+                    addDebugLog('DEBUG', `Progrès ${modelName}: ${progressPercent.toFixed(1)}% (${status})`);
+                    
+                    // Mettre à jour la barre de progression
+                    updateProgressModal(progressPercent, getStatusMessage(status, progressPercent));
+                    
+                    // Vérifier si le chargement est terminé
+                    if (status === 'loaded' && progress.is_loaded) {
+                        clearInterval(progressInterval);
+                        hideProgressModal();
+                        addDebugLog('SUCCESS', `Modèle ${modelName} chargé avec succès!`);
+                        addDebugLog('INFO', `Temps de chargement: ${progress.load_time.toFixed(1)}s`);
+                        updateDebugStatus('Succès');
+                        showAlert(`Modèle ${modelName} chargé avec succès!`, 'success');
+                        
+                        // Mettre à jour les métriques
+                        updateDebugMetrics();
+                        
+                        setTimeout(() => {
+                            addDebugLog('SYSTEM', 'Rechargement de la page...');
+                            location.reload();
+                        }, 1500);
+                        
+                    } else if (status === 'error') {
+                        clearInterval(progressInterval);
+                        hideProgressModal();
+                        addDebugLog('ERROR', `Erreur lors du chargement de ${modelName}`);
+                        updateDebugStatus('Erreur');
+                        showAlert(`Erreur lors du chargement de ${modelName}`, 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                addDebugLog('ERROR', `Erreur suivi progrès: ${error.message}`);
+                // Ne pas arrêter le suivi pour une erreur temporaire
+            });
+    }, 2000);
+    
+    // Timeout après 5 minutes
+    setTimeout(() => {
+        clearInterval(progressInterval);
+        hideProgressModal();
+        addDebugLog('ERROR', `Timeout du chargement de ${modelName}`);
+        updateDebugStatus('Timeout');
+        showAlert(`Timeout du chargement de ${modelName}`, 'error');
+    }, 300000); // 5 minutes
+}
+
+function getStatusMessage(status, progress) {
+    switch (status) {
+        case 'downloading':
+            return `Téléchargement en cours... ${progress.toFixed(1)}%`;
+        case 'loading':
+            return 'Chargement du modèle...';
+        case 'loaded':
+            return 'Modèle chargé avec succès!';
+        case 'error':
+            return 'Erreur lors du chargement';
+        default:
+            return 'Initialisation...';
+    }
+}
+
+function updateProgressModal(progress, message) {
+    const progressBar = document.querySelector('#progress-bar');
+    const progressText = document.querySelector('#progress-text');
+    const progressMessage = document.querySelector('#progress-message');
+    
+    if (progressBar) {
+        progressBar.style.width = `${Math.max(10, progress)}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `${progress.toFixed(1)}%`;
+    }
+    if (progressMessage) {
+        progressMessage.textContent = message;
+    }
+}
+
+function cancelLoading(modelName) {
+    addDebugLog('SYSTEM', `Annulation du chargement de ${modelName}`);
+    
+    fetch(`/api/transformers/cancel-loading/${modelName}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addDebugLog('SUCCESS', `Chargement de ${modelName} annulé`);
+            showAlert(data.message, 'info');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            addDebugLog('ERROR', `Erreur lors de l'annulation: ${data.error}`);
+            showAlert(data.error || 'Erreur lors de l\'annulation', 'error');
+        }
+    })
+    .catch(error => {
+        addDebugLog('ERROR', `Erreur fatale annulation: ${error.message}`);
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de l\'annulation', 'error');
+    });
+}
+
+function trainModel(modelName) {
+    showProgressModal('Entraînement du modèle', 'Préparation...');
+    
+    fetch('/api/transformers/train', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ model_name: modelName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProgressModal();
+        if (data.success) {
+            showAlert(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert(data.error || 'Erreur lors de l\'entraînement', 'error');
+        }
+    })
+    .catch(error => {
+        hideProgressModal();
+        console.error('Erreur:', error);
+        showAlert('Erreur lors de l\'entraînement', 'error');
+    });
+}
+
+function startTraining() {
+    trainModel('all-MiniLM-L6-v2');
+}
+
+// Fonctions utilitaires
+function showProgressModal(title, message) {
+    document.querySelector('#progressModal .modal-title').textContent = title;
+    document.querySelector('#progress-message').textContent = message;
+    document.querySelector('#progress-bar').style.width = '10%';
+    document.querySelector('#progress-text').textContent = '10%';
+    
+    const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+    modal.show();
+}
+
+function hideProgressModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+
+function showAlert(message, type) {
+    const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+    const alertHTML = `
+        <div class="alert alert-transformer ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Ajouter l'alerte en haut de la page
+    document.querySelector('.container-fluid').insertAdjacentHTML('afterbegin', alertHTML);
+}
+
+// Actualisation automatique
+function startAutoRefresh() {
+    refreshInterval = setInterval(() => {
+        fetch('/api/transformers/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateSystemStatus(data.data);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur actualisation:', error);
+            });
+    }, 5000); // Actualisation toutes les 5 secondes
+}
+
+function updateSystemStatus(data) {
+    // Mettre à jour le statut en temps réel
+    if (data.system_status.status === 'training') {
+        const progressBar = document.querySelector('#progress-bar');
+        const progressText = document.querySelector('#progress-text');
+        
+        if (progressBar && progressText) {
+            progressBar.style.width = data.system_status.progress + '%';
+            progressText.textContent = data.system_status.progress + '%';
+        }
+    }
+}
+
+// Fonctions Debug Console
+function addDebugLog(level, message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const debugLogs = document.getElementById('debug-logs');
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${level.toLowerCase()} new`;
+    logEntry.innerHTML = `
+        <span class="log-timestamp">${timestamp}</span>
+        <span class="log-level">${level}</span>
+        <span class="log-message">${message}</span>
+    `;
+    
+    debugLogs.appendChild(logEntry);
+    
+    // Scroll automatique vers le bas
+    debugLogs.scrollTop = debugLogs.scrollHeight;
+    
+    // Limiter le nombre de logs (max 100)
+    while (debugLogs.children.length > 100) {
+        debugLogs.removeChild(debugLogs.firstChild);
+    }
+    
+    // Retirer la classe "new" après l'animation
+    setTimeout(() => {
+        logEntry.classList.remove('new');
+    }, 300);
+}
+
+function updateDebugStatus(status) {
+    const statusElement = document.getElementById('debug-status');
+    statusElement.textContent = status;
+    
+    // Changer la couleur selon le statut
+    statusElement.className = 'badge ms-2';
+    if (status.includes('Erreur')) {
+        statusElement.classList.add('bg-danger');
+    } else if (status.includes('Succès')) {
+        statusElement.classList.add('bg-success');
+    } else if (status.includes('Chargement')) {
+        statusElement.classList.add('bg-warning');
+    } else {
+        statusElement.classList.add('bg-info');
+    }
+}
+
+function updateDebugMetrics() {
+    fetch('/api/transformers/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const memoryElement = document.getElementById('debug-memory');
+                const loadedModelsElement = document.getElementById('debug-loaded-models');
+                const systemStatusElement = document.getElementById('debug-system-status');
+                const lastUpdateElement = document.getElementById('debug-last-update');
+                
+                if (memoryElement) memoryElement.textContent = `${data.data.system_health.memory_usage}MB`;
+                if (loadedModelsElement) loadedModelsElement.textContent = Object.keys(data.data.models_info).length;
+                if (systemStatusElement) systemStatusElement.textContent = data.data.system_status.status;
+                if (lastUpdateElement) lastUpdateElement.textContent = new Date().toLocaleTimeString();
+                
+                addDebugLog('DEBUG', `Métriques mises à jour: ${data.data.system_health.memory_usage}MB mémoire`);
+            }
+        })
+        .catch(error => {
+            addDebugLog('ERROR', `Erreur lors de la mise à jour des métriques: ${error.message}`);
+        });
+}
+
+function getModelSize(modelName) {
+    const modelSizes = {
+        'all-MiniLM-L6-v2': 22.7,
+        'all-MiniLM-L12-v2': 33.4,
+        'paraphrase-MiniLM-L6-v2': 22.7,
+        'all-mpnet-base-v2': 109.0
+    };
+    return modelSizes[modelName] || 'Unknown';
+}
+
+function toggleDebugConsole() {
+    const content = document.getElementById('debug-console-content');
+    const icon = document.getElementById('debug-toggle-icon');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.className = 'bi bi-eye';
+        addDebugLog('SYSTEM', 'Console de debug affichée');
+    } else {
+        content.classList.add('hidden');
+        icon.className = 'bi bi-eye-slash';
+    }
+}
+
+function clearDebugConsole() {
+    const debugLogs = document.getElementById('debug-logs');
+    debugLogs.innerHTML = '';
+    addDebugLog('SYSTEM', 'Console de debug effacée');
+}
+
+function exportDebugLogs() {
+    const debugLogs = document.getElementById('debug-logs');
+    const logs = Array.from(debugLogs.children).map(entry => {
+        const timestamp = entry.querySelector('.log-timestamp').textContent;
+        const level = entry.querySelector('.log-level').textContent;
+        const message = entry.querySelector('.log-message').textContent;
+        return `${timestamp} [${level}] ${message}`;
+    }).join('\n');
+    
+    const blob = new Blob([logs], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `debug-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    addDebugLog('SYSTEM', 'Logs exportés vers un fichier');
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+    
+    // Initialiser les timestamps
+    const initTimestamp = document.getElementById('init-timestamp');
+    const modelsTimestamp = document.getElementById('models-timestamp');
+    const currentTime = new Date().toLocaleTimeString();
+    
+    if (initTimestamp) initTimestamp.textContent = currentTime;
+    if (modelsTimestamp) modelsTimestamp.textContent = currentTime;
+    
+    // Initialiser les timestamps des modèles chargés
+    const modelTimestamps = document.querySelectorAll('[id^="model-"][id$="-timestamp"]');
+    modelTimestamps.forEach(timestamp => {
+        timestamp.textContent = currentTime;
+    });
+    
+    // Ajouter un log d'initialisation
+    addDebugLog('SYSTEM', 'Console de debug initialisée');
+    addDebugLog('INFO', 'Prêt pour le chargement des modèles');
+    
+    // Mettre à jour les métriques initiales
+    updateDebugMetrics();
+    
+    // Actualiser les métriques toutes les 10 secondes
+    setInterval(updateDebugMetrics, 10000);
+    
+    // Nettoyer l'intervalle quand on quitte la page
+    window.addEventListener('beforeunload', function() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
+});
+</script>
+{% endblock %} 

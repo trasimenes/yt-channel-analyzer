@@ -1,0 +1,64 @@
+<div class="col-md-6 col-lg-4 mb-4">
+    <div class="card playlist-card h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0 me-3">
+                    {% if playlist.thumbnail_url %}
+                    <img src="{{ playlist.thumbnail_url }}" class="rounded" 
+                         alt="{{ playlist.name }}" style="width: 60px; height: 60px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                         style="width: 60px; height: 60px;">
+                        <i class="bi bi-collection-play text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="card-title mb-1">{{ playlist.name }}</h6>
+                    <p class="text-muted small mb-2">
+                        {{ playlist.video_count }} vidéos
+                    </p>
+                    <!-- Catégorie actuelle -->
+                    <div class="mb-2">
+                        {% if playlist.category %}
+                        <div class="d-flex align-items-center" style="gap: 0.25rem;">
+                            <span class="badge {% if playlist.category == 'hero' %}hero-badge{% elif playlist.category == 'hub' %}hub-badge{% else %}help-badge{% endif %}">
+                                {% if playlist.category == 'hero' %}🔥 HERO{% elif playlist.category == 'hub' %}🏠 HUB{% else %}🆘 HELP{% endif %}
+                            </span>
+                            <!-- 🚨 NOUVEAU : Badge source de classification -->
+                            {% if playlist.classification_source == 'human' or playlist.human_verified %}
+                            <span class="badge bg-success text-white" style="font-size: 0.7em;" title="Classifié par un humain - Protection absolue">
+                                <i class="bi bi-person-check me-1"></i>HUMAIN
+                            </span>
+                            {% elif playlist.classification_source == 'ai' %}
+                            <span class="badge bg-warning text-dark" style="font-size: 0.7em;" title="Classifié par IA - Modifiable">
+                                <i class="bi bi-robot me-1"></i>IA
+                            </span>
+                            {% elif playlist.classification_source == 'playlist' %}
+                            <span class="badge bg-info text-white" style="font-size: 0.7em;" title="Hérité d'une autre playlist">
+                                <i class="bi bi-collection me-1"></i>AUTO
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary" style="font-size: 0.7em;" title="Source inconnue">
+                                <i class="bi bi-question-circle me-1"></i>?
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="badge bg-secondary">Non catégorisé</span>
+                        {% endif %}
+                    </div>
+                    <!-- Boutons de catégorisation -->
+                    <!-- Section supprimée pour alléger la carte -->
+                </div>
+            </div>
+            {% if playlist.description %}
+            <div class="mt-3">
+                <small class="text-muted">
+                    {{ playlist.description[:100] }}{% if playlist.description|length > 100 %}...{% endif %}
+                </small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,731 @@
+{% extends "base.html" %}
+
+{% block title %}{{ guide_name }} - Learn - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .guide-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 3rem;
+        border-radius: 20px;
+        text-align: center;
+    }
+    
+    .guide-navigation {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    /* Guide Content Styles */
+    .guide-content {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 3rem;
+        margin: 2rem 0;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 1.1rem; /* Texte plus gros */
+        line-height: 1.7; /* Meilleur espacement */
+    }
+    
+    .guide-content h1 {
+        color: var(--primary);
+        font-size: 2.5rem; /* Plus gros */
+        margin-bottom: 2rem;
+        text-align: center;
+        font-weight: 700;
+    }
+    
+    .guide-content h2 {
+        color: var(--primary);
+        font-size: 2rem; /* Plus gros */
+        margin: 2.5rem 0 1.5rem 0;
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 0.5rem;
+    }
+    
+    .guide-content h3 {
+        color: var(--dark);
+        font-size: 1.5rem; /* Plus gros */
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+    }
+    
+    .guide-content p {
+        color: #334155;
+        font-size: 1.2rem; /* Plus gros */
+        line-height: 1.8; /* Meilleur espacement */
+        margin-bottom: 1.5rem;
+        text-align: justify;
+    }
+    
+    .guide-content ul {
+        padding-left: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .guide-content li {
+        color: #334155;
+        font-size: 1.1rem; /* Plus gros */
+        line-height: 1.7;
+        margin-bottom: 0.8rem;
+        list-style: disc;
+    }
+    
+    .guide-content strong {
+        color: var(--primary);
+        font-weight: 700;
+    }
+    
+    .guide-content hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary), transparent);
+        margin: 3rem 0;
+    }
+    
+    .guide-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+        font-size: 1.1rem;
+    }
+    
+    .guide-content table th,
+    .guide-content table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .guide-content table th {
+        background-color: var(--light);
+        font-weight: 600;
+        color: var(--primary);
+    }
+    
+    /* Supprimer le check vert devant chaque li */
+    .guide-content li::before {
+        content: none !important;
+        display: none !important;
+    }
+    
+    .guide-content a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .guide-content a:hover {
+        text-decoration: underline;
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .back-button:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+    
+    .print-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .print-button:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Import Google Fonts pour les onglets seulement */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+    
+    /* Système d'onglets vertical - styles isolés avec couleurs douces */
+    .brands-section {
+        margin: 3rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 600px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        font-family: 'Poppins', sans-serif;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .brands-section h2 {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #334155;
+        font-size: 2.5rem;
+        font-weight: 600;
+        position: absolute;
+        top: -4rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+    }
+    
+    .brands-section .tab-container {
+        max-width: 950px;
+        width: 100%;
+        padding: 50px 40px;
+        margin: 0px 20px;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0px 4px 20px rgba(148, 163, 184, 0.1), 0px 8px 32px rgba(148, 163, 184, 0.08);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .brands-section .tab-container .topic {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #475569;
+        text-align: center;
+    }
+    
+    .brands-section .tab-content input {
+        display: none;
+    }
+    
+    .brands-section .tab-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .brands-section .tab-content .list {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        width: 20%;
+        margin-right: 50px;
+    }
+    
+    .brands-section .tab-content .list label {
+        cursor: pointer;
+        height: 60px;
+        line-height: 60px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #64748b;
+        padding-left: 25px;
+        transition: all 0.3s ease;
+        z-index: 10;
+        border-radius: 12px;
+    }
+    
+    .brands-section #home:checked ~ .list label.home,
+    .brands-section #blog:checked ~ .list label.blog,
+    .brands-section #help:checked ~ .list label.help,
+    .brands-section #code:checked ~ .list label.code,
+    .brands-section #about:checked ~ .list label.about {
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    .brands-section .tab-content .slider {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 60px;
+        width: 100%;
+        border-radius: 12px;
+        transition: all 0.4s ease;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .brands-section #home:checked ~ .list .slider {
+        top: 0;
+    }
+    
+    .brands-section #blog:checked ~ .list .slider {
+        top: 60px;
+    }
+    
+    .brands-section #help:checked ~ .list .slider {
+        top: 120px;
+    }
+    
+    .brands-section #code:checked ~ .list .slider {
+        top: 180px;
+    }
+    
+    .brands-section #about:checked ~ .list .slider {
+        top: 240px;
+    }
+    
+    .brands-section .tab-content .text-content {
+        width: 80%;
+        height: 100%;
+        color: #475569;
+    }
+    
+    .brands-section .tab-content .text {
+        display: none;
+    }
+    
+    .brands-section .tab-content .text .title {
+        font-size: 24px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+    }
+    
+    .brands-section .tab-container .text p {
+        text-align: justify;
+        line-height: 1.6;
+        color: #64748b;
+    }
+    
+    .brands-section .tab-content .text-content .home {
+        display: block;
+    }
+    
+    .brands-section #home:checked ~ .text-content .home,
+    .brands-section #blog:checked ~ .text-content .blog,
+    .brands-section #help:checked ~ .text-content .help,
+    .brands-section #code:checked ~ .text-content .code,
+    .brands-section #about:checked ~ .text-content .about {
+        display: block;
+    }
+    
+    .brands-section #blog:checked ~ .text-content .home,
+    .brands-section #help:checked ~ .text-content .home,
+    .brands-section #code:checked ~ .text-content .home,
+    .brands-section #about:checked ~ .text-content .home {
+        display: none;
+    }
+    
+    .brands-section .tab-content .list label:hover {
+        color: #6366f1;
+        background-color: #f8fafc;
+    }
+    
+    /* Styles pour les sections de marques */
+    .brands-section .brand-section {
+        margin-bottom: 2rem;
+    }
+    
+    .brands-section .brand-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #6366f1;
+        margin-bottom: 1rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 8px 16px;
+        border-radius: 8px;
+        border-left: 4px solid #6366f1;
+    }
+    
+    .brands-section .brand-section ul {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .brands-section .brand-section li {
+        font-size: 0.95rem;
+        color: #64748b;
+        margin-bottom: 0.6rem;
+        list-style: none;
+        padding-left: 0;
+        line-height: 1.6;
+        position: relative;
+    }
+    
+    .brands-section .brand-section li::before {
+        content: "•";
+        color: #6366f1;
+        font-weight: bold;
+        position: absolute;
+        left: -1rem;
+    }
+    
+    /* Responsive pour les onglets seulement */
+    @media (max-width: 768px) {
+        .brands-section {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .brands-section .tab-container {
+            padding: 30px 20px;
+            margin: 0px 10px;
+            background: #ffffff;
+            box-shadow: 0px 2px 12px rgba(148, 163, 184, 0.08);
+        }
+        
+        .brands-section .tab-content {
+            flex-direction: column;
+        }
+        
+        .brands-section .tab-content .list {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 2rem;
+            flex-direction: row;
+            justify-content: space-around;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 8px;
+        }
+        
+        .brands-section .tab-content .list label {
+            font-size: 13px;
+            height: 45px;
+            line-height: 45px;
+            padding: 0 12px;
+            text-align: center;
+            border-radius: 8px;
+            color: #64748b;
+        }
+        
+        .brands-section .tab-content .list label:hover {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        
+        .brands-section .tab-content .slider {
+            height: 45px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+        }
+        
+        .brands-section .tab-content .text-content {
+            width: 100%;
+        }
+        
+        .brands-section h2 {
+            font-size: 2rem;
+            color: #334155;
+        }
+        
+        .brands-section .tab-container .topic {
+            font-size: 22px;
+            color: #475569;
+        }
+    }
+
+    /* Main Content Container */
+    .main-content {
+        width: 80%; /* Réduire à 80% au lieu de 100% */
+        max-width: 1200px; /* Limiter la largeur maximale */
+        margin: 0 auto; /* Centrer le contenu */
+        padding: 2rem;
+        margin-top: 120px;
+    }
+
+/* Ajout d'un style pour un tableau élégant dans .guide-content */
+.guide-content table.recommend-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3rem auto;
+    font-size: 1.2rem;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+    border: 1px solid #e2e8f0;
+}
+.guide-content table.recommend-table th, .guide-content table.recommend-table td {
+    padding: 1.5rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+.guide-content table.recommend-table th {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #4f46e5;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.guide-content table.recommend-table tr:last-child td {
+    border-bottom: none;
+}
+.guide-content table.recommend-table td {
+    font-weight: 600;
+    color: #1e293b;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+.guide-content table.recommend-table td:first-child {
+    font-weight: 800;
+    color: #6366f1;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1.3rem;
+}
+.guide-content table.recommend-table tr:hover td {
+    background: #f8fafc;
+    transform: scale(1.02);
+}
+.guide-content table.recommend-table tr:hover td:first-child {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+}
+/* Responsive design */
+@media (max-width: 700px) {
+    .guide-content table.recommend-table {
+        font-size: 1rem;
+        margin: 2rem 0;
+    }
+    .guide-content table.recommend-table th, .guide-content table.recommend-table td {
+        padding: 1rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    .guide-content table.recommend-table td:first-child {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid main-content">
+    <!-- Header -->
+    <div class="guide-header">
+        <h1>
+            <i class="bi bi-book-open me-3"></i>
+            {{ guide_name }}
+        </h1>
+        <p>Practical guide to master your YouTube strategy</p>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="guide-navigation">
+        <a href="/learn" class="back-button">
+            <i class="bi bi-arrow-left"></i>
+            Back to guides
+        </a>
+        
+        <button onclick="window.print()" class="print-button">
+            <i class="bi bi-printer"></i>
+            Print
+        </button>
+    </div>
+    
+    <!-- Guide Content -->
+    <div class="guide-content">
+        {{ guide_content | safe }}
+        
+        <!-- Brands Examples Section (Système d'onglets vertical) -->
+        {% if brands_data %}
+        <div class="brands-section">
+            <h2>Real Examples from Major Brands</h2>
+            <div class="tab-container">
+                <div class="topic">Brand Examples</div>
+                <div class="tab-content">
+                    {% set brand_ids = ['home', 'blog', 'help', 'code', 'about'] %}
+                    {% for brand in brands_data %}
+                        <input type="radio" name="slider" {% if loop.first %}checked{% endif %} id="{{ brand_ids[loop.index0] if loop.index0 < 5 else 'brand' + loop.index|string }}">
+                    {% endfor %}
+                    <!-- Ajouter des onglets supplémentaires si moins de 5 marques -->
+                    {% if brands_data|length < 5 %}
+                        {% for i in range(brands_data|length, 5) %}
+                            <input type="radio" name="slider" id="{{ brand_ids[i] }}">
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="list">
+                        {% for brand in brands_data %}
+                            <label for="{{ brand_ids[loop.index0] if loop.index0 < 5 else 'brand' + loop.index|string }}" class="{{ brand_ids[loop.index0] if loop.index0 < 5 else 'brand' + loop.index|string }}">
+                                <span>{{ brand.logo }} {{ brand.name }}</span>
+                            </label>
+                        {% endfor %}
+                        <!-- Onglets supplémentaires -->
+                        {% if brands_data|length < 4 %}
+                            <label for="code" class="code">
+                                <span>📱 TESLA</span>
+                            </label>
+                        {% endif %}
+                        {% if brands_data|length < 5 %}
+                            <label for="about" class="about">
+                                <span>🏨 HILTON</span>
+                            </label>
+                        {% endif %}
+                        <div class="slider"></div>
+                    </div>
+
+                    <div class="text-content">
+                        {% for brand in brands_data %}
+                            <div class="{{ brand_ids[loop.index0] if loop.index0 < 5 else 'brand' + loop.index|string }} text">
+                                <div class="title">{{ brand.logo }} {{ brand.name }}</div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HERO</div>
+                                    <ul>
+                                        {% for item in brand.hero %}
+                                            <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HUB</div>
+                                    <ul>
+                                        {% for item in brand.hub %}
+                                            <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HELP</div>
+                                    <ul>
+                                        {% for item in brand.help %}
+                                            <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Onglets supplémentaires -->
+                        {% if brands_data|length < 4 %}
+                            <div class="code text">
+                                <div class="title">📱 TESLA</div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HERO</div>
+                                    <ul>
+                                        <li>New vehicle launches & reveals</li>
+                                        <li>Autopilot & FSD demonstrations</li>
+                                        <li>Supercharger network expansions</li>
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HUB</div>
+                                    <ul>
+                                        <li>Owner testimonials & experiences</li>
+                                        <li>Technology deep dives</li>
+                                        <li>Sustainability initiatives</li>
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HELP</div>
+                                    <ul>
+                                        <li>Vehicle tutorials & tips</li>
+                                        <li>Charging guides</li>
+                                        <li>Service & maintenance info</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if brands_data|length < 5 %}
+                            <div class="about text">
+                                <div class="title">🏨 HILTON</div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HERO</div>
+                                    <ul>
+                                        <li>Grand hotel openings worldwide</li>
+                                        <li>Celebrity partnerships & events</li>
+                                        <li>Luxury travel campaigns</li>
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HUB</div>
+                                    <ul>
+                                        <li>"Hilton Stories" series</li>
+                                        <li>Weekly travel tips</li>
+                                        <li>Hotel tours & amenities</li>
+                                    </ul>
+                                </div>
+                                <div class="brand-section">
+                                    <div class="brand-section-title">HELP</div>
+                                    <ul>
+                                        <li>Booking tutorials</li>
+                                        <li>Travel planning guides</li>
+                                        <li>Loyalty program explanations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Navigation Bottom -->
+    <div class="guide-navigation">
+        <a href="/learn" class="back-button">
+            <i class="bi bi-arrow-left"></i>
+            Back to guides
+        </a>
+        
+        <a href="/concurrents" class="back-button" style="background: linear-gradient(135deg, var(--success), var(--primary));">
+            <i class="bi bi-play-circle"></i>
+            Analyze a competitor
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll for anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Le système d'onglets vertical fonctionne entièrement avec CSS
+    // Pas besoin de JavaScript supplémentaire
+});
+</script>
+{% endblock %}
