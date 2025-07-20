@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Active Tasks - YT Analyzer{% endblock %}
 
@@ -191,6 +191,10 @@
                 <p class="text-muted mb-0">Monitor your YouTube channel analysis tasks in real-time</p>
             </div>
             <div>
+                <button class="btn btn-outline-primary btn-action me-2" onclick="migrateTasks()" id="migrate-btn">
+                    <i class="bi bi-database me-1"></i>
+                    Rapatrier en Base
+                </button>
                 <button class="btn btn-outline-warning btn-action" onclick="cleanDuplicateTasks()" id="clean-btn">
                     <i class="bi bi-trash me-1"></i>
                     Clean Duplicates
@@ -393,6 +397,44 @@
         } catch (error) {
             console.error('Error:', error);
             alert('Error cancelling task');
+        }
+    }
+
+    async function migrateTasks() {
+        if (!confirm('Voulez-vous migrer toutes les tâches du fichier JSON vers la base de données ?')) {
+            return;
+        }
+        const migrateBtn = document.getElementById('migrate-btn');
+        const originalHtml = migrateBtn.innerHTML;
+        
+        // Afficher un état de chargement
+        migrateBtn.disabled = true;
+        migrateBtn.innerHTML = '<i class="bi bi-arrow-clockwise spinner-border spinner-border-sm me-1"></i> Migration...';
+        
+        try {
+            const response = await fetch('/api/tasks/migrate-to-database', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`✅ ${result.message}\n(${result.migrated_count}/${result.total_tasks} tâches migrées)`);
+                
+                // Recharger la page pour voir les changements
+                location.reload();
+            } else {
+                alert(`❌ Erreur: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Erreur lors de la migration des tâches');
+        } finally {
+            // Restaurer le bouton
+            migrateBtn.disabled = false;
+            migrateBtn.innerHTML = originalHtml;
         }
     }
 

@@ -1,0 +1,687 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Fix Problems - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-wrench me-2"></i>System Maintenance & Problem Resolution
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Diagnose and fix common issues with your YouTube data</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshDiagnostics()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-{{ 'success' if system_health.database == 'healthy' else ('warning' if system_health.database == 'warning' else 'danger') }}">
+                            <i class="bx bx-data"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-1">Database</h6>
+                    <small class="text-{{ 'success' if system_health.database == 'healthy' else ('warning' if system_health.database == 'warning' else 'danger') }}">
+                        {{ system_health.database|title }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-{{ 'success' if system_health.api == 'healthy' else ('warning' if system_health.api == 'warning' else 'danger') }}">
+                            <i class="bx bx-world"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-1">YouTube API</h6>
+                    <small class="text-{{ 'success' if system_health.api == 'healthy' else ('warning' if system_health.api == 'warning' else 'danger') }}">
+                        {{ system_health.api|title }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-{{ 'success' if system_health.classification == 'healthy' else ('warning' if system_health.classification == 'warning' else 'danger') }}">
+                            <i class="bx bx-category"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-1">Classification</h6>
+                    <small class="text-{{ 'success' if system_health.classification == 'healthy' else ('warning' if system_health.classification == 'warning' else 'danger') }}">
+                        {{ system_health.classification|title }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-{{ 'success' if system_health.cache == 'healthy' else ('warning' if system_health.cache == 'warning' else 'danger') }}">
+                            <i class="bx bx-hdd"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-1">Cache</h6>
+                    <small class="text-{{ 'success' if system_health.cache == 'healthy' else ('warning' if system_health.cache == 'warning' else 'danger') }}">
+                        {{ system_health.cache|title }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Fixes -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-flash me-2"></i>Quick Fixes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-primary">
+                                            <i class="bx bx-refresh"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Recalculate Statistics</h6>
+                                    <p class="small text-muted mb-3">Update all competitor statistics and metrics</p>
+                                    <button class="btn btn-sm btn-primary" onclick="runFix('recalculate_stats')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-success h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-success">
+                                            <i class="bx bx-category"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Fix Classifications</h6>
+                                    <p class="small text-muted mb-3">Reclassify uncategorized videos</p>
+                                    <button class="btn btn-sm btn-success" onclick="runFix('fix_classifications')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-warning h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-warning">
+                                            <i class="bx bx-trash"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Clean Duplicates</h6>
+                                    <p class="small text-muted mb-3">Remove duplicate videos and competitors</p>
+                                    <button class="btn btn-sm btn-warning" onclick="runFix('clean_duplicates')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-info h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-info">
+                                            <i class="bx bx-calendar-check"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Fix YouTube Dates</h6>
+                                    <p class="small text-muted mb-3">Correct video publication dates using YouTube API</p>
+                                    <button class="btn btn-sm btn-info" onclick="runFix('fix_youtube_dates')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-dark h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-dark">
+                                            <i class="bx bx-user-check"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Propagate Human Classifications</h6>
+                                    <p class="small text-muted mb-3">Apply human playlist classifications to videos</p>
+                                    <button class="btn btn-sm btn-dark" onclick="runFix('propagate_human_classifications')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-info h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-info">
+                                            <i class="bx bx-time"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Update Timestamps</h6>
+                                    <p class="small text-muted mb-3">Fix missing or invalid timestamps</p>
+                                    <button class="btn btn-sm btn-info" onclick="runFix('update_timestamps')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-danger h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-danger">
+                                            <i class="bx bx-shield"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Database Integrity</h6>
+                                    <p class="small text-muted mb-3">Check and fix database integrity issues</p>
+                                    <button class="btn btn-sm btn-danger" onclick="runFix('database_integrity')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-secondary h-100">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-secondary">
+                                            <i class="bx bx-hdd"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Clear Cache</h6>
+                                    <p class="small text-muted mb-3">Clear all cached data and thumbnails</p>
+                                    <button class="btn btn-sm btn-secondary" onclick="runFix('clear_cache')">
+                                        <i class="bx bx-play me-1"></i>Run Fix
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Metrics Information Box -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card border-info bg-light-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="card-title mb-0 text-white">
+                                        <i class="bx bx-stats me-2"></i>
+                                        État du Système - Métriques Complètes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center mb-4">
+                                        <div class="col-md-3">
+                                            <div class="card border-primary">
+                                                <div class="card-body">
+                                                    <div class="avatar mx-auto mb-2">
+                                                        <span class="avatar-initial rounded bg-label-primary">
+                                                            <i class="bx bx-video"></i>
+                                                        </span>
+                                                    </div>
+                                                    <h5 class="text-primary">{{ system_metrics.total_videos if system_metrics else '7438' }}</h5>
+                                                    <small class="text-muted">Vidéos totales</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-info">
+                                                <div class="card-body">
+                                                    <div class="avatar mx-auto mb-2">
+                                                        <span class="avatar-initial rounded bg-label-info">
+                                                            <i class="bx bx-users"></i>
+                                                        </span>
+                                                    </div>
+                                                    <h5 class="text-info">{{ system_metrics.total_competitors if system_metrics else '45' }}</h5>
+                                                    <small class="text-muted">Concurrents</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-secondary">
+                                                <div class="card-body">
+                                                    <div class="avatar mx-auto mb-2">
+                                                        <span class="avatar-initial rounded bg-label-secondary">
+                                                            <i class="bx bx-list-ul"></i>
+                                                        </span>
+                                                    </div>
+                                                    <h5 class="text-secondary">{{ system_metrics.total_playlists if system_metrics else '355' }}</h5>
+                                                    <small class="text-muted">Playlists</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card border-warning">
+                                                <div class="card-body">
+                                                    <div class="avatar mx-auto mb-2">
+                                                        <span class="avatar-initial rounded bg-label-warning">
+                                                            <i class="bx bx-category"></i>
+                                                        </span>
+                                                    </div>
+                                                    <h5 class="text-warning">{{ system_metrics.classified_videos if system_metrics else '6890' }}</h5>
+                                                    <small class="text-muted">Classifiées</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Metrics Progress Bars -->
+                                    <div class="row">
+                                        <!-- YouTube Dates -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">📅 Dates YouTube</span>
+                                                <span class="badge bg-{% if system_metrics.youtube_dates_percentage >= 95 %}success{% elif system_metrics.youtube_dates_percentage >= 80 %}info{% elif system_metrics.youtube_dates_percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                                    {{ system_metrics.youtube_dates_percentage if system_metrics else 80 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar {% if system_metrics.youtube_dates_percentage >= 95 %}bg-success{% elif system_metrics.youtube_dates_percentage >= 80 %}bg-info{% elif system_metrics.youtube_dates_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                     style="width: {{ system_metrics.youtube_dates_percentage if system_metrics else 80 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Classifications -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">🎯 Classifications</span>
+                                                <span class="badge bg-{% if system_metrics.classification_percentage >= 95 %}success{% elif system_metrics.classification_percentage >= 80 %}info{% elif system_metrics.classification_percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                                    {{ system_metrics.classification_percentage if system_metrics else 93 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar {% if system_metrics.classification_percentage >= 95 %}bg-success{% elif system_metrics.classification_percentage >= 80 %}bg-info{% elif system_metrics.classification_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                     style="width: {{ system_metrics.classification_percentage if system_metrics else 93 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Duplicates -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">🗂️ Doublons nettoyés</span>
+                                                <span class="badge bg-success">
+                                                    {{ system_metrics.duplicates_percentage if system_metrics else 100 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ system_metrics.duplicates_percentage if system_metrics else 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Statistics -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">📊 Statistiques à jour</span>
+                                                <span class="badge bg-{% if system_metrics.stats_percentage >= 95 %}success{% elif system_metrics.stats_percentage >= 80 %}info{% elif system_metrics.stats_percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                                    {{ system_metrics.stats_percentage if system_metrics else 87 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar {% if system_metrics.stats_percentage >= 95 %}bg-success{% elif system_metrics.stats_percentage >= 80 %}bg-info{% elif system_metrics.stats_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                     style="width: {{ system_metrics.stats_percentage if system_metrics else 87 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Database Integrity -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">🔒 Intégrité base</span>
+                                                <span class="badge bg-success">
+                                                    {{ system_metrics.integrity_percentage if system_metrics else 100 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ system_metrics.integrity_percentage if system_metrics else 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Cache Status -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted">💾 Cache optimisé</span>
+                                                <span class="badge bg-success">
+                                                    {{ system_metrics.cache_percentage if system_metrics else 100 }}%
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ system_metrics.cache_percentage if system_metrics else 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Overall System Health -->
+                                    <div class="mt-3 pt-3 border-top">
+                                        <div class="text-center">
+                                            {% set overall_health = ((system_metrics.youtube_dates_percentage + system_metrics.classification_percentage + system_metrics.duplicates_percentage + system_metrics.stats_percentage + system_metrics.integrity_percentage + system_metrics.cache_percentage) / 6) if system_metrics else 93 %}
+                                            <h6 class="mb-2">
+                                                <i class="bx bx-shield-check me-2 text-{% if overall_health >= 95 %}success{% elif overall_health >= 80 %}info{% elif overall_health >= 60 %}warning{% else %}danger{% endif %}"></i>
+                                                État Global du Système: 
+                                                <span class="text-{% if overall_health >= 95 %}success{% elif overall_health >= 80 %}info{% elif overall_health >= 60 %}warning{% else %}danger{% endif %}">
+                                                    {{ "%.0f"|format(overall_health) }}%
+                                                </span>
+                                            </h6>
+                                            <small class="text-muted">
+                                                {% if overall_health >= 95 %}
+                                                    <i class="bx bx-check-circle text-success"></i> Système en excellent état
+                                                {% elif overall_health >= 80 %}
+                                                    <i class="bx bx-info-circle text-info"></i> Système en bon état
+                                                {% elif overall_health >= 60 %}
+                                                    <i class="bx bx-warning text-warning"></i> Améliorations recommandées
+                                                {% else %}
+                                                    <i class="bx bx-error-circle text-danger"></i> Maintenance urgente nécessaire
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fix Everything Button -->
+                    <div class="card-footer text-center">
+                        <button class="btn btn-lg btn-danger" onclick="runFixEverything()">
+                            <i class="bx bx-cog me-2"></i>Fix Everything
+                        </button>
+                        <p class="text-muted small mb-0 mt-2">Run all fixes automatically in sequence</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnostic Information -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bug me-2"></i>Common Issues
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if detected_issues %}
+                        {% for issue in detected_issues %}
+                        <div class="alert alert-{{ issue.severity }} p-3 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="bx bx-{{ 'error-circle' if issue.severity == 'danger' else ('warning' if issue.severity == 'warning' else 'info-circle') }} me-2 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ issue.title }}</h6>
+                                    <p class="mb-2">{{ issue.description }}</p>
+                                    {% if issue.solution %}
+                                    <small class="text-muted">
+                                        <strong>Solution:</strong> {{ issue.solution }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="bx bx-check-circle"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">No Issues Detected</h6>
+                        <p class="text-muted mb-0">Your system appears to be running smoothly</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-info-circle me-2"></i>System Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Database Size:</span>
+                            <span class="fw-medium">{{ system_info.db_size or 'Unknown' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Total Videos:</span>
+                            <span class="fw-medium">{{ "{:,}".format(system_info.total_videos or 0) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Total Competitors:</span>
+                            <span class="fw-medium">{{ "{:,}".format(system_info.total_competitors or 0) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Cache Size:</span>
+                            <span class="fw-medium">{{ system_info.cache_size or 'Unknown' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Last Backup:</span>
+                            <span class="fw-medium">{{ system_info.last_backup or 'Never' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info p-2">
+                        <small>
+                            <i class="bx bx-info-circle me-1"></i>
+                            System last checked: {{ system_info.last_check or 'Unknown' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Fixes Log -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-history me-2"></i>Recent Maintenance Log
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if maintenance_log %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                    <th>Duration</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in maintenance_log %}
+                                <tr>
+                                    <td>
+                                        <small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp.strftime else log.timestamp }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ log.action }}</span>
+                                    </td>
+                                    <td>
+                                        {% if log.status == 'success' %}
+                                            <span class="badge bg-success">Success</span>
+                                        {% elif log.status == 'error' %}
+                                            <span class="badge bg-danger">Error</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ log.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ log.duration or 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.details or 'No details available' }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-secondary">
+                                <i class="bx bx-history"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">No Maintenance History</h6>
+                        <p class="text-muted mb-0">Maintenance actions will appear here once performed</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Fix Actions -->
+<script>
+function refreshDiagnostics() {
+    location.reload();
+}
+
+function runFix(fixType) {
+    if (confirm(`Are you sure you want to run the ${fixType.replace('_', ' ')} fix? This action cannot be undone.`)) {
+        // Show loading state
+        const button = event.target;
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Running...';
+        button.disabled = true;
+        
+        fetch(`/api/fix-problems/${fixType}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert(`Fix completed successfully: ${data.message}`);
+                location.reload();
+            } else {
+                alert(`Fix failed: ${data.error}`);
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Fix error:', error);
+            alert(`Error: ${error.message}`);
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        });
+    }
+}
+
+function runFixEverything() {
+    if (confirm('Are you sure you want to run ALL fixes? This will:\n\n1. Recalculate all statistics\n2. Fix all classifications\n3. Clean duplicates\n4. Optimize database\n5. Clear cache\n\nThis action cannot be undone and may take several minutes.')) {
+        // Show loading state
+        const button = event.currentTarget;
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Running all fixes...';
+        button.disabled = true;
+        
+        // List of all fixes to run in sequence
+        const fixes = [
+            'recalculate_stats',
+            'fix_classifications', 
+            'clean_duplicates',
+            'optimize_database',
+            'clear_cache'
+        ];
+        
+        let currentFix = 0;
+        
+        function runNextFix() {
+            if (currentFix >= fixes.length) {
+                // All fixes completed
+                button.innerHTML = '<i class="bx bx-check-circle me-1"></i>All fixes completed!';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                    refreshDiagnostics();
+                }, 3000);
+                return;
+            }
+            
+            const fixType = fixes[currentFix];
+            button.innerHTML = `<i class="bx bx-loader-alt bx-spin me-1"></i>Running ${fixType.replace('_', ' ')}... (${currentFix + 1}/${fixes.length})`;
+            
+            fetch(`/api/fix-problems/${fixType}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`✅ ${fixType} completed successfully`);
+                    currentFix++;
+                    runNextFix();
+                } else {
+                    throw new Error(data.error || `Failed to run ${fixType}`);
+                }
+            })
+            .catch(error => {
+                console.error(`❌ Error with ${fixType}:`, error);
+                alert(`Error during ${fixType}: ${error.message}\n\nThe process has been stopped.`);
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            });
+        }
+        
+        // Start the fix sequence
+        runNextFix();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,300 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Business Settings - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-briefcase me-2"></i>
+                            Business Settings
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Configuration des seuils paid/organic et paramètres métiers</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if message %}
+    <!-- Success Message -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bx bx-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Business Stats Overview -->
+    {% if business_stats %}
+    <div class="row mb-6">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-leaf"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(business_stats.organic.count) }}</h4>
+                    <small class="text-muted">Vidéos Organiques</small>
+                    <div class="mt-2">
+                        <span class="badge bg-success">{{ business_stats.organic.engagement }}% engagement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-dollar"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(business_stats.paid.count) }}</h4>
+                    <small class="text-muted">Vidéos Payantes</small>
+                    <div class="mt-2">
+                        <span class="badge bg-warning">{{ business_stats.paid.engagement }}% engagement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-cog"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(business_stats.threshold) }}</h4>
+                    <small class="text-muted">Seuil Actuel (vues)</small>
+                    <div class="mt-2">
+                        <span class="badge bg-primary">Configuration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Business Configuration -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-sliders me-2"></i>
+                        Configuration Métier
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info p-3 mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Seuil Paid vs Organic</h6>
+                                <small>Les vidéos avec plus de vues que ce seuil sont considérées comme "payantes" (promoted content). 
+                                Valeur recommandée : 10 000 vues pour l'industrie touristique.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" class="row g-3">
+                        <!-- Paid Threshold -->
+                        <div class="col-md-6">
+                            <label for="paid_threshold" class="form-label">
+                                <i class="bx bx-target-lock me-1"></i>
+                                Seuil Paid/Organic (vues)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bx bx-show"></i>
+                                </span>
+                                <input type="number" class="form-control" id="paid_threshold" name="paid_threshold" 
+                                       value="{{ current_settings.paid_threshold if current_settings else 10000 }}" 
+                                       min="1000" max="1000000" step="1000">
+                                <span class="input-group-text">vues</span>
+                            </div>
+                            <div class="form-text">Vidéos au-dessus de ce seuil = contenu promotionnel</div>
+                        </div>
+
+                        <!-- Industry -->
+                        <div class="col-md-6">
+                            <label for="industry" class="form-label">
+                                <i class="bx bx-buildings me-1"></i>
+                                Secteur d'activité
+                            </label>
+                            <select class="form-select" id="industry" name="industry">
+                                <option value="tourism" {{ 'selected' if current_settings.industry == 'tourism' else '' }}>
+                                    Tourisme & Loisirs
+                                </option>
+                                <option value="hospitality" {{ 'selected' if current_settings.industry == 'hospitality' else '' }}>
+                                    Hôtellerie
+                                </option>
+                                <option value="entertainment" {{ 'selected' if current_settings.industry == 'entertainment' else '' }}>
+                                    Divertissement
+                                </option>
+                                <option value="retail" {{ 'selected' if current_settings.industry == 'retail' else '' }}>
+                                    Commerce de détail
+                                </option>
+                                <option value="technology" {{ 'selected' if current_settings.industry == 'technology' else '' }}>
+                                    Technologie
+                                </option>
+                            </select>
+                            <div class="form-text">Adapte les seuils selon le secteur</div>
+                        </div>
+
+                        <!-- Auto Classification -->
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="auto_classify" name="auto_classify" 
+                                       {{ 'checked' if current_settings.auto_classify else '' }}>
+                                <label class="form-check-label" for="auto_classify">
+                                    <i class="bx bx-bot me-1"></i>
+                                    Classification automatique
+                                </label>
+                            </div>
+                            <div class="form-text">Active la classification IA lors de l'import de nouvelles vidéos</div>
+                        </div>
+
+                        <!-- Max Videos -->
+                        <div class="col-md-6">
+                            <label for="max_videos" class="form-label">
+                                <i class="bx bx-video me-1"></i>
+                                Limite vidéos par concurrent
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bx bx-collection"></i>
+                                </span>
+                                <input type="number" class="form-control" id="max_videos" name="max_videos" 
+                                       value="{{ current_settings.max_videos if current_settings else 1000 }}" 
+                                       min="50" max="5000" step="50">
+                                <span class="input-group-text">vidéos</span>
+                            </div>
+                            <div class="form-text">Nombre max de vidéos à analyser par concurrent</div>
+                        </div>
+
+                        <!-- Cache Duration -->
+                        <div class="col-md-6">
+                            <label for="cache_duration" class="form-label">
+                                <i class="bx bx-time me-1"></i>
+                                Durée de cache
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bx bx-data"></i>
+                                </span>
+                                <input type="number" class="form-control" id="cache_duration" name="cache_duration" 
+                                       value="{{ current_settings.cache_duration if current_settings else 24 }}" 
+                                       min="1" max="168" step="1">
+                                <span class="input-group-text">heures</span>
+                            </div>
+                            <div class="form-text">Durée avant actualisation automatique des données</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="col-12">
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted">
+                                    <i class="bx bx-info-circle me-1"></i>
+                                    Ces paramètres affectent l'analyse de tous les concurrents
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bx bx-save me-2"></i>
+                                    Sauvegarder les paramètres
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-lightning-circle me-2"></i>
+                        Actions Rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="recalculateOrganicStatus()">
+                                <i class="bx bx-refresh me-2"></i>
+                                Recalculer Statuts Organic/Paid
+                            </button>
+                            <small class="text-muted">Applique le nouveau seuil à toutes les vidéos</small>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/top-videos?sort_by=view_count&order=desc&organic=paid" class="btn btn-outline-warning w-100">
+                                <i class="bx bx-trending-up me-2"></i>
+                                Voir Contenu Payant
+                            </a>
+                            <small class="text-muted">Analyse des vidéos promotionnelles</small>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/top-videos?sort_by=view_count&order=desc&organic=organic" class="btn btn-outline-success w-100">
+                                <i class="bx bx-leaf me-2"></i>
+                                Voir Contenu Organique
+                            </a>
+                            <small class="text-muted">Analyse des vidéos naturelles</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function recalculateOrganicStatus() {
+    if (confirm('Voulez-vous recalculer les statuts organic/paid pour toutes les vidéos selon le nouveau seuil ?')) {
+        const threshold = document.getElementById('paid_threshold').value;
+        
+        fetch('/api/recalculate-organic-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ threshold: parseInt(threshold) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Statuts recalculés avec succès ! ${data.updated_count} vidéos mises à jour.`);
+                location.reload();
+            } else {
+                alert('Erreur lors du recalcul : ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erreur de connexion : ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}

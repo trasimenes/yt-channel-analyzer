@@ -1,0 +1,53 @@
+/*
+ * Boxicons CSS - Simplified version
+ * Using CDN fallback for icons
+ */
+
+@import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
+
+/* Fallback styles if CDN fails */
+.bx {
+  font-family: 'boxicons';
+  font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  speak: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common icon sizes */
+.bx-xs {
+  font-size: 0.75rem;
+}
+
+.bx-sm {
+  font-size: 0.875rem;
+}
+
+.bx {
+  font-size: 1rem;
+}
+
+.bx-md {
+  font-size: 1.25rem;
+}
+
+.bx-lg {
+  font-size: 1.5rem;
+}
+
+/* Text utilities for icons */
+.tf-icons {
+  font-size: 1.125rem;
+}
+
+/* Menu icon specific styles */
+.menu-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-right: 0.75rem;
+}

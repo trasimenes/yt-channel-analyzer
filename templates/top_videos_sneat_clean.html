@@ -1,0 +1,224 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Top Videos - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-trophy me-2"></i>Top Videos - Global Ranking
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Best performing videos across all competitors</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-filter me-1"></i>Category
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?category=all&sort_by={{ current_sort }}&order={{ current_order }}">All Categories</a></li>
+                                <li><a class="dropdown-item" href="?category=hero&sort_by={{ current_sort }}&order={{ current_order }}">Hero Only</a></li>
+                                <li><a class="dropdown-item" href="?category=hub&sort_by={{ current_sort }}&order={{ current_order }}">Hub Only</a></li>
+                                <li><a class="dropdown-item" href="?category=help&sort_by={{ current_sort }}&order={{ current_order }}">Help Only</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-sort me-1"></i>Sort By
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?sort_by=view_count&order=desc&category={{ current_category }}">Most Views</a></li>
+                                <li><a class="dropdown-item" href="?sort_by=like_count&order=desc&category={{ current_category }}">Most Likes</a></li>
+                                <li><a class="dropdown-item" href="?sort_by=comment_count&order=desc&category={{ current_category }}">Most Comments</a></li>
+                                <li><a class="dropdown-item" href="?sort_by=published_at&order=desc&category={{ current_category }}">Most Recent</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-video"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.total_videos or 0 }}</h4>
+                    <small class="text-muted">Total Videos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-show"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:.1f}M".format(stats.total_views / 1000000) if stats.total_views > 1000000 else "{:,}".format(stats.total_views) if stats.total_views else '0' }}</h4>
+                    <small class="text-muted">Total Views</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(stats.avg_views|int) if stats.avg_views else '0' }}</h4>
+                    <small class="text-muted">Avg Views</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-list-ul"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.shown_videos or 0 }}</h4>
+                    <small class="text-muted">Shown Videos</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Videos Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-list-ul me-2"></i>Videos Ranking
+                        <span class="badge bg-label-primary ms-2">{{ current_sort|title }} {{ current_order|upper }}</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Video</th>
+                                    <th>Competitor</th>
+                                    <th>Category</th>
+                                    <th>Views</th>
+                                    <th>Likes</th>
+                                    <th>Comments</th>
+                                    <th>Duration</th>
+                                    <th>Published</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for video in videos %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if loop.index <= 3 %}
+                                                <span class="badge bg-{{ 'warning' if loop.index == 1 else ('secondary' if loop.index == 2 else 'primary') }} me-2">
+                                                    #{{ loop.index }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">#{{ loop.index }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                {% if video.thumbnail_url %}
+                                                    <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="rounded" style="width: 50px; height: 35px; object-fit: cover;">
+                                                {% else %}
+                                                    <span class="avatar-initial rounded bg-label-secondary">
+                                                        <i class="bx bx-video"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-truncate" style="max-width: 250px;">{{ video.title }}</h6>
+                                                <small class="text-muted">{{ video.video_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="fw-medium">{{ video.competitor_name }}</small>
+                                    </td>
+                                    <td>
+                                        {% if video.category %}
+                                            <span class="badge bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">
+                                                {{ video.category|upper }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-label-secondary">UNCAT</span>
+                                        {% endif %}
+                                        {% if video.is_short %}
+                                            <span class="badge bg-label-warning ms-1">SHORT</span>
+                                        {% endif %}
+                                        {% if video.is_organic %}
+                                            <span class="badge bg-label-success ms-1">ORG</span>
+                                        {% else %}
+                                            <span class="badge bg-label-info ms-1">PAID</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ "{:,}".format(video.view_count) if video.view_count else 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ "{:,}".format(video.like_count) if video.like_count else 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ "{:,}".format(video.comment_count) if video.comment_count else 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ video.duration_text or 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        {% if video.published_at %}
+                                            <small>{{ video.published_at.strftime('%Y-%m-%d') if video.published_at.strftime else video.published_at }}</small>
+                                        {% else %}
+                                            <small class="text-muted">Unknown</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bx bx-link-external"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if videos|length >= 50 %}
+                    <div class="text-center mt-3">
+                        <p class="text-muted">
+                            <i class="bx bx-info-circle me-1"></i>
+                            Showing top {{ videos|length }} videos. Adjust filters to see different results.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

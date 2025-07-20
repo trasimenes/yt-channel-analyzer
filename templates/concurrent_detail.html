@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Dashboard {{ competitor.name or 'Concurrent' }} - YT Analyzer{% endblock %}
 
@@ -70,7 +70,7 @@
                         <i class="bi bi-youtube text-danger me-3"></i>
                         {{ competitor.name or 'Concurrent' }}
                     </h1>
-                    <p class="text-muted">Analyse détaillée • {{ stats.total_videos or 0 }} vidéos</p>
+                    <p class="text-muted">Detailed Analysis • {{ stats.total_videos or 0 }} videos</p>
                 </div>
                 <div class="text-end">
                     <button class="btn btn-outline-danger me-2" 
@@ -94,15 +94,15 @@
             <div class="card metric-card bg-primary text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.total_videos or 0 }}</h3>
-                    <p class="mb-0">Vidéos analysées</p>
+                    <p class="mb-0">Videos Analyzed</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card metric-card bg-success text-white">
                 <div class="card-body text-center">
-                    <h3>{{ "{:,}".format(stats.total_views) if stats.total_views else "N/A" }}</h3>
-                    <p class="mb-0">Vues totales</p>
+                    <h3>{{ stats.total_views|format_number if stats.total_views else "N/A" }}</h3>
+                    <p class="mb-0">Total Views</p>
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
             <div class="card metric-card bg-warning text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.paid_percentage or 0 }}%</h3>
-                    <p class="mb-0">Contenu payé</p>
+                    <p class="mb-0">Paid Content</p>
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
             <div class="card metric-card bg-info text-white">
                 <div class="card-body text-center">
                     <h3>{{ stats.organic_percentage or 0 }}%</h3>
-                    <p class="mb-0">Contenu organique</p>
+                    <p class="mb-0">Organic Content</p>
                 </div>
             </div>
         </div>
@@ -204,34 +204,34 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="bi bi-file-earmark-spreadsheet me-2"></i>Importer les données d'abonnés (CSV)</h5>
+                    <h5><i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Subscriber Data (CSV)</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
                             <form id="csvUploadForm" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <label for="csvFile" class="form-label">Fichier CSV avec les statistiques d'abonnés</label>
+                                    <label for="csvFile" class="form-label">CSV file with subscriber statistics</label>
                                     <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv" required>
                                     <div class="form-text">
                                         <i class="bi bi-info-circle me-1"></i>
-                                        Format attendu : colonnes "Context" et "Text" avec les dates et nombres d'abonnés
+                                        Expected format: "Context" and "Text" columns with dates and subscriber numbers
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-upload me-2"></i>
-                                    Importer les données
+                                    Import Data
                                 </button>
                             </form>
                         </div>
                         <div class="col-md-4">
                             <div class="bg-light p-3 rounded">
-                                <h6><i class="bi bi-info-circle me-2"></i>Format CSV</h6>
+                                <h6><i class="bi bi-info-circle me-2"></i>CSV Format</h6>
                                 <small class="text-muted">
-                                    Le fichier doit contenir :
+                                    The file must contain:
                                     <ul class="mt-2 mb-0">
                                         <li>Colonne "Context" (peut être vide)</li>
-                                        <li>Colonne "Text" avec les dates et nombres d'abonnés</li>
+                                        <li>"Text" column with dates and subscriber numbers</li>
                                         <li>Format : "Date\nSubscribers\n1,234"</li>
                                     </ul>
                                 </small>
@@ -244,6 +244,28 @@
                         <div class="alert alert-info">
                             <div id="csvUploadMessage"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'évolution des abonnés -->
+    <div class="row mb-4" id="subscriberChartSection">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-graph-up me-2"></i>Subscriber Growth</h5>
+                    <div id="subscriberStats" class="text-end">
+                        {% if subscriber_data and subscriber_data.has_data %}
+                        <span class="badge bg-primary me-2">{{ subscriber_data.stats.total_entries }} months of data</span>
+                        <span class="badge bg-success">{{ (subscriber_data.stats.total_growth / 1000)|round(0)|int }}K+ subscribers</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body" style="height: 440px;">
+                    <div style="position: relative; height: 440px;">
+                        <canvas id="subscriberChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -265,7 +287,7 @@
                                 <div class="card-body">
                                     <i class="bi bi-play-circle text-primary" style="font-size: 2rem;"></i>
                                     <h5 class="card-title mt-2">{{ total_videos }}</h5>
-                                    <p class="card-text text-muted">Vidéos Totales</p>
+                                    <p class="card-text text-muted">Total Videos</p>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +296,7 @@
                                 <div class="card-body">
                                     <i class="bi bi-eye text-success" style="font-size: 2rem;"></i>
                                     <h5 class="card-title mt-2">{{ (stats.total_views / 1000000)|round(1) if stats.total_views else 0 }}M</h5>
-                                    <p class="card-text text-muted">Vues Totales</p>
+                                    <p class="card-text text-muted">Total Views</p>
                                 </div>
                             </div>
                         </div>
@@ -298,7 +320,7 @@
                                             N/A
                                         {% endif %}
                                     </h5>
-                                    <p class="card-text text-muted">Abonnés</p>
+                                    <p class="card-text text-muted">Subscribers</p>
                                 </div>
                             </div>
                         </div>
@@ -316,23 +338,23 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
                             <i class="bi bi-collection-play me-2"></i>
-                            Playlists de {{ competitor.name }}
+                            {{ competitor.name }} Playlists
                             <span class="badge bg-light text-dark ms-2">{{ playlists|length if playlists else 0 }}</span>
                         </h4>
                         <div>
                             <button class="btn btn-primary btn-sm me-2" onclick="window.location.href='/competitor/{{ competitor.id }}/playlists/classify'">
                                 <i class="bi bi-lightning me-1"></i>
-                                Classification Avancée
+                                Advanced Classification
                             </button>
                             <button class="btn btn-light btn-sm me-2" onclick="refreshPlaylists()" title="⚠️ Utilise l'API YouTube (quota limité)">
                                 <i class="bi bi-arrow-repeat me-1"></i>
-                                Actualiser
+                                Refresh
                                 <small class="text-muted d-block" style="font-size: 0.7em;">⚠️ API YouTube</small>
                             </button>
                             <button class="btn btn-warning btn-sm" onclick="aiClassifyPlaylists()" title="⚠️ Classification automatique par IA">
                                 <i class="bi bi-robot me-1"></i>
-                                IA Auto-Classify
-                                <small class="text-muted d-block" style="font-size: 0.7em;">🤖 IA</small>
+                                AI Auto-Classify
+                                <small class="text-muted d-block" style="font-size: 0.7em;">🤖 AI</small>
                             </button>
                         </div>
                     </div>
@@ -342,55 +364,56 @@
                     </div>
                     {% endif %}
                     {% if playlists %}
+                    {% set sorted_playlists = playlists | sort(attribute='video_count', reverse=True) %}
                     <ul class="nav nav-tabs mb-3" id="playlistTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">Toutes</button>
+                            <button class="nav-link active text-white" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="playlist-hero-tab" data-bs-toggle="tab" data-bs-target="#playlist-hero" type="button" role="tab">🔥 HERO</button>
+                            <button class="nav-link text-white" id="playlist-hero-tab" data-bs-toggle="tab" data-bs-target="#playlist-hero" type="button" role="tab">🔥 HERO</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="playlist-hub-tab" data-bs-toggle="tab" data-bs-target="#playlist-hub" type="button" role="tab">🏠 HUB</button>
+                            <button class="nav-link text-white" id="playlist-hub-tab" data-bs-toggle="tab" data-bs-target="#playlist-hub" type="button" role="tab">🏠 HUB</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="playlist-help-tab" data-bs-toggle="tab" data-bs-target="#playlist-help" type="button" role="tab">🆘 HELP</button>
+                            <button class="nav-link text-white" id="playlist-help-tab" data-bs-toggle="tab" data-bs-target="#playlist-help" type="button" role="tab">🆘 HELP</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="uncat-tab" data-bs-toggle="tab" data-bs-target="#uncat" type="button" role="tab">Non catégorisé</button>
+                            <button class="nav-link text-white" id="uncat-tab" data-bs-toggle="tab" data-bs-target="#uncat" type="button" role="tab">Uncategorized</button>
                         </li>
                     </ul>
                     <div class="tab-content" id="playlistTabsContent">
                         <div class="tab-pane fade show active" id="all" role="tabpanel">
                             <div class="row">
-                                {% for playlist in playlists %}
+                                {% for playlist in sorted_playlists %}
                                     {% include 'components/playlist_card.html' %}
                                 {% endfor %}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="playlist-hero" role="tabpanel">
                             <div class="row">
-                                {% for playlist in playlists if playlist.category == 'hero' %}
+                                {% for playlist in sorted_playlists if playlist.category == 'hero' %}
                                     {% include 'components/playlist_card.html' %}
                                 {% endfor %}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="playlist-hub" role="tabpanel">
                             <div class="row">
-                                {% for playlist in playlists if playlist.category == 'hub' %}
+                                {% for playlist in sorted_playlists if playlist.category == 'hub' %}
                                     {% include 'components/playlist_card.html' %}
                                 {% endfor %}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="playlist-help" role="tabpanel">
                             <div class="row">
-                                {% for playlist in playlists if playlist.category == 'help' %}
+                                {% for playlist in sorted_playlists if playlist.category == 'help' %}
                                     {% include 'components/playlist_card.html' %}
                                 {% endfor %}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="uncat" role="tabpanel">
                             <div class="row">
-                                {% for playlist in playlists if not playlist.category %}
+                                {% for playlist in sorted_playlists if not playlist.category %}
                                     {% include 'components/playlist_card.html' %}
                                 {% endfor %}
                             </div>
@@ -399,13 +422,13 @@
                     {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-collection-play text-white" style="font-size: 3rem; opacity: 0.7;"></i>
-                        <h5 class="text-white mt-3">Aucune playlist trouvée</h5>
+                        <h5 class="text-white mt-3">No playlists found</h5>
                         <p class="text-white-50">
-                            Cliquez sur "Actualiser" pour récupérer les playlists de cette chaîne.
+                            Click "Refresh" to retrieve playlists from this channel.
                         </p>
                         <button class="btn btn-light" onclick="refreshPlaylists()">
                             <i class="bi bi-arrow-repeat me-2"></i>
-                            Récupérer les playlists
+                            Retrieve playlists
                         </button>
                     </div>
                     {% endif %}
@@ -425,13 +448,13 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
                             <i class="bi bi-play-circle me-2"></i>
-                            Analyse des YouTube Shorts
+                            YouTube Shorts Analysis
                             <span class="badge bg-light text-dark ms-2" id="shortsCount">...</span>
                         </h4>
-                        <button class="btn btn-light btn-sm" onclick="loadShortsAnalysis()">
-                            <i class="bi bi-arrow-repeat me-1"></i>
-                            Actualiser
-                        </button>
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Data Updated
+                        </span>
                     </div>
                     
                     <!-- Métriques Shorts - Disposition horizontale en ligne -->
@@ -439,25 +462,25 @@
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
                                 <h5 class="mb-1">{{ shorts_data.shorts_percentage or 0 }}%</h5>
-                                <small>Ratio de Shorts</small>
+                                <small>Shorts Ratio</small>
                             </div>
                         </div>
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
-                                <h5 class="mb-1">{{ (shorts_data.avg_shorts_views / 1000)|round(1) if shorts_data.avg_shorts_views else 0 }}k</h5>
-                                <small>Vues moy. Shorts</small>
+                                <h5 class="mb-1">{{ (shorts_data.avg_views_shorts / 1000)|round(1) if shorts_data.avg_views_shorts else 0 }}k</h5>
+                                <small>Avg. Shorts Views</small>
                             </div>
                         </div>
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
-                                <h5 class="mb-1">{{ (shorts_data.avg_regular_views / 1000)|round(1) if shorts_data.avg_regular_views else 0 }}k</h5>
-                                <small>Vues moy. Vidéos</small>
+                                <h5 class="mb-1">{{ (shorts_data.avg_views_regular / 1000)|round(1) if shorts_data.avg_views_regular else 0 }}k</h5>
+                                <small>Avg. Video Views</small>
                             </div>
                         </div>
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
-                                {% if shorts_data.avg_regular_views and shorts_data.avg_shorts_views %}
-                                    {% set ratio = shorts_data.avg_shorts_views / shorts_data.avg_regular_views %}
+                                {% if shorts_data.avg_views_regular and shorts_data.avg_views_shorts %}
+                                    {% set ratio = shorts_data.avg_views_shorts / shorts_data.avg_views_regular %}
                                     {% if ratio > 1.5 %}
                                         <h5 class="mb-1 text-success">+{{ ((ratio - 1) * 100)|round(0) }}%</h5>
                                     {% elif ratio < 0.5 %}
@@ -468,19 +491,19 @@
                                 {% else %}
                                     <h5 class="mb-1">N/A</h5>
                                 {% endif %}
-                                <small>Performance relative</small>
+                                <small>Relative Performance</small>
                             </div>
                         </div>
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
-                                <h5 class="mb-1">{{ ((shorts_data.shorts_count or 0) / 7)|round(1) if shorts_data.shorts_count else 0 }}</h5>
-                                <small>Shorts par semaine</small>
+                                <h5 class="mb-1">{{ shorts_data.shorts_count or 0 }}</h5>
+                                <small>Total Shorts</small>
                             </div>
                         </div>
                         <div class="flex-fill">
                             <div class="bg-light text-dark p-2 rounded text-center">
-                                <h5 class="mb-1">{{ ((shorts_data.shorts_count or 0) / 30)|round(1) if shorts_data.shorts_count else 0 }}</h5>
-                                <small>Shorts par mois</small>
+                                <h5 class="mb-1">{{ ((shorts_data.shorts_count or 0) / (stats.total_videos or 1) * 100)|round(1) }}%</h5>
+                                <small>% of Content</small>
                             </div>
                         </div>
                     </div>
@@ -488,23 +511,37 @@
 
 
                     <!-- Recommandations -->
-                    <div class="row" id="shortsRecommendations">
+                    <div class="row">
                         <div class="col-12">
                             <div class="bg-light text-dark p-3 rounded">
-                                <h6><i class="bi bi-lightbulb me-2"></i>Recommandations</h6>
-                                <ul id="recommendationsList" class="mb-0">
-                                    <li>Chargement des recommandations...</li>
-                                </ul>
+                                <h6><i class="bi bi-pie-chart me-2"></i>Content Distribution</h6>
+                                <div class="d-flex justify-content-center">
+                                    <canvas id="shortsChart" width="300" height="150"></canvas>
+                                </div>
+                                <div class="row mt-3 text-center">
+                                    <div class="col-6">
+                                        <div class="p-2 rounded text-white" style="background-color: #FF6B6B;">
+                                            <strong>{{ shorts_data.shorts_count or 0 }}</strong>
+                                            <br><small>Shorts</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded text-white" style="background-color: #4ECDC4;">
+                                            <strong>{{ (stats.total_videos or 0) - (shorts_data.shorts_count or 0) }}</strong>
+                                            <br><small>Long Videos</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Loading state -->
-                    <div id="shortsLoading" class="text-center py-4">
+                    <!-- Loading state (disabled) -->
+                    <div id="shortsLoading" class="text-center py-4" style="display: none;">
                         <div class="spinner-border text-light" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
-                        <p class="mt-2">Analyse des Shorts en cours...</p>
+                        <p class="mt-2">Analyzing Shorts...</p>
                     </div>
                 </div>
             </div>
@@ -527,7 +564,7 @@
                     <div class="row text-center">
                         <div class="col-md-2 mb-3">
                             <h6>Seuil configuré</h6>
-                            <p class="mb-0">{{ stats.paid_threshold or 10000 }}+ vues = Paid</p>
+                            <p class="mb-0">{{ stats.paid_threshold or 10000 }}+ views = Paid</p>
                         </div>
                         <div class="col-md-2 mb-3">
                             <h6 class="text-warning">🔥 HERO</h6>
@@ -545,15 +582,15 @@
                         <div class="col-md-2 d-flex align-items-center justify-content-center">
                             <div class="text-center">
                                 <h6 class="text-success">🌱 Organic</h6>
-                                <small>(≤{{ stats.paid_threshold or 10000 }} vues)</small>
+                                <small>(≤{{ stats.paid_threshold or 10000 }} views)</small>
                             </div>
                         </div>
                         
                         {% for category in ['hero', 'hub', 'help'] %}
                         <div class="col-md-2 mb-3">
                             <div class="bg-light text-dark p-3 rounded">
-                                <h5>{{ (stats.performance_matrix[category].organic_median / 1000)|round(1) }}k vues</h5>
-                                <small>({{ stats.performance_matrix[category].organic_count }} vidéos)</small>
+                                <h5>{{ (stats.performance_matrix[category].organic_median / 1000)|round(1) }}k views</h5>
+                                <small>({{ stats.performance_matrix[category].organic_count }} videos)</small>
                             </div>
                         </div>
                         {% endfor %}
@@ -564,15 +601,15 @@
                         <div class="col-md-2 d-flex align-items-center justify-content-center">
                             <div class="text-center">
                                 <h6 class="text-warning">💰 Paid</h6>
-                                <small>(>{{ stats.paid_threshold or 10000 }} vues)</small>
+                                <small>(>{{ stats.paid_threshold or 10000 }} views)</small>
                             </div>
                         </div>
                         
                         {% for category in ['hero', 'hub', 'help'] %}
                         <div class="col-md-2 mb-3">
                             <div class="bg-light text-dark p-3 rounded">
-                                <h5>{{ (stats.performance_matrix[category].paid_median / 1000)|round(1) }}k vues</h5>
-                                <small>({{ stats.performance_matrix[category].paid_count }} vidéos)</small>
+                                <h5>{{ (stats.performance_matrix[category].paid_median / 1000)|round(1) }}k views</h5>
+                                <small>({{ stats.performance_matrix[category].paid_count }} videos)</small>
                             </div>
                         </div>
                         {% endfor %}
@@ -590,7 +627,7 @@
                     <h5><i class="bi bi-pie-chart me-2"></i>Distribution HUB • HERO • HELP</h5>
                 </div>
                 <div class="card-body" style="height: 365px;">
-                    <div style="position: relative; height: 365px;">
+                    <div style="position: relative; height: 310px;">
                         <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
@@ -602,7 +639,7 @@
                     <h5><i class="bi bi-bar-chart me-2"></i>Organic vs Paid</h5>
                 </div>
                 <div class="card-body" style="height: 365px;">
-                    <div style="position: relative; height: 365px;">
+                    <div style="position: relative; height: 310px;">
                         <canvas id="distributionChart"></canvas>
                     </div>
                 </div>
@@ -610,34 +647,13 @@
         </div>
     </div>
 
-    <!-- Graphique d'évolution des abonnés -->
-    <div class="row mb-4" id="subscriberChartSection">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="bi bi-graph-up me-2"></i>Évolution des Abonnés</h5>
-                    <div id="subscriberStats" class="text-end">
-                        {% if subscriber_data and subscriber_data.has_data %}
-                        <span class="badge bg-primary me-2">{{ subscriber_data.stats.total_entries }} mois de données</span>
-                        <span class="badge bg-success">{{ (subscriber_data.stats.total_growth / 1000)|round(0)|int }}K+ abonnés</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="card-body" style="height: 440px;">
-                    <div style="position: relative; height: 440px;">
-                        <canvas id="subscriberChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- ======= ONGLETS VIDÉOS (HERO • HUB • HELP) ======= -->
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="bi bi-play-circle me-2"></i>Analyse des Vidéos</h5>
+                    <h5><i class="bi bi-play-circle me-2"></i>Video Analysis</h5>
                 </div>
                 <div class="card-body p-0">
                     <ul class="nav nav-tabs" id="analysisTab" role="tablist">
@@ -668,7 +684,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Titre</th>
-                                                <th>Vues</th>
+                                                <th>Views</th>
                                                 <th>Likes</th>
                                                 <th>Type</th>
                                                 <th>Score</th>
@@ -694,8 +710,8 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td>{{ "{:,}".format(video['view_count']) if video['view_count'] else "N/A" }}</td>
-                                                <td>{{ "{:,}".format(video['like_count']) if video['like_count'] else "N/A" }}</td>
+                                                <td>{{ video['view_count']|format_number if video['view_count'] else "N/A" }}</td>
+                                                <td>{{ video['like_count']|format_number if video['like_count'] else "N/A" }}</td>
                                                 <td>
                                                     {% set is_paid = video['view_count'] and video['view_count'] >= 10000 %}
                                                     <span class="badge {{ 'paid-badge' if is_paid else 'organic-badge' }}">
@@ -730,7 +746,7 @@
                                 <div class="text-center py-4">
                                     <i class="bi bi-collection-play text-muted" style="font-size: 2rem;"></i>
                                     <h6 class="text-muted mt-2">Aucune vidéo {{ category.upper() }} trouvée</h6>
-                                    <p class="text-muted small">Les vidéos apparaîtront ici une fois classifiées</p>
+                                    <p class="text-muted small">Videos will appear here once classified</p>
                                 </div>
                                 {% endif %}
                             </div>
@@ -779,7 +795,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.parsed} vidéos (${percentage}%)`;
+                                return `${context.label}: ${context.parsed} videos (${percentage}%)`;
                             }
                         }
                     }
@@ -797,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: ['🌱 Organic', '💰 Paid'],
                 datasets: [{
-                    label: 'Nombre de vidéos',
+                    label: 'Number of videos',
                     data: [{{ stats.organic_count or 0 }}, {{ stats.paid_count or 0 }}],
                     backgroundColor: ['rgba(39, 174, 96, 0.8)', 'rgba(243, 156, 18, 0.8)'],
                     borderColor: ['rgba(39, 174, 96, 1)', 'rgba(243, 156, 18, 1)'],
@@ -817,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((context.parsed.y / total) * 100).toFixed(1);
-                                return `${context.parsed.y} vidéos (${percentage}%)`;
+                                return `${context.parsed.y} videos (${percentage}%)`;
                             }
                         }
                     }
@@ -833,6 +849,52 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialiser le graphique d'abonnés
     loadSubscriberChartFromServer();
+    
+    // Graphique en donut pour la distribution Shorts vs Long Videos
+    const shortsCtx = document.getElementById('shortsChart')?.getContext('2d');
+    if (shortsCtx) {
+        const shortsCount = {{ shorts_data.shorts_count or 0 }};
+        const longVideosCount = {{ (stats.total_videos or 0) - (shorts_data.shorts_count or 0) }};
+        
+        new Chart(shortsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['🎬 Shorts', '📹 Long Videos'],
+                datasets: [{
+                    data: [shortsCount, longVideosCount],
+                    backgroundColor: ['#FF6B6B', '#4ECDC4'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverBorderWidth: 4,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { 
+                            padding: 10, 
+                            font: { size: 12, weight: 'bold' },
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} videos (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: { animateRotate: true, duration: 1500 }
+            }
+        });
+    }
 
     // Événement pour le formulaire d'upload
     $('#csvUploadForm').on('submit', function(e) {
@@ -841,7 +903,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var competitorId = '{{ request.view_args.competitor_id }}';
         
         $('#csvUploadMessage').parent().removeClass('alert-success alert-danger').addClass('alert-info').show();
-        $('#csvUploadMessage').html('<i class="bi bi-hourglass-split"></i> Importation en cours...');
+        $('#csvUploadMessage').html('<i class="bi bi-hourglass-split"></i> Importing...');
 
         $.ajax({
             url: `/competitor/${competitorId}/upload_subscribers`,
@@ -881,7 +943,7 @@ function loadSubscriberChartFromServer() {
             <small class="text-muted">
                 <strong>${stats.total_entries}</strong> points de données<br>
                 <span class="text-${stats.total_growth >= 0 ? 'success' : 'danger'}">
-                    ${stats.total_growth >= 0 ? '+' : ''}${stats.total_growth.toLocaleString()} abonnés 
+                    ${stats.total_growth >= 0 ? '+' : ''}${stats.total_growth.toLocaleString()} subscribers 
                     (${stats.growth_percentage >= 0 ? '+' : ''}${stats.growth_percentage}%)
                 </span><br>
                 <small>${stats.first_date} → ${stats.last_date}</small>
@@ -904,7 +966,7 @@ function loadSubscriberChartFromServer() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `${context.dataset.label}: ${context.parsed.y.toLocaleString()} abonnés`;
+                                return `${context.dataset.label}: ${context.parsed.y.toLocaleString()} subscribers`;
                             },
                             title: function(context) {
                                 const date = new Date(context[0].label);
@@ -920,18 +982,18 @@ function loadSubscriberChartFromServer() {
                     },
                     y: { 
                         beginAtZero: false,
-                        title: { display: true, text: 'Abonnés' }
+                        title: { display: true, text: 'Subscribers' }
                     }
                 }
             }
             });
-            console.log('✅ Graphique d\'abonnés créé avec succès');
+            console.log('✅ Subscriber chart created successfully');
         } catch (error) {
-            console.error('❌ Erreur lors de la création du graphique d\'abonnés:', error);
+            console.error('❌ Error creating subscriber chart:', error);
             console.error('Chart data:', subscriberData.chart_data);
         }
     } else {
-        console.log('❌ Pas de données d\'abonnés ou has_data=false');
+        console.log('❌ No subscriber data or has_data=false');
         document.getElementById('subscriberChartSection').style.display = 'none';
     }
 }
@@ -967,9 +1029,85 @@ function saveCompetitorTags() {
 }
 
 function confirmDeleteFromDetail(competitorId, competitorName) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer définitive-ment le concurrent "${competitorName}" et toutes ses données associées ? Cette action est irréversible.`)) {
+    if (confirm(`Are you sure you want to permanently delete the competitor "${competitorName}" and all associated data? This action is irreversible.`)) {
         window.location.href = `/competitor/${competitorId}/delete`;
     }
+}
+
+// ======================================================
+// 🤖 IA Auto-Classify Playlists + Propagation vers vidéos
+// ======================================================
+function aiClassifyPlaylists() {
+    const competitorId = '{{ competitor.id }}';
+    showAlert('⏳ Classification IA en cours...', 'info');
+    fetch(`/api/competitor/${competitorId}/playlists/ai-classify`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data && data.success !== false) {
+            showAlert('🎉 Videos have been successfully classified with the Sentence Transformer model', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert(data.error || 'Erreur lors de la classification IA', 'danger');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showAlert('Erreur réseau pendant la classification', 'danger');
+    });
+}
+
+// ======================================================
+// 🔄 Actualiser Playlists via API YouTube Data v3
+// ======================================================
+function refreshPlaylists() {
+    const competitorId = '{{ competitor.id }}';
+    const competitorName = '{{ competitor.name|e }}';
+    
+    // Confirmation utilisateur
+    if (!confirm(`Actualiser les playlists de "${competitorName}" via l'API YouTube ?\n\n⚠️ Cela consomme du quota API (≈150 unités)`)) {
+        return;
+    }
+    
+    // Désactiver le bouton pendant l'opération
+    const refreshBtn = document.querySelector('button[onclick="refreshPlaylists()"]');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Actualisation...';
+    }
+    
+    fetch(`/api/competitor/${competitorId}/playlists/refresh`, {
+        method: 'POST',
+        headers: { 
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data && data.success) {
+            alert(`✅ ${data.message}`);
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            alert(`❌ ${data.error || 'Erreur lors de l\'actualisation'}`);
+            // Réactiver le bouton en cas d'erreur
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Actualiser<small class="text-muted d-block" style="font-size: 0.7em;">⚠️ API YouTube</small>';
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Erreur actualisation playlists:', err);
+        alert('❌ Erreur réseau pendant l\'actualisation');
+        // Réactiver le bouton en cas d'erreur
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Actualiser<small class="text-muted d-block" style="font-size: 0.7em;">⚠️ API YouTube</small>';
+        }
+    });
 }
 
 // Fonctions simplifiées - les petits graphiques ont été supprimés
@@ -985,5 +1123,6 @@ function onCsvUploadSuccess(data) {
     }
     setTimeout(() => { location.reload(); }, 2000);
 }
+
 </script>
 {% endblock %} 

@@ -1,0 +1,390 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Sentiment Analysis - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-heart me-2"></i>Sentiment Analysis
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Analyze the emotional tone of your content and audience engagement</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshAnalysis()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <!-- Error State -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-danger" style="width: 60px; height: 60px;">
+                            <i class="bx bx-error-circle" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Analysis Error</h5>
+                    <p class="text-muted">{{ error }}</p>
+                    <button onclick="refreshAnalysis()" class="btn btn-primary">
+                        <i class="bx bx-refresh me-2"></i>Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif stats %}
+    
+    <!-- Sentiment Overview Statistics -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-video"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.total_videos or 0 }}</h4>
+                    <small class="text-muted">Total Videos Analyzed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-happy"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.positive_count or 0 }}</h4>
+                    <small class="text-muted">Positive Content</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-danger">
+                            <i class="bx bx-sad"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.negative_count or 0 }}</h4>
+                    <small class="text-muted">Negative Content</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-secondary">
+                            <i class="bx bx-meh"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ stats.neutral_count or 0 }}</h4>
+                    <small class="text-muted">Neutral Content</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sentiment Breakdown and Engagement Metrics -->
+    <div class="row mb-6">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-pie-chart me-2"></i>Sentiment Distribution
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_breakdown %}
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-success">
+                                        <i class="bx bx-happy"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.positive_percent) }}%</h6>
+                                    <small class="text-muted">Positive</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ sentiment_breakdown.positive_percent }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-danger">
+                                        <i class="bx bx-sad"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.negative_percent) }}%</h6>
+                                    <small class="text-muted">Negative</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: {{ sentiment_breakdown.negative_percent }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-secondary">
+                                        <i class="bx bx-meh"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.neutral_percent) }}%</h6>
+                                    <small class="text-muted">Neutral</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-secondary" style="width: {{ sentiment_breakdown.neutral_percent }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No sentiment data available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-trending-up me-2"></i>Key Metrics
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Avg Sentiment Score:</span>
+                            <span class="fw-medium">{{ "%.3f"|format(stats.avg_sentiment_score or 0) }}</span>
+                        </div>
+                        <small class="text-muted">Range: -1 (very negative) to +1 (very positive)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Engagement Correlation:</span>
+                            <span class="fw-medium">{{ "%.3f"|format(stats.engagement_correlation or 0) }}</span>
+                        </div>
+                        <small class="text-muted">Correlation between positive sentiment and engagement</small>
+                    </div>
+                    
+                    {% if stats.positive_percentage > 50 %}
+                    <div class="alert alert-success p-2">
+                        <small><i class="bx bx-check-circle me-1"></i>
+                        Majority of content has positive sentiment</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights -->
+    {% if insights %}
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bulb me-2"></i>Sentiment Insights
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for insight in insights %}
+                        <div class="col-md-6 mb-3">
+                            <div class="alert alert-info p-3">
+                                <h6 class="mb-1">{{ insight.title }}</h6>
+                                <small class="text-muted">{{ insight.description }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sentiment Categories -->
+    {% if sentiment_videos %}
+    <div class="row">
+        <!-- Positive Content -->
+        <div class="col-md-4 mb-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-happy me-2 text-success"></i>Top Positive Content
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_videos.positive %}
+                        {% for video in sentiment_videos.positive[:5] %}
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="avatar me-3">
+                                <span class="avatar-initial rounded bg-label-success">
+                                    <i class="bx bx-video"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                                <small class="text-muted d-block">{{ video.channel }}</small>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="badge bg-success">+{{ video.positive_score }}</span>
+                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <small class="text-muted">No positive content found</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Negative Content -->
+        <div class="col-md-4 mb-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-sad me-2 text-danger"></i>Top Negative Content
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_videos.negative %}
+                        {% for video in sentiment_videos.negative[:5] %}
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="avatar me-3">
+                                <span class="avatar-initial rounded bg-label-danger">
+                                    <i class="bx bx-video"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                                <small class="text-muted d-block">{{ video.channel }}</small>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="badge bg-danger">-{{ video.negative_score }}</span>
+                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <small class="text-muted">No negative content found</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Neutral Content -->
+        <div class="col-md-4 mb-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-meh me-2 text-secondary"></i>Top Neutral Content
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_videos.neutral %}
+                        {% for video in sentiment_videos.neutral[:5] %}
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="avatar me-3">
+                                <span class="avatar-initial rounded bg-label-secondary">
+                                    <i class="bx bx-video"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                                <small class="text-muted d-block">{{ video.channel }}</small>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="badge bg-secondary">{{ "%.1f"|format(video.engagement) }}%</span>
+                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <small class="text-muted">No neutral content found</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Loading State -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-loader-alt bx-spin" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Analyzing Content Sentiment</h5>
+                    <p class="text-muted">Please wait while we analyze the emotional tone of your content...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for interactions -->
+<script>
+function refreshAnalysis() {
+    // Show loading state
+    const refreshBtn = document.querySelector('button[onclick="refreshAnalysis()"]');
+    if (refreshBtn) {
+        const originalContent = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> <span class="d-none d-sm-inline-block ms-1">Analyzing...</span>';
+        refreshBtn.disabled = true;
+        
+        // Reload the page after a short delay
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    } else {
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

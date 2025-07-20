@@ -389,11 +389,31 @@ class PlaylistClassifier:
     def __init__(self):
         self.pattern_manager = ClassificationPatternManager()
         self.db_utils = DatabaseUtils()
+        # Initialiser un classificateur sémantique (Sentence Transformer)
+        # Import léger ici pour éviter le coût au démarrage de modules non utilisés ailleurs
+        try:
+            from yt_channel_analyzer.semantic_classifier import SemanticHubHeroHelpClassifier
+            # On conserve une seule instance pour tout le cycle de vie
+            self.semantic_classifier = SemanticHubHeroHelpClassifier()
+        except Exception as e:
+            # Fallback graceful : si le modèle ne peut pas être chargé, on reste sur les patterns
+            print(f"[PLAYLIST-CLASSIFIER] ❌ Impossible d'initialiser SemanticHubHeroHelpClassifier: {e}")
+            self.semantic_classifier = None
     
     def classify_playlist_with_ai(self, name: str, description: str = "") -> str:
-        """Classifier une playlist avec IA (utilise les patterns pour l'instant)"""
-        # Utilise la même logique que les vidéos pour l'instant
-        category, language, confidence = self.classify_video_with_language(name, description)
+        """Classifier une playlist en utilisant d'abord le modèle sémantique, puis fallback sur les patterns."""
+        # 1) Tentative with semantic model if available
+        if self.semantic_classifier:
+            try:
+                category, confidence_pct, details = self.semantic_classifier.classify_text(name, description)
+                # On définit un threshold de confiance : >=60% on accepte, sinon on fallback
+                if confidence_pct >= 60:
+                    return category
+            except Exception as e:
+                print(f"[PLAYLIST-CLASSIFIER] ⚠️ Erreur semantic classify: {e}")
+
+        # 2) Fallback to keyword pattern logic (multilingue) via fonction globale
+        category, language, confidence = classify_video_with_language(name, description)
         return category
     
     def auto_classify_uncategorized_playlists(self, competitor_id: int) -> Dict:
@@ -404,7 +424,7 @@ class PlaylistClassifier:
         try:
             # Récupérer les playlists non classifiées
             cursor.execute('''
-                SELECT id, title, description, category
+                SELECT id, name, description, category
                 FROM playlist 
                 WHERE concurrent_id = ? AND (category IS NULL OR category = '' OR category = 'uncategorized')
             ''', (competitor_id,))
@@ -477,8 +497,10 @@ class PlaylistClassifier:
                 query += ' AND p.id = ?'
                 params.append(specific_playlist_id)
             
-            if not force_human_playlists:
-                query += ' AND (p.is_human_validated = 0 OR p.is_human_validated IS NULL)'
+            if force_human_playlists:
+                # Ne sélectionner que les playlists validées humainement
+                query += ' AND (p.is_human_validated = 1 OR p.classification_source = "human")'
+            # Sinon, on prend toutes les playlists catégorisées (humaines ou IA)
             
             cursor.execute(query, params)
             playlists = cursor.fetchall()
@@ -488,18 +510,30 @@ class PlaylistClassifier:
             for playlist in playlists:
                 playlist_id, category, is_human_validated, classification_source = playlist
                 
-                # Appliquer la catégorie aux vidéos de la playlist
-                cursor.execute('''
-                    UPDATE video 
-                    SET category = ?, classification_source = 'playlist', last_updated = ?
-                    WHERE id IN (
-                        SELECT v.id 
-                        FROM video v
-                        JOIN playlist_video pv ON v.id = pv.video_id
-                        WHERE pv.playlist_id = ?
-                        AND (v.is_human_validated = 0 OR v.is_human_validated IS NULL)
-                    )
-                ''', (category, datetime.now(), playlist_id))
+                # Déterminer la source selon si l'on force la propagation humaine
+                if force_human_playlists:
+                    cursor.execute('''
+                        UPDATE video 
+                        SET category = ?, classification_source = 'playlist_propagation', is_human_validated = 1, last_updated = ?
+                        WHERE id IN (
+                            SELECT v.id 
+                            FROM video v
+                            JOIN playlist_video pv ON v.id = pv.video_id
+                            WHERE pv.playlist_id = ?
+                        )
+                    ''', (category, datetime.now(), playlist_id))
+                else:
+                    cursor.execute('''
+                        UPDATE video 
+                        SET category = ?, classification_source = 'playlist', last_updated = ?
+                        WHERE id IN (
+                            SELECT v.id 
+                            FROM video v
+                            JOIN playlist_video pv ON v.id = pv.video_id
+                            WHERE pv.playlist_id = ?
+                            AND (v.is_human_validated = 0 OR v.is_human_validated IS NULL)
+                        )
+                    ''', (category, datetime.now(), playlist_id))
                 
                 applied_count += cursor.rowcount
             

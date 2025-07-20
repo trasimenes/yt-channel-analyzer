@@ -1,0 +1,392 @@
+{% extends "sneat/base.html" %}
+
+{% block title %}Dashboard - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        margin-bottom: 24px;
+    }
+    
+    .search-card .card-body {
+        padding: 2rem;
+    }
+    
+    .search-input {
+        border-radius: 50px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .search-input:focus {
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-analyze {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 50px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-analyze:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 4px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 8px;
+        display: none;
+    }
+    
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: background-color 0.2s;
+    }
+    
+    .autocomplete-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    
+    .autocomplete-thumbnail {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    
+    .autocomplete-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .autocomplete-info {
+        flex: 1;
+    }
+    
+    .autocomplete-name {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 2px;
+    }
+    
+    .autocomplete-meta {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    .autocomplete-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .badge-analyzed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-new {
+        background: #fff3cd;
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card search-card text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h2 class="card-title mb-3">
+                            <i class="bx bxl-youtube me-2"></i>
+                            YouTube Channel Analysis
+                        </h2>
+                        <p class="card-text mb-4">
+                            Enter a YouTube channel URL to analyze performance, content strategy, and competitor insights
+                        </p>
+                        
+                        <form action="{{ url_for('analyze_channel') }}" method="post">
+                            <div class="row g-3">
+                                <div class="col-lg-8">
+                                    <div class="position-relative">
+                                        <input 
+                                            type="text" 
+                                            name="channel_url" 
+                                            id="channelSearch" 
+                                            class="form-control search-input" 
+                                            placeholder="https://www.youtube.com/@channel or channel name"
+                                            autocomplete="off"
+                                            required
+                                        />
+                                        <div id="autocomplete-results" class="autocomplete-dropdown"></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <select name="max_videos" class="form-select">
+                                        <option value="30">Last 30 videos</option>
+                                        <option value="50" selected>Last 50 videos</option>
+                                        <option value="100">Last 100 videos</option>
+                                        <option value="0">All videos</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-analyze">
+                                        <i class="bx bx-search-alt me-2"></i>
+                                        Start Analysis
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-4 text-center">
+                        <i class="bx bx-line-chart" style="font-size: 120px; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-icon bg-label-primary">
+                    <i class="bx bx-group text-primary"></i>
+                </div>
+                <div class="stat-number">{{ stats.get('total_competitors', 'N/A') }}</div>
+                <div class="stat-label">Competitors Tracked</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-icon bg-label-success">
+                    <i class="bx bx-video text-success"></i>
+                </div>
+                <div class="stat-number">{{ "{:,.0f}".format(stats.get('total_videos', 0)).replace(',', ' ') }}</div>
+                <div class="stat-label">Videos Analyzed</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-icon bg-label-info">
+                    <i class="bx bx-collection text-info"></i>
+                </div>
+                <div class="stat-number">{{ "{:,.0f}".format(stats.get('total_playlists', 0)).replace(',', ' ') }}</div>
+                <div class="stat-label">Playlists Analyzed</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-icon bg-label-warning">
+                    <i class="bx bx-show text-warning"></i>
+                </div>
+                <div class="stat-number">{{ stats.get('total_views_formatted', 'N/A') }}</div>
+                <div class="stat-label">Total Views</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Quick Actions</h5>
+                <small class="text-muted">Get started quickly</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="/concurrents" class="btn btn-outline-primary w-100 d-flex align-items-center">
+                            <i class="bx bx-group me-2"></i>
+                            View Competitors
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="/top-videos" class="btn btn-outline-success w-100 d-flex align-items-center">
+                            <i class="bx bx-trophy me-2"></i>
+                            Top Videos
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="/insights" class="btn btn-outline-warning w-100 d-flex align-items-center">
+                            <i class="bx bx-bulb me-2"></i>
+                            Brand Insights
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="/country-insights" class="btn btn-outline-info w-100 d-flex align-items-center">
+                            <i class="bx bx-world me-2"></i>
+                            Country Insights
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Autocomplete functionality
+let autocompleteTimeout;
+const searchInput = document.getElementById('channelSearch');
+const autocompleteResults = document.getElementById('autocomplete-results');
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.trim();
+    
+    if (query.length < 2) {
+        autocompleteResults.style.display = 'none';
+        return;
+    }
+    
+    // Clear previous timeout
+    if (autocompleteTimeout) {
+        clearTimeout(autocompleteTimeout);
+    }
+    
+    // Debounce the search
+    autocompleteTimeout = setTimeout(() => {
+        fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayAutocompleteResults(data);
+            })
+            .catch(error => {
+                console.error('Autocomplete error:', error);
+                autocompleteResults.style.display = 'none';
+            });
+    }, 300);
+});
+
+function displayAutocompleteResults(suggestions) {
+    if (!suggestions || suggestions.length === 0) {
+        autocompleteResults.style.display = 'none';
+        return;
+    }
+    
+    let html = '';
+    suggestions.forEach(suggestion => {
+        const badge = suggestion.is_analyzed 
+            ? '<span class="autocomplete-badge badge-analyzed">✅ Analyzed</span>' 
+            : '<span class="autocomplete-badge badge-new">🆕 New</span>';
+        
+        html += `
+            <div class="autocomplete-item" data-url="${suggestion.url}">
+                <div class="autocomplete-thumbnail">
+                    ${suggestion.thumbnail 
+                        ? `<img src="${suggestion.thumbnail}" alt="${suggestion.name}">` 
+                        : '<div style="background: #e9ecef; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px;">📺</div>'
+                    }
+                </div>
+                <div class="autocomplete-info">
+                    <div class="autocomplete-name">${suggestion.name}</div>
+                    <div class="autocomplete-meta">
+                        ${suggestion.subscribers ? `${suggestion.subscribers} subscribers` : ''}
+                        ${suggestion.is_analyzed ? `• ${suggestion.video_count} videos analyzed` : ''}
+                    </div>
+                </div>
+                ${badge}
+            </div>
+        `;
+    });
+    
+    autocompleteResults.innerHTML = html;
+    autocompleteResults.style.display = 'block';
+    
+    // Add click handlers
+    autocompleteResults.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            searchInput.value = url;
+            autocompleteResults.style.display = 'none';
+        });
+    });
+}
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(event) {
+    if (!searchInput.contains(event.target) && !autocompleteResults.contains(event.target)) {
+        autocompleteResults.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

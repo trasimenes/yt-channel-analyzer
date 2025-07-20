@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
-{% block title %}Analyse par Pays - YT Analyzer{% endblock %}
+{% block title %}Countries Analysis - YT Analyzer{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -96,6 +96,17 @@
         background: white;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-item:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        display: block;
     }
     
     .stat-value {
@@ -213,29 +224,47 @@
         opacity: 0.5;
     }
 
-    .key-insights-list {
-        list-style: none;
-        padding: 0;
+    .key-insights-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
         margin-top: 1rem;
         margin-bottom: 2rem;
     }
 
-    .key-insight {
-        background: #f8f9fa;
+    .insight-card {
+        background: white;
         border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 0.8rem 1.2rem;
-        margin-bottom: 0.7rem;
-        font-size: 0.95rem;
-        color: #343a40;
-        display: flex;
-        align-items: center;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
     }
 
-    .key-insight i {
-        margin-right: 0.7rem;
-        color: #6c757d;
+    .insight-card:hover {
+        transform: translateY(-2px);
     }
+
+    .insight-emoji {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .insight-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #3b82f6;
+        margin-bottom: 0.3rem;
+    }
+
+    .insight-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
 </style>
 {% endblock %}
 
@@ -246,10 +275,10 @@
             <div class="col-lg-8">
                 <h1 class="display-4 fw-bold mb-3">
                     <i class="bi bi-globe me-3"></i>
-                    Analyse par Pays
+                    Countries Analysis
                 </h1>
                 <p class="lead mb-0">
-                    Découvrez les performances de vos concurrents par zones géographiques
+                    Discover your competitors' performance by geographic zones
                 </p>
             </div>
             <div class="col-lg-4 text-end">
@@ -263,7 +292,7 @@
     {% if error %}
         <div class="alert alert-danger">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            Erreur: {{ error }}
+            Error: {{ error }}
         </div>
     {% endif %}
     
@@ -271,24 +300,24 @@
     <div class="global-stats">
         <h2 class="text-center mb-4">
             <i class="bi bi-bar-chart me-2"></i>
-            Vue d'ensemble
+            Overview
         </h2>
         <div class="global-stats-grid">
             <div class="global-stat-item">
                 <span class="global-stat-value">{{ global_stats.total_countries }}</span>
-                <div class="global-stat-label">Pays analysés</div>
+                <div class="global-stat-label">Countries Analyzed</div>
             </div>
             <div class="global-stat-item">
                 <span class="global-stat-value">{{ global_stats.total_competitors }}</span>
-                <div class="global-stat-label">Concurrents</div>
+                <div class="global-stat-label">Competitors</div>
             </div>
             <div class="global-stat-item">
                 <span class="global-stat-value">{{ "{:,}".format(global_stats.total_videos) }}</span>
-                <div class="global-stat-label">Vidéos totales</div>
+                <div class="global-stat-label">Total Videos</div>
             </div>
             <div class="global-stat-item">
                 <span class="global-stat-value">{{ "{:,}".format(global_stats.total_views) }}</span>
-                <div class="global-stat-label">Vues totales</div>
+                <div class="global-stat-label">Total Views</div>
             </div>
         </div>
     </div>
@@ -303,34 +332,69 @@
                     <span class="country-flag">{{ country.flag }}</span>
                     {{ country.name }}
                 </h2>
-                <span class="country-competitors">{{ country.competitor_count }} concurrents</span>
+                <span class="country-competitors">{{ country.competitor_count }} competitors</span>
             </div>
             {% if countries_data[country.name]['key_insights'] %}
-            <ul class="key-insights-list">
+            <div class="key-insights-cards">
                 {% for insight in countries_data[country.name]['key_insights'] %}
-                    <li class="key-insight">{{ insight|safe }}</li>
+                    {% if '🏆' in insight %}
+                        <div class="insight-card">
+                            <span class="insight-emoji">🏆</span>
+                            <div class="insight-value">{{ insight.split(' ')[1] }}</div>
+                            <div class="insight-label">Competitors</div>
+                        </div>
+                    {% elif '📹' in insight %}
+                        <div class="insight-card">
+                            <span class="insight-emoji">📹</span>
+                            <div class="insight-value">{{ insight.split(' ')[1] }}</div>
+                            <div class="insight-label">Videos Total</div>
+                        </div>
+                    {% elif '👀' in insight %}
+                        <div class="insight-card">
+                            <span class="insight-emoji">👀</span>
+                            <div class="insight-value">{{ insight.split(' ')[1]|format_number }}</div>
+                            <div class="insight-label">Avg Views/Video</div>
+                        </div>
+                    {% elif '💬' in insight %}
+                        <div class="insight-card">
+                            <span class="insight-emoji">💬</span>
+                            <div class="insight-value">{{ insight.split(' ')[1]|format_number }}</div>
+                            <div class="insight-label">Avg Comments/Video</div>
+                        </div>
+                    {% elif '⚡' in insight %}
+                        <div class="insight-card">
+                            <span class="insight-emoji">⚡</span>
+                            <div class="insight-value">{{ insight.split(' ')[1] }}</div>
+                            <div class="insight-label">Shorts</div>
+                        </div>
+                    {% endif %}
                 {% endfor %}
-            </ul>
+            </div>
             {% endif %}
             
             <div class="country-stats">
                 <div class="stat-item">
+                    <div class="stat-icon">🎬</div>
                     <span class="stat-value">{{ "{:,}".format(country.total_videos) }}</span>
-                    <div class="stat-label">Vidéos</div>
+                    <div class="stat-label">Videos</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">{{ "{:,}".format(country.total_views) }}</span>
-                    <div class="stat-label">Vues totales</div>
+                    <div class="stat-icon">👁️</div>
+                    <span class="stat-value">{{ country.total_views|format_number }}</span>
+                    <div class="stat-label">Total Views</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">{{ "{:,}".format(country.avg_views_per_video|int) }}</span>
-                    <div class="stat-label">Vues/vidéo</div>
+                    <div class="stat-icon">📊</div>
+                    <span class="stat-value">{{ country.avg_views_per_video|format_number }}</span>
+                    <div class="stat-label">Views/Video</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">{{ "{:,}".format(country.avg_comments_per_video|int) }}</span>
-                    <div class="stat-label">Commentaires/vidéo</div>
+                    <div class="stat-icon">💬</div>
+                    <span class="stat-value">{{ country.avg_comments_per_video|format_number }}</span>
+                    <div class="stat-label">Comments/Video</div>
                 </div>
             </div>
+            
             
             <div class="tab-container">
                 <div class="tabs">
@@ -344,10 +408,10 @@
                     {% for competitor in country.competitors %}
                         <div class="tab-panel" id="panel_c{{ country_idx }}_{{ loop.index }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
                             <h4>{{ competitor.name }}</h4>
-                            <div class="stat-line"><strong>{{ competitor.video_count }}</strong> <span class="stat-label">vidéos</span></div>
-                            <div class="stat-line"><strong>{{ "{:,}".format(competitor.total_views) }}</strong> <span class="stat-label">vues totales</span></div>
-                            <div class="stat-line"><strong>{{ "{:,}".format(competitor.avg_views|int) }}</strong> <span class="stat-label">vues/vidéo</span></div>
-                            <div class="stat-line"><strong>{{ "{:,}".format(competitor.avg_comments|int) }}</strong> <span class="stat-label">commentaires/vidéo</span></div>
+                            <div class="stat-line"><strong>{{ competitor.video_count }}</strong> <span class="stat-label">videos</span></div>
+                            <div class="stat-line"><strong>{{ competitor.total_views|format_number }}</strong> <span class="stat-label">total views</span></div>
+                            <div class="stat-line"><strong>{{ competitor.avg_views|format_number }}</strong> <span class="stat-label">views/video</span></div>
+                            <div class="stat-line"><strong>{{ competitor.avg_comments|format_number }}</strong> <span class="stat-label">comments/video</span></div>
                         </div>
                     {% endfor %}
                 </div>
@@ -357,11 +421,11 @@
     {% else %}
         <div class="empty-state">
             <i class="bi bi-flag empty-icon"></i>
-            <h3>Aucune donnée par pays</h3>
-            <p>Attribuez des pays à vos concurrents pour voir les analyses par zone géographique.</p>
+            <h3>No country data</h3>
+            <p>Assign countries to your competitors to see geographical analysis.</p>
             <a href="/concurrents" class="btn btn-primary">
                 <i class="bi bi-arrow-left me-2"></i>
-                Retour aux concurrents
+                Back to competitors
             </a>
         </div>
     {% endif %}

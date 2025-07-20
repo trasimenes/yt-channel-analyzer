@@ -1,0 +1,556 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}{{ competitor.name }} - Competitor Details{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3">
+                            {% if competitor.thumbnail_url %}
+                                <img src="{{ competitor.thumbnail_url }}" alt="{{ competitor.name }}" class="rounded">
+                            {% else %}
+                                <span class="avatar-initial rounded bg-label-primary">
+                                    <i class="bx bx-tv"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ competitor.name }}</h5>
+                            <p class="text-muted mb-0">
+                                <i class="bx bx-world me-1"></i>{{ competitor.country or 'Unknown' }}
+                                {% if competitor.language %}
+                                    • <i class="bx bx-message me-1"></i>{{ competitor.language }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ competitor.channel_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-link-external"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Visit Channel</span>
+                        </a>
+                        <a href="/analyze-channel?url={{ competitor.channel_url }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh Data</span>
+                        </a>
+                        <a href="/concurrents" class="btn btn-sm btn-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Back to List</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-group"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(competitor.subscriber_count) if competitor.subscriber_count else 'N/A' }}</h4>
+                    <small class="text-muted">Subscribers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-video"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ videos|length }}</h4>
+                    <small class="text-muted">Total Videos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-show"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:.1f}M".format(stats.total_views / 1000000) if stats.total_views > 1000000 else "{:,}".format(stats.total_views) if stats.total_views else 'N/A' }}</h4>
+                    <small class="text-muted">Total Views</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(stats.avg_views|int) if stats.avg_views else 'N/A' }}</h4>
+                    <small class="text-muted">Avg Views/Video</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscriber Growth Data Upload -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-upload me-2"></i>Subscriber Growth Data
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-3">
+                                Upload a CSV file with subscriber data to track growth over time. The CSV should contain Date and Subscribers columns.
+                            </p>
+                            
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="csvFile" accept=".csv" />
+                                <button class="btn btn-primary" type="button" onclick="uploadSubscriberData()">
+                                    <i class="bx bx-upload me-1"></i>Upload CSV
+                                </button>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bx bx-info-circle me-1"></i>
+                                    Expected format: Date (YYYY-MM-DD), Subscribers (number)
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="uploadStatus" class="d-none">
+                                <div class="alert alert-info" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        Processing CSV file...
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="uploadResult" class="d-none">
+                                <!-- Upload result will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Strategy Analysis -->
+    <div class="row mb-6">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bar-chart me-2"></i>Content Strategy Breakdown
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-danger">
+                                        <i class="bx bx-star"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ videos_by_category.hero|length }}</h6>
+                                    <small class="text-muted">Hero Videos</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-danger" style="width: {{ (videos_by_category.hero|length / videos|length * 100) if videos else 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-primary">
+                                        <i class="bx bx-grid"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ videos_by_category.hub|length }}</h6>
+                                    <small class="text-muted">Hub Videos</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: {{ (videos_by_category.hub|length / videos|length * 100) if videos else 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-success">
+                                        <i class="bx bx-help-circle"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ videos_by_category.help|length }}</h6>
+                                    <small class="text-muted">Help Videos</small>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: {{ (videos_by_category.help|length / videos|length * 100) if videos else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-chart-pie me-2"></i>Content Type Analysis
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Shorts:</span>
+                            <span class="fw-medium">{{ stats.shorts_count or 0 }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: {{ stats.shorts_percentage or 0 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ "%.1f"|format(stats.shorts_percentage or 0) }}% of content</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Organic Content:</span>
+                            <span class="fw-medium">{{ stats.organic_count or 0 }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: {{ (stats.organic_count / videos|length * 100) if videos else 0 }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">Paid Content:</span>
+                            <span class="fw-medium">{{ stats.paid_count or 0 }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: {{ (stats.paid_count / videos|length * 100) if videos else 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Videos -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-trending-up me-2"></i>Top Videos by Views
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for video in top_videos_views[:5] %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            {% if video.thumbnail_url %}
+                                <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="rounded" style="width: 40px; height: 30px; object-fit: cover;">
+                            {% else %}
+                                <span class="avatar-initial rounded bg-label-secondary">
+                                    <i class="bx bx-video"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                            <small class="text-muted">
+                                {{ "{:,}".format(video.view_count) }} views
+                                {% if video.category %}
+                                    • <span class="badge badge-sm bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">{{ video.category|upper }}</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-link-external"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-heart me-2"></i>Top Videos by Engagement
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for video in top_videos_likes[:5] %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            {% if video.thumbnail_url %}
+                                <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="rounded" style="width: 40px; height: 30px; object-fit: cover;">
+                            {% else %}
+                                <span class="avatar-initial rounded bg-label-secondary">
+                                    <i class="bx bx-video"></i>
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                            <small class="text-muted">
+                                {{ "{:,}".format(video.like_count or 0) }} likes
+                                {% if video.category %}
+                                    • <span class="badge badge-sm bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">{{ video.category|upper }}</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-link-external"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Videos -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-time me-2"></i>Recent Videos
+                    </h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bx bx-filter me-1"></i>Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="filterVideos('all')">All Videos</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterVideos('hero')">Hero Only</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterVideos('hub')">Hub Only</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterVideos('help')">Help Only</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterVideos('shorts')">Shorts Only</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Video</th>
+                                    <th>Category</th>
+                                    <th>Views</th>
+                                    <th>Likes</th>
+                                    <th>Duration</th>
+                                    <th>Published</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="videosTableBody">
+                                {% for video in videos[:20] %}
+                                <tr class="video-row" data-category="{{ video.category or 'uncategorized' }}" data-is-short="{{ video.is_short or 0 }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                {% if video.thumbnail_url %}
+                                                    <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" class="rounded" style="width: 50px; height: 35px; object-fit: cover;">
+                                                {% else %}
+                                                    <span class="avatar-initial rounded bg-label-secondary">
+                                                        <i class="bx bx-video"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-truncate" style="max-width: 300px;">{{ video.title }}</h6>
+                                                <small class="text-muted">{{ video.video_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if video.category %}
+                                            <span class="badge bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">
+                                                {{ video.category|upper }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-label-secondary">UNCAT</span>
+                                        {% endif %}
+                                        {% if video.is_short %}
+                                            <span class="badge bg-label-warning ms-1">SHORT</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "{:,}".format(video.view_count) if video.view_count else 'N/A' }}</td>
+                                    <td>{{ "{:,}".format(video.like_count) if video.like_count else 'N/A' }}</td>
+                                    <td>{{ video.duration_text or 'N/A' }}</td>
+                                    <td>
+                                        {% if video.published_at %}
+                                            <small>{{ video.published_at.strftime('%Y-%m-%d') if video.published_at.strftime else video.published_at }}</small>
+                                        {% else %}
+                                            <small class="text-muted">Unknown</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bx bx-link-external"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if videos|length > 20 %}
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary" onclick="loadMoreVideos()">
+                            <i class="bx bx-down-arrow me-2"></i>Load More Videos
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactions -->
+<script>
+function filterVideos(category) {
+    const rows = document.querySelectorAll('.video-row');
+    rows.forEach(row => {
+        const videoCategory = row.getAttribute('data-category');
+        const isShort = row.getAttribute('data-is-short') === '1';
+        
+        let show = false;
+        
+        if (category === 'all') {
+            show = true;
+        } else if (category === 'shorts') {
+            show = isShort;
+        } else {
+            show = videoCategory === category;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function loadMoreVideos() {
+    // This would typically load more videos via AJAX
+    // For now, we'll just show a message
+    alert('Load more functionality would be implemented here');
+}
+
+function uploadSubscriberData() {
+    const fileInput = document.getElementById('csvFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a CSV file first');
+        return;
+    }
+    
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Please select a valid CSV file');
+        return;
+    }
+    
+    // Show loading status
+    document.getElementById('uploadStatus').classList.remove('d-none');
+    document.getElementById('uploadResult').classList.add('d-none');
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('csvFile', file);
+    
+    // Upload to the existing route
+    fetch(`/api/upload-csv/{{ competitor.id }}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide loading status
+        document.getElementById('uploadStatus').classList.add('d-none');
+        document.getElementById('uploadResult').classList.remove('d-none');
+        
+        if (data.success) {
+            document.getElementById('uploadResult').innerHTML = `
+                <div class="alert alert-success" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-check-circle me-2"></i>
+                        <div>
+                            <strong>Upload successful!</strong><br>
+                            <small class="text-muted">${data.message}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Clear the file input
+            fileInput.value = '';
+            
+            // Optionally reload the page to show new data
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            document.getElementById('uploadResult').innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-error-circle me-2"></i>
+                        <div>
+                            <strong>Upload failed!</strong><br>
+                            <small class="text-muted">${data.error}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        document.getElementById('uploadStatus').classList.add('d-none');
+        document.getElementById('uploadResult').classList.remove('d-none');
+        document.getElementById('uploadResult').innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bx bx-error-circle me-2"></i>
+                    <div>
+                        <strong>Network error!</strong><br>
+                        <small class="text-muted">Please try again later.</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+</script>
+{% endblock %}

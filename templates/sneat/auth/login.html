@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  class="light-style customizer-hide"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="{{ url_for('static', filename='sneat/assets/') }}"
+  data-template="vertical-menu-template-free"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+
+    <title>Login - YT Channel Analyzer</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='sneat/assets/img/favicon/favicon.ico') }}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/fonts/boxicons.css') }}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/css/theme-default.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/css/demo.css') }}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/css/pages/page-auth.css') }}" />
+    
+    <!-- Helpers -->
+    <script src="{{ url_for('static', filename='sneat/assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ url_for('static', filename='sneat/assets/js/config.js') }}"></script>
+  </head>
+
+  <body>
+    <!-- Content -->
+    <div class="container-xxl">
+      <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
+          <!-- Login -->
+          <div class="card">
+            <div class="card-body">
+              <!-- Logo -->
+              <div class="app-brand justify-content-center">
+                <a href="/" class="app-brand-link gap-2">
+                  <span class="app-brand-logo demo">
+                    <i class='bx bxl-youtube bx-lg'></i>
+                  </span>
+                  <span class="app-brand-text demo text-body fw-bolder">YT Analyzer</span>
+                </a>
+              </div>
+              <!-- /Logo -->
+              
+              <h4 class="mb-2">Welcome back! 👋</h4>
+              <p class="mb-4">Please sign-in to your account to analyze YouTube channels</p>
+
+              <!-- Flash messages -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+
+              <form id="formAuthentication" class="mb-3" action="/login" method="POST">
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    autofocus
+                    required
+                  />
+                </div>
+                <div class="mb-3 form-password-toggle">
+                  <div class="d-flex justify-content-between">
+                    <label class="form-label" for="password">Password</label>
+                  </div>
+                  <div class="input-group input-group-merge">
+                    <input
+                      type="password"
+                      id="password"
+                      class="form-control"
+                      name="password"
+                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      aria-describedby="password"
+                      required
+                    />
+                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="remember-me" />
+                    <label class="form-check-label" for="remember-me"> Remember Me </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
+                </div>
+              </form>
+
+              {% if demo_mode %}
+              <div class="alert alert-info">
+                <strong>Demo Mode:</strong> Username: demo, Password: demo
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <!-- /Login -->
+        </div>
+      </div>
+    </div>
+    <!-- / Content -->
+
+    <!-- Core JS -->
+    <script src="{{ url_for('static', filename='sneat/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='sneat/libs/popper/popper.js') }}"></script>
+    <script src="{{ url_for('static', filename='sneat/js/bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', filename='sneat/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='sneat/js/menu.js') }}"></script>
+    
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='sneat/assets/js/main.js') }}"></script>
+
+    <!-- Page JS -->
+    <script>
+      // Toggle password visibility
+      document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.querySelector('.form-password-toggle .input-group-text');
+        const passwordInput = document.querySelector('#password');
+        
+        togglePassword.addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          
+          const icon = this.querySelector('i');
+          icon.classList.toggle('bx-hide');
+          icon.classList.toggle('bx-show');
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,430 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Publishing Frequency - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-time me-2"></i>Publishing Frequency Analysis
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Analyze content publishing patterns and consistency</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-calendar me-1"></i>{{ selected_timeframe or 'Last 3 Months' }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?timeframe=1m">Last Month</a></li>
+                                <li><a class="dropdown-item" href="?timeframe=3m">Last 3 Months</a></li>
+                                <li><a class="dropdown-item" href="?timeframe=6m">Last 6 Months</a></li>
+                                <li><a class="dropdown-item" href="?timeframe=1y">Last Year</a></li>
+                            </ul>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frequency Overview -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-calendar-week"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ frequency_stats.avg_per_week or '0' }}</h4>
+                    <small class="text-muted">Avg Videos/Week</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ frequency_stats.most_active_day or 'N/A' }}</h4>
+                    <small class="text-muted">Most Active Day</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-check-circle"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ frequency_stats.consistency_score or '0' }}%</h4>
+                    <small class="text-muted">Consistency Score</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-time-five"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ frequency_stats.optimal_time or 'N/A' }}</h4>
+                    <small class="text-muted">Optimal Time</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frequency by Category -->
+    <div class="row mb-6">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bar-chart me-2"></i>Publishing Frequency by Content Category
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="text-center">
+                                <div class="avatar mx-auto mb-3">
+                                    <span class="avatar-initial rounded bg-label-danger">
+                                        <i class="bx bx-star"></i>
+                                    </span>
+                                </div>
+                                <h5 class="mb-1">{{ category_frequency.hero_per_week or '0' }}</h5>
+                                <p class="text-muted mb-2">HERO videos/week</p>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-danger" style="width: {{ category_frequency.hero_percentage or 0 }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ category_frequency.hero_percentage or 0 }}% of content</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="text-center">
+                                <div class="avatar mx-auto mb-3">
+                                    <span class="avatar-initial rounded bg-label-primary">
+                                        <i class="bx bx-grid"></i>
+                                    </span>
+                                </div>
+                                <h5 class="mb-1">{{ category_frequency.hub_per_week or '0' }}</h5>
+                                <p class="text-muted mb-2">HUB videos/week</p>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ category_frequency.hub_percentage or 0 }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ category_frequency.hub_percentage or 0 }}% of content</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="text-center">
+                                <div class="avatar mx-auto mb-3">
+                                    <span class="avatar-initial rounded bg-label-success">
+                                        <i class="bx bx-help-circle"></i>
+                                    </span>
+                                </div>
+                                <h5 class="mb-1">{{ category_frequency.help_per_week or '0' }}</h5>
+                                <p class="text-muted mb-2">HELP videos/week</p>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: {{ category_frequency.help_percentage or 0 }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ category_frequency.help_percentage or 0 }}% of content</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-calendar me-2"></i>Weekly Publishing Pattern
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for day in weekly_pattern %}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                <span class="avatar-initial rounded bg-label-{{ 'primary' if day.is_most_active else 'secondary' }}">
+                                    {{ day.short_name }}
+                                </span>
+                            </div>
+                            <span class="fw-medium">{{ day.name }}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-medium">{{ day.video_count }}</span>
+                            <div class="progress mt-1" style="height: 4px; width: 60px;">
+                                <div class="progress-bar bg-{{ 'primary' if day.is_most_active else 'secondary' }}" 
+                                     style="width: {{ day.percentage }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competitor Frequency Comparison -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-git-compare me-2"></i>Competitor Publishing Frequency Comparison
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Competitor</th>
+                                    <th>Videos/Week</th>
+                                    <th>HERO Freq</th>
+                                    <th>HUB Freq</th>
+                                    <th>HELP Freq</th>
+                                    <th>Consistency</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for competitor in competitor_frequencies %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                {% if competitor.thumbnail %}
+                                                    <img src="{{ competitor.thumbnail }}" alt="{{ competitor.name }}" class="rounded">
+                                                {% else %}
+                                                    <span class="avatar-initial rounded bg-label-secondary">
+                                                        <i class="bx bx-tv"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ competitor.name }}</h6>
+                                                <small class="text-muted">{{ competitor.country or 'Unknown' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ competitor.videos_per_week or '0' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ competitor.hero_freq or '0' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ competitor.hub_freq or '0' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ competitor.help_freq or '0' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar bg-{{ 'success' if competitor.consistency >= 80 else ('warning' if competitor.consistency >= 60 else 'danger') }}" 
+                                                     style="width: {{ competitor.consistency or 0 }}%"></div>
+                                            </div>
+                                            <small class="text-muted">{{ competitor.consistency or 0 }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if competitor.trend == 'up' %}
+                                            <span class="badge bg-success">
+                                                <i class="bx bx-trending-up me-1"></i>Rising
+                                            </span>
+                                        {% elif competitor.trend == 'down' %}
+                                            <span class="badge bg-danger">
+                                                <i class="bx bx-trending-down me-1"></i>Declining
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bx bx-minus me-1"></i>Stable
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frequency Insights -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-lightbulb me-2"></i>Publishing Insights
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if frequency_insights %}
+                        {% for insight in frequency_insights %}
+                        <div class="alert alert-{{ insight.type }} p-3 mb-3">
+                            <h6 class="mb-2">
+                                <i class="bx bx-{{ insight.icon }} me-2"></i>{{ insight.title }}
+                            </h6>
+                            <p class="mb-0">{{ insight.description }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="bx bx-lightbulb"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">Analyzing Patterns</h6>
+                        <p class="text-muted mb-0">Publishing insights will be generated based on your data</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-target-lock me-2"></i>Optimal Frequency Recommendations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="mb-2">Recommended Weekly Schedule:</h6>
+                        <div class="alert alert-primary p-3">
+                            <ul class="mb-0">
+                                <li><strong>HERO:</strong> {{ recommendations.hero_frequency or '0.5' }} videos/week ({{ recommendations.hero_days or 'Bi-weekly' }})</li>
+                                <li><strong>HUB:</strong> {{ recommendations.hub_frequency or '2-3' }} videos/week ({{ recommendations.hub_days or 'Mon, Wed, Fri' }})</li>
+                                <li><strong>HELP:</strong> {{ recommendations.help_frequency or '1' }} video/week ({{ recommendations.help_days or 'Sunday' }})</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-2">Best Publishing Times:</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-label-success rounded">
+                                    <small class="text-muted">Weekdays</small>
+                                    <div class="fw-medium">{{ optimal_times.weekdays or '10:00 AM' }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-label-info rounded">
+                                    <small class="text-muted">Weekends</small>
+                                    <div class="fw-medium">{{ optimal_times.weekends or '2:00 PM' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning p-2">
+                        <small>
+                            <i class="bx bx-info-circle me-1"></i>
+                            Based on analysis of {{ analyzed_videos or 0 }} videos from top performers in your niche
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-rocket me-2"></i>Publishing Strategy Action Plan
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">
+                                <i class="bx bx-check-circle text-success me-2"></i>Immediate Actions (This Week)
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-primary me-2 mt-1"></i>
+                                    <span>Plan your content calendar for the next 4 weeks</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-primary me-2 mt-1"></i>
+                                    <span>Set up consistent publishing schedule</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-primary me-2 mt-1"></i>
+                                    <span>Identify your optimal publishing times</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-primary me-2 mt-1"></i>
+                                    <span>Analyze your best-performing videos' timing</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">
+                                <i class="bx bx-time text-warning me-2"></i>Long-term Strategy (Next Month)
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-warning me-2 mt-1"></i>
+                                    <span>Test different publishing frequencies</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-warning me-2 mt-1"></i>
+                                    <span>Monitor audience engagement patterns</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-warning me-2 mt-1"></i>
+                                    <span>Adjust schedule based on performance data</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bx bx-right-arrow-alt text-warning me-2 mt-1"></i>
+                                    <span>Build content buffer for consistent publishing</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h6 class="alert-heading">
+                            <i class="bx bx-info-circle me-2"></i>Key Success Metrics
+                        </h6>
+                        <p class="mb-0">
+                            Track your consistency score, audience retention, and engagement rates. 
+                            Aim for 80%+ consistency while maintaining quality. Remember: consistency beats perfection in YouTube's algorithm.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

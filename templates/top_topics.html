@@ -1,0 +1,492 @@
+{% extends "sneat_base.html" %}
+
+{% block title %}Top Topics - Sujets les plus populaires{% endblock %}
+
+{% block extra_css %}
+<style>
+    .top-topics-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--dark);
+        margin-top: 0.5rem;
+    }
+    
+    .filters-section {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark);
+        min-width: 120px;
+    }
+    
+    .filter-select, .filter-input {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .topics-table {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .topic-name {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+    
+    .metric-value {
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .engagement-score {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .engagement-high {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+    }
+    
+    .engagement-medium {
+        background: rgba(251, 191, 36, 0.1);
+        color: #d97706;
+    }
+    
+    .engagement-low {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+    }
+    
+    .bigrams-section {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .bigram-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .bigram-tag {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .category-section {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .category-card {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .category-title {
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        text-transform: capitalize;
+    }
+    
+    .category-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+    
+    .category-topic {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .sort-link {
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sort-link:hover {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+    }
+    
+    .sort-arrow {
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-label {
+            min-width: auto;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+        }
+        
+        .topics-table {
+            font-size: 0.9rem;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="top-topics-header">
+        <h1>🏷️ Top Topics Globaux</h1>
+        <p class="mb-0">Analyse des sujets les plus populaires dans toutes les vidéos</p>
+    </div>
+
+    {% if summary %}
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.total_videos_analyzed).replace(',', ' ') }}</div>
+            <div class="stat-label">Vidéos analysées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.total_playlists_analyzed).replace(',', ' ') }}</div>
+            <div class="stat-label">Playlists analysées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.total_views).replace(',', ' ') }}</div>
+            <div class="stat-label">Vues totales</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.unique_topics).replace(',', ' ') }}</div>
+            <div class="stat-label">Topics uniques</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.excluded_channel_names + summary.excluded_brand_names).replace(',', ' ') }}</div>
+            <div class="stat-label">Mots exclus (marques + chaînes)</div>
+        </div>
+        {% if summary.syntactic_analysis %}
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.syntactic_analysis.verbs_analyzed).replace(',', ' ') }}</div>
+            <div class="stat-label">Verbes analysés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.syntactic_analysis.nouns_analyzed).replace(',', ' ') }}</div>
+            <div class="stat-label">Noms analysés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "{:,}".format(summary.syntactic_analysis.adjectives_analyzed).replace(',', ' ') }}</div>
+            <div class="stat-label">Adjectifs analysés</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="GET" id="filtersForm">
+            <div class="filter-group">
+                <label class="filter-label">Trier par:</label>
+                <select name="sort_by" class="filter-select" onchange="document.getElementById('filtersForm').submit();">
+                    <option value="occurrences" {{ 'selected' if sort_by == 'occurrences' else '' }}>Occurrences</option>
+                    <option value="views" {{ 'selected' if sort_by == 'views' else '' }}>Vues totales</option>
+                    <option value="engagement" {{ 'selected' if sort_by == 'engagement' else '' }}>Engagement</option>
+                </select>
+
+                <label class="filter-label">Ordre:</label>
+                <select name="order" class="filter-select" onchange="document.getElementById('filtersForm').submit();">
+                    <option value="desc" {{ 'selected' if order == 'desc' else '' }}>Décroissant</option>
+                    <option value="asc" {{ 'selected' if order == 'asc' else '' }}>Croissant</option>
+                </select>
+
+                <label class="filter-label">Catégorie:</label>
+                <select name="category" class="filter-select" onchange="document.getElementById('filtersForm').submit();">
+                    <option value="all" {{ 'selected' if category_filter == 'all' else '' }}>Toutes</option>
+                    <option value="activities" {{ 'selected' if category_filter == 'activities' else '' }}>Activités</option>
+                    <option value="accommodation" {{ 'selected' if category_filter == 'accommodation' else '' }}>Hébergement</option>
+                    <option value="family" {{ 'selected' if category_filter == 'family' else '' }}>Famille</option>
+                    <option value="nature" {{ 'selected' if category_filter == 'nature' else '' }}>Nature</option>
+                    <option value="food" {{ 'selected' if category_filter == 'food' else '' }}>Restauration</option>
+                    <option value="relaxation" {{ 'selected' if category_filter == 'relaxation' else '' }}>Détente</option>
+                    <option value="season" {{ 'selected' if category_filter == 'season' else '' }}>Saisons</option>
+                </select>
+
+                <label class="filter-label">Limite:</label>
+                <select name="limit" class="filter-select" onchange="document.getElementById('filtersForm').submit();">
+                    <option value="25" {{ 'selected' if limit == 25 else '' }}>25</option>
+                    <option value="50" {{ 'selected' if limit == 50 else '' }}>50</option>
+                    <option value="100" {{ 'selected' if limit == 100 else '' }}>100</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Topics Table -->
+    {% if topics %}
+    <div class="topics-table">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Rang</th>
+                    <th>
+                        <a href="?sort_by=topic&order={{ 'asc' if sort_by == 'topic' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="sort-link">
+                            Topic
+                            {% if sort_by == 'topic' %}
+                                <span class="sort-arrow">{{ '↑' if order == 'asc' else '↓' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>Type</th>
+                    <th>
+                        <a href="?sort_by=occurrences&order={{ 'asc' if sort_by == 'occurrences' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="sort-link">
+                            Occurrences
+                            {% if sort_by == 'occurrences' %}
+                                <span class="sort-arrow">{{ '↑' if order == 'asc' else '↓' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=views&order={{ 'asc' if sort_by == 'views' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="sort-link">
+                            Vues totales
+                            {% if sort_by == 'views' %}
+                                <span class="sort-arrow">{{ '↑' if order == 'asc' else '↓' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>Vues/vidéo</th>
+                    <th>Vidéos</th>
+                    <th>
+                        <a href="?sort_by=engagement&order={{ 'asc' if sort_by == 'engagement' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="sort-link">
+                            Engagement
+                            {% if sort_by == 'engagement' %}
+                                <span class="sort-arrow">{{ '↑' if order == 'asc' else '↓' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for topic in topics %}
+                <tr>
+                    <td><strong>{{ loop.index }}</strong></td>
+                    <td>
+                        <span class="topic-name">{{ topic.topic }}</span>
+                    </td>
+                    <td>
+                        {% if topic.word_type == 'verb' %}
+                            <span class="badge bg-success">🔥 Verbe</span>
+                        {% elif topic.word_type == 'noun' %}
+                            <span class="badge bg-primary">📝 Nom</span>
+                        {% elif topic.word_type == 'adj' %}
+                            <span class="badge bg-warning">✨ Adjectif</span>
+                        {% elif topic.word_type == 'propn' %}
+                            <span class="badge bg-info">🏷️ Nom propre</span>
+                        {% else %}
+                            <span class="badge bg-secondary">❓ Autre</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="metric-value">{{ "{:,}".format(topic.occurrences).replace(',', ' ') }}</span>
+                    </td>
+                    <td>
+                        <span class="metric-value">{{ "{:,}".format(topic.total_views).replace(',', ' ') }}</span>
+                    </td>
+                    <td>
+                        <span class="metric-value">{{ "{:,}".format(topic.avg_views_per_video).replace(',', ' ') }}</span>
+                    </td>
+                    <td>
+                        <span class="metric-value">{{ topic.video_count }}</span>
+                    </td>
+                    <td>
+                        {% set engagement_class = 'engagement-low' %}
+                        {% if topic.engagement_score > 2 %}
+                            {% set engagement_class = 'engagement-high' %}
+                        {% elif topic.engagement_score > 1 %}
+                            {% set engagement_class = 'engagement-medium' %}
+                        {% endif %}
+                        <span class="engagement-score {{ engagement_class }}">{{ topic.engagement_score }}%</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Top Bigrams -->
+    {% if bigrams %}
+    <div class="bigrams-section">
+        <h3>🔗 Top Expressions (Bigrams)</h3>
+        <div class="bigram-tags">
+            {% for bigram in bigrams %}
+            <span class="bigram-tag">{{ bigram.phrase }} ({{ bigram.count }})</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Categories -->
+    {% if categories %}
+    <div class="category-section">
+        <h3>📂 Topics par Catégorie</h3>
+        <div class="category-grid">
+            {% for category, category_topics in categories.items() %}
+            {% if category_topics %}
+            <div class="category-card">
+                <h5 class="category-title">{{ category.replace('_', ' ').title() }}</h5>
+                <div class="category-topics">
+                    {% for topic in category_topics[:10] %}
+                    <span class="category-topic">{{ topic.topic }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <h4>Erreur lors de l'analyse</h4>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

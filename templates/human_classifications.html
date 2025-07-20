@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Classifications Humaines - YT Channel Analyzer{% endblock %}
 
@@ -45,6 +45,14 @@
                             <div class="card-body text-center">
                                 <div class="h3 text-warning mb-2">{{ playlist_count }}</div>
                                 <div class="text-muted">Playlists classifiées</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-white shadow-sm border-0">
+                            <div class="card-body text-center">
+                                <div class="h3 text-secondary mb-2">{{ propagated_video_count }}</div>
+                                <div class="text-muted">Vidéos propagées</div>
                             </div>
                         </div>
                     </div>
@@ -145,6 +153,11 @@
                                                         <span class="badge bg-light text-dark mb-1">🤖 {{ item.ia_classification|upper }}</span>
                                                         {% endif %}
                                                         <span class="badge bg-success text-white">🛡️ {{ item.human_classification|upper }}</span>
+                                                        {% if item.user_feedback_type == 'playlist_propagation' %}
+                                                        <span class="badge bg-primary text-white mt-1" style="font-size:0.75em;">🔄 propagé</span>
+                                                        {% else %}
+                                                        <span class="badge bg-dark text-white mt-1" style="font-size:0.75em;">✍️ manuel</span>
+                                                        {% endif %}
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
@@ -216,6 +229,11 @@
                                                     <div class="d-flex flex-column">
                                                         <span class="badge bg-light text-dark mb-1">🤖 {{ video.ia_classification|upper }}</span>
                                                         <span class="badge bg-success text-white">🛡️ {{ video.human_classification|upper }}</span>
+                                                        {% if video.user_feedback_type == 'playlist_propagation' %}
+                                                        <span class="badge bg-primary text-white mt-1" style="font-size:0.75em;">🔄 propagé</span>
+                                                        {% else %}
+                                                        <span class="badge bg-dark text-white mt-1" style="font-size:0.75em;">✍️ manuel</span>
+                                                        {% endif %}
                                                     </div>
                                                 </td>
                                                 <td class="text-center">

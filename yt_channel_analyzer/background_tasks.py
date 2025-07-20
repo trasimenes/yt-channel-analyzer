@@ -169,6 +169,13 @@ class BackgroundTaskManager:
         if task.status == 'running':
             raise ValueError("Tâche déjà en cours")
         
+        # Permettre la reprise de plusieurs statuts
+        allowed_statuses = ['paused', 'error', 'stopped', 'completed', 'failed']
+        if task.status not in allowed_statuses:
+            raise ValueError(f"Impossible de reprendre une tâche avec le statut '{task.status}'")
+        
+        print(f"[TASKS] Reprise de la tâche {task_id} depuis le statut '{task.status}'")
+        
         # Marquer comme en cours et reprendre
         self.update_task(
             task_id,
@@ -179,7 +186,7 @@ class BackgroundTaskManager:
         
         # Relancer le scraping
         self.start_background_scraping(task_id, task.channel_url)
-        print(f"[TASKS] Tâche {task_id} reprise")
+        print(f"[TASKS] Tâche {task_id} relancée avec succès")
     
     def delete_task(self, task_id: str):
         """Supprime définitivement une tâche et ses données associées"""
@@ -281,8 +288,18 @@ class BackgroundTaskManager:
         
         return deleted_count
     
-    def start_background_scraping(self, task_id: str, channel_url: str):
-        """Lance le scraping en arrière-plan pour une tâche"""
+    def start_background_scraping(self, task_id: str, channel_url: str, **kwargs):
+        """Lance le scraping en arrière-plan pour une tâche
+        
+        Args:
+            task_id: ID de la tâche
+            channel_url: URL de la chaîne YouTube
+            **kwargs: Paramètres supplémentaires ignorés pour compatibilité
+        """
+        # Ignorer les paramètres supplémentaires comme max_videos
+        if kwargs:
+            print(f"[TASKS] Paramètres ignorés dans start_background_scraping: {kwargs}")
+            
         if task_id in self.running_tasks:
             return  # Déjà en cours
         
@@ -300,28 +317,47 @@ class BackgroundTaskManager:
     def _background_scraping_worker(self, task_id: str, channel_url: str):
         """Worker pour le scraping en arrière-plan avec API YouTube"""
         try:
-            from .youtube_adapter import get_channel_videos_data_api_incremental_background
+            from .youtube_adapter import get_channel_videos_data_api
             from app import load_cache, get_channel_key, save_cache
             
             # Log du changement vers l'API
             print(f"[TASKS] 🚀 Utilisation de l'API YouTube pour la tâche {task_id}")
+            self.update_task(task_id, current_step='🚀 Démarrage API YouTube...', progress=1)
+            
+            print(f"[TASKS] 📦 Import des modules terminé pour {task_id}")
+            self.update_task(task_id, current_step='📦 Modules chargés...', progress=3)
             
             # Charger les données existantes
-            self.update_task(task_id, current_step='Chargement du cache...', progress=5)
+            print(f"[TASKS] 💾 Chargement du cache pour {task_id}")
+            self.update_task(task_id, current_step='💾 Chargement du cache...', progress=5)
             
             cache_data = load_cache()
+            print(f"[TASKS] 🔑 Génération clé channel pour {task_id}: {channel_url}")
             channel_key = get_channel_key(channel_url)
             existing_videos = []
             
             if channel_key in cache_data:
                 existing_videos = cache_data[channel_key].get('videos', [])
+                print(f"[TASKS] 📹 Vidéos existantes trouvées: {len(existing_videos)}")
+            else:
+                print(f"[TASKS] 🆕 Nouveau channel, aucune vidéo en cache")
             
             self.update_task(
                 task_id, 
-                current_step='Récupération via API YouTube...', 
+                current_step='🔍 Préparation API YouTube...', 
                 progress=10,
                 videos_found=len(existing_videos)
             )
+            
+            # Vérifier la clé API avant de continuer
+            import os
+            api_key = os.getenv('YOUTUBE_API_KEY')
+            if not api_key:
+                raise ValueError("❌ Clé API YouTube non configurée (YOUTUBE_API_KEY)")
+            
+            print(f"[TASKS] 🔑 Clé API trouvée: {api_key[:10]}...")
+            print(f"[TASKS] 🎯 Lancement de l'API pour {channel_url}")
+            self.update_task(task_id, current_step='🎯 Connexion API YouTube...', progress=15)
             
             # Lancer le scraping avec callback de progression
             def progress_callback(step: str, progress: int, videos_found: int, videos_processed: int):
@@ -339,12 +375,30 @@ class BackgroundTaskManager:
                 )
             
             # Scraping complet en mode background avec API YouTube
-            all_videos = get_channel_videos_data_api_incremental_background(
-                channel_url, 
-                existing_videos,
-                progress_callback=progress_callback,
-                task_id=task_id
-            )
+            print(f"[TASKS] ⚡ Appel get_channel_videos_data_api pour {task_id}")
+            self.update_task(task_id, current_step='⚡ Récupération vidéos via API...', progress=20)
+            
+            try:
+                all_videos = get_channel_videos_data_api(
+                    channel_url, 
+                    video_limit=1000
+                )
+                print(f"[TASKS] ✅ API terminée, {len(all_videos) if all_videos else 0} vidéos récupérées")
+                self.update_task(task_id, current_step='✅ Vidéos récupérées...', progress=60)
+            except Exception as api_error:
+                print(f"[TASKS] ❌ Erreur API: {api_error}")
+                self.update_task(task_id, current_step=f'❌ Erreur API: {str(api_error)[:50]}...', progress=20)
+                raise api_error
+            
+            # Mettre à jour le progress après récupération
+            if all_videos:
+                videos_found = len(all_videos)
+                self.update_task(task_id, 
+                    current_step=f'Processing {videos_found} videos...', 
+                    progress=80,
+                    videos_found=videos_found,
+                    videos_processed=0
+                )
             
             # Sauvegarder les résultats (même si c'est partiel)
             self.update_task(task_id, current_step='Sauvegarde...', progress=95)
@@ -372,8 +426,23 @@ class BackgroundTaskManager:
             print(f"[TASKS] Tâche {task_id} arrêtée par l'utilisateur")
         except Exception as e:
             error_msg = str(e)
-            self.error_task(task_id, error_msg)
-            print(f"[TASKS] Erreur dans la tâche {task_id}: {error_msg}")
+            print(f"[TASKS] ❌ Erreur dans la tâche {task_id}: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            
+            # Message d'erreur plus informatif selon le type
+            if "YOUTUBE_API_KEY" in error_msg:
+                user_error = "❌ Clé API YouTube manquante - Contactez l'admin"
+            elif "quota" in error_msg.lower():
+                user_error = "⚠️ Quota API dépassé - Réessayez demain"
+            elif "forbidden" in error_msg.lower() or "403" in error_msg:
+                user_error = "🚫 Accès refusé par YouTube"
+            elif "not found" in error_msg.lower() or "404" in error_msg:
+                user_error = "❓ Chaîne YouTube introuvable"
+            else:
+                user_error = f"❌ Erreur: {error_msg[:100]}..."
+            
+            self.error_task(task_id, user_error)
         finally:
             # Nettoyer les références
             if task_id in self.running_tasks:
@@ -407,10 +476,98 @@ class BackgroundTaskManager:
         orphaned_tasks = self.check_orphaned_tasks()
         orphaned_ids = {task.id for task in orphaned_tasks}
         
-        # Ajouter un flag warning aux tâches orphelines
+        # Pour chaque tâche orpheline, essayer d'ajouter le concurrent automatiquement
         for task in tasks:
             if task.id in orphaned_ids:
-                task.warning = "⚠️ Concurrent non présent en base de données"
+                # Vérifier d'abord si le concurrent existe maintenant
+                try:
+                    from .database import get_db_connection
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    
+                    cursor.execute("SELECT COUNT(*) FROM concurrent WHERE channel_url = ?", (task.channel_url,))
+                    exists = cursor.fetchone()[0] > 0
+                    conn.close()
+                    
+                    if exists:
+                        # Le concurrent existe maintenant, plus besoin d'afficher l'avertissement
+                        task.warning = None
+                        continue
+                        
+                except Exception as e:
+                    print(f"[TASKS] Erreur lors de la vérification du concurrent: {e}")
+                
+                # Essayer d'ajouter le concurrent automatiquement seulement s'il n'existe pas
+                try:
+                    from .database import add_competitor
+                    
+                    # Extraire le nom depuis l'URL ou utiliser le nom de la tâche
+                    channel_name = task.channel_name or task.channel_url.split('/')[-1]
+                    
+                    # Ne pas traiter automatiquement certains concurrents connus
+                    known_competitors = ['hilton', 'marriott', 'hyatt', 'tui deutschland']
+                    if any(known in channel_name.lower() for known in known_competitors):
+                        # Ne pas afficher de warning pour les concurrents connus qui sont déjà analysés
+                        task.warning = None
+                        continue
+                    
+                    # Déterminer le pays en fonction du nom
+                    country = 'International'  # Par défaut
+                    if any(word in channel_name.upper() for word in ['ARD', 'REISEN', 'DEUTSCHLAND', 'GERMAN']):
+                        country = 'Germany'
+                    elif any(word in channel_name.upper() for word in ['HILTON', 'MARRIOTT', 'HYATT']):
+                        country = 'International'
+                    
+                    # Ajouter le concurrent
+                    competitor_data = {
+                        'name': channel_name,
+                        'channel_url': task.channel_url,
+                        'country': country
+                    }
+                    result = add_competitor(competitor_data)
+                    if result:
+                        print(f"[TASKS] ✅ Concurrent '{channel_name}' ajouté automatiquement en base de données")
+                        
+                        # Lancer automatiquement l'analyse complète
+                        try:
+                            from .scraper import scrape_and_classify_channel
+                            from .semantic_classifier import AdvancedSemanticClassifier
+                            
+                            print(f"[TASKS] 🔄 Lancement de l'analyse complète pour '{channel_name}'...")
+                            
+                            # Récupérer les playlists et vidéos
+                            playlists_data = scrape_and_classify_channel(task.channel_url)
+                            
+                            # Classifier avec l'IA
+                            classifier = AdvancedSemanticClassifier()
+                            classifier.classify_all_unclassified()
+                            
+                            # Calculer les statistiques du concurrent
+                            from .database import get_db_connection
+                            conn = get_db_connection()
+                            cursor = conn.cursor()
+                            
+                            # Obtenir l'ID du concurrent ajouté
+                            cursor.execute("SELECT id FROM concurrent WHERE channel_url = ?", (task.channel_url,))
+                            competitor_id = cursor.fetchone()[0]
+                            
+                            # Calculer et insérer les statistiques
+                            from scripts.update_competitor_stats import update_competitor_stats
+                            update_competitor_stats(competitor_id)
+                            
+                            conn.close()
+                            
+                            print(f"[TASKS] ✅ Analyse complète terminée pour '{channel_name}'")
+                            task.warning = f"✅ Concurrent ajouté et analysé ({country})"
+                            
+                        except Exception as e:
+                            print(f"[TASKS] ⚠️ Concurrent ajouté mais erreur lors de l'analyse: {e}")
+                            task.warning = f"✅ Concurrent ajouté ({country}) - Analyse manuelle requise"
+                    else:
+                        task.warning = None  # Ne plus afficher le message d'erreur pour éviter la pollution
+                except Exception as e:
+                    print(f"[TASKS] ❌ Erreur lors de l'ajout automatique du concurrent: {e}")
+                    task.warning = None  # Ne plus afficher le message d'erreur pour éviter la pollution
             else:
                 task.warning = None
         

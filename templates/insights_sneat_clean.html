@@ -1,0 +1,418 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Brand Insights - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-bulb me-2"></i>Brand & Market Insights
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Strategic insights and competitive intelligence</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-time me-1"></i>{{ selected_period or 'Last 30 Days' }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?period=7d">Last 7 Days</a></li>
+                                <li><a class="dropdown-item" href="?period=30d">Last 30 Days</a></li>
+                                <li><a class="dropdown-item" href="?period=90d">Last 90 Days</a></li>
+                                <li><a class="dropdown-item" href="?period=1y">Last Year</a></li>
+                            </ul>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Insights Summary -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ insights_summary.growth_rate or '0' }}%</h4>
+                    <small class="text-muted">Avg Growth Rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-target-lock"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ insights_summary.top_category or 'N/A' }}</h4>
+                    <small class="text-muted">Top Category</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-heart"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ insights_summary.engagement_rate or '0' }}%</h4>
+                    <small class="text-muted">Avg Engagement</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-time"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ insights_summary.optimal_length or '0' }}m</h4>
+                    <small class="text-muted">Optimal Length</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategic Insights -->
+    <div class="row mb-6">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-brain me-2"></i>AI-Powered Strategic Insights
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if strategic_insights %}
+                        {% for insight in strategic_insights %}
+                        <div class="card border-{{ insight.priority == 'high' and 'danger' or (insight.priority == 'medium' and 'warning' or 'info') }} mb-4">
+                            <div class="card-header bg-label-{{ insight.priority == 'high' and 'danger' or (insight.priority == 'medium' and 'warning' or 'info') }}">
+                                <div class="d-flex align-items-center">
+                                    <i class="bx bx-{{ insight.icon }} me-2"></i>
+                                    <h6 class="mb-0">{{ insight.title }}</h6>
+                                    <span class="badge bg-{{ insight.priority == 'high' and 'danger' or (insight.priority == 'medium' and 'warning' or 'info') }} ms-auto">
+                                        {{ insight.priority|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-3">{{ insight.description }}</p>
+                                
+                                {% if insight.recommendations %}
+                                <h6 class="mb-2">Recommendations:</h6>
+                                <ul class="mb-3">
+                                    {% for rec in insight.recommendations %}
+                                    <li>{{ rec }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                
+                                {% if insight.data_points %}
+                                <div class="row">
+                                    {% for point in insight.data_points %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted">{{ point.label }}:</span>
+                                            <span class="fw-medium">{{ point.value }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-info" style="width: 60px; height: 60px;">
+                                <i class="bx bx-brain" style="font-size: 24px;"></i>
+                            </span>
+                        </div>
+                        <h5 class="mb-2">Generating Insights</h5>
+                        <p class="text-muted mb-0">AI is analyzing your competitor data to generate strategic insights</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-chart-pie me-2"></i>Content Mix Analysis
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="d-flex align-items-center">
+                                <span class="badge bg-danger me-2">HERO</span>
+                                <span class="text-muted">{{ content_mix.hero_percentage }}%</span>
+                            </span>
+                            <span class="fw-medium">{{ content_mix.hero_count }} videos</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" style="width: {{ content_mix.hero_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="d-flex align-items-center">
+                                <span class="badge bg-primary me-2">HUB</span>
+                                <span class="text-muted">{{ content_mix.hub_percentage }}%</span>
+                            </span>
+                            <span class="fw-medium">{{ content_mix.hub_count }} videos</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: {{ content_mix.hub_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="d-flex align-items-center">
+                                <span class="badge bg-success me-2">HELP</span>
+                                <span class="text-muted">{{ content_mix.help_percentage }}%</span>
+                            </span>
+                            <span class="fw-medium">{{ content_mix.help_count }} videos</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ content_mix.help_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info p-2">
+                        <small>
+                            <i class="bx bx-info-circle me-1"></i>
+                            Based on {{ content_mix.total_videos }} analyzed videos
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Trends -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-line-chart me-2"></i>Top Performing Content Types
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for type in top_content_types %}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                <span class="avatar-initial rounded bg-label-{{ 'danger' if type.category == 'hero' else ('primary' if type.category == 'hub' else 'success') }}">
+                                    <i class="bx bx-{{ type.icon }}"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ type.name }}</h6>
+                                <small class="text-muted">{{ type.category|upper }} content</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-medium">{{ "{:,}".format(type.avg_views) }}</span>
+                            <br>
+                            <small class="text-muted">avg views</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-trophy me-2"></i>Competitor Benchmarking
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for competitor in top_competitors %}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                {% if competitor.thumbnail %}
+                                    <img src="{{ competitor.thumbnail }}" alt="{{ competitor.name }}" class="rounded">
+                                {% else %}
+                                    <span class="avatar-initial rounded bg-label-secondary">
+                                        <i class="bx bx-tv"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ competitor.name }}</h6>
+                                <small class="text-muted">{{ competitor.country or 'Unknown' }}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-{{ 'success' if competitor.performance == 'high' else ('warning' if competitor.performance == 'medium' else 'secondary') }} me-2">
+                                    {{ competitor.performance|title }}
+                                </span>
+                                <span class="fw-medium">{{ "{:,}".format(competitor.avg_views) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Opportunities -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-target-lock me-2"></i>Market Opportunities & Gaps
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if market_opportunities %}
+                    <div class="row">
+                        {% for opportunity in market_opportunities %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card border-{{ opportunity.potential == 'high' and 'success' or (opportunity.potential == 'medium' and 'warning' or 'info') }} h-100">
+                                <div class="card-header bg-label-{{ opportunity.potential == 'high' and 'success' or (opportunity.potential == 'medium' and 'warning' or 'info') }}">
+                                    <h6 class="mb-0">
+                                        <i class="bx bx-{{ opportunity.icon }} me-2"></i>{{ opportunity.title }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-3">{{ opportunity.description }}</p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Market Potential:</small>
+                                            <span class="badge bg-{{ opportunity.potential == 'high' and 'success' or (opportunity.potential == 'medium' and 'warning' or 'info') }}">
+                                                {{ opportunity.potential|title }}
+                                            </span>
+                                        </div>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-{{ opportunity.potential == 'high' and 'success' or (opportunity.potential == 'medium' and 'warning' or 'info') }}" 
+                                                 style="width: {{ opportunity.score }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if opportunity.action_items %}
+                                    <div>
+                                        <h6 class="mb-2">Next Steps:</h6>
+                                        <ul class="small mb-0">
+                                            {% for item in opportunity.action_items %}
+                                            <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="bx bx-target-lock"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">Analyzing Market Opportunities</h6>
+                        <p class="text-muted mb-0">Market gap analysis will appear here based on your competitive data</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-rocket me-2"></i>Recommended Action Plan
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-primary" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bx bx-lightbulb me-2"></i>Strategy Recommendations
+                        </h6>
+                        <p class="mb-0">
+                            Based on your competitive analysis, focus on creating more HUB content to improve consistency, 
+                            while maintaining your HERO content quality. Consider expanding into underserved content categories 
+                            where competitors show gaps.
+                        </p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Immediate Actions (1-2 weeks)</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bx bx-check-circle text-success me-2"></i>
+                                    Analyze top 5 competitor content strategies
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bx bx-check-circle text-success me-2"></i>
+                                    Identify content gaps in your niche
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bx bx-check-circle text-success me-2"></i>
+                                    Plan 3 HUB videos for next month
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Long-term Strategy (1-3 months)</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bx bx-time text-warning me-2"></i>
+                                    Develop consistent content calendar
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bx bx-time text-warning me-2"></i>
+                                    Test new content formats in underserved areas
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bx bx-time text-warning me-2"></i>
+                                    Implement performance tracking system
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

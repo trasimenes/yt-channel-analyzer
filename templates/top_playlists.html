@@ -1,0 +1,613 @@
+{% extends "sneat_base.html" %}
+
+{% block title %}Top Playlists - Global Ranking{% endblock %}
+
+{% block extra_css %}
+<style>
+    .top-playlists-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #8b5cf6;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--dark);
+        margin-top: 0.5rem;
+    }
+    
+    .filters-section {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark);
+        min-width: 120px;
+    }
+    
+    .filter-select, .filter-input {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    .playlists-table {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .playlists-table table {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .playlists-table th {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem 0.75rem;
+        text-align: center;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .playlists-table th:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+    }
+    
+    .playlists-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .playlists-table tr:hover {
+        background: rgba(139, 92, 246, 0.05);
+    }
+    
+    .playlist-thumbnail {
+        width: 80px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .playlist-title {
+        max-width: 200px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .playlist-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .playlist-title a:hover {
+        color: #8b5cf6;
+    }
+    
+    .competitor-name {
+        font-weight: 600;
+        color: var(--info);
+    }
+    
+    .competitor-name a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .competitor-name a:hover {
+        color: #8b5cf6;
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .category-hero {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .category-hub {
+        background: rgba(6, 182, 212, 0.1);
+        color: #0891b2;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    
+    .category-help {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    
+    .score-bar {
+        width: 60px;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .score-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+        transition: width 0.3s ease;
+    }
+    
+    .number-format {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+    
+    .btn-filter {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3);
+        color: white;
+    }
+    
+    .btn-reset {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(107, 114, 128, 0.3);
+        color: white;
+    }
+    
+    .table-responsive {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(5px);
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #8b5cf6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .text-small {
+        font-size: 0.85rem;
+    }
+    
+    .text-muted {
+        color: #6b7280 !important;
+    }
+    
+    .video-count-info {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-label {
+            min-width: auto;
+        }
+        
+        .playlists-table {
+            font-size: 0.85rem;
+        }
+        
+        .playlist-title {
+            max-width: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid main-content">
+    <!-- Header -->
+    <div class="top-playlists-header">
+        <h1 class="mb-3">
+            <i class="bi bi-collection-play me-3"></i>
+            Top Playlists - Global Ranking
+        </h1>
+        <p class="mb-0">Ranking of all playlists from all competitors with aggregated video metrics</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_playlists|default(0) }}</div>
+            <div class="stat-label">Total Playlists</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_competitors|default(0) }}</div>
+            <div class="stat-label">Competitors</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.hero_playlists|default(0) }}</div>
+            <div class="stat-label">Hero Playlists</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.hub_playlists|default(0) }}</div>
+            <div class="stat-label">Hub Playlists</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.help_playlists|default(0) }}</div>
+            <div class="stat-label">Help Playlists</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.shown_playlists|default(0) }}</div>
+            <div class="stat-label">Shown Playlists</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-section">
+        <h5 class="mb-3">
+            <i class="bi bi-funnel me-2"></i>
+            Filters & Sorting
+        </h5>
+        
+        <form method="GET" action="/top-playlists" id="filter-form">
+            <div class="filter-group">
+                <label class="filter-label">Sort by:</label>
+                <select name="sort_by" class="filter-select">
+                    <option value="total_views" {% if current_sort == 'total_views' %}selected{% endif %}>Total Views</option>
+                    <option value="total_likes" {% if current_sort == 'total_likes' %}selected{% endif %}>Total Likes</option>
+                    <option value="total_comments" {% if current_sort == 'total_comments' %}selected{% endif %}>Total Comments</option>
+                    <option value="engagement_ratio" {% if current_sort == 'engagement_ratio' %}selected{% endif %}>Engagement Ratio</option>
+                    <option value="video_count" {% if current_sort == 'video_count' %}selected{% endif %}>Video Count</option>
+                    <option value="linked_videos" {% if current_sort == 'linked_videos' %}selected{% endif %}>Linked Videos</option>
+                    <option value="avg_duration_seconds" {% if current_sort == 'avg_duration_seconds' %}selected{% endif %}>Average Duration</option>
+                    <option value="latest_video_date" {% if current_sort == 'latest_video_date' %}selected{% endif %}>Latest Video</option>
+                    <option value="avg_beauty_score" {% if current_sort == 'avg_beauty_score' %}selected{% endif %}>Beauty Score</option>
+                    <option value="avg_emotion_score" {% if current_sort == 'avg_emotion_score' %}selected{% endif %}>Emotion Score</option>
+                    <option value="avg_info_quality_score" {% if current_sort == 'avg_info_quality_score' %}selected{% endif %}>Info Quality Score</option>
+                    <option value="avg_subjective_score" {% if current_sort == 'avg_subjective_score' %}selected{% endif %}>Avg Subjective Score</option>
+                    <option value="competitor_name" {% if current_sort == 'competitor_name' %}selected{% endif %}>Competitor</option>
+                    <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Playlist Name</option>
+                </select>
+                
+                <select name="order" class="filter-select">
+                    <option value="desc" {% if current_order == 'desc' %}selected{% endif %}>Descending</option>
+                    <option value="asc" {% if current_order == 'asc' %}selected{% endif %}>Ascending</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Category:</label>
+                <select name="category" class="filter-select">
+                    <option value="all" {% if current_category == 'all' %}selected{% endif %}>All Categories</option>
+                    <option value="hero" {% if current_category == 'hero' %}selected{% endif %}>🔥 HERO</option>
+                    <option value="hub" {% if current_category == 'hub' %}selected{% endif %}>🏠 HUB</option>
+                    <option value="help" {% if current_category == 'help' %}selected{% endif %}>🆘 HELP</option>
+                </select>
+                
+                <label class="filter-label">Limit:</label>
+                <select name="limit" class="filter-select">
+                    <option value="25" {% if current_limit == 25 %}selected{% endif %}>25 playlists</option>
+                    <option value="50" {% if current_limit == 50 %}selected{% endif %}>50 playlists</option>
+                    <option value="100" {% if current_limit == 100 %}selected{% endif %}>100 playlists</option>
+                    <option value="200" {% if current_limit == 200 %}selected{% endif %}>200 playlists</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn-filter">
+                    <i class="bi bi-funnel-fill me-2"></i>
+                    Apply Filters
+                </button>
+                <a href="/top-playlists" class="btn btn-reset">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Playlists Table -->
+    <div class="playlists-table">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Thumbnail</th>
+                        <th>Name</th>
+                        <th>Competitor</th>
+                        <th>Category</th>
+                        <th>Videos</th>
+                        <th>Total Views</th>
+                        <th>Total Likes</th>
+                        <th>Total Comments</th>
+                        <th>Engagement</th>
+                        <th>Avg Duration</th>
+                        <th>Latest Video</th>
+                        <th>Beauty</th>
+                        <th>Emotion</th>
+                        <th>Info Quality</th>
+                        <th>Avg Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for playlist in playlists %}
+                    <tr>
+                        <td class="number-format">{{ loop.index }}</td>
+                        <td>
+                            {% if playlist.thumbnail_url %}
+                                <img src="{{ playlist.thumbnail_url }}" alt="Thumbnail" class="playlist-thumbnail">
+                            {% else %}
+                                <div class="playlist-thumbnail bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-collection-play text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="playlist-title">
+                            <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" target="_blank" title="{{ playlist.name }}">
+                                {{ playlist.name|truncate(40) }}
+                            </a>
+                        </td>
+                        <td class="competitor-name">
+                            <a href="/competitor/{{ playlist.competitor_id }}">
+                                {{ playlist.competitor_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="category-badge category-{{ playlist.category }}">
+                                {% if playlist.category == 'hero' %}🔥 HERO
+                                {% elif playlist.category == 'help' %}🆘 HELP
+                                {% else %}🏠 HUB
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="number-format">
+                            {% if playlist.linked_videos > 0 %}
+                                <strong>{{ playlist.linked_videos }}</strong>
+                                {% if playlist.video_count != playlist.linked_videos %}
+                                    <div class="video-count-info">
+                                        ({{ playlist.video_count }} total)
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    {{ playlist.video_count }} non liées
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="number-format">{{ "{:,}".format(playlist.total_views) }}</td>
+                        <td class="number-format">{{ "{:,}".format(playlist.total_likes) }}</td>
+                        <td class="number-format">{{ "{:,}".format(playlist.total_comments) }}</td>
+                        <td class="number-format">{{ "%.2f"|format(playlist.engagement_ratio) }}%</td>
+                        <td class="number-format">{{ playlist.avg_duration_formatted }}</td>
+                        <td class="text-small">{{ playlist.latest_video_formatted }}</td>
+                        <td>
+                            {% if playlist.avg_beauty_score > 0 %}
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (playlist.avg_beauty_score * 10)|int }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ "%.1f"|format(playlist.avg_beauty_score) }}/10</small>
+                            {% else %}
+                                <small class="text-muted">N/A</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if playlist.avg_emotion_score > 0 %}
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (playlist.avg_emotion_score * 10)|int }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ "%.1f"|format(playlist.avg_emotion_score) }}/10</small>
+                            {% else %}
+                                <small class="text-muted">N/A</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if playlist.avg_info_quality_score > 0 %}
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (playlist.avg_info_quality_score * 10)|int }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ "%.1f"|format(playlist.avg_info_quality_score) }}/10</small>
+                            {% else %}
+                                <small class="text-muted">N/A</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if playlist.avg_subjective_score > 0 %}
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: {{ (playlist.avg_subjective_score * 10)|int }}%"></div>
+                                </div>
+                                <strong class="text-primary">{{ "%.1f"|format(playlist.avg_subjective_score) }}/10</strong>
+                            {% else %}
+                                <small class="text-muted">N/A</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if not playlists %}
+    <div class="text-center py-5">
+        <i class="bi bi-collection-play" style="font-size: 4rem; color: #8b5cf6;"></i>
+        <h3 class="mt-3 mb-2">No playlists found</h3>
+        <p class="text-muted">Try adjusting your filters or add some competitors first.</p>
+        <a href="/concurrents" class="btn btn-primary">
+            <i class="bi bi-people me-2"></i>
+            View Competitors
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="text-center">
+        <div class="loading-spinner"></div>
+        <p class="mt-3 text-muted">Loading playlists...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay when form is submitted
+    const filterForm = document.getElementById('filter-form');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    
+    filterForm.addEventListener('submit', function() {
+        loadingOverlay.style.display = 'flex';
+    });
+    
+    // Auto-submit form when filters change
+    const filterSelects = document.querySelectorAll('.filter-select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    });
+    
+    // Format numbers with thousands separators
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Update URL without page reload for better UX
+    function updateURLParams(params) {
+        const url = new URL(window.location);
+        Object.keys(params).forEach(key => {
+            if (params[key]) {
+                url.searchParams.set(key, params[key]);
+            } else {
+                url.searchParams.delete(key);
+            }
+        });
+        window.history.replaceState({}, '', url);
+    }
+    
+    console.log('🎯 Top Playlists page loaded');
+    console.log('📊 Showing {{ stats.shown_playlists }} playlists out of {{ stats.total_playlists }}');
+});
+</script>
+{% endblock %}

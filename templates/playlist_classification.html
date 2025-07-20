@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Classification des Playlists - YT Analyzer{% endblock %}
 
@@ -529,23 +529,14 @@
                 </button>
                 
                 <div class="classification-templates">
-                    <button class="template-btn" data-template="educational">
-                        <i class="bi bi-book me-2"></i>Éducationnel → HELP
+                    <button class="template-btn" data-template="help">
+                        <i class="bi bi-question-circle me-2"></i>HELP
                     </button>
-                    <button class="template-btn" data-template="entertainment">
-                        <i class="bi bi-play-circle me-2"></i>Divertissement → HUB
+                    <button class="template-btn" data-template="hub">
+                        <i class="bi bi-house me-2"></i>HUB
                     </button>
-                    <button class="template-btn" data-template="promotional">
-                        <i class="bi bi-megaphone me-2"></i>Promotionnel → HERO
-                    </button>
-                    <button class="template-btn" data-template="tutorials">
-                        <i class="bi bi-question-circle me-2"></i>Tutoriels → HELP
-                    </button>
-                    <button class="template-btn" data-template="brand_content">
-                        <i class="bi bi-building me-2"></i>Marque → HUB
-                    </button>
-                    <button class="template-btn" data-template="product_launch">
-                        <i class="bi bi-rocket me-2"></i>Lancement → HERO
+                    <button class="template-btn" data-template="hero">
+                        <i class="bi bi-fire me-2"></i>HERO
                     </button>
                 </div>
                 
@@ -697,10 +688,17 @@ function renderPlaylists() {
         return matchesSearch && matchesCategory && matchesSource;
     });
     
-    // Tri
+    // Tri : Unclassified d'abord, puis selon sortBy / sortOrder
     filteredPlaylists.sort((a, b) => {
+        // 1) Priorité aux playlists sans catégorie
+        const aUnclassified = !a.category;
+        const bUnclassified = !b.category;
+        if (aUnclassified && !bUnclassified) return -1;
+        if (!aUnclassified && bUnclassified) return 1;
+
+        // 2) Ensuite tri standard
         let valueA, valueB;
-        
+
         if (sortBy === 'video_count') {
             valueA = a.video_count || 0;
             valueB = b.video_count || 0;
@@ -708,7 +706,7 @@ function renderPlaylists() {
             valueA = a.name.toLowerCase();
             valueB = b.name.toLowerCase();
         }
-        
+
         if (sortOrder === 'desc') {
             return valueB > valueA ? 1 : -1;
         } else {
@@ -865,21 +863,14 @@ function applyTemplate(template) {
         return;
     }
     
-    const templateMappings = {
-        'educational': 'help',
-        'entertainment': 'hub',
-        'promotional': 'hero',
-        'tutorials': 'help',
-        'brand_content': 'hub',
-        'product_launch': 'hero',
-        'seasonal': 'hero',
-        'community': 'hub',
-        'behind_scenes': 'hub',
-        'testimonials': 'hero'
-    };
+    // Directement utiliser les catégories de base
+    const validCategories = ['help', 'hub', 'hero'];
+    if (!validCategories.includes(template)) {
+        showNotification('⚠️ Catégorie invalide', 'error');
+        return;
+    }
     
-    const category = templateMappings[template];
-    if (!category) return;
+    const category = template;
     
     // Appliquer à toutes les playlists sélectionnées
     selectedPlaylists.forEach(playlistId => {
@@ -961,6 +952,8 @@ async function applyBulkClassification() {
         );
         
         // Utiliser la nouvelle API de classification en lot
+        // Toutes les playlists sélectionnées ont déjà la même catégorie (vérifié plus haut)
+        const commonCategory = playlistsToUpdate[0].category;
         const response = await fetch('/api/playlists/bulk-classify', {
             method: 'POST',
             headers: {
@@ -969,6 +962,7 @@ async function applyBulkClassification() {
             body: JSON.stringify({
                 playlist_ids: Array.from(selectedPlaylists),
                 competitor_id: currentCompetitorId,
+                custom_category: commonCategory, // on passe directement la catégorie choisie
                 force_propagate: shouldPropagate
             })
         });

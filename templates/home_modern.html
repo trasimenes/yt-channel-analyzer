@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Dashboard - YT Analyzer{% endblock %}
 
@@ -45,6 +45,106 @@
 
     .search-input-wrapper {
         margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .autocomplete-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 0.5rem;
+    }
+    
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+        transition: background-color 0.2s ease;
+    }
+    
+    .autocomplete-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .item-thumbnail {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .item-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .no-thumb {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9ecef;
+        font-size: 18px;
+    }
+    
+    .item-info {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2px;
+    }
+    
+    .item-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .item-badge {
+        flex-shrink: 0;
+    }
+    
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge:not(.new) {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge.new {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .autocomplete-item.analyzed {
+        background-color: #f8f9fa;
     }
 
     .search-input {
@@ -163,25 +263,26 @@
 
     <!-- Search Hero Section -->
     <div class="search-hero">
-        <h1>Analyse de Chaîne YouTube</h1>
-        <p>Entrez l'URL ou l'ID d'une chaîne pour commencer</p>
+        <h1>YouTube Channel Analysis</h1>
+        <p>Enter the channel URL or ID to get started</p>
         <form action="{{ url_for('analyze_channel') }}" method="post" class="search-form-container">
             <div class="search-input-wrapper">
-                <input type="text" name="query" class="search-input" placeholder="Ex: https://www.youtube.com/c/mrbeast6000">
+                <input type="text" name="channel_url" id="channelSearch" class="search-input" placeholder="Ex: https://www.youtube.com/c/mrbeast6000" autocomplete="off">
+                <div id="autocomplete-results" class="autocomplete-results" style="display: none;"></div>
             </div>
             
             <div class="analysis-options">
                 <div class="options-group">
-                    <label for="max_videos">Nombre de vidéos à rapatrier :</label>
+                    <label for="max_videos">Number of videos to import:</label>
                     <select name="max_videos" id="max_videos" class="form-select">
-                        <option value="30">Les 30 dernières</option>
-                        <option value="50" selected>Les 50 dernières</option>
-                        <option value="100">Les 100 dernières</option>
-                        <option value="0">Toutes les vidéos</option>
+                        <option value="30">Last 30</option>
+                        <option value="50" selected>Last 50</option>
+                        <option value="100">Last 100</option>
+                        <option value="0">All videos</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-analyze">
-                    <i class="bi bi-arrow-right-circle-fill"></i> Lancer l'analyse
+                    <i class="bi bi-arrow-right-circle-fill"></i> Start Analysis
                 </button>
             </div>
         </form>
@@ -193,7 +294,7 @@
             <div class="stat-card">
                 <div class="card-body text-center">
                     <i class="bi bi-people-fill stat-icon"></i>
-                    <h5 class="card-title">Concurrents Suivis</h5>
+                    <h5 class="card-title">Competitors Tracked</h5>
                     <p class="stat-value">{{ stats.get('total_competitors', 'N/A') }}</p>
                 </div>
             </div>
@@ -202,7 +303,7 @@
             <div class="stat-card">
                 <div class="card-body text-center">
                     <i class="bi bi-camera-video-fill stat-icon"></i>
-                    <h5 class="card-title">Vidéos Analysées</h5>
+                    <h5 class="card-title">Videos Analyzed</h5>
                     <p class="stat-value">{{ "{:,.0f}".format(stats.get('total_videos', 0)).replace(',', ' ') }}</p>
                 </div>
             </div>
@@ -211,7 +312,7 @@
             <div class="stat-card">
                 <div class="card-body text-center">
                     <i class="bi bi-collection-play-fill stat-icon"></i>
-                    <h5 class="card-title">Playlists Analysées</h5>
+                    <h5 class="card-title">Playlists Analyzed</h5>
                     <p class="stat-value">{{ "{:,.0f}".format(stats.get('total_playlists', 0)).replace(',', ' ') }}</p>
                 </div>
             </div>
@@ -220,11 +321,97 @@
             <div class="stat-card">
                 <div class="card-body text-center">
                     <i class="bi bi-eye-fill stat-icon"></i>
-                    <h5 class="card-title">Vues Cumulées</h5>
+                    <h5 class="card-title">Total Views</h5>
                     <p class="stat-value">{{ stats.get('total_views_formatted', 'N/A') }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Autocomplete functionality
+let autocompleteTimeout;
+const searchInput = document.getElementById('channelSearch');
+const autocompleteResults = document.getElementById('autocomplete-results');
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.trim();
+    
+    if (query.length < 2) {
+        autocompleteResults.style.display = 'none';
+        return;
+    }
+    
+    // Clear previous timeout
+    if (autocompleteTimeout) {
+        clearTimeout(autocompleteTimeout);
+    }
+    
+    // Debounce the search
+    autocompleteTimeout = setTimeout(() => {
+        fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayAutocompleteResults(data);
+            })
+            .catch(error => {
+                console.error('Autocomplete error:', error);
+                autocompleteResults.style.display = 'none';
+            });
+    }, 300);
+});
+
+function displayAutocompleteResults(suggestions) {
+    if (!suggestions || suggestions.length === 0) {
+        autocompleteResults.style.display = 'none';
+        return;
+    }
+    
+    let html = '';
+    suggestions.forEach(suggestion => {
+        const isAnalyzed = suggestion.is_analyzed ? 'analyzed' : '';
+        const badge = suggestion.is_analyzed ? '<span class="badge">✅ Analyzed</span>' : '<span class="badge new">🆕 New</span>';
+        
+        html += `
+            <div class="autocomplete-item ${isAnalyzed}" data-url="${suggestion.url}">
+                <div class="item-content">
+                    <div class="item-thumbnail">
+                        ${suggestion.thumbnail ? `<img src="${suggestion.thumbnail}" alt="${suggestion.name}">` : '<div class="no-thumb">📺</div>'}
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">${suggestion.name}</div>
+                        <div class="item-meta">
+                            ${suggestion.subscribers ? `${suggestion.subscribers} subscribers` : ''}
+                            ${suggestion.is_analyzed ? `• ${suggestion.video_count} videos analyzed` : ''}
+                        </div>
+                    </div>
+                    <div class="item-badge">${badge}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    autocompleteResults.innerHTML = html;
+    autocompleteResults.style.display = 'block';
+    
+    // Add click handlers
+    autocompleteResults.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            searchInput.value = url;
+            autocompleteResults.style.display = 'none';
+        });
+    });
+}
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(event) {
+    if (!searchInput.contains(event.target) && !autocompleteResults.contains(event.target)) {
+        autocompleteResults.style.display = 'none';
+    }
+});
+</script>
 {% endblock %}

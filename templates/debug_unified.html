@@ -1,0 +1,412 @@
+{% extends "sneat_base.html" %}
+
+{% block title %}Fix All Problems - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-tools text-primary me-3"></i>
+                        Fix All Problems
+                    </h1>
+                    <p class="text-muted mb-0">Correction automatique unifiée - Sélectionnez ce que vous voulez corriger</p>
+                </div>
+
+                {% if message %}
+                <div class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <!-- Unified Fix Problems Section -->
+                <div class="card settings-card">
+                    <div class="card-header card-header-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-wrench-adjustable me-2"></i>
+                            Corriger les Problèmes - Sélection Multiple
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info alert-custom" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Correction unifiée des problèmes</strong>
+                            <p class="mb-0 mt-2">Sélectionnez les problèmes que vous voulez corriger automatiquement. Le système appliquera toutes les corrections en une seule fois.</p>
+                        </div>
+
+                        <form id="fixProblemsForm">
+                            <div class="row">
+                                <!-- Colonne 1: Problèmes de Données -->
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary mb-3">
+                                        <i class="bi bi-database me-2"></i>
+                                        Problèmes de Données
+                                    </h6>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="data_integrity" id="fix_data_integrity" checked>
+                                        <label class="form-check-label" for="fix_data_integrity">
+                                            <strong>Validation d'intégrité des données</strong>
+                                            <small class="text-muted d-block">Vérifier et corriger les incohérences (vues négatives, dates invalides, etc.)</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="youtube_dates" id="fix_youtube_dates" checked>
+                                        <label class="form-check-label" for="fix_youtube_dates">
+                                            <strong>Correction des dates YouTube</strong>
+                                            <small class="text-muted d-block">Récupérer les vraies dates de publication depuis l'API YouTube</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="missing_data" id="fix_missing_data">
+                                        <label class="form-check-label" for="fix_missing_data">
+                                            <strong>Données manquantes</strong>
+                                            <small class="text-muted d-block">Calculer les abonnés, vues totales, et autres métriques manquantes</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="orphan_data" id="fix_orphan_data">
+                                        <label class="form-check-label" for="fix_orphan_data">
+                                            <strong>Données orphelines</strong>
+                                            <small class="text-muted d-block">Supprimer les vidéos/playlists sans concurrent associé</small>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Colonne 2: Problèmes de Classification -->
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary mb-3">
+                                        <i class="bi bi-tags me-2"></i>
+                                        Problèmes de Classification
+                                    </h6>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="human_propagation" id="fix_human_propagation" checked>
+                                        <label class="form-check-label" for="fix_human_propagation">
+                                            <strong>Propagation classifications humaines</strong>
+                                            <small class="text-muted d-block">Propager les classifications validées par les humains</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="reclassify_videos" id="fix_reclassify_videos">
+                                        <label class="form-check-label" for="fix_reclassify_videos">
+                                            <strong>Re-classification automatique</strong>
+                                            <small class="text-muted d-block">Reclassifier toutes les vidéos avec la logique multilingue</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="classify_playlists" id="fix_classify_playlists">
+                                        <label class="form-check-label" for="fix_classify_playlists">
+                                            <strong>Classification des playlists</strong>
+                                            <small class="text-muted d-block">Classifier automatiquement les playlists non classifiées</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="classification_tracking" id="fix_classification_tracking">
+                                        <label class="form-check-label" for="fix_classification_tracking">
+                                            <strong>Tracking des classifications</strong>
+                                            <small class="text-muted d-block">Corriger les sources et flags de validation manquants</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Options avancées -->
+                            <hr class="my-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary mb-3">
+                                        <i class="bi bi-gear me-2"></i>
+                                        Options Avancées
+                                    </h6>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="auto_fix_errors" id="auto_fix_errors" checked>
+                                        <label class="form-check-label" for="auto_fix_errors">
+                                            <strong>Correction automatique des erreurs</strong>
+                                            <small class="text-muted d-block">Corriger automatiquement les erreurs réparables</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" value="final_validation" id="final_validation" checked>
+                                        <label class="form-check-label" for="final_validation">
+                                            <strong>Validation finale</strong>
+                                            <small class="text-muted d-block">Valider l'intégrité après toutes les corrections</small>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary mb-3">
+                                        <i class="bi bi-speedometer me-2"></i>
+                                        Limites & Performance
+                                    </h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="api_limit" class="form-label">Limite requêtes API YouTube</label>
+                                        <input type="number" class="form-control" id="api_limit" name="api_limit" value="100" min="10" max="1000">
+                                        <small class="text-muted">Nombre maximum de vidéos à traiter via l'API</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="batch_size" class="form-label">Taille des lots</label>
+                                        <input type="number" class="form-control" id="batch_size" name="batch_size" value="50" min="10" max="100">
+                                        <small class="text-muted">Nombre d'éléments traités par lot</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <button type="button" class="btn btn-outline-secondary" onclick="selectAll()">
+                                    <i class="bi bi-check-all me-2"></i>
+                                    Tout sélectionner
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="selectNone()">
+                                    <i class="bi bi-x-square me-2"></i>
+                                    Tout désélectionner
+                                </button>
+                                <button type="button" class="btn btn-primary-modern" onclick="runFixProblems()" id="runFixBtn">
+                                    <i class="bi bi-play-circle me-2"></i>
+                                    Lancer les Corrections
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Progression -->
+                <div id="fix-progress" class="card mt-4" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            Correction en cours...
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%" id="progress-bar"></div>
+                        </div>
+                        <div class="text-center">
+                            <small class="text-muted" id="progress-text">Initialisation...</small>
+                        </div>
+                        <div id="progress-log" class="mt-3" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                            <!-- Logs en temps réel -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Résultats -->
+                <div id="fix-results" class="card mt-4" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Résultats des Corrections
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="results-content">
+                            <!-- Résultats détaillés -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectAll() {
+    document.querySelectorAll('#fixProblemsForm input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function selectNone() {
+    document.querySelectorAll('#fixProblemsForm input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+async function runFixProblems() {
+    const btn = document.getElementById('runFixBtn');
+    const progressDiv = document.getElementById('fix-progress');
+    const resultsDiv = document.getElementById('fix-results');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressLog = document.getElementById('progress-log');
+    
+    // Récupérer les options sélectionnées
+    const selectedFixes = [];
+    document.querySelectorAll('#fixProblemsForm input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedFixes.push(checkbox.value);
+    });
+    
+    if (selectedFixes.length === 0) {
+        alert('Veuillez sélectionner au moins un problème à corriger');
+        return;
+    }
+    
+    // Récupérer les paramètres
+    const apiLimit = document.getElementById('api_limit').value;
+    const batchSize = document.getElementById('batch_size').value;
+    
+    // Préparer l'interface
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split spinner-border spinner-border-sm me-2"></i> Correction en cours...';
+    progressDiv.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    progressLog.innerHTML = '';
+    
+    try {
+        // Lancer la correction
+        const response = await fetch('/api/fix-all-problems', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                selected_fixes: selectedFixes,
+                api_limit: parseInt(apiLimit),
+                batch_size: parseInt(batchSize)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Afficher les résultats
+            displayResults(result);
+            progressText.textContent = 'Correction terminée avec succès!';
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-success');
+        } else {
+            // Afficher l'erreur
+            progressText.textContent = 'Erreur: ' + result.error;
+            progressBar.classList.add('bg-danger');
+            addLogEntry('❌ Erreur: ' + result.error, 'danger');
+        }
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        progressText.textContent = 'Erreur de communication';
+        progressBar.classList.add('bg-danger');
+        addLogEntry('❌ Erreur de communication: ' + error.message, 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-play-circle me-2"></i> Lancer les Corrections';
+    }
+}
+
+function displayResults(result) {
+    const resultsDiv = document.getElementById('fix-results');
+    const resultsContent = document.getElementById('results-content');
+    
+    let html = '<div class="row">';
+    
+    // Statistiques globales
+    html += '<div class="col-md-6 mb-3">';
+    html += '<h6>📊 Statistiques</h6>';
+    html += '<ul class="list-group">';
+    html += `<li class="list-group-item d-flex justify-content-between">
+        <span>Classifications corrigées</span>
+        <span class="badge bg-primary">${result.stats.classifications_fixed}</span>
+    </li>`;
+    html += `<li class="list-group-item d-flex justify-content-between">
+        <span>Dates YouTube corrigées</span>
+        <span class="badge bg-info">${result.stats.dates_corrected}</span>
+    </li>`;
+    html += `<li class="list-group-item d-flex justify-content-between">
+        <span>Propagations humaines</span>
+        <span class="badge bg-success">${result.stats.human_propagated}</span>
+    </li>`;
+    html += `<li class="list-group-item d-flex justify-content-between">
+        <span>Corrections en base</span>
+        <span class="badge bg-warning">${result.stats.database_fixes}</span>
+    </li>`;
+    html += '</ul>';
+    html += '</div>';
+    
+    // Problèmes résolus
+    html += '<div class="col-md-6 mb-3">';
+    html += '<h6>✅ Problèmes Résolus</h6>';
+    html += '<ul class="list-group">';
+    result.issues_fixed.forEach(issue => {
+        html += `<li class="list-group-item">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            ${issue}
+        </li>`;
+    });
+    html += '</ul>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Rapport d'intégrité final
+    if (result.integrity_report) {
+        html += '<div class="mt-4">';
+        html += '<h6>🛡️ Rapport d\'Intégrité Final</h6>';
+        html += `<div class="alert alert-${result.integrity_report.health_status === 'excellent' ? 'success' : 'warning'}">`;
+        html += `<strong>Statut:</strong> ${result.integrity_report.health_status}<br>`;
+        html += `<strong>Erreurs critiques:</strong> ${result.integrity_report.stats.critical_errors}<br>`;
+        html += `<strong>Total erreurs:</strong> ${result.integrity_report.stats.errors_found}<br>`;
+        html += `<strong>Vérifications:</strong> ${result.integrity_report.stats.total_checks}`;
+        html += '</div>';
+        html += '</div>';
+    }
+    
+    resultsContent.innerHTML = html;
+    resultsDiv.style.display = 'block';
+}
+
+function addLogEntry(message, type = 'info') {
+    const progressLog = document.getElementById('progress-log');
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.className = `text-${type} small`;
+    logEntry.innerHTML = `[${timestamp}] ${message}`;
+    progressLog.appendChild(logEntry);
+    progressLog.scrollTop = progressLog.scrollHeight;
+}
+
+// Simuler le streaming des logs (optionnel)
+function simulateProgress() {
+    const steps = [
+        'Validation d\'intégrité en cours...',
+        'Correction des dates YouTube...',
+        'Propagation des classifications humaines...',
+        'Mise à jour des données manquantes...',
+        'Finalisation en base de données...',
+        'Validation finale...'
+    ];
+    
+    let currentStep = 0;
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            addLogEntry(steps[currentStep]);
+            document.getElementById('progress-text').textContent = steps[currentStep];
+            document.getElementById('progress-bar').style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+            currentStep++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 1000);
+}
+</script>
+{% endblock %}

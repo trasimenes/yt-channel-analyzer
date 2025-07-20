@@ -1,0 +1,460 @@
+{% extends "sneat/base.html" %}
+
+{% block title %}Competitors - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat/libs/datatables/datatables.css') }}" />
+<style>
+    .competitor-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .competitor-stats {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-badge {
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #495057;
+        border: 1px solid #e9ecef;
+    }
+    
+    .country-flag {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .competitor-name {
+        font-weight: 600;
+        color: #495057;
+        text-decoration: none;
+    }
+    
+    .competitor-name:hover {
+        color: #667eea;
+    }
+    
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h4 class="card-title mb-2">
+                            <i class="bx bx-group me-2 text-primary"></i>
+                            Competitors Analysis
+                        </h4>
+                        <p class="text-muted mb-0">
+                            Manage and analyze your YouTube competitors across different markets
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-end">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompetitorModal">
+                            <i class="bx bx-plus me-1"></i>
+                            Add Competitor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="avatar avatar-md mx-auto mb-3">
+                    <span class="avatar-initial rounded-circle bg-label-primary">
+                        <i class="bx bx-group fs-4"></i>
+                    </span>
+                </div>
+                <h4 class="mb-1">{{ competitors|length }}</h4>
+                <small class="text-muted">Total Competitors</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="avatar avatar-md mx-auto mb-3">
+                    <span class="avatar-initial rounded-circle bg-label-success">
+                        <i class="bx bx-video fs-4"></i>
+                    </span>
+                </div>
+                <h4 class="mb-1">{{ total_videos|default('0') }}</h4>
+                <small class="text-muted">Videos Analyzed</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="avatar avatar-md mx-auto mb-3">
+                    <span class="avatar-initial rounded-circle bg-label-info">
+                        <i class="bx bx-world fs-4"></i>
+                    </span>
+                </div>
+                <h4 class="mb-1">{{ countries|length|default('0') }}</h4>
+                <small class="text-muted">Countries</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="avatar avatar-md mx-auto mb-3">
+                    <span class="avatar-initial rounded-circle bg-label-warning">
+                        <i class="bx bx-time fs-4"></i>
+                    </span>
+                </div>
+                <h4 class="mb-1">{{ active_tasks|default('0') }}</h4>
+                <small class="text-muted">Active Tasks</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Competitors Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Competitors List</h5>
+        <div class="card-title-elements">
+            <button class="btn btn-outline-primary btn-sm" onclick="refreshCompetitors()">
+                <i class="bx bx-refresh"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if competitors %}
+        <div class="table-responsive">
+            <table id="competitorsTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Competitor</th>
+                        <th>Country</th>
+                        <th>Videos</th>
+                        <th>Total Views</th>
+                        <th>Avg Views</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for competitor in competitors %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    {% if competitor.thumbnail_url %}
+                                        <img src="{{ competitor.thumbnail_url }}" alt="{{ competitor.name }}" class="competitor-avatar">
+                                    {% else %}
+                                        <div class="avatar avatar-sm">
+                                            <span class="avatar-initial rounded-circle bg-label-secondary">
+                                                {{ competitor.name[0].upper() }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="/competitor/{{ competitor.id }}" class="competitor-name">
+                                        {{ competitor.name }}
+                                    </a>
+                                    <div class="text-muted small">
+                                        {{ competitor.subscriber_count|format_number if competitor.subscriber_count else 'N/A' }} subscribers
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="country-flag">{{ competitor.country_flag }}</span>
+                            {{ competitor.country_name }}
+                        </td>
+                        <td>
+                            <span class="badge bg-label-primary">{{ competitor.video_count|default('0') }}</span>
+                        </td>
+                        <td>{{ competitor.total_views|format_number if competitor.total_views else 'N/A' }}</td>
+                        <td>{{ competitor.avg_views|format_number if competitor.avg_views else 'N/A' }}</td>
+                        <td>
+                            {% if competitor.last_updated %}
+                                <span class="text-muted small">{{ competitor.last_updated.strftime('%Y-%m-%d') }}</span>
+                            {% else %}
+                                <span class="text-muted">Never</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/competitor/{{ competitor.id }}" class="btn btn-outline-primary btn-sm" title="View Details">
+                                    <i class="bx bx-show"></i>
+                                </a>
+                                <button class="btn btn-outline-success btn-sm" onclick="refreshCompetitor({{ competitor.id }})" title="Refresh Data">
+                                    <i class="bx bx-refresh"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteCompetitor({{ competitor.id }}, '{{ competitor.name }}')" title="Delete">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="avatar avatar-xl mx-auto mb-3">
+                <span class="avatar-initial rounded-circle bg-label-secondary">
+                    <i class="bx bx-group fs-1"></i>
+                </span>
+            </div>
+            <h5 class="mb-2">No competitors yet</h5>
+            <p class="text-muted mb-4">Start by adding your first YouTube competitor to analyze</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompetitorModal">
+                <i class="bx bx-plus me-1"></i>
+                Add Your First Competitor
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Competitor Modal -->
+<div class="modal fade" id="addCompetitorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Competitor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/add-competitor" method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="channel_url" class="form-label">YouTube Channel URL</label>
+                            <input type="url" class="form-control" id="channel_url" name="channel_url" 
+                                   placeholder="https://www.youtube.com/@channel" required>
+                            <div class="form-text">Enter the complete YouTube channel URL</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="country" class="form-label">Country</label>
+                            <select class="form-select" id="country" name="country" required>
+                                <option value="">Select country</option>
+                                <option value="FR">🇫🇷 France</option>
+                                <option value="DE">🇩🇪 Germany</option>
+                                <option value="BE">🇧🇪 Belgium</option>
+                                <option value="NL">🇳🇱 Netherlands</option>
+                                <option value="INT">🌍 International</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="max_videos" class="form-label">Videos to Import</label>
+                            <select class="form-select" id="max_videos" name="max_videos">
+                                <option value="30">Last 30 videos</option>
+                                <option value="50" selected>Last 50 videos</option>
+                                <option value="100">Last 100 videos</option>
+                                <option value="0">All videos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                      placeholder="Add notes about this competitor..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-plus me-1"></i>
+                        Add Competitor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables -->
+<script src="{{ url_for('static', filename='sneat/libs/datatables/datatables.js') }}"></script>
+
+<script>
+// Initialize DataTables
+$(document).ready(function() {
+    $('#competitorsTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[5, 'desc']], // Sort by last updated
+        language: {
+            search: "Search competitors:",
+            lengthMenu: "Show _MENU_ competitors per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ competitors",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        },
+        columnDefs: [
+            { targets: [6], orderable: false } // Actions column not sortable
+        ]
+    });
+});
+
+// Refresh single competitor
+function refreshCompetitor(competitorId) {
+    if (confirm('This will refresh data for this competitor. Continue?')) {
+        fetch('/api/refresh-competitor/' + competitorId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Competitor refresh started!');
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                showToast('error', 'Failed to refresh competitor: ' + data.error);
+            }
+        })
+        .catch(error => {
+            showToast('error', 'Error: ' + error.message);
+        });
+    }
+}
+
+// Delete competitor
+function deleteCompetitor(competitorId, competitorName) {
+    if (confirm(`Are you sure you want to delete "${competitorName}"? This action cannot be undone.`)) {
+        fetch('/api/delete-competitor/' + competitorId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Competitor deleted successfully!');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('error', 'Failed to delete competitor: ' + data.error);
+            }
+        })
+        .catch(error => {
+            showToast('error', 'Error: ' + error.message);
+        });
+    }
+}
+
+// Refresh all competitors
+function refreshCompetitors() {
+    if (confirm('This will refresh data for all competitors. This may take a while. Continue?')) {
+        fetch('/api/refresh-all-competitors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Refresh started for all competitors!');
+                window.location.href = '/tasks';
+            } else {
+                showToast('error', 'Failed to refresh competitors: ' + data.error);
+            }
+        })
+        .catch(error => {
+            showToast('error', 'Error: ' + error.message);
+        });
+    }
+}
+
+// Toast notifications
+function showToast(type, message) {
+    // Create toast element
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // Add to container
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1055';
+        document.body.appendChild(container);
+    }
+    
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Show toast
+    const toastElement = container.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Remove after hidden
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+</script>
+{% endblock %}

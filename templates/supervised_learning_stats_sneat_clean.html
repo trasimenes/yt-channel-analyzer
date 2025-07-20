@@ -1,0 +1,363 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Statistiques ML - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-bar-chart-line me-2"></i>
+                            Statistiques d'Apprentissage Supervisé
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Performance et métriques des modèles IA</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-arrow-left"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Classification</span>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshStatsBtn">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Performance Overview -->
+    {% if model_stats %}
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-brain bx-lg"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "%.1f"|format(model_stats.accuracy * 100) }}%</h4>
+                    <p class="mb-0 text-muted">Précision Globale</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-check-circle bx-lg"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ model_stats.total_predictions }}</h4>
+                    <p class="mb-0 text-muted">Prédictions Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-user-check bx-lg"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ model_stats.human_validations }}</h4>
+                    <p class="mb-0 text-muted">Validations Humaines</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-percentage bx-lg"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "%.1f"|format(model_stats.confidence_avg) }}%</h4>
+                    <p class="mb-0 text-muted">Confiance Moyenne</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Performance by Category -->
+    {% if category_stats %}
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-chart-pie me-2"></i>
+                        Performance par Catégorie
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th class="text-center">Prédictions</th>
+                                    <th class="text-center">Correctes</th>
+                                    <th class="text-center">Précision</th>
+                                    <th class="text-center">Confiance Moy.</th>
+                                    <th class="text-center">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in category_stats %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded-circle 
+                                                    {% if category.category == 'hero' %}bg-label-danger
+                                                    {% elif category.category == 'hub' %}bg-label-info
+                                                    {% else %}bg-label-primary{% endif %}">
+                                                    {% if category.category == 'hero' %}🔥
+                                                    {% elif category.category == 'hub' %}🏠
+                                                    {% else %}🆘{% endif %}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ category.category|upper }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ category.total_predictions }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ category.correct_predictions }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-medium">{{ "%.1f"|format(category.accuracy * 100) }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="text-muted">{{ "%.1f"|format(category.avg_confidence) }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if category.accuracy >= 0.8 %}
+                                        <span class="badge bg-success">Excellent</span>
+                                        {% elif category.accuracy >= 0.6 %}
+                                        <span class="badge bg-warning">Bon</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">À améliorer</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Predictions -->
+    {% if recent_predictions %}
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-history me-2"></i>
+                        Prédictions Récentes
+                    </h6>
+                    <small class="text-muted">Dernières {{ recent_predictions|length }} prédictions</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="60">Type</th>
+                                    <th>Contenu</th>
+                                    <th width="120">Prédiction IA</th>
+                                    <th width="120">Validation Humaine</th>
+                                    <th width="100">Confiance</th>
+                                    <th width="100">Correct</th>
+                                    <th width="120">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pred in recent_predictions %}
+                                <tr>
+                                    <td>
+                                        {% if pred.content_type == 'video' %}
+                                        <span class="badge bg-info">🎬 Vidéo</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">📋 Playlist</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;" title="{{ pred.title }}">
+                                            {{ pred.title }}
+                                        </div>
+                                        <small class="text-muted">{{ pred.competitor_name }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge 
+                                            {% if pred.predicted_category == 'hero' %}bg-danger
+                                            {% elif pred.predicted_category == 'hub' %}bg-info
+                                            {% else %}bg-primary{% endif %}">
+                                            {{ pred.predicted_category|upper }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if pred.human_category %}
+                                        <span class="badge bg-success">{{ pred.human_category|upper }}</span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge 
+                                            {% if pred.confidence >= 80 %}bg-success
+                                            {% elif pred.confidence >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ pred.confidence }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if pred.human_category %}
+                                            {% if pred.predicted_category == pred.human_category %}
+                                            <i class="bx bx-check-circle text-success"></i>
+                                            {% else %}
+                                            <i class="bx bx-x-circle text-danger"></i>
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <small class="text-muted">{{ pred.prediction_date }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Model Information -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-info-circle me-2"></i>
+                        Informations du Modèle
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Architecture:</span>
+                        <span class="fw-medium">Sentence Transformers</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Modèle:</span>
+                        <span class="fw-medium">all-mpnet-base-v2</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Dimensions:</span>
+                        <span class="fw-medium">768</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Dernière MAJ:</span>
+                        <span class="fw-medium">{{ model_last_updated or 'Inconnue' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-shield-check me-2"></i>
+                        Protection des Données
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info p-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Hiérarchie de Classification</h6>
+                                <small>Les validations humaines ont toujours la priorité absolue sur les prédictions IA.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">🥇 Humain (Priorité absolue):</span>
+                        <span class="badge bg-success">{{ model_stats.human_validations if model_stats else 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">🥈 Sentence Transformer:</span>
+                        <span class="badge bg-info">{{ model_stats.ai_predictions if model_stats else 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">🥉 Patterns automatiques:</span>
+                        <span class="badge bg-secondary">{{ model_stats.pattern_predictions if model_stats else 0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not model_stats and not category_stats %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-secondary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-bar-chart" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Aucune statistique disponible</h5>
+                    <p class="text-muted">Les statistiques d'apprentissage apparaîtront après les premières prédictions.</p>
+                    <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-primary">
+                        <i class="bx bx-plus me-2"></i>Commencer la Classification
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for interactions -->
+<script>
+document.getElementById('refreshStatsBtn').addEventListener('click', function() {
+    const btn = this;
+    const originalContent = btn.innerHTML;
+    
+    // Show loading state
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> <span class="d-none d-sm-inline-block ms-1">Refreshing...</span>';
+    btn.disabled = true;
+    
+    // Reload page after short delay
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+});
+</script>
+{% endblock %}

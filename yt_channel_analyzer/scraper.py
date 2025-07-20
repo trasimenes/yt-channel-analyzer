@@ -104,8 +104,22 @@ def autocomplete_youtube_channels(query, max_results=5):
                             except:
                                 url = ''
                             
+                            # Récupération sécurisée de la miniature
+                            try:
+                                thumbnails = channel.get('thumbnail', {}).get('thumbnails', [])
+                                thumbnail_url = ''
+                                if thumbnails:
+                                    # Prendre la miniature de meilleure qualité (la dernière dans la liste)
+                                    thumbnail_url = thumbnails[-1].get('url', '') if thumbnails else ''
+                            except:
+                                thumbnail_url = ''
+                            
                             if name and url:  # Seulement ajouter si on a au moins un nom et une URL
-                                suggestions.append({'name': name, 'url': url})
+                                suggestions.append({
+                                    'name': name, 
+                                    'url': url,
+                                    'thumbnail': thumbnail_url
+                                })
                                 if len(suggestions) >= max_results:
                                     return suggestions
             except Exception:

@@ -93,7 +93,7 @@
                 
                 <!-- Analytics Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['top_videos', 'countries_analysis', 'insights', 'frequency_dashboard'] %}active{% endif %}" 
+                    <a class="nav-link dropdown-toggle {% if request.endpoint in ['top_videos', 'top_playlists', 'top_topics', 'countries_analysis', 'insights', 'frequency_dashboard'] %}active{% endif %}" 
                        href="#" id="analyticsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-graph-up me-1"></i>
                         Analytics
@@ -104,6 +104,20 @@
                                 <i class="bi bi-trophy me-2"></i>
                                 Top Vidéos Globales
                                 <span class="badge bg-warning ms-1">Global</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'top_playlists' %}active{% endif %}" href="/top-playlists">
+                                <i class="bi bi-collection-play me-2"></i>
+                                Top Playlists Globales
+                                <span class="badge bg-info ms-1">New</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.endpoint == 'top_topics' %}active{% endif %}" href="/top-topics">
+                                <i class="bi bi-tags me-2"></i>
+                                Topics & Personas
+                                <span class="badge bg-primary ms-1">Analysis</span>
                             </a>
                         </li>
                         <li>
@@ -144,9 +158,17 @@
                             <i class="bi bi-gear me-2"></i>Configuration
                         </li>
                         <li>
+                            <a class="dropdown-item {% if request.endpoint == 'business' %}active{% endif %}" href="/business">
+                                <i class="bi bi-briefcase me-2"></i>
+                                Business Settings
+                                <span class="badge bg-success ms-1">Métier</span>
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item {% if request.endpoint == 'settings' %}active{% endif %}" href="/settings">
                                 <i class="bi bi-sliders me-2"></i>
-                                Paramètres & Patterns
+                                Settings & Patterns
+                                <span class="badge bg-info ms-1">Dev</span>
                             </a>
                         </li>
                         <li>

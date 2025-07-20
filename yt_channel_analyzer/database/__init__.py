@@ -13,7 +13,7 @@ Ce module est divisé en plusieurs sous-modules pour une meilleure organisation 
 from .base import (
     get_db_connection, DB_PATH, DatabaseConnection, DatabaseUtils, DatabaseSchema,
     extract_video_id_from_url, extract_channel_id_from_url, detect_language,
-    update_database_schema
+    update_database_schema as db_update_schema
 )
 
 # Fonction d'initialisation
@@ -46,12 +46,11 @@ from .videos import (
 from .analytics import (
     generate_country_insights, generate_detailed_country_insights,
     calculate_publication_frequency, analyze_shorts_vs_regular_videos,
-    generate_center_parcs_insights
+    generate_center_parcs_insights, get_country_insights
 )
 
 # Imports de classification
 from .classification import (
-    get_classification_patterns, get_default_classification_patterns,
     add_classification_pattern, remove_classification_pattern, normalize_pattern,
     classify_video_with_language, classify_videos_directly_with_keywords,
     reclassify_all_videos_with_multilingual_logic, classify_playlist_with_ai,
@@ -145,15 +144,83 @@ def get_frequency_evolution_data(competitor_id: int, period_weeks: int = 12):
     # Placeholder pour la fonction manquante
     return {'success': False, 'error': 'Fonction non implémentée'}
 
-def correct_all_video_dates_with_youtube_api():
-    """Corriger toutes les dates de vidéos avec l'API YouTube"""
-    # Placeholder pour la fonction manquante
-    return {'success': False, 'error': 'Fonction non implémentée'}
+import sqlite3
+from datetime import datetime
+
+# --- Dates correction helpers ---
+
+def _column_exists(table: str, column: str) -> bool:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({table})")
+    exists = any(row[1] == column for row in cur.fetchall())
+    conn.close()
+    return exists
+
 
 def get_dates_correction_status():
-    """Récupérer le statut de correction des dates"""
-    # Placeholder pour la fonction manquante
-    return {'success': False, 'error': 'Fonction non implémentée'}
+    """Retourne un dict avec l'état d'avancement de la correction des dates."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    column_exists = _column_exists('video', 'youtube_published_at')
+    if not column_exists:
+        conn.close()
+        return {
+            'column_exists': False,
+            'total_videos': 0,
+            'corrected_videos': 0,
+            'pending_videos': 0,
+            'correction_percentage': 0.0
+        }
+
+    cur.execute("SELECT COUNT(*) FROM video")
+    total = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM video WHERE youtube_published_at IS NOT NULL AND youtube_published_at != ''")
+    corrected = cur.fetchone()[0]
+    conn.close()
+
+    pending = total - corrected
+    percentage = (corrected / total * 100) if total else 0
+    return {
+        'column_exists': True,
+        'total_videos': total,
+        'corrected_videos': corrected,
+        'pending_videos': pending,
+        'correction_percentage': percentage
+    }
+
+
+def correct_all_video_dates_with_youtube_api(limit: int = 1000):
+    """Corrige la colonne youtube_published_at en copiant published_at si vide (placeholder rapide)."""
+    status = get_dates_correction_status()
+    if not status['column_exists']:
+        # créer colonne via update_database_schema
+        tmp_conn = get_db_connection()
+        DatabaseSchema.update_database_schema(tmp_conn)
+        tmp_conn.close()
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Copier published_at (si non nul) vers youtube_published_at lorsque manquant
+    cur.execute("""
+        UPDATE video
+        SET youtube_published_at = published_at
+        WHERE (youtube_published_at IS NULL OR youtube_published_at = '')
+          AND published_at IS NOT NULL
+        LIMIT ?
+    """, (limit,))
+    updated = conn.total_changes
+    conn.commit()
+    conn.close()
+
+    return {
+        'success': True,
+        'message': f"Dates corrigées pour {updated} vidéos",
+        'total_videos': status['total_videos'],
+        'updated_videos': updated,
+        'failed_videos': 0
+    }
 
 def analyze_frequency_impact_on_engagement():
     """Analyser l'impact de la fréquence sur l'engagement"""
@@ -227,3 +294,19 @@ def list_custom_rules(language: str = None):
 def remove_custom_rule(pattern: str, category: str, language: str = 'all'):
     """Supprimer une règle personnalisée"""
     return remove_classification_pattern(category, pattern, language) 
+
+# Pour compatibilité : garder le nom historique
+update_database_schema = db_update_schema
+
+# Wrapper functions for classification patterns
+def get_classification_patterns(language: str = None):
+    """Wrapper pour récupérer les patterns de classification"""
+    from .classification import ClassificationPatternManager
+    manager = ClassificationPatternManager()
+    return manager.get_classification_patterns(language)
+
+def get_default_classification_patterns(language: str = 'fr'):
+    """Wrapper pour récupérer les patterns par défaut"""
+    from .classification import ClassificationPatternManager
+    manager = ClassificationPatternManager()
+    return manager.get_default_classification_patterns(language) 

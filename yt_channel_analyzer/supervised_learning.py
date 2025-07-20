@@ -1541,12 +1541,19 @@ def get_human_classifications(limit: int = 100, offset: int = 0) -> Dict:
         cursor.execute("SELECT COUNT(*) FROM playlist")
         total_playlists = cursor.fetchone()[0]
 
+        manual_video_count = len(video_classifications_direct)
+        propagated_video_count = len(video_classifications_propagated)
+
+        # Compter toutes les vidéos propagées (pour la statistique globale, sans limite de pagination)
+        cursor.execute("SELECT COUNT(*) FROM video WHERE classification_source='playlist_propagation'")
+        total_propagated_videos = cursor.fetchone()[0]
+
         return {
             'classifications': paginated_classifications,
             'video_classifications': video_classifications,
             'playlist_classifications': playlist_classifications,
             'total_count': total_human_count,
-            'video_count': video_stats[0],
+            'video_count': manual_video_count + total_propagated_videos,
             'playlist_count': playlist_stats[0],
             'unique_videos': video_stats[1],
             'unique_playlists': playlist_stats[1],
@@ -1555,7 +1562,9 @@ def get_human_classifications(limit: int = 100, offset: int = 0) -> Dict:
             'total_playlists': total_playlists,
             'video_reclassification_matrix': video_reclassification_matrix,
             'playlist_category_distribution': playlist_category_distribution,
-            'competitor_stats': competitor_stats
+            'competitor_stats': competitor_stats,
+            'manual_video_count': manual_video_count,
+            'propagated_video_count': total_propagated_videos
         }
         
     except Exception as e:

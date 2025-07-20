@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" class="layout-menu-fixed layout-compact" data-assets-path="../assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Dashboard - Analytics | Sneat - Bootstrap Dashboard Template</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/sneat/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/theme-default.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/libs/apex-charts/apex-charts.css" />
+
+    <!-- Helpers -->
+    <script src="/static/sneat/assets/vendor/js/helpers.js"></script>
+    <style type="text/css">
+    .layout-menu-fixed .layout-navbar-full .layout-menu,
+    .layout-page {
+      padding-top: 0px !important;
+    }
+    .content-wrapper {
+      padding-bottom: 0px !important;
+    }
+    
+    /* Autocomplete Styles */
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 8px;
+        display: none;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: background-color 0.2s;
+    }
+
+    .autocomplete-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-thumbnail {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .autocomplete-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .autocomplete-info {
+        flex: 1;
+    }
+
+    .autocomplete-name {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 2px;
+    }
+
+    .autocomplete-meta {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .autocomplete-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .badge-analyzed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-new {
+        background: #fff3cd;
+        color: #856404;
+    }
+    </style>
+    <script src="/static/sneat/assets/js/config.js"></script>
+    <script>
+        // Toggle Dev Mode function - défini dans le head pour être disponible partout
+        function toggleDevMode() {
+            console.log('Toggle dev mode appelé!');
+            
+            // Simple POST request
+            fetch('/toggle-dev-mode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: ''
+            })
+            .then(response => {
+                console.log('Réponse reçue:', response.status);
+                if (response.ok || response.redirected) {
+                    window.location.reload();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(`Erreur ${response.status}: ${text}`);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur: ' + error.message);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar  ">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a href="/" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <i class="bx bx-play-circle" style="font-size: 24px; color: #696cff;"></i>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bold ms-1">YT Analyzer</span>
+                    </a>
+
+                    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+                        <i class="bx bx-chevron-left bx-sm d-flex align-items-center justify-content-center"></i>
+                    </a>
+                </div>
+
+                <div class="menu-inner-shadow"></div>
+
+                <ul class="menu-inner py-1">
+                    <!-- Dashboard -->
+                    <li class="menu-item active">
+                        <a href="/" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
+                        </a>
+                    </li>
+
+                    <!-- Competitors -->
+                    <li class="menu-item">
+                        <a href="/concurrents" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-group"></i>
+                            <div class="text-truncate" data-i18n="Competitors">Competitors</div>
+                        </a>
+                    </li>
+
+                    <!-- Learn -->
+                    <li class="menu-item">
+                        <a href="/learn" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-book-open"></i>
+                            <div class="text-truncate" data-i18n="Learn">Learn</div>
+                        </a>
+                    </li>
+
+                    <!-- Analytics Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Analytics</span>
+                    </li>
+
+                    <!-- Top Videos -->
+                    <li class="menu-item">
+                        <a href="/top-videos" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-trophy"></i>
+                            <div class="text-truncate" data-i18n="Top Videos">Top Videos</div>
+                        </a>
+                    </li>
+
+                    <!-- Top Playlists -->
+                    <li class="menu-item">
+                        <a href="/top-playlists" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-list-ul"></i>
+                            <div class="text-truncate" data-i18n="Top Playlists">Top Playlists</div>
+                        </a>
+                    </li>
+
+                    <!-- Sentiment Analysis -->
+                    <li class="menu-item">
+                        <a href="/sentiment-analysis" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-smile"></i>
+                            <div class="text-truncate" data-i18n="Sentiment Analysis">Sentiment Analysis</div>
+                        </a>
+                    </li>
+
+                    <!-- Top Topics -->
+                    <li class="menu-item">
+                        <a href="/top-topics" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-hash"></i>
+                            <div class="text-truncate" data-i18n="Top Topics">Top Topics</div>
+                        </a>
+                    </li>
+
+                    <!-- By Country -->
+                    <li class="menu-item">
+                        <a href="/countries-analysis" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div class="text-truncate" data-i18n="By Country">By Country</div>
+                        </a>
+                    </li>
+
+                    <!-- Publishing Frequency -->
+                    <li class="menu-item">
+                        <a href="/frequency-dashboard" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-time"></i>
+                            <div class="text-truncate" data-i18n="Publishing Frequency">Publishing Frequency</div>
+                        </a>
+                    </li>
+
+                    <!-- Insights Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Insights</span>
+                    </li>
+
+                    <!-- Brand Insights -->
+                    <li class="menu-item">
+                        <a href="/insights" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-bulb"></i>
+                            <div class="text-truncate" data-i18n="Brand Insights">Brand Insights</div>
+                        </a>
+                    </li>
+
+                    <!-- Country Insights -->
+                    <li class="menu-item">
+                        <a href="/country-insights" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-globe"></i>
+                            <div class="text-truncate" data-i18n="Country Insights">Country Insights</div>
+                        </a>
+                    </li>
+
+                    <!-- Tools Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Tools</span>
+                    </li>
+
+                    <!-- Fix Problems -->
+                    <li class="menu-item">
+                        <a href="/fix-problems" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-wrench"></i>
+                            <div class="text-truncate" data-i18n="Fix Problems">Fix Problems</div>
+                        </a>
+                    </li>
+
+                    <!-- Tasks -->
+                    {% if dev_mode %}
+                    <li class="menu-item">
+                        <a href="/tasks" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-task"></i>
+                            <div class="text-truncate" data-i18n="Tasks">Tasks</div>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Debug Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Debug</span>
+                    </li>
+
+                    <!-- Settings -->
+                    <li class="menu-item">
+                        <a href="/settings" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-cog"></i>
+                            <div class="text-truncate" data-i18n="Settings">Settings</div>
+                        </a>
+                    </li>
+
+                    <!-- API Usage -->
+                    <li class="menu-item">
+                        <a href="/api-usage" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-data"></i>
+                            <div class="text-truncate" data-i18n="API Usage">API Usage</div>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            <!-- / Menu -->
+
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+
+                <nav
+                    class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                    id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-md"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Search -->
+                        <div class="navbar-nav align-items-center flex-grow-1">
+                            <form action="/analyze-channel" method="post" class="d-flex align-items-center w-100">
+                                <div class="nav-item d-flex align-items-center me-3" style="width: 60%;">
+                                    <i class="bx bx-search bx-md me-2"></i>
+                                    <div class="position-relative flex-grow-1">
+                                        <input
+                                            type="text"
+                                            name="channel_url"
+                                            id="channelSearch"
+                                            class="form-control border-0 shadow-none"
+                                            placeholder="https://www.youtube.com/@channel or channel name"
+                                            autocomplete="off"
+                                            required />
+                                        <div id="autocomplete-results" class="autocomplete-dropdown" style="display: none;"></div>
+                                    </div>
+                                </div>
+                                <select name="max_videos" class="form-select me-2" style="width: auto;">
+                                    <option value="30">30 videos</option>
+                                    <option value="50" selected>50 videos</option>
+                                    <option value="100">100 videos</option>
+                                    <option value="0">All videos</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bx bx-search-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- /Search -->
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- Dev Mode Toggle -->
+                            <li class="nav-item me-3">
+                                <form method="POST" action="/toggle-dev-mode" style="margin: 0;">
+                                    <div class="form-check form-switch mb-0">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            id="devModeSwitch" 
+                                            {% if dev_mode %}checked{% endif %} 
+                                            onchange="this.form.submit();"
+                                        />
+                                        <label class="form-check-label" for="devModeSwitch">
+                                            Dev Mode
+                                        </label>
+                                    </div>
+                                </form>
+                            </li>
+
+                            <!-- User -->
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a
+                                    class="nav-link dropdown-toggle hide-arrow p-0"
+                                    href="javascript:void(0);"
+                                    data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-0">John Doe</h6>
+                                                    <small class="text-muted">Admin</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider my-1"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <i class="bx bx-user bx-md me-3"></i><span>My Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> <i class="bx bx-cog bx-md me-3"></i><span>Settings</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <span class="d-flex align-items-center align-middle">
+                                                <i class="flex-shrink-0 bx bx-credit-card bx-md me-3"></i
+                                                ><span class="flex-grow-1 align-middle">Billing Plan</span>
+                                                <span class="flex-shrink-0 badge rounded-pill bg-danger">4</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider my-1"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/logout">
+                                            <i class="bx bx-power-off bx-md me-3"></i><span>Log Out</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ User -->
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Content -->
+
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="row">
+                            <div class="col-xxl-8 mb-6 order-0">
+                                <div class="card">
+                                    <div class="d-flex align-items-start row">
+                                        <div class="col-sm-7">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-primary mb-3">Welcome to the YouTube Analyzer! 🎉</h5>
+                                                <p class="mb-6">
+                                                    You can search and analyze YouTube channels, track competitors,<br />and get insights on video performance.
+                                                </p>
+
+                                                <a href="/concurrents" class="btn btn-sm btn-outline-primary">View Competitors</a>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5 text-center text-sm-left">
+                                            <div class="card-body pb-0 px-0 px-md-6">
+                                                <i class="bx bx-play-circle" style="font-size: 120px; color: #696cff; opacity: 0.3;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 order-1">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-12 col-6 mb-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                                                    <div class="avatar flex-shrink-0">
+                                                        <i class="bx bx-video" style="font-size: 24px; color: #28a745;"></i>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <button
+                                                            class="btn p-0"
+                                                            type="button"
+                                                            id="cardOpt3"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <i class="bx bx-dots-vertical-rounded text-muted"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-1">Videos Analyzed</p>
+                                                <h4 class="card-title mb-3">{{ "{:,}".format(stats.total_videos) }}</h4>
+                                                <small class="text-success fw-medium"><i class="bx bx-up-arrow-alt"></i> +12.4%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-12 col-6 mb-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                                                    <div class="avatar flex-shrink-0">
+                                                        <i class="bx bx-show" style="font-size: 24px; color: #17a2b8;"></i>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <button
+                                                            class="btn p-0"
+                                                            type="button"
+                                                            id="cardOpt6"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <i class="bx bx-dots-vertical-rounded text-muted"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
+                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-1">Total Views</p>
+                                                <h4 class="card-title mb-3">{{ stats.total_views_formatted }}</h4>
+                                                <small class="text-success fw-medium"><i class="bx bx-up-arrow-alt"></i> +8.2%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Quick Actions -->
+                            <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6">
+                                <div class="card">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <div class="card-title mb-0">
+                                            <h5 class="m-0 me-2">Quick Actions</h5>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-4">
+                                            <div class="col-md-6 col-lg-3">
+                                                <a href="/top-videos" class="text-decoration-none">
+                                                    <div class="d-flex align-items-center p-3 bg-label-primary rounded">
+                                                        <div class="avatar me-3">
+                                                            <span class="avatar-initial rounded bg-label-primary">
+                                                                <i class="bx bx-trophy bx-lg text-primary"></i>
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">Top Videos</h6>
+                                                            <small class="text-muted">View best performers</small>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <a href="/insights" class="text-decoration-none">
+                                                    <div class="d-flex align-items-center p-3 bg-label-success rounded">
+                                                        <div class="avatar me-3">
+                                                            <span class="avatar-initial rounded bg-label-success">
+                                                                <i class="bx bx-bulb bx-lg text-success"></i>
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">Insights</h6>
+                                                            <small class="text-muted">Analytics dashboard</small>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <a href="/human-classifications" class="text-decoration-none">
+                                                    <div class="d-flex align-items-center p-3 bg-label-info rounded">
+                                                        <div class="avatar me-3">
+                                                            <span class="avatar-initial rounded bg-label-info">
+                                                                <i class="bx bx-category bx-lg text-info"></i>
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">Classify</h6>
+                                                            <small class="text-muted">Manual classification</small>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <a href="/tasks" class="text-decoration-none">
+                                                    <div class="d-flex align-items-center p-3 bg-label-warning rounded">
+                                                        <div class="avatar me-3">
+                                                            <span class="avatar-initial rounded bg-label-warning">
+                                                                <i class="bx bx-task bx-lg text-warning"></i>
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">Tasks</h6>
+                                                            <small class="text-muted">Manage tasks</small>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--/ Quick Actions -->
+                            <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2">
+                                <div class="row">
+                                    <div class="col-6 mb-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                                                    <div class="avatar flex-shrink-0">
+                                                        <i class="bx bx-group" style="font-size: 24px; color: #ffc107;"></i>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <button
+                                                            class="btn p-0"
+                                                            type="button"
+                                                            id="cardOpt4"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <i class="bx bx-dots-vertical-rounded text-muted"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
+                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-1">Competitors Tracked</p>
+                                                <h4 class="card-title mb-3">{{ stats.total_competitors }}</h4>
+                                                <small class="text-info fw-medium"><i class="bx bx-minus"></i> Stable</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-6">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                                                    <div class="avatar flex-shrink-0">
+                                                        <i class="bx bx-category" style="font-size: 24px; color: #007bff;"></i>
+                                                    </div>
+                                                    <div class="dropdown">
+                                                        <button
+                                                            class="btn p-0"
+                                                            type="button"
+                                                            id="cardOpt1"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <i class="bx bx-dots-vertical-rounded text-muted"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu" aria-labelledby="cardOpt1">
+                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-1">Playlists Analyzed</p>
+                                                <h4 class="card-title mb-3">{{ stats.total_playlists }}</h4>
+                                                <small class="text-success fw-medium"><i class="bx bx-up-arrow-alt"></i> +15.6%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- / Content -->
+
+                    <!-- Footer -->
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl">
+                            <div
+                                class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+                                <div class="text-body">
+                                    ©
+                                    <script>
+                                        document.write(new Date().getFullYear());
+                                    </script>
+                                    YT Analyzer - Made with ❤️
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                    <!-- / Footer -->
+
+                    <div class="content-backdrop fade"></div>
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+
+    <script src="/static/sneat/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/sneat/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/sneat/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/sneat/assets/vendor/js/menu.js"></script>
+
+    <!-- endbuild -->
+
+    <!-- Vendors JS -->
+    <script src="/static/sneat/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/sneat/assets/js/main.js"></script>
+
+    <!-- Page JS -->
+    <script src="/static/sneat/assets/js/dashboards-analytics.js"></script>
+
+    <!-- Autocomplete functionality -->
+    <script>
+        // Toggle Dev Mode function
+        function toggleDevMode() {
+            console.log('Toggle dev mode called');
+            const checkbox = document.getElementById('devModeSwitch');
+            console.log('Checkbox checked:', checkbox.checked);
+            
+            // Create form data
+            const formData = new FormData();
+            
+            fetch('/toggle-dev-mode', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response redirected:', response.redirected);
+                console.log('Response URL:', response.url);
+                
+                if (response.ok || response.redirected) {
+                    // Force reload to apply changes
+                    window.location.reload();
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling dev mode:', error);
+                alert('Erreur lors du changement de mode: ' + error.message);
+            });
+        }
+
+        // Autocomplete functionality
+        let autocompleteTimeout;
+        const searchInput = document.getElementById('channelSearch');
+        const autocompleteResults = document.getElementById('autocomplete-results');
+
+        if (searchInput && autocompleteResults) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    autocompleteResults.style.display = 'none';
+                    return;
+                }
+                
+                // Clear previous timeout
+                if (autocompleteTimeout) {
+                    clearTimeout(autocompleteTimeout);
+                }
+                
+                // Debounce the search (wait 300ms after user stops typing)
+                autocompleteTimeout = setTimeout(() => {
+                    fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            displayAutocompleteResults(data);
+                        })
+                        .catch(error => {
+                            console.error('Autocomplete error:', error);
+                            autocompleteResults.style.display = 'none';
+                        });
+                }, 300);
+            });
+
+            function displayAutocompleteResults(suggestions) {
+                if (!suggestions || suggestions.length === 0) {
+                    autocompleteResults.style.display = 'none';
+                    return;
+                }
+                
+                let html = '';
+                suggestions.forEach(suggestion => {
+                    const badge = suggestion.is_analyzed 
+                        ? '<span class="autocomplete-badge badge-analyzed">✅ Analyzed</span>' 
+                        : '<span class="autocomplete-badge badge-new">🆕 New</span>';
+                    
+                    html += `
+                        <div class="autocomplete-item" data-url="${suggestion.url}">
+                            <div class="autocomplete-thumbnail">
+                                ${suggestion.thumbnail 
+                                    ? `<img src="${suggestion.thumbnail}" alt="${suggestion.name}">` 
+                                    : '<div style="background: #e9ecef; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px;">📺</div>'
+                                }
+                            </div>
+                            <div class="autocomplete-info">
+                                <div class="autocomplete-name">${suggestion.name}</div>
+                                <div class="autocomplete-meta">
+                                    ${suggestion.subscribers ? `${suggestion.subscribers}` : ''}
+                                    ${suggestion.is_analyzed ? `• ${suggestion.video_count} videos analyzed` : ''}
+                                </div>
+                            </div>
+                            ${badge}
+                        </div>
+                    `;
+                });
+                
+                autocompleteResults.innerHTML = html;
+                autocompleteResults.style.display = 'block';
+                
+                // Add click handlers to each suggestion
+                autocompleteResults.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const url = this.getAttribute('data-url');
+                        searchInput.value = url;
+                        autocompleteResults.style.display = 'none';
+                    });
+                });
+            }
+
+            // Hide autocomplete when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!searchInput.contains(event.target) && !autocompleteResults.contains(event.target)) {
+                    autocompleteResults.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

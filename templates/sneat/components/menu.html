@@ -1,0 +1,201 @@
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+  <div class="app-brand demo">
+    <a href="/" class="app-brand-link">
+      <span class="app-brand-logo demo">
+        <i class='bx bxl-youtube bx-sm'></i>
+      </span>
+      <span class="app-brand-text demo menu-text fw-bolder ms-2">YT Analyzer</span>
+    </a>
+
+    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+      <i class="bx bx-chevron-left bx-sm align-middle"></i>
+    </a>
+  </div>
+
+  <div class="menu-inner-shadow"></div>
+
+  <ul class="menu-inner py-1">
+    <!-- Dashboard -->
+    <li class="menu-item {% if request.endpoint in ['home', 'index'] %}active{% endif %}">
+      <a href="/" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+        <div data-i18n="Dashboard">Dashboard</div>
+      </a>
+    </li>
+
+    <!-- Competitors -->
+    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+      <a href="/concurrents" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-group"></i>
+        <div data-i18n="Competitors">Competitors</div>
+      </a>
+    </li>
+
+    <!-- Learn -->
+    <li class="menu-item {% if request.endpoint in ['learn', 'learn_guide'] %}active{% endif %}">
+      <a href="/learn" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-book-open"></i>
+        <div data-i18n="Learn">Learn</div>
+        <span class="badge badge-center rounded-pill bg-success ms-2">New</span>
+      </a>
+    </li>
+
+    <!-- Analytics Section -->
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Analytics</span>
+    </li>
+
+    <li class="menu-item {% if request.endpoint in ['top_videos', 'top_playlists', 'countries_analysis', 'frequency_dashboard', 'sentiment_analysis', 'top_topics'] %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-chart"></i>
+        <div data-i18n="Analytics">Analytics</div>
+      </a>
+
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+          <a href="/top-videos" class="menu-link">
+            <div data-i18n="Top Videos">Top Videos</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+          <a href="/top-playlists" class="menu-link">
+            <div data-i18n="Top Playlists">Top Playlists</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'sentiment_analysis' %}active{% endif %}">
+          <a href="/sentiment-analysis" class="menu-link">
+            <div data-i18n="Sentiment Analysis">Sentiment Analysis</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+          <a href="/top-topics" class="menu-link">
+            <div data-i18n="Top Topics">Top Topics</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}">
+          <a href="/countries-analysis" class="menu-link">
+            <div data-i18n="By Country">By Country</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}">
+          <a href="/frequency-dashboard" class="menu-link">
+            <div data-i18n="Publishing Frequency">Publishing Frequency</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Insights -->
+    <li class="menu-item {% if request.endpoint in ['insights', 'country_insights'] %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-bulb"></i>
+        <div data-i18n="Insights">Insights</div>
+        <span class="badge badge-center rounded-pill bg-danger ms-2">HOT</span>
+      </a>
+
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+          <a href="/insights" class="menu-link">
+            <div data-i18n="Brand Insights">Brand Insights</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'country_insights' %}active{% endif %}">
+          <a href="/country-insights" class="menu-link">
+            <div data-i18n="Country Insights">Country Insights</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- AI Learning (dev mode only) -->
+    {% if dev_mode %}
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">AI & Machine Learning</span>
+    </li>
+
+    <li class="menu-item {% if request.endpoint in ['supervised_learning_page', 'supervised_learning_stats', 'transformers_dashboard', 'human_classifications'] %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-brain"></i>
+        <div data-i18n="AI Learning">AI Learning</div>
+      </a>
+
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.endpoint == 'supervised_learning_page' %}active{% endif %}">
+          <a href="/supervised-learning" class="menu-link">
+            <div data-i18n="Classification">Classification</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'supervised_learning_stats' %}active{% endif %}">
+          <a href="/supervised-learning/stats" class="menu-link">
+            <div data-i18n="Statistics">Statistics</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'transformers_dashboard' %}active{% endif %}">
+          <a href="/transformers-dashboard" class="menu-link">
+            <div data-i18n="Sentence Transformers">Sentence Transformers</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'human_classifications' %}active{% endif %}">
+          <a href="/human-classifications" class="menu-link">
+            <div data-i18n="Human Classifications">Human Classifications</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    {% endif %}
+
+    <!-- Tools -->
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Tools & Settings</span>
+    </li>
+
+    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+      <a href="/fix-problems" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-wrench"></i>
+        <div data-i18n="Fix Problems">Fix Problems</div>
+        <span class="badge badge-center rounded-pill bg-primary ms-2">New</span>
+      </a>
+    </li>
+
+    <li class="menu-item {% if request.endpoint == 'tasks' %}active{% endif %}">
+      <a href="/tasks" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-task"></i>
+        <div data-i18n="Tasks">Tasks</div>
+      </a>
+    </li>
+
+    <li class="menu-item {% if request.endpoint == 'api_usage' %}active{% endif %}">
+      <a href="/api-usage" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-tachometer"></i>
+        <div data-i18n="API Usage">API Usage</div>
+      </a>
+    </li>
+
+    {% if dev_mode %}
+    <li class="menu-item {% if request.endpoint in ['settings', 'debug'] %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-cog"></i>
+        <div data-i18n="Developer">Developer</div>
+      </a>
+
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+          <a href="/settings" class="menu-link">
+            <div data-i18n="Settings">Settings</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'debug' %}active{% endif %}">
+          <a href="/debug" class="menu-link">
+            <div data-i18n="Debug">Debug</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.endpoint == 'performance_dashboard' %}active{% endif %}">
+          <a href="/performance-dashboard" class="menu-link">
+            <div data-i18n="Performance">Performance</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    {% endif %}
+  </ul>
+</aside>

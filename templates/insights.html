@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Brand Advice - YT Analyzer{% endblock %}
 
 {% block extra_css %}
 <style>
     .insights-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
+        background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-secondary) 100%);
+        border-radius: var(--bs-border-radius-lg);
         color: white;
         padding: 3rem 2rem;
         margin-bottom: 2rem;
@@ -338,7 +338,7 @@
                         {% endfor %}
                         {{ total_videos|sum }}
                     </div>
-                    <div class="stat-label">Vidéos totales</div>
+                    <div class="stat-label">Total Videos</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">
@@ -348,11 +348,11 @@
                         {% endfor %}
                         {{ "{:,}".format(total_views|sum) }}
                     </div>
-                    <div class="stat-label">Vues totales</div>
+                    <div class="stat-label">Total Views</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">{{ insights.channels|length }}</div>
-                    <div class="stat-label">Régions couvertes</div>
+                    <div class="stat-label">Regions Covered</div>
                 </div>
             </div>
         </div>
@@ -369,7 +369,7 @@
                         <span class="country-flag">🏕️</span>
                         {% endif %}
                         <h4 class="d-inline">{{ data.name }}</h4>
-                        <span class="ms-3 text-muted">{{ "{:,}".format(data.stats.video_count) }} vidéos • {{ "{:,}".format(data.stats.total_views) }} vues</span>
+                        <span class="ms-3 text-muted">{{ "{:,}".format(data.stats.video_count) }} videos • {{ "{:,}".format(data.stats.total_views) }} views</span>
                     </div>
                     <div>
                         <span class="performance-score">
@@ -385,10 +385,10 @@
                     <div class="insight-icon duration-icon">
                         <i class="bi bi-people"></i>
                     </div>
-                    <h6>Abonnés</h6>
+                    <h6>Subscribers</h6>
                     <div class="metric-value">{{ "{:,}".format(data.stats.subscriber_count) }}</div>
                     <div class="metric-label">Audience totale</div>
-                    <small class="text-success">{{ "{:,}".format(data.stats.avg_views) }} vues/vidéo</small>
+                    <small class="text-success">{{ "{:,}".format(data.stats.avg_views) }} views/video</small>
                 </div>
 
                 <!-- Content Distribution -->
@@ -399,7 +399,7 @@
                     <h6>Répartition Contenu</h6>
                     <div class="metric-value">{{ data.content_distribution.hero_ratio }}% | {{ data.content_distribution.hub_ratio }}% | {{ data.content_distribution.help_ratio }}%</div>
                     <div class="metric-label">HERO | HUB | HELP</div>
-                    <small class="text-info">{{ data.content_distribution.total_categorized }} vidéos catégorisées</small>
+                    <small class="text-info">{{ data.content_distribution.total_categorized }} videos categorized</small>
                 </div>
 
                 <!-- Average Duration -->
@@ -429,7 +429,7 @@
                     </div>
                     <h6>Meilleure Performance</h6>
                     <div class="metric-value">{{ "{:,}".format(data.top_videos[0].views) }}</div>
-                    <div class="metric-label">Vues record</div>
+                    <div class="metric-label">Record Views</div>
                     <small class="text-success">{{ (data.top_videos[0].category or 'Non classé')|upper }}</small>
                 </div>
                 {% endif %}
@@ -557,10 +557,10 @@
                 </div>
             </div>
             
-            <!-- Top vidéos -->
+            <!-- Top Videos -->
             {% if data.top_videos %}
             <div style="padding: 0 2rem 2rem;">
-                <h6><i class="bi bi-star me-2"></i>Top 3 vidéos les plus performantes</h6>
+                <h6><i class="bi bi-star me-2"></i>Top 3 Best Performing Videos</h6>
                 <div class="top-videos-list">
                     {% for video in data.top_videos[:3] %}
                     <div class="video-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.5); border-radius: 8px;">
@@ -571,7 +571,7 @@
                         </div>
                         <div style="text-align: right;">
                             <div class="metric-value" style="font-size: 1rem;">{{ "{:,}".format(video.views) }}</div>
-                            <div class="metric-label">vues</div>
+                            <div class="metric-label">views</div>
                         </div>
                     </div>
                     {% endfor %}

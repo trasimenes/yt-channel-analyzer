@@ -1,0 +1,223 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Learn - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-book-open" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h2 class="mb-2">Learning Center</h2>
+                    <p class="text-muted mb-0">Master YouTube analytics and content strategy with our comprehensive guides</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-book"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-1">{{ guides|length }}</h5>
+                    <small class="text-muted">Guides Available</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-time"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-1">~30min</h5>
+                    <small class="text-muted">Total Reading</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-1">Strategy</h5>
+                    <small class="text-muted">Content Focus</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-star"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-1">Beginner</h5>
+                    <small class="text-muted">Friendly Level</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Categories -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <h5 class="mb-4">Learning Categories</h5>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-target-lock bx-lg"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-2">Content Strategy</h6>
+                    <p class="text-muted small">Learn how to plan and structure your YouTube content for maximum impact</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-line-chart bx-lg"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-2">Analytics & Metrics</h6>
+                    <p class="text-muted small">Understand key performance indicators and how to measure success</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-group bx-lg"></i>
+                        </span>
+                    </div>
+                    <h6 class="mb-2">Competitor Analysis</h6>
+                    <p class="text-muted small">Research and analyze your competition to stay ahead in your niche</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Guides -->
+    <div class="row">
+        <div class="col-md-12">
+            <h5 class="mb-4">Available Guides</h5>
+        </div>
+        
+        {% if guides %}
+            {% for guide in guides %}
+            <div class="col-lg-6 col-md-12 mb-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="bx bx-book-open"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ guide.title }}</h6>
+                            <small class="text-muted">{{ guide.level }} • {{ guide.duration }}</small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">{{ guide.description }}</p>
+                        
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            {% for tag in guide.tags[:3] %}
+                            <span class="badge bg-label-secondary me-1">{{ tag }}</span>
+                            {% endfor %}
+                            {% if guide.tags|length > 3 %}
+                            <span class="badge bg-label-light">+{{ guide.tags|length - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Progress/Status -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small class="text-muted">
+                                <i class="bx bx-time-five me-1"></i>{{ guide.duration }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="bx bx-signal-5 me-1"></i>{{ guide.level }}
+                            </small>
+                        </div>
+                        
+                        <a href="/learn/{{ guide.file.replace('.md', '') }}" class="btn btn-primary w-100">
+                            <i class="bx bx-book-reader me-2"></i>Start Reading
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-secondary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-book-open" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">No guides available</h5>
+                    <p class="text-muted">Learning materials are being prepared. Check back soon!</p>
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="bx bx-refresh me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Getting Started Section -->
+    {% if not guides %}
+    <div class="row mt-6">
+        <div class="col-md-12">
+            <div class="card bg-label-primary">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">🚀 Getting Started with YouTube Analytics</h6>
+                            <p class="mb-0 text-muted">
+                                New to YouTube analytics? Start by exploring your competitors and understanding key metrics that drive success.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="/concurrents" class="btn btn-primary">
+                                <i class="bx bx-group me-2"></i>Explore Competitors
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

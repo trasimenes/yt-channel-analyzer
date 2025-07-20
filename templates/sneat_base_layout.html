@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en" class="layout-menu-fixed layout-compact" data-assets-path="/static/sneat/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>{% block title %}YT Analyzer{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/sneat/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/theme-default.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/libs/apex-charts/apex-charts.css" />
+
+    <!-- Helpers -->
+    <script src="/static/sneat/assets/vendor/js/helpers.js"></script>
+    <style type="text/css">
+    .layout-menu-fixed .layout-navbar-full .layout-menu,
+    .layout-page {
+      padding-top: 0px !important;
+    }
+    .content-wrapper {
+      padding-bottom: 0px !important;
+    }
+    
+    /* Autocomplete Styles */
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 8px;
+        display: none;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: background-color 0.2s;
+    }
+
+    .autocomplete-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-thumbnail {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .autocomplete-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .autocomplete-info {
+        flex: 1;
+    }
+
+    .autocomplete-name {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 2px;
+    }
+
+    .autocomplete-meta {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .autocomplete-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .badge-analyzed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-new {
+        background: #fff3cd;
+        color: #856404;
+    }
+    </style>
+    <script src="/static/sneat/assets/js/config.js"></script>
+</head>
+
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar  ">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a href="/" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <i class="bx bx-play-circle" style="font-size: 24px; color: #696cff;"></i>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bold ms-1">YT Analyzer</span>
+                    </a>
+
+                    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+                        <i class="bx bx-chevron-left bx-sm d-flex align-items-center justify-content-center"></i>
+                    </a>
+                </div>
+
+                <div class="menu-inner-shadow"></div>
+
+                <ul class="menu-inner py-1">
+                    <!-- Dashboard -->
+                    <li class="menu-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <a href="/" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
+                        </a>
+                    </li>
+
+                    <!-- Competitors -->
+                    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+                        <a href="/concurrents" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-group"></i>
+                            <div class="text-truncate" data-i18n="Competitors">Competitors</div>
+                        </a>
+                    </li>
+
+                    <!-- Learn -->
+                    <li class="menu-item {% if request.endpoint == 'learn' %}active{% endif %}">
+                        <a href="/learn" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-book-open"></i>
+                            <div class="text-truncate" data-i18n="Learn">Learn</div>
+                        </a>
+                    </li>
+
+                    <!-- Analytics Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Analytics</span>
+                    </li>
+
+                    <!-- Top Videos -->
+                    <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+                        <a href="/top-videos" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-trophy"></i>
+                            <div class="text-truncate" data-i18n="Top Videos">Top Videos</div>
+                        </a>
+                    </li>
+
+                    <!-- Top Playlists -->
+                    <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+                        <a href="/top-playlists" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-list-ul"></i>
+                            <div class="text-truncate" data-i18n="Top Playlists">Top Playlists</div>
+                        </a>
+                    </li>
+
+                    <!-- Sentiment Analysis -->
+                    <li class="menu-item {% if request.endpoint == 'sentiment_analysis' %}active{% endif %}">
+                        <a href="/sentiment-analysis" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-smile"></i>
+                            <div class="text-truncate" data-i18n="Sentiment Analysis">Sentiment Analysis</div>
+                        </a>
+                    </li>
+
+                    <!-- Top Topics -->
+                    <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+                        <a href="/top-topics" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-hash"></i>
+                            <div class="text-truncate" data-i18n="Top Topics">Top Topics</div>
+                        </a>
+                    </li>
+
+                    <!-- By Country -->
+                    <li class="menu-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}">
+                        <a href="/countries-analysis" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-world"></i>
+                            <div class="text-truncate" data-i18n="By Country">By Country</div>
+                        </a>
+                    </li>
+
+                    <!-- Publishing Frequency -->
+                    <li class="menu-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}">
+                        <a href="/frequency-dashboard" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-time"></i>
+                            <div class="text-truncate" data-i18n="Publishing Frequency">Publishing Frequency</div>
+                        </a>
+                    </li>
+
+                    <!-- Insights Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Insights</span>
+                    </li>
+
+                    <!-- Brand Insights -->
+                    <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+                        <a href="/insights" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-bulb"></i>
+                            <div class="text-truncate" data-i18n="Brand Insights">Brand Insights</div>
+                        </a>
+                    </li>
+
+                    <!-- Country Insights -->
+                    <li class="menu-item {% if request.endpoint == 'country_insights' %}active{% endif %}">
+                        <a href="/country-insights" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-globe"></i>
+                            <div class="text-truncate" data-i18n="Country Insights">Country Insights</div>
+                        </a>
+                    </li>
+
+                    <!-- Tools Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Tools</span>
+                    </li>
+
+                    <!-- Fix Problems -->
+                    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+                        <a href="/fix-problems" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-wrench"></i>
+                            <div class="text-truncate" data-i18n="Fix Problems">Fix Problems</div>
+                        </a>
+                    </li>
+
+                    <!-- Tasks -->
+                    <li class="menu-item {% if request.endpoint == 'tasks_page' %}active{% endif %}">
+                        <a href="/tasks" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-task"></i>
+                            <div class="text-truncate" data-i18n="Tasks">Tasks</div>
+                        </a>
+                    </li>
+
+                    <!-- Business Settings -->
+                    <li class="menu-item {% if request.endpoint == 'business' %}active{% endif %}">
+                        <a href="/business" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                            <div class="text-truncate" data-i18n="Business Settings">Business Settings</div>
+                        </a>
+                    </li>
+
+                    <!-- Debug Section -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Debug</span>
+                    </li>
+
+                    <!-- API Usage -->
+                    <li class="menu-item {% if request.endpoint == 'api_usage_page' %}active{% endif %}">
+                        <a href="/api-usage" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-data"></i>
+                            <div class="text-truncate" data-i18n="API Usage">API Usage</div>
+                        </a>
+                    </li>
+
+                    <!-- DEV Section (conditional) -->
+                    {% if session.get('dev_mode', False) %}
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">DEV</span>
+                    </li>
+
+                    <!-- Settings & Patterns -->
+                    <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                        <a href="/settings" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-cog"></i>
+                            <div class="text-truncate" data-i18n="Settings">Settings & Patterns</div>
+                        </a>
+                    </li>
+
+                    <!-- Debug Tools -->
+                    <li class="menu-item {% if request.endpoint == 'debug_page' %}active{% endif %}">
+                        <a href="/debug" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-bug"></i>
+                            <div class="text-truncate" data-i18n="Debug Tools">Debug Tools</div>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </aside>
+            <!-- / Menu -->
+
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+
+                <nav
+                    class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                    id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-md"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Search -->
+                        <div class="navbar-nav align-items-center flex-grow-1">
+                            <form action="/analyze-channel" method="post" class="d-flex align-items-center w-100">
+                                <div class="nav-item d-flex align-items-center me-3" style="width: 60%;">
+                                    <i class="bx bx-search bx-md me-2"></i>
+                                    <div class="position-relative flex-grow-1">
+                                        <input
+                                            type="text"
+                                            name="channel_url"
+                                            id="channelSearch"
+                                            class="form-control border-0 shadow-none"
+                                            placeholder="https://www.youtube.com/@channel or channel name"
+                                            autocomplete="off"
+                                            required />
+                                        <div id="autocomplete-results" class="autocomplete-dropdown" style="display: none;"></div>
+                                    </div>
+                                </div>
+                                <select name="max_videos" class="form-select me-2" style="width: auto;">
+                                    <option value="30">30 videos</option>
+                                    <option value="50" selected>50 videos</option>
+                                    <option value="100">100 videos</option>
+                                    <option value="0">All videos</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bx bx-search-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- /Search -->
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- Dev Mode Toggle -->
+                            <li class="nav-item me-3">
+                                <div class="form-check form-switch mb-0">
+                                    <form method="post" action="/toggle-dev-mode" id="devModeForm">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            id="devModeSwitch" 
+                                            {% if dev_mode %}checked{% endif %} 
+                                            onchange="document.getElementById('devModeForm').submit()"
+                                        />
+                                        <label class="form-check-label" for="devModeSwitch">
+                                            Dev Mode
+                                        </label>
+                                    </form>
+                                </div>
+                            </li>
+
+                            <!-- User -->
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a
+                                    class="nav-link dropdown-toggle hide-arrow p-0"
+                                    href="javascript:void(0);"
+                                    data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-0">Admin</h6>
+                                                    <small class="text-muted">YT Analyzer</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider my-1"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/settings">
+                                            <i class="bx bx-cog bx-md me-3"></i><span>Settings</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider my-1"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/logout">
+                                            <i class="bx bx-power-off bx-md me-3"></i><span>Log Out</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ User -->
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="container-xxl mt-3">
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'primary' if category == 'success' else ('danger' if category == 'error' else 'warning') }} alert-dismissible fade show" role="alert">
+                                        <i class="bx bx-{{ 'check-circle' if category == 'success' else ('x-circle' if category == 'error' else 'info-circle') }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Content -->
+                    {% block content %}
+                    <!-- Default content goes here -->
+                    {% endblock %}
+                    <!-- / Content -->
+
+                    <!-- Footer -->
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl">
+                            <div
+                                class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+                                <div class="text-body">
+                                    ©
+                                    <script>
+                                        document.write(new Date().getFullYear());
+                                    </script>
+                                    YT Analyzer - Made with ❤️
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                    <!-- / Footer -->
+
+                    <div class="content-backdrop fade"></div>
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <script src="/static/sneat/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/sneat/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/sneat/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/sneat/assets/vendor/js/menu.js"></script>
+
+    <!-- Vendors JS -->
+    <script src="/static/sneat/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/sneat/assets/js/main.js"></script>
+
+    <!-- Page JS -->
+    <script src="/static/sneat/assets/js/dashboards-analytics.js"></script>
+
+    <!-- Autocomplete functionality -->
+    <script>
+        // Autocomplete functionality
+        let autocompleteTimeout;
+        const searchInput = document.getElementById('channelSearch');
+        const autocompleteResults = document.getElementById('autocomplete-results');
+
+        if (searchInput && autocompleteResults) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    autocompleteResults.style.display = 'none';
+                    return;
+                }
+                
+                // Clear previous timeout
+                if (autocompleteTimeout) {
+                    clearTimeout(autocompleteTimeout);
+                }
+                
+                // Debounce the search (wait 300ms after user stops typing)
+                autocompleteTimeout = setTimeout(() => {
+                    fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            displayAutocompleteResults(data);
+                        })
+                        .catch(error => {
+                            console.error('Autocomplete error:', error);
+                            autocompleteResults.style.display = 'none';
+                        });
+                }, 300);
+            });
+
+            function displayAutocompleteResults(suggestions) {
+                if (!suggestions || suggestions.length === 0) {
+                    autocompleteResults.style.display = 'none';
+                    return;
+                }
+                
+                let html = '';
+                suggestions.forEach(suggestion => {
+                    const badge = suggestion.is_analyzed 
+                        ? '<span class="autocomplete-badge badge-analyzed">✅ Analyzed</span>' 
+                        : '<span class="autocomplete-badge badge-new">🆕 New</span>';
+                    
+                    html += `
+                        <div class="autocomplete-item" data-url="${suggestion.url}">
+                            <div class="autocomplete-thumbnail">
+                                ${suggestion.thumbnail 
+                                    ? `<img src="${suggestion.thumbnail}" alt="${suggestion.name}">` 
+                                    : '<div style="background: #e9ecef; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px;">📺</div>'
+                                }
+                            </div>
+                            <div class="autocomplete-info">
+                                <div class="autocomplete-name">${suggestion.name}</div>
+                                <div class="autocomplete-meta">
+                                    ${suggestion.subscribers ? `${suggestion.subscribers}` : ''}
+                                    ${suggestion.is_analyzed ? `• ${suggestion.video_count} videos analyzed` : ''}
+                                </div>
+                            </div>
+                            ${badge}
+                        </div>
+                    `;
+                });
+                
+                autocompleteResults.innerHTML = html;
+                autocompleteResults.style.display = 'block';
+                
+                // Add click handlers to each suggestion
+                autocompleteResults.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const url = this.getAttribute('data-url');
+                        searchInput.value = url;
+                        autocompleteResults.style.display = 'none';
+                    });
+                });
+            }
+
+            // Hide autocomplete when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!searchInput.contains(event.target) && !autocompleteResults.contains(event.target)) {
+                    autocompleteResults.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

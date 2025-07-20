@@ -12,21 +12,28 @@ from typing import Dict, List, Tuple, Optional, Any
 from collections import defaultdict, Counter
 
 from .database import get_db_connection
-from .semantic_classifier import SemanticHubHeroHelpClassifier
+from .semantic_classifier import SemanticHubHeroHelpClassifier, create_optimized_classifier
 
 class SemanticTrainingManager:
     """
     Gestionnaire d'entraînement du modèle sémantique avec les données humaines
     """
     
-    def __init__(self, semantic_classifier: SemanticHubHeroHelpClassifier = None):
+    def __init__(self, semantic_classifier = None, use_optimized: bool = True):
         """
         Initialise le gestionnaire d'entraînement
         
         Args:
             semantic_classifier: Instance du classificateur sémantique à entraîner
+            use_optimized: Si True, utilise le classificateur optimisé all-mpnet-base-v2
         """
-        self.classifier = semantic_classifier or SemanticHubHeroHelpClassifier()
+        if semantic_classifier:
+            self.classifier = semantic_classifier
+        elif use_optimized:
+            print("[SEMANTIC-TRAINING] 🚀 Utilisation du classificateur optimisé all-mpnet-base-v2")
+            self.classifier = create_optimized_classifier(use_quantization=False)  # Pas de quantification pour training
+        else:
+            self.classifier = SemanticHubHeroHelpClassifier()
         self.training_data = {
             'hero': [],
             'hub': [],

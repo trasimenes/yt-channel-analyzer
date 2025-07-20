@@ -1,0 +1,699 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Tasks - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-task me-2"></i>
+                            Background Tasks
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Monitor and manage analysis tasks</p>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span id="refresh-counter" class="badge bg-label-primary me-2">Refreshing in 60s</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Alert -->
+    {% if error %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bx bx-error-circle me-2"></i>
+                <strong>Error:</strong> {{ error }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Global Progress -->
+    {% set running_tasks = tasks|selectattr("status", "equalto", "running")|list %}
+    {% if running_tasks %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="bx bx-loader-alt bx-spin"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ running_tasks|length }} task(s) running</h6>
+                            <div class="progress">
+                                {% set total_progress = (running_tasks|sum(attribute='progress')|float / running_tasks|length) if running_tasks else 0 %}
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" 
+                                     style="width: {{ total_progress }}%"
+                                     aria-valuenow="{{ total_progress }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ "%.0f"|format(total_progress) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Task Type Tabs -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header border-0 pb-0">
+                    <ul class="nav nav-tabs card-header-tabs" id="taskTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="competitor-search-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#competitor-search" type="button" role="tab">
+                                <i class="bx bx-search me-2"></i>
+                                <span>Competitor Search</span>
+                                <span class="badge bg-primary ms-2" id="competitor-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="fix-everything-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#fix-everything" type="button" role="tab">
+                                <i class="bx bx-wrench me-2"></i>
+                                <span>Fix Everything</span>
+                                <span class="badge bg-success ms-2" id="fix-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="update-everything-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#update-everything" type="button" role="tab">
+                                <i class="bx bx-sync me-2"></i>
+                                <span>Update Everything</span>
+                                <span class="badge bg-info ms-2" id="update-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ai-classification-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#ai-classification" type="button" role="tab">
+                                <i class="bx bx-brain me-2"></i>
+                                <span>AI Classification</span>
+                                <span class="badge bg-warning ms-2" id="ai-count">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="taskTabContent">
+        
+        <!-- Competitor Search Tab -->
+        <div class="tab-pane fade show active" id="competitor-search" role="tabpanel">
+            <div class="row g-6" id="competitorSearchTasks">
+                <!-- Tasks de type competitor search seront affichées ici -->
+            </div>
+        </div>
+
+        <!-- Video Refresh Tab -->
+        <div class="tab-pane fade" id="video-refresh" role="tabpanel">
+            <div class="row g-6" id="videoRefreshTasks">
+                <!-- Tasks de type video refresh seront affichées ici -->
+            </div>
+        </div>
+
+        <!-- AI Classification Tab -->
+        <div class="tab-pane fade" id="ai-classification" role="tabpanel">
+            <div class="row g-6" id="aiClassificationTasks">
+                <!-- Tasks de type AI classification seront affichées ici -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy Tasks Grid (pour compatibilité) -->
+    <div class="row g-6">
+        {% for task in tasks %}
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card h-100" data-task-id="{{ task.id }}">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                {% if task.channel_thumbnail %}
+                                    <img src="{{ task.channel_thumbnail }}" alt="{{ task.channel_name or 'Channel' }}" class="rounded">
+                                {% else %}
+                                    <span class="avatar-initial rounded bg-label-secondary">
+                                        <i class="bx bx-tv"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ task.channel_name or 'Unknown Channel' }}</h6>
+                                <small class="text-muted">Task #{{ task.id }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn p-0" type="button" id="taskDropdown{{ task.id }}" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="taskDropdown{{ task.id }}">
+                            {% if task.status == 'running' %}
+                            <li><a class="dropdown-item" href="#" onclick="cancelTask('{{ task.id }}')">
+                                <i class="bx bx-stop-circle me-2"></i>Cancel
+                            </a></li>
+                            {% elif task.status in ['paused', 'error', 'stopped', 'completed'] %}
+                            <li><a class="dropdown-item" href="#" onclick="resumeTask('{{ task.id }}')">
+                                <i class="bx bx-play-circle me-2"></i>Resume
+                            </a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask('{{ task.id }}')">
+                                <i class="bx bx-trash me-2"></i>Delete
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Status Badge -->
+                    <div class="mb-3">
+                        {% if task.status == 'running' %}
+                            <span class="badge bg-primary task-status">
+                                <i class="bx bx-loader-alt bx-spin me-1"></i>Running
+                            </span>
+                        {% elif task.status == 'completed' %}
+                            <span class="badge bg-success task-status">
+                                <i class="bx bx-check-circle me-1"></i>Completed
+                            </span>
+                        {% elif task.status == 'failed' %}
+                            <span class="badge bg-danger task-status">
+                                <i class="bx bx-error-circle me-1"></i>Failed
+                            </span>
+                        {% elif task.status == 'paused' %}
+                            <span class="badge bg-warning task-status">
+                                <i class="bx bx-pause-circle me-1"></i>Paused
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary task-status">{{ task.status|title }}</span>
+                        {% endif %}
+                        
+                        {% if task.country %}
+                            <span class="badge bg-label-info ms-2">{{ task.country }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Current Step -->
+                    {% if task.current_step %}
+                    <div class="mb-2">
+                        <small class="text-muted task-step">{{ task.current_step }}</small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Progress Bar -->
+                    {% if task.progress is defined and task.progress >= 0 %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="text-muted task-progress-text">{{ task.progress }}%</small>
+                        </div>
+                        <div class="progress" style="height: 28px; border-radius: 8px; background-color: #f8f9fa; position: relative;">
+                            <div class="progress-bar task-progress-bar 
+                                        {% if task.status == 'running' %}progress-bar-striped progress-bar-animated bg-primary{% elif task.status == 'completed' %}bg-success{% elif task.status == 'error' %}bg-danger{% elif task.status == 'paused' %}bg-warning{% else %}bg-secondary{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ task.progress }}%; transition: width 0.5s ease-out; height: 100%;" 
+                                 aria-valuenow="{{ task.progress }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                            <span class="progress-text" style="position: absolute; width: 100%; text-align: center; line-height: 28px; font-weight: 600; color: #333; font-size: 14px; z-index: 1;">{{ task.progress }}%</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Task Details -->
+                    <div class="mb-3">
+                        {% if task.videos_found is defined and task.videos_processed is defined %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Videos Found:</span>
+                            <span class="fw-medium videos-found">{{ task.videos_found }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Processed:</span>
+                            <span class="fw-medium videos-processed">{{ task.videos_processed }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if task.start_time %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Started:</span>
+                            <small class="text-muted">{{ task.start_time }}</small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if task.end_time %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Completed:</span>
+                            <small class="text-muted">{{ task.end_time }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Error Message -->
+                    {% if task.error_message %}
+                    <div class="alert alert-danger p-2">
+                        <small><i class="bx bx-error-circle me-1"></i>{{ task.error_message }}</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Warning Message -->
+                    {% if task.warning %}
+                    <div class="alert alert-warning p-2">
+                        <small><i class="bx bx-error-circle me-1"></i>{{ task.warning }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Empty State -->
+        {% if not tasks %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-secondary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-task" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">No tasks found</h5>
+                    <p class="text-muted">No background tasks are currently running or scheduled.</p>
+                    <a href="/concurrents" class="btn btn-primary">
+                        <i class="bx bx-plus me-2"></i>Analyze Channel
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Crashed Tasks -->
+    {% if crashed_tasks %}
+    <div class="row mt-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-danger mb-0">
+                        <i class="bx bx-error-circle me-2"></i>
+                        Crashed Tasks ({{ crashed_tasks|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for task in crashed_tasks %}
+                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                        <div>
+                            <strong>{{ task.channel_name or 'Unknown' }}</strong>
+                            <small class="text-muted d-block">Task #{{ task.id }} - {{ task.warning if task.warning else 'No error message' }}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('{{ task.id }}')">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Auto-refresh JavaScript -->
+<script>
+let refreshCounter = 5; // Refresh every 5 seconds for active tasks
+let isRefreshing = false;
+
+// Function to refresh tasks via AJAX
+async function refreshTasksAjax() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    
+    try {
+        const response = await fetch('/api/tasks/status', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.tasks) {
+            updateTasksDisplay(data.tasks);
+            
+            // Afficher les notifications de consolidation
+            if (data.consolidation) {
+                const { competitors_added, competitors_updated } = data.consolidation;
+                if (competitors_added > 0 || competitors_updated > 0) {
+                    showConsolidationNotification(competitors_added, competitors_updated);
+                }
+            }
+            
+            // Adjust refresh rate based on running tasks
+            const hasRunningTasks = data.tasks.some(task => task.status === 'running');
+            refreshCounter = hasRunningTasks ? 5 : 30; // 5s if running, 30s otherwise
+        }
+    } catch (error) {
+        console.error('Error refreshing tasks:', error);
+    } finally {
+        isRefreshing = false;
+    }
+}
+
+// Function to update tasks display without page reload
+function updateTasksDisplay(tasks) {
+    tasks.forEach(task => {
+        const taskCard = document.querySelector(`[data-task-id="${task.id}"]`);
+        if (!taskCard) return;
+        
+        // Update status badge
+        const statusBadge = taskCard.querySelector('.task-status');
+        if (statusBadge) {
+            statusBadge.className = 'badge task-status';
+            if (task.status === 'running') {
+                statusBadge.className += ' bg-primary';
+                statusBadge.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Running';
+            } else if (task.status === 'completed') {
+                statusBadge.className += ' bg-success';
+                statusBadge.innerHTML = '<i class="bx bx-check-circle me-1"></i>Completed';
+            } else if (task.status === 'failed' || task.status === 'error') {
+                statusBadge.className += ' bg-danger';
+                statusBadge.innerHTML = '<i class="bx bx-error-circle me-1"></i>' + (task.status === 'failed' ? 'Failed' : 'Error');
+            } else if (task.status === 'paused') {
+                statusBadge.className += ' bg-warning';
+                statusBadge.innerHTML = '<i class="bx bx-pause-circle me-1"></i>Paused';
+            } else {
+                statusBadge.className += ' bg-secondary';
+                statusBadge.textContent = task.status.charAt(0).toUpperCase() + task.status.slice(1);
+            }
+        }
+        
+        // Update progress bar with smooth animation
+        const progressBar = taskCard.querySelector('.task-progress-bar');
+        const progressText = taskCard.querySelector('.task-progress-text');
+        const progressTextInBar = taskCard.querySelector('.progress-text');
+        
+        if (progressBar && task.progress !== undefined) {
+            const newProgress = Math.round(task.progress);
+            
+            // Update progress bar with smooth transition
+            progressBar.style.width = newProgress + '%';
+            progressBar.setAttribute('aria-valuenow', newProgress);
+            
+            // Update progress text - both the one above the bar and inside the bar
+            if (progressText) progressText.textContent = newProgress + '%';
+            if (progressTextInBar) progressTextInBar.textContent = newProgress + '%';
+            
+            // Update progress bar color based on status
+            progressBar.className = 'progress-bar task-progress-bar';
+            if (task.status === 'running') {
+                progressBar.className += ' progress-bar-striped progress-bar-animated bg-primary';
+            } else if (task.status === 'completed') {
+                progressBar.className += ' bg-success';
+            } else if (task.status === 'error' || task.status === 'failed') {
+                progressBar.className += ' bg-danger';
+            } else if (task.status === 'paused') {
+                progressBar.className += ' bg-warning';
+            } else {
+                progressBar.className += ' bg-secondary';
+            }
+        }
+        
+        // Update step info
+        const stepInfo = taskCard.querySelector('.task-step');
+        if (stepInfo && task.current_step) {
+            stepInfo.textContent = task.current_step;
+        }
+        
+        // Update stats
+        const videosFound = taskCard.querySelector('.videos-found');
+        if (videosFound && task.videos_found !== undefined) {
+            videosFound.textContent = task.videos_found;
+        }
+        
+        const videosProcessed = taskCard.querySelector('.videos-processed');
+        if (videosProcessed && task.videos_processed !== undefined) {
+            videosProcessed.textContent = task.videos_processed;
+        }
+    });
+}
+
+const refreshInterval = setInterval(() => {
+    refreshCounter--;
+    const counterElement = document.getElementById('refresh-counter');
+    if (counterElement) {
+        counterElement.textContent = `Refreshing in ${refreshCounter}s`;
+    }
+    
+    if (refreshCounter <= 0) {
+        refreshTasksAjax();
+    }
+}, 1000);
+
+// Initial refresh on page load
+refreshTasksAjax();
+
+// Organize tasks into tabs on page load
+document.addEventListener('DOMContentLoaded', function() {
+    organizeTasks();
+});
+
+// Function to show consolidation notifications
+function showConsolidationNotification(added, updated) {
+    const existingAlert = document.querySelector('.consolidation-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    let message = '🔄 Auto-consolidation: ';
+    if (added > 0 && updated > 0) {
+        message += `${added} concurrent(s) ajouté(s), ${updated} mis à jour`;
+    } else if (added > 0) {
+        message += `${added} nouveau(x) concurrent(s) ajouté(s)`;
+    } else if (updated > 0) {
+        message += `${updated} concurrent(s) mis à jour`;
+    }
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show consolidation-alert';
+    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
+    alertDiv.innerHTML = `
+        <i class="bx bx-check-circle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv && alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Function to categorize tasks by type
+function categorizeTaskByContent(taskContent) {
+    const content = taskContent.toLowerCase();
+    
+    if (content.includes('video refresh') || 
+        content.includes('sentence transformer') || 
+        content.includes('classification refresh') ||
+        content.includes('ai refresh')) {
+        return 'video_refresh';
+    } else if (content.includes('classification') || 
+               content.includes('ai') ||
+               content.includes('transformer')) {
+        return 'ai_classification';
+    } else {
+        return 'competitor_search';
+    }
+}
+
+// Function to organize tasks into tabs
+function organizeTasks() {
+    const tasks = document.querySelectorAll('[data-task-id]');
+    const competitorSearchContainer = document.getElementById('competitorSearchTasks');
+    const videoRefreshContainer = document.getElementById('videoRefreshTasks');
+    const aiClassificationContainer = document.getElementById('aiClassificationTasks');
+    
+    // Clear containers first
+    competitorSearchContainer.innerHTML = '';
+    videoRefreshContainer.innerHTML = '';
+    aiClassificationContainer.innerHTML = '';
+    
+    let competitorCount = 0;
+    let refreshCount = 0;
+    let aiCount = 0;
+    
+    // Convertir NodeList en Array pour éviter les problèmes lors du déplacement
+    const tasksArray = Array.from(tasks);
+    
+    tasksArray.forEach(taskCard => {
+        // Au lieu de cloner, on va déplacer la tâche existante
+        const taskElement = taskCard.parentElement; // Obtenir l'élément col-* parent
+        
+        // Determine task type based on content
+        const taskContent = taskCard.textContent;
+        const taskType = categorizeTaskByContent(taskContent);
+        
+        switch(taskType) {
+            case 'video_refresh':
+                videoRefreshContainer.appendChild(taskElement);
+                refreshCount++;
+                break;
+            case 'ai_classification':
+                aiClassificationContainer.appendChild(taskElement);
+                aiCount++;
+                break;
+            default:
+                competitorSearchContainer.appendChild(taskElement);
+                competitorCount++;
+                break;
+        }
+    });
+    
+    // Update badge counts
+    document.getElementById('competitor-count').textContent = competitorCount;
+    document.getElementById('refresh-count').textContent = refreshCount;
+    document.getElementById('ai-count').textContent = aiCount;
+    
+    // Show empty state for tabs with no tasks
+    showEmptyStateIfNeeded('competitorSearchTasks', competitorCount, 'competitor search');
+    showEmptyStateIfNeeded('videoRefreshTasks', refreshCount, 'video refresh');
+    showEmptyStateIfNeeded('aiClassificationTasks', aiCount, 'AI classification');
+}
+
+// Function to show empty state for empty tabs
+function showEmptyStateIfNeeded(containerId, count, taskType) {
+    const container = document.getElementById(containerId);
+    
+    if (count === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-secondary" style="width: 60px; height: 60px;">
+                                <i class="bx bx-info-circle" style="font-size: 24px;"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">No ${taskType} tasks</h6>
+                        <p class="text-muted mb-0 small">No ${taskType} tasks are currently running.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Task management functions
+function cancelTask(taskId) {
+    if (confirm('Are you sure you want to cancel this task?')) {
+        fetch(`/api/tasks/${taskId}/cancel`, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Cancel task error:', error);
+                alert('Error: ' + error.message);
+            });
+    }
+}
+
+function resumeTask(taskId) {
+    fetch(`/api/tasks/${taskId}/resume`, { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Resume task error:', error);
+            alert('Error: ' + error.message);
+        });
+}
+
+function deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        fetch(`/api/tasks/${taskId}/delete`, { 
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Delete task error:', error);
+                alert('Error: ' + error.message);
+            });
+    }
+}
+</script>
+{% endblock %}

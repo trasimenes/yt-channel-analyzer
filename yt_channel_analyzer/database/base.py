@@ -226,6 +226,26 @@ class DatabaseSchema:
                 )
             ''')
             
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS background_tasks (
+                    id TEXT PRIMARY KEY,
+                    channel_url TEXT NOT NULL,
+                    channel_name TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    progress INTEGER DEFAULT 0,
+                    current_step TEXT,
+                    videos_found INTEGER DEFAULT 0,
+                    videos_processed INTEGER DEFAULT 0,
+                    total_estimated INTEGER DEFAULT 0,
+                    start_time TIMESTAMP,
+                    end_time TIMESTAMP,
+                    error_message TEXT,
+                    channel_thumbnail TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
             # Ajouter des colonnes manquantes si nécessaire
             cursor.execute("PRAGMA table_info(video)")
             columns = [column[1] for column in cursor.fetchall()]
@@ -248,6 +268,26 @@ class DatabaseSchema:
             if 'is_human_validated' not in columns:
                 cursor.execute('ALTER TABLE video ADD COLUMN is_human_validated INTEGER DEFAULT 0')
                 print("✅ Colonne 'is_human_validated' ajoutée à la table video")
+            
+            # === PLAYLIST TABLE Upgrades ===
+            cursor.execute("PRAGMA table_info(playlist)")
+            playlist_cols = [col[1] for col in cursor.fetchall()]
+
+            if 'classification_source' not in playlist_cols:
+                cursor.execute('ALTER TABLE playlist ADD COLUMN classification_source TEXT')
+                print("✅ Colonne 'classification_source' ajoutée à la table playlist")
+
+            if 'is_human_validated' not in playlist_cols:
+                cursor.execute('ALTER TABLE playlist ADD COLUMN is_human_validated INTEGER DEFAULT 0')
+                print("✅ Colonne 'is_human_validated' ajoutée à la table playlist")
+
+            if 'last_updated' not in playlist_cols:
+                cursor.execute('ALTER TABLE playlist ADD COLUMN last_updated TIMESTAMP')
+                print("✅ Colonne 'last_updated' ajoutée à la table playlist")
+
+            if 'created_at' not in playlist_cols:
+                cursor.execute('ALTER TABLE playlist ADD COLUMN created_at TIMESTAMP')
+                print("✅ Colonne 'created_at' ajoutée à la table playlist")
             
             conn.commit()
             print("✅ Schéma de base de données mis à jour")

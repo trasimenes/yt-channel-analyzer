@@ -380,16 +380,24 @@ class CompetitorPlaylistManager:
         cursor = conn.cursor()
         
         for playlist in playlists:
+            # 🔧 NORMALISER la clé playlist_id (peut être 'id' ou 'playlist_id' selon la source)
+            playlist_youtube_id = playlist.get('playlist_id', playlist.get('id', ''))
+            
+            if not playlist_youtube_id:
+                print(f"[PLAYLIST] ⚠️ Playlist sans ID ignorée: {playlist.get('name', 'Sans nom')}")
+                continue
+            
             # Vérifier si la playlist existe déjà
             cursor.execute('''
                 SELECT id FROM playlist 
                 WHERE concurrent_id = ? AND playlist_id = ?
-            ''', (competitor_id, playlist.get('id', '')))
+            ''', (competitor_id, playlist_youtube_id))
             
             existing = cursor.fetchone()
             
             if existing:
                 # Mettre à jour la playlist existante
+                print(f"[PLAYLIST] 🔄 Mise à jour: {playlist.get('name', playlist.get('title', 'Sans nom'))}")
                 cursor.execute('''
                     UPDATE playlist SET
                         name = ?, description = ?, thumbnail_url = ?,
@@ -405,21 +413,40 @@ class CompetitorPlaylistManager:
                 ))
             else:
                 # Créer une nouvelle playlist
-                cursor.execute('''
-                    INSERT INTO playlist (
-                        concurrent_id, playlist_id, name, description, 
-                        thumbnail_url, video_count, created_at, last_updated
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    competitor_id,
-                    playlist.get('playlist_id', playlist.get('id', '')),
-                    playlist.get('name', playlist.get('title', '')),
-                    playlist.get('description', ''),
-                    playlist.get('thumbnail_url', ''),
-                    playlist.get('video_count', 0),
-                    datetime.now(),
-                    datetime.now()
-                ))
+                print(f"[PLAYLIST] ➕ Création: {playlist.get('name', playlist.get('title', 'Sans nom'))}")
+                try:
+                    cursor.execute('''
+                        INSERT INTO playlist (
+                            concurrent_id, playlist_id, name, description, 
+                            thumbnail_url, video_count, created_at, last_updated
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        competitor_id,
+                        playlist_youtube_id,  # 🔧 Utiliser la valeur normalisée
+                        playlist.get('name', playlist.get('title', '')),
+                        playlist.get('description', ''),
+                        playlist.get('thumbnail_url', ''),
+                        playlist.get('video_count', 0),
+                        datetime.now(),
+                        datetime.now()
+                    ))
+                except sqlite3.IntegrityError as e:
+                    print(f"[PLAYLIST] ⚠️ Doublon détecté pour {playlist_youtube_id}, ignoré: {e}")
+                    # Tenter une mise à jour à la place
+                    cursor.execute('''
+                        UPDATE playlist SET
+                            name = ?, description = ?, thumbnail_url = ?,
+                            video_count = ?, last_updated = ?
+                        WHERE concurrent_id = ? AND playlist_id = ?
+                    ''', (
+                        playlist.get('name', playlist.get('title', '')),
+                        playlist.get('description', ''),
+                        playlist.get('thumbnail_url', ''),
+                        playlist.get('video_count', 0),
+                        datetime.now(),
+                        competitor_id,
+                        playlist_youtube_id
+                    ))
         
         conn.commit()
         conn.close()

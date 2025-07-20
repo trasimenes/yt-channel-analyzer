@@ -1,0 +1,322 @@
+/*
+ * Core SCSS simplifié pour Sneat Theme
+ * Compatible avec Bootstrap CDN
+ */
+
+// Variables complètes Bootstrap + Sneat
+:root {
+  // Bootstrap Standard Colors
+  --bs-black: #000;
+  --bs-gray-100: #f8f9fa;
+  --bs-gray-200: #e9ecef;
+  --bs-gray-300: #dee2e6;
+  --bs-gray-400: #ced4da;
+  --bs-gray-500: #adb5bd;
+  --bs-gray-600: #6c757d;
+  --bs-gray-700: #495057;
+  --bs-gray-800: #343a40;
+  --bs-gray-900: #212529;
+  
+  // Bootstrap RGB Values
+  --bs-primary-rgb: 105,108,255;
+  --bs-secondary-rgb: 133,146,163;
+  --bs-success-rgb: 113,221,55;
+  --bs-info-rgb: 3,195,236;
+  --bs-warning-rgb: 255,171,0;
+  --bs-danger-rgb: 255,62,29;
+  --bs-light-rgb: 252,253,253;
+  --bs-dark-rgb: 35,52,70;
+  --bs-white-rgb: 255,255,255;
+  --bs-black-rgb: 0,0,0;
+  
+  // Bootstrap Text Emphasis
+  --bs-primary-text-emphasis: #2a2d80;
+  --bs-secondary-text-emphasis: #343b42;
+  --bs-success-text-emphasis: #2d5616;
+  --bs-info-text-emphasis: #017a95;
+  --bs-warning-text-emphasis: #664d03;
+  --bs-danger-text-emphasis: #66190c;
+  --bs-light-text-emphasis: #495057;
+  --bs-dark-text-emphasis: #495057;
+  
+  // Bootstrap Background Subtle
+  --bs-primary-bg-subtle: #d4d5ff;
+  --bs-secondary-bg-subtle: #e2e6ea;
+  --bs-success-bg-subtle: #ddf3d1;
+  --bs-info-bg-subtle: #ccf5fb;
+  --bs-warning-bg-subtle: #ffebcc;
+  --bs-danger-bg-subtle: #ffe0d9;
+  --bs-light-bg-subtle: #fcfcfd;
+  --bs-dark-bg-subtle: #ced4da;
+  
+  // Bootstrap Border Subtle
+  --bs-primary-border-subtle: #a9aeff;
+  --bs-secondary-border-subtle: #c4cdd5;
+  --bs-success-border-subtle: #bbe7a3;
+  --bs-info-border-subtle: #99ebf7;
+  --bs-warning-border-subtle: #ffd799;
+  --bs-danger-border-subtle: #ffc1b3;
+  --bs-light-border-subtle: #e9ecef;
+  --bs-dark-border-subtle: #adb5bd;
+  
+  // Bootstrap Typography
+  --bs-font-sans-serif: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  
+  // Bootstrap Body
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-size: 1rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.53;
+  --bs-body-color: #697a8d;
+  --bs-body-color-rgb: 105,122,141;
+  --bs-body-bg: #fff;
+  --bs-body-bg-rgb: 255,255,255;
+  
+  // Bootstrap Emphasis
+  --bs-emphasis-color: #000;
+  --bs-emphasis-color-rgb: 0,0,0;
+  --bs-secondary-color: rgba(105, 122, 141, 0.75);
+  --bs-secondary-color-rgb: 105,122,141;
+  --bs-secondary-bg: #e9ecef;
+  --bs-secondary-bg-rgb: 233,236,239;
+  --bs-tertiary-color: rgba(105, 122, 141, 0.5);
+  --bs-tertiary-color-rgb: 105,122,141;
+  --bs-tertiary-bg: #f8f9fa;
+  --bs-tertiary-bg-rgb: 248,249,250;
+  
+  // Bootstrap Links
+  --bs-heading-color: inherit;
+  --bs-link-color: #696cff;
+  --bs-link-color-rgb: 105,108,255;
+  --bs-link-decoration: underline;
+  --bs-link-hover-color: #5a5fcf;
+  --bs-link-hover-color-rgb: 90,95,207;
+  
+  // Bootstrap Code
+  --bs-code-color: #d63384;
+  --bs-highlight-color: #697a8d;
+  --bs-highlight-bg: #fff3cd;
+  
+  // Bootstrap Borders
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-color: #dee2e6;
+  --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
+  --bs-border-radius: 0.375rem;
+  --bs-border-radius-sm: 0.25rem;
+  --bs-border-radius-lg: 0.5rem;
+  --bs-border-radius-xl: 1rem;
+  --bs-border-radius-xxl: 2rem;
+  --bs-border-radius-2xl: var(--bs-border-radius-xxl);
+  --bs-border-radius-pill: 50rem;
+  
+  // Bootstrap Shadows
+  --bs-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --bs-box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --bs-box-shadow-lg: 1rem 3rem rgba(0, 0, 0, 0.175);
+  --bs-box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  
+  // Bootstrap Focus
+  --bs-focus-ring-width: 0.25rem;
+  --bs-focus-ring-opacity: 0.25;
+  --bs-focus-ring-color: rgba(105, 108, 255, 0.25);
+  
+  // Bootstrap Forms
+  --bs-form-valid-color: #71dd37;
+  --bs-form-valid-border-color: #71dd37;
+  --bs-form-invalid-color: #ff3e1d;
+  --bs-form-invalid-border-color: #ff3e1d;
+  
+  // Bootstrap Breakpoints
+  --bs-breakpoint-xs: 0;
+  --bs-breakpoint-sm: 576px;
+  --bs-breakpoint-md: 768px;
+  --bs-breakpoint-lg: 992px;
+  --bs-breakpoint-xl: 1200px;
+  --bs-breakpoint-xxl: 1400px;
+  
+  // Sneat Theme Colors
+  --bs-blue: #696cff;
+  --bs-indigo: #6610f2;
+  --bs-purple: #6f42c1;
+  --bs-pink: #d63384;
+  --bs-red: #ff3e1d;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffab00;
+  --bs-green: #71dd37;
+  --bs-teal: #20c997;
+  --bs-cyan: #03c3ec;
+  --bs-white: #fff;
+  --bs-gray: #8592a3;
+  --bs-gray-dark: #697a8d;
+  --bs-primary: #696cff;
+  --bs-secondary: #8592a3;
+  --bs-success: #71dd37;
+  --bs-info: #03c3ec;
+  --bs-warning: #ffab00;
+  --bs-danger: #ff3e1d;
+  --bs-light: #fcfdfd;
+  --bs-dark: #233446;
+  
+  // Sneat Specific
+  --bs-paper-bg: #fff;
+}
+
+// Layout de base
+html, body {
+  height: 100%;
+  font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.53;
+  color: #697a8d;
+  background-color: #f5f5f9;
+}
+
+// Layout wrapper
+.layout-wrapper {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  
+  &.layout-menu-fixed {
+    .layout-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 1000;
+      width: 260px;
+    }
+    
+    .layout-page {
+      margin-left: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+// Layout container
+.layout-container {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+}
+
+// Layout page
+.layout-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f9;
+}
+
+// Cards
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(161, 172, 184, 0.4);
+  border: 0 solid rgba(161, 172, 184, 0.25);
+  border-radius: 0.5rem;
+  
+  .card-header {
+    background-color: rgba(67, 89, 113, 0.1);
+    border-bottom: 1px solid rgba(161, 172, 184, 0.25);
+    padding: 1.5rem;
+    
+    .card-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #566a7f;
+    }
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+// Buttons
+.btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  
+  &.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+    
+    &:hover, &:focus {
+      background-color: #5a5fcf;
+      border-color: #5a5fcf;
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.5rem rgba(105, 108, 255, 0.4);
+    }
+  }
+}
+
+// Forms
+.form-control {
+  border-radius: 0.5rem;
+  border: 1px solid #d9dee3;
+  
+  &:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.25);
+  }
+}
+
+// Tables
+.table {
+  color: #697a8d;
+  
+  th {
+    font-weight: 600;
+    color: #566a7f;
+    border-color: #d9dee3;
+  }
+  
+  td {
+    border-color: #d9dee3;
+  }
+}
+
+// Responsive
+@media (max-width: 991.98px) {
+  .layout-wrapper.layout-menu-fixed {
+    .layout-menu {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      
+      &.show {
+        transform: translateX(0);
+      }
+    }
+    
+    .layout-page {
+      margin-left: 0;
+    }
+  }
+}
+
+// Utilities
+.text-primary {
+  color: var(--bs-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--bs-primary) !important;
+}

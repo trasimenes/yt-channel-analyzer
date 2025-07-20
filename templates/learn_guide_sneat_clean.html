@@ -1,0 +1,286 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}{{ guide_name }} - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="bx bx-book-open"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ guide_name }}</h5>
+                            <p class="text-muted mb-0">Practical guide for YouTube strategy</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/learn" class="btn btn-sm btn-outline-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Back to Learn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Examples - Practical Implementation -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-lightbulb me-2"></i>Brand Examples - See It In Action
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-pills mb-4" id="brandTabs" role="tablist">
+                        {% for brand in brands_data %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if loop.first %}active{% endif %}" id="{{ brand.id }}-tab" data-bs-toggle="pill" data-bs-target="#{{ brand.id }}-content" type="button" role="tab">
+                                {{ brand.logo }} {{ brand.name }}
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="brandTabsContent">
+                        {% for brand in brands_data %}
+                        <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="{{ brand.id }}-content" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 border-danger">
+                                        <div class="card-header bg-label-danger">
+                                            <h6 class="mb-0">
+                                                <i class="bx bx-star me-2"></i>HERO Content
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="small text-muted mb-3">Premium, flagship content</p>
+                                            <ul class="list-unstyled">
+                                                {% for item in brand.hero %}
+                                                <li class="mb-2">
+                                                    <i class="bx bx-check-circle text-danger me-2"></i>{{ item }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 border-primary">
+                                        <div class="card-header bg-label-primary">
+                                            <h6 class="mb-0">
+                                                <i class="bx bx-grid me-2"></i>HUB Content
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="small text-muted mb-3">Regular, valuable content</p>
+                                            <ul class="list-unstyled">
+                                                {% for item in brand.hub %}
+                                                <li class="mb-2">
+                                                    <i class="bx bx-check-circle text-primary me-2"></i>{{ item }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-header bg-label-success">
+                                            <h6 class="mb-0">
+                                                <i class="bx bx-help-circle me-2"></i>HELP Content
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="small text-muted mb-3">Support and tutorials</p>
+                                            <ul class="list-unstyled">
+                                                {% for item in brand.help %}
+                                                <li class="mb-2">
+                                                    <i class="bx bx-check-circle text-success me-2"></i>{{ item }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Reference Cards -->
+    <div class="row mb-6">
+        <div class="col-md-4 mb-3">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-label-danger">
+                    <h6 class="mb-0">
+                        <i class="bx bx-star me-2"></i>HERO Strategy
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-danger mb-2">When to use:</h6>
+                        <ul class="small">
+                            <li>Major product launches</li>
+                            <li>Annual events</li>
+                            <li>Brand campaigns</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h6 class="text-danger mb-2">Characteristics:</h6>
+                        <span class="badge bg-danger me-1">High Budget</span>
+                        <span class="badge bg-danger me-1">Viral Potential</span>
+                        <span class="badge bg-danger">Premium Quality</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-label-primary">
+                    <h6 class="mb-0">
+                        <i class="bx bx-grid me-2"></i>HUB Strategy
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary mb-2">When to use:</h6>
+                        <ul class="small">
+                            <li>Regular content series</li>
+                            <li>Educational content</li>
+                            <li>Entertainment videos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h6 class="text-primary mb-2">Characteristics:</h6>
+                        <span class="badge bg-primary me-1">Consistent</span>
+                        <span class="badge bg-primary me-1">Engaging</span>
+                        <span class="badge bg-primary">Scheduled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-success h-100">
+                <div class="card-header bg-label-success">
+                    <h6 class="mb-0">
+                        <i class="bx bx-help-circle me-2"></i>HELP Strategy
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success mb-2">When to use:</h6>
+                        <ul class="small">
+                            <li>Product tutorials</li>
+                            <li>Customer support</li>
+                            <li>FAQ videos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h6 class="text-success mb-2">Characteristics:</h6>
+                        <span class="badge bg-success me-1">Helpful</span>
+                        <span class="badge bg-success me-1">Searchable</span>
+                        <span class="badge bg-success">Practical</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Implementation Tips -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bulb me-2"></i>Implementation Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="alert alert-primary" role="alert">
+                                <h6 class="alert-heading">
+                                    <i class="bx bx-info-circle me-2"></i>Content Balance
+                                </h6>
+                                <p class="mb-2">Maintain a healthy mix across all three categories:</p>
+                                <ul class="mb-0">
+                                    <li><strong>HERO:</strong> 10-20% of content</li>
+                                    <li><strong>HUB:</strong> 60-70% of content</li>
+                                    <li><strong>HELP:</strong> 10-20% of content</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="alert alert-success" role="alert">
+                                <h6 class="alert-heading">
+                                    <i class="bx bx-target-lock me-2"></i>Audience Focus
+                                </h6>
+                                <p class="mb-2">Each type serves different audience needs:</p>
+                                <ul class="mb-0">
+                                    <li><strong>HERO:</strong> Broad reach & awareness</li>
+                                    <li><strong>HUB:</strong> Engagement & loyalty</li>
+                                    <li><strong>HELP:</strong> Support & conversion</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-warning" role="alert">
+                                <h6 class="alert-heading">
+                                    <i class="bx bx-time me-2"></i>Publishing Schedule
+                                </h6>
+                                <p class="mb-0">
+                                    Plan your content calendar with this framework in mind. Use our competitor analysis to see how industry leaders implement this strategy.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="row mt-6">
+        <div class="col-md-12">
+            <div class="card bg-label-primary">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">
+                                <i class="bx bx-rocket me-2"></i>Ready to Apply This Strategy?
+                            </h6>
+                            <p class="mb-0 text-muted">
+                                Use our competitor analysis tools to see how your competitors implement the Hero-Hub-Help framework.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="/concurrents" class="btn btn-primary">
+                                <i class="bx bx-search-alt me-2"></i>Analyze Competitors
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

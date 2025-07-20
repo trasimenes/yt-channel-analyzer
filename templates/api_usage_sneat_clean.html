@@ -1,0 +1,277 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}API Usage - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-data me-2"></i>YouTube API Usage
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Monitor your YouTube API quota and usage statistics</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quota Overview -->
+    <div class="row mb-6">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-pie-chart-alt me-2"></i>Daily Quota Usage
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-{{ 'danger' if quota_data.percentage >= 90 else ('warning' if quota_data.percentage >= 70 else 'success') }}">
+                                <i class="bx bx-{{ 'error-circle' if quota_data.percentage >= 90 else ('error' if quota_data.percentage >= 70 else 'check-circle') }}"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ "{:,}".format(quota_data.daily_usage) }} / {{ "{:,}".format(quota_data.quota_limit) }}</h4>
+                            <small class="text-muted">API Units Used Today</small>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-{{ 'danger' if quota_data.percentage >= 90 else ('warning' if quota_data.percentage >= 70 else 'success') }}" 
+                             style="width: {{ quota_data.percentage }}%" 
+                             role="progressbar">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ quota_data.percentage }}% used</small>
+                        <small class="text-{{ 'danger' if quota_data.percentage >= 90 else ('warning' if quota_data.percentage >= 70 else 'success') }}">
+                            {{ "{:,}".format(quota_data.quota_limit - quota_data.daily_usage) }} remaining
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-time me-2"></i>Quota Reset
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="bx bx-time-five"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ quota_data.reset_time or 'Unknown' }}</h4>
+                            <small class="text-muted">Next Reset (Pacific Time)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info p-2 mb-0">
+                        <small>
+                            <i class="bx bx-info-circle me-1"></i>
+                            YouTube API quota resets daily at midnight Pacific Time
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Statistics -->
+    <div class="row mb-6">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-video"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(api_stats.videos_fetched or 0) }}</h4>
+                    <small class="text-muted">Videos Fetched</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-group"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(api_stats.channels_analyzed or 0) }}</h4>
+                    <small class="text-muted">Channels Analyzed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-search"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(api_stats.search_requests or 0) }}</h4>
+                    <small class="text-muted">Search Requests</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-error"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ "{:,}".format(api_stats.errors or 0) }}</h4>
+                    <small class="text-muted">API Errors</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent API Calls -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-history me-2"></i>Recent API Calls
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_calls %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Endpoint</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Resource</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for call in recent_calls %}
+                                <tr>
+                                    <td>
+                                        <small>{{ call.timestamp.strftime('%H:%M:%S') if call.timestamp.strftime else call.timestamp }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-label-{{ 'primary' if call.endpoint == 'search' else ('success' if call.endpoint == 'videos' else 'info') }}">
+                                            {{ call.endpoint|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ call.cost }}</span> units
+                                    </td>
+                                    <td>
+                                        {% if call.status == 'success' %}
+                                            <span class="badge bg-success">Success</span>
+                                        {% elif call.status == 'error' %}
+                                            <span class="badge bg-danger">Error</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ call.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted text-truncate" style="max-width: 200px;">
+                                            {{ call.resource or 'N/A' }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="avatar mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-secondary">
+                                <i class="bx bx-history"></i>
+                            </span>
+                        </div>
+                        <h6 class="mb-2">No Recent API Calls</h6>
+                        <p class="text-muted mb-0">API call history will appear here once you start analyzing channels</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Configuration -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-cog me-2"></i>API Configuration
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">API Key Status</label>
+                                <div class="d-flex align-items-center">
+                                    {% if api_config.key_configured %}
+                                        <span class="badge bg-success me-2">Configured</span>
+                                        <small class="text-muted">Key ends with: ***{{ api_config.key_suffix }}</small>
+                                    {% else %}
+                                        <span class="badge bg-danger me-2">Not Configured</span>
+                                        <small class="text-muted">No API key found</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Rate Limiting</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2">Active</span>
+                                    <small class="text-muted">{{ api_config.rate_limit or 100 }} requests/minute</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bx bx-info-circle me-2"></i>Usage Guidelines
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Channel analysis: ~50-100 units per channel</li>
+                            <li>Video search: ~100 units per search</li>
+                            <li>Playlist analysis: ~150-200 units per playlist</li>
+                            <li>Monitor usage to avoid hitting daily limits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Brand Insights - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-bulb me-2"></i>Brand Insights
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Performance analysis for Center Parcs channels</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshInsights()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not insights.success %}
+    <!-- Error State -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-danger" style="width: 60px; height: 60px;">
+                            <i class="bx bx-error-circle" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Analysis Error</h5>
+                    <p class="text-muted">{{ insights.error }}</p>
+                    <button onclick="refreshInsights()" class="btn btn-primary">
+                        <i class="bx bx-refresh me-2"></i>Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif insights.channels %}
+    
+    <!-- Brand Metrics Overview - 8 Cards per Brand (like /country-insights) -->
+    {% for region_key, data in insights.channels.items() %}
+    <div class="row mb-6">
+        <div class="col-12">
+            <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-header border-0" style="padding-bottom: 1.5rem;">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); font-size: 1.25rem;">
+                                {% if data.region == 'France' %}🇫🇷
+                                {% elif data.region == 'Germany' %}🇩🇪
+                                {% elif data.region == 'Netherlands' %}🇳🇱
+                                {% else %}🏕️
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0 text-white">{{ data.name }}</h5>
+                            <p class="card-subtitle mb-0" style="color: rgba(255,255,255,0.8);">{{ data.region }} • {{ "{:,}".format(data.stats.video_count) }} vidéos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 7 Specific Metric Cards for this Brand -->
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Video Length</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{ data.video_length or '0' }}</h4>
+                                <small class="text-muted">min</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="bx bx-time"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Video Frequency</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{ data.video_frequency or '0' }}</h4>
+                                <small class="text-muted">vid/week</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="bx bx-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Most Liked Topics</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2" style="font-size: 0.9rem;">{{ data.most_liked_topic or 'N/A' }}</h4>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="bx bx-heart"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Organic vs Paid</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{ data.organic_ratio or '0' }}</h4>
+                                <small class="text-muted">% organic</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-warning">
+                                <i class="bx bx-trending-up"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Hub/Help/Hero</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2" style="font-size: 0.8rem;">{{ data.content_distribution.hub_ratio }}% | {{ data.content_distribution.help_ratio }}% | {{ data.content_distribution.hero_ratio }}%</h4>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-danger">
+                                <i class="bx bx-category"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Thumbnail Consistency</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2">{{ data.thumbnail_consistency or '0' }}</h4>
+                                <small class="text-muted">/10</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-secondary">
+                                <i class="bx bx-image"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                            <span>Tone of Voice</span>
+                            <div class="d-flex align-items-end mt-2">
+                                <h4 class="mb-0 me-2" style="font-size: 0.9rem;">{{ data.lexical_field or 'N/A' }}</h4>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded" style="background-color: #4ecdc4; color: white;">
+                                <i class="bx bx-chat"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <!-- No Data State -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-primary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-loader-alt bx-spin" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Generating Brand Insights</h5>
+                    <p class="text-muted">Please wait while we analyze brand performance data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for interactions -->
+<script>
+function refreshInsights() {
+    // Show loading state
+    const refreshBtn = document.querySelector('button[onclick="refreshInsights()"]');
+    if (refreshBtn) {
+        const originalContent = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> <span class="d-none d-sm-inline-block ms-1">Analyzing...</span>';
+        refreshBtn.disabled = true;
+        
+        // Reload the page after a short delay
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    } else {
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

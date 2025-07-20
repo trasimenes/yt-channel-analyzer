@@ -864,4 +864,177 @@ generate_country_insights = country_insights_analyzer.generate_country_insights
 generate_detailed_country_insights = country_insights_analyzer.generate_detailed_country_insights
 calculate_publication_frequency = frequency_analyzer.calculate_publication_frequency
 analyze_shorts_vs_regular_videos = shorts_analyzer.analyze_shorts_vs_regular_videos
-generate_center_parcs_insights = center_parcs_analyzer.generate_center_parcs_insights 
+generate_center_parcs_insights = center_parcs_analyzer.generate_center_parcs_insights
+
+def get_country_insights(country):
+    """Récupérer les insights pour un pays donné"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Mapper le pays
+        country_mapping = {
+            'France': 'FR',
+            'Germany': 'DE',
+            'Belgium': 'BE',
+            'Netherlands': 'NL',
+            'International': 'INT'
+        }
+        
+        country_code = country_mapping.get(country, country)
+        
+        insights = {
+            'country': country,
+            'country_code': country_code,
+            'metrics': {}
+        }
+        
+        # 1. Top catégories par engagement
+        cursor.execute("""
+            SELECT 
+                v.category,
+                COUNT(*) as video_count,
+                AVG((v.like_count + v.comment_count) * 1.0 / NULLIF(v.view_count, 0)) as avg_engagement_rate,
+                SUM(v.view_count) as total_views
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            WHERE c.country = ?
+            AND v.category IS NOT NULL
+            AND v.view_count > 0
+            GROUP BY v.category
+            ORDER BY avg_engagement_rate DESC
+            LIMIT 5
+        """, (country_code,))
+        
+        insights['metrics']['top_categories'] = [
+            {
+                'category': row[0],
+                'video_count': row[1],
+                'avg_engagement_rate': round(row[2] * 100, 2) if row[2] else 0,
+                'total_views': row[3]
+            }
+            for row in cursor.fetchall()
+        ]
+        
+        # 2. Durée optimale des vidéos
+        cursor.execute("""
+            SELECT 
+                CASE 
+                    WHEN duration_seconds < 60 THEN '< 1 min'
+                    WHEN duration_seconds < 300 THEN '1-5 min'
+                    WHEN duration_seconds < 600 THEN '5-10 min'
+                    WHEN duration_seconds < 1200 THEN '10-20 min'
+                    ELSE '> 20 min'
+                END as duration_range,
+                AVG((like_count + comment_count) * 1.0 / NULLIF(view_count, 0)) as avg_engagement_rate,
+                COUNT(*) as video_count
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            WHERE c.country = ?
+            AND v.view_count > 0
+            AND v.duration_seconds > 0
+            GROUP BY duration_range
+            ORDER BY avg_engagement_rate DESC
+        """, (country_code,))
+        
+        insights['metrics']['optimal_duration'] = [
+            {
+                'duration_range': row[0],
+                'avg_engagement_rate': round(row[1] * 100, 2) if row[1] else 0,
+                'video_count': row[2]
+            }
+            for row in cursor.fetchall()
+        ]
+        
+        # 3. Meilleurs jours de publication
+        cursor.execute("""
+            SELECT 
+                CASE cast(strftime('%w', published_at) as integer)
+                    WHEN 0 THEN 'Dimanche'
+                    WHEN 1 THEN 'Lundi'
+                    WHEN 2 THEN 'Mardi'
+                    WHEN 3 THEN 'Mercredi'
+                    WHEN 4 THEN 'Jeudi'
+                    WHEN 5 THEN 'Vendredi'
+                    WHEN 6 THEN 'Samedi'
+                END as day_of_week,
+                AVG(view_count) as avg_views,
+                COUNT(*) as video_count
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            WHERE c.country = ?
+            AND v.published_at IS NOT NULL
+            GROUP BY day_of_week
+            ORDER BY avg_views DESC
+        """, (country_code,))
+        
+        insights['metrics']['best_days'] = [
+            {
+                'day': row[0],
+                'avg_views': int(row[1]) if row[1] else 0,
+                'video_count': row[2]
+            }
+            for row in cursor.fetchall()
+        ]
+        
+        # 4. Shorts vs Regular performance
+        cursor.execute("""
+            SELECT 
+                CASE WHEN is_short = 1 THEN 'Shorts' ELSE 'Regular' END as video_type,
+                COUNT(*) as count,
+                AVG(view_count) as avg_views,
+                AVG((like_count + comment_count) * 1.0 / NULLIF(view_count, 0)) as avg_engagement_rate
+            FROM video v
+            JOIN concurrent c ON v.concurrent_id = c.id
+            WHERE c.country = ?
+            AND v.view_count > 0
+            GROUP BY is_short
+        """, (country_code,))
+        
+        insights['metrics']['video_types'] = [
+            {
+                'type': row[0],
+                'count': row[1],
+                'avg_views': int(row[2]) if row[2] else 0,
+                'avg_engagement_rate': round(row[3] * 100, 2) if row[3] else 0
+            }
+            for row in cursor.fetchall()
+        ]
+        
+        # 5. Top performing competitors
+        cursor.execute("""
+            SELECT 
+                c.name,
+                COUNT(v.id) as video_count,
+                SUM(v.view_count) as total_views,
+                AVG((v.like_count + v.comment_count) * 1.0 / NULLIF(v.view_count, 0)) as avg_engagement_rate
+            FROM concurrent c
+            JOIN video v ON c.id = v.concurrent_id
+            WHERE c.country = ?
+            AND v.view_count > 0
+            GROUP BY c.id
+            ORDER BY avg_engagement_rate DESC
+            LIMIT 3
+        """, (country_code,))
+        
+        insights['metrics']['top_competitors'] = [
+            {
+                'name': row[0],
+                'video_count': row[1],
+                'total_views': row[2],
+                'avg_engagement_rate': round(row[3] * 100, 2) if row[3] else 0
+            }
+            for row in cursor.fetchall()
+        ]
+        
+        conn.close()
+        return insights
+        
+    except Exception as e:
+        print(f"Erreur lors de la récupération des insights pour {country}: {e}")
+        return {
+            'country': country,
+            'country_code': country,
+            'metrics': {},
+            'error': str(e)
+        } 

@@ -1,0 +1,39 @@
+/* Performance Mode - Désactive les effets visuels lourds */
+
+/* Désactive backdrop-filter qui est très coûteux */
+.glass-surface,
+.glass-surface-secondary,
+.navbar-modern,
+.search-hero,
+.metric-card,
+.country-card,
+.stat-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Simplifie les ombres */
+* {
+    box-shadow: none !important;
+}
+
+/* Désactive les transitions et animations */
+* {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Backgrounds solides au lieu de semi-transparents */
+.glass-surface {
+    background: var(--glass-bg-solid) !important;
+}
+
+.navbar-modern {
+    background: var(--navbar-bg-solid) !important;
+}
+
+/* Variables pour les couleurs solides */
+:root {
+    --glass-bg-solid: #1a1a2e;
+    --navbar-bg-solid: #16213e;
+}

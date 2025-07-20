@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "sneat_base.html" %}
 
 {% block title %}Settings - YT Analyzer{% endblock %}
 
@@ -763,6 +763,34 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Human Classification Propagation -->
+                <div class="card settings-card mt-4">
+                    <div class="card-header card-header-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people-fill me-2"></i>
+                            Human Classification
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning alert-custom" role="alert">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Propager toutes les classifications de playlists validées par l'humain vers les vidéos correspondantes.
+                        </div>
+                        <button type="button" class="btn btn-primary" id="propagate_human_playlists">
+                            <i class="bi bi-broadcast me-2"></i>
+                            Propagate playlists to videos
+                        </button>
+                        <div class="mt-3">
+                            <div class="progress" id="human_progress" style="display:none;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">
+                                    <span id="human_progress_text">0%</span>
+                                </div>
+                            </div>
+                            <div class="text-muted mt-2" id="human_status_text" style="display:none;">En attente...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1377,6 +1405,72 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadAllPatterns();
         refreshDatesStatus();
+    });
+
+    function propagateHumanPlaylists() {
+        const btn = document.getElementById('propagate_human_playlists');
+        const progressContainer = document.getElementById('human_progress');
+        const progressBar = progressContainer.querySelector('.progress-bar');
+        const progressText = document.getElementById('human_progress_text');
+        const statusText = document.getElementById('human_status_text');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
+
+        // Show progress UI
+        progressContainer.style.display = 'block';
+        statusText.style.display = 'block';
+        progressBar.style.width = '10%';
+        progressText.textContent = '10%';
+        statusText.textContent = 'Initialisation de la propagation...';
+
+        fetch('/api/propagate-human-playlists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.success) {
+                progressBar.style.width = '100%';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-success');
+                progressText.textContent = '100%';
+                statusText.textContent = data.message;
+                showAlert(data.message, 'success');
+            } else {
+                progressBar.style.width = '100%';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-danger');
+                progressText.textContent = 'Erreur';
+                statusText.textContent = 'Erreur: ' + data.error;
+                showAlert('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Erreur', err);
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-danger');
+            progressText.textContent = 'Erreur';
+            statusText.textContent = 'Erreur de connexion';
+            showAlert('Erreur de connexion', 'danger');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-broadcast me-2"></i>Propagate playlists to videos';
+            // Hide progress after 5s
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                statusText.style.display = 'none';
+                progressBar.classList.remove('bg-success', 'bg-danger');
+                progressBar.classList.add('progress-bar-animated');
+                progressBar.style.width = '0%';
+            }, 5000);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('propagate_human_playlists').addEventListener('click', propagateHumanPlaylists);
     });
 </script>
 {% endblock %} 

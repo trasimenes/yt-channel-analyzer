@@ -1,0 +1,603 @@
+{% extends "sneat/base.html" %}
+
+{% block title %}Tasks - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .task-card.running {
+        border-left-color: #28a745;
+        background: #f8fff9;
+    }
+    
+    .task-card.completed {
+        border-left-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .task-card.error {
+        border-left-color: #dc3545;
+        background: #fff8f8;
+    }
+    
+    .task-card.paused {
+        border-left-color: #ffc107;
+        background: #fffdf8;
+    }
+    
+    .progress-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .task-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-running {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-error {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-paused {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .task-thumbnail {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .task-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .country-tabs {
+        margin-bottom: 24px;
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .tab-badge {
+        margin-left: 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+    
+    .refresh-indicator {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .task-time {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h4 class="card-title mb-2">
+                            <i class="bx bx-task me-2 text-primary"></i>
+                            Analysis Tasks
+                        </h4>
+                        <p class="text-muted mb-0">
+                            Monitor YouTube channel analysis progress by region
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-end">
+                        <button class="btn btn-outline-primary" onclick="refreshTasks()">
+                            <i class="bx bx-refresh me-1" id="refreshIcon"></i>
+                            Refresh
+                        </button>
+                        <button class="btn btn-outline-danger ms-2" onclick="clearCompletedTasks()">
+                            <i class="bx bx-trash me-1"></i>
+                            Clear Completed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Country Tabs -->
+<div class="card country-tabs">
+    <div class="card-body">
+        <ul class="nav nav-pills nav-fill" id="countryTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-tasks" type="button" role="tab">
+                    🌍 All Countries
+                    <span class="badge bg-primary tab-badge">{{ tasks|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="france-tab" data-bs-toggle="pill" data-bs-target="#france-tasks" type="button" role="tab">
+                    🇫🇷 France
+                    <span class="badge bg-secondary tab-badge">{{ tasks_by_country.get('FR', [])|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="germany-tab" data-bs-toggle="pill" data-bs-target="#germany-tasks" type="button" role="tab">
+                    🇩🇪 Germany
+                    <span class="badge bg-secondary tab-badge">{{ tasks_by_country.get('DE', [])|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="belgium-tab" data-bs-toggle="pill" data-bs-target="#belgium-tasks" type="button" role="tab">
+                    🇧🇪 Belgium
+                    <span class="badge bg-secondary tab-badge">{{ tasks_by_country.get('BE', [])|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="netherlands-tab" data-bs-toggle="pill" data-bs-target="#netherlands-tasks" type="button" role="tab">
+                    🇳🇱 Netherlands
+                    <span class="badge bg-secondary tab-badge">{{ tasks_by_country.get('NL', [])|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="international-tab" data-bs-toggle="pill" data-bs-target="#international-tasks" type="button" role="tab">
+                    🌍 International
+                    <span class="badge bg-secondary tab-badge">{{ tasks_by_country.get('INT', [])|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="crashed-tab" data-bs-toggle="pill" data-bs-target="#crashed-tasks" type="button" role="tab">
+                    ❌ Failed
+                    <span class="badge bg-danger tab-badge">{{ crashed_tasks|length }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Tab Content -->
+<div class="tab-content" id="countryTabsContent">
+    
+    <!-- All Tasks -->
+    <div class="tab-pane fade show active" id="all-tasks" role="tabpanel">
+        {% if tasks %}
+            {% for task in tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bx bx-task" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h5>No tasks running</h5>
+                <p>Start analyzing YouTube channels to see tasks here</p>
+                <a href="/" class="btn btn-primary">Start Analysis</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- France Tasks -->
+    <div class="tab-pane fade" id="france-tasks" role="tabpanel">
+        {% set france_tasks = tasks_by_country.get('FR', []) %}
+        {% if france_tasks %}
+            {% for task in france_tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">🇫🇷</span>
+                <h5>No French channels being analyzed</h5>
+                <p>Add French YouTube competitors to see their analysis tasks</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Germany Tasks -->
+    <div class="tab-pane fade" id="germany-tasks" role="tabpanel">
+        {% set germany_tasks = tasks_by_country.get('DE', []) %}
+        {% if germany_tasks %}
+            {% for task in germany_tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">🇩🇪</span>
+                <h5>No German channels being analyzed</h5>
+                <p>Add German YouTube competitors to see their analysis tasks</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Belgium Tasks -->
+    <div class="tab-pane fade" id="belgium-tasks" role="tabpanel">
+        {% set belgium_tasks = tasks_by_country.get('BE', []) %}
+        {% if belgium_tasks %}
+            {% for task in belgium_tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">🇧🇪</span>
+                <h5>No Belgian channels being analyzed</h5>
+                <p>Add Belgian YouTube competitors to see their analysis tasks</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Netherlands Tasks -->
+    <div class="tab-pane fade" id="netherlands-tasks" role="tabpanel">
+        {% set netherlands_tasks = tasks_by_country.get('NL', []) %}
+        {% if netherlands_tasks %}
+            {% for task in netherlands_tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">🇳🇱</span>
+                <h5>No Dutch channels being analyzed</h5>
+                <p>Add Dutch YouTube competitors to see their analysis tasks</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- International Tasks -->
+    <div class="tab-pane fade" id="international-tasks" role="tabpanel">
+        {% set international_tasks = tasks_by_country.get('INT', []) %}
+        {% if international_tasks %}
+            {% for task in international_tasks %}
+                {{ render_task_card(task) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">🌍</span>
+                <h5>No international channels being analyzed</h5>
+                <p>Add international YouTube competitors to see their analysis tasks</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Failed Tasks -->
+    <div class="tab-pane fade" id="crashed-tasks" role="tabpanel">
+        {% if crashed_tasks %}
+            {% for task in crashed_tasks %}
+                {{ render_task_card(task, show_error=True) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span style="font-size: 3rem;">✅</span>
+                <h5>No failed tasks</h5>
+                <p>All analysis tasks are running smoothly!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Task Card Macro -->
+{% macro render_task_card(task, show_error=False) %}
+<div class="card task-card {{ task.status }} mb-3">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    {% if task.channel_thumbnail %}
+                        <img src="{{ task.channel_thumbnail }}" alt="{{ task.channel_name }}" class="task-thumbnail me-3">
+                    {% else %}
+                        <div class="avatar avatar-sm me-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                {{ task.channel_name[0].upper() if task.channel_name else 'T' }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-1">{{ task.channel_name or 'Unknown Channel' }}</h6>
+                        <div class="task-time">
+                            Started: {{ task.start_time }}
+                            {% if task.end_time %}
+                                <br>Ended: {{ task.end_time }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                {% if task.status == 'running' %}
+                    <div class="progress-container mt-2">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ task.progress }}%"></div>
+                        </div>
+                        <div class="progress-text">{{ task.progress }}%</div>
+                    </div>
+                    <small class="text-muted">{{ task.current_step }}</small>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-2 text-center">
+                {% if task.videos_found > 0 %}
+                    <div class="small text-muted">Videos Found</div>
+                    <div class="h6">{{ task.videos_found }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-1 text-end">
+                <div class="task-actions">
+                    {% if task.status == 'running' %}
+                        <button class="btn btn-outline-warning btn-sm" onclick="pauseTask('{{ task.id }}')" title="Pause">
+                            <i class="bx bx-pause"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="stopTask('{{ task.id }}')" title="Stop">
+                            <i class="bx bx-stop"></i>
+                        </button>
+                    {% elif task.status == 'paused' %}
+                        <button class="btn btn-outline-success btn-sm" onclick="resumeTask('{{ task.id }}')" title="Resume">
+                            <i class="bx bx-play"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteTask('{{ task.id }}')" title="Delete">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    {% elif task.status in ['completed', 'error'] %}
+                        <button class="btn btn-outline-primary btn-sm" onclick="restartTask('{{ task.id }}')" title="Restart">
+                            <i class="bx bx-refresh"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteTask('{{ task.id }}')" title="Delete">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if show_error and task.error_message %}
+        <div class="mt-3">
+            <div class="alert alert-danger">
+                <strong>Error:</strong> {{ task.error_message }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh tasks every 5 seconds
+let refreshInterval;
+
+function startAutoRefresh() {
+    refreshInterval = setInterval(refreshTasks, 5000);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+}
+
+function refreshTasks() {
+    const refreshIcon = document.getElementById('refreshIcon');
+    refreshIcon.classList.add('refresh-indicator');
+    
+    fetch('/api/tasks')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update task counts in tabs
+                updateTaskCounts(data.tasks);
+                
+                // Update active tab content
+                updateActiveTabContent(data.tasks);
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing tasks:', error);
+        })
+        .finally(() => {
+            refreshIcon.classList.remove('refresh-indicator');
+        });
+}
+
+function updateTaskCounts(tasks) {
+    // Count tasks by country and status
+    const counts = {
+        all: tasks.length,
+        FR: 0, DE: 0, BE: 0, NL: 0, INT: 0,
+        crashed: 0
+    };
+    
+    tasks.forEach(task => {
+        if (task.status === 'error') {
+            counts.crashed++;
+        }
+        // Add logic to determine country from task
+        // This would need to be passed from the backend
+    });
+    
+    // Update badge counts
+    document.querySelector('#all-tab .tab-badge').textContent = counts.all;
+    document.querySelector('#crashed-tab .tab-badge').textContent = counts.crashed;
+}
+
+function pauseTask(taskId) {
+    fetch(`/api/tasks/${taskId}/pause`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Task paused successfully');
+                refreshTasks();
+            } else {
+                showToast('error', data.error || 'Failed to pause task');
+            }
+        });
+}
+
+function resumeTask(taskId) {
+    fetch(`/api/tasks/${taskId}/resume`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Task resumed successfully');
+                refreshTasks();
+            } else {
+                showToast('error', data.error || 'Failed to resume task');
+            }
+        });
+}
+
+function stopTask(taskId) {
+    if (confirm('Are you sure you want to stop this task?')) {
+        fetch(`/api/tasks/${taskId}/stop`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', 'Task stopped successfully');
+                    refreshTasks();
+                } else {
+                    showToast('error', data.error || 'Failed to stop task');
+                }
+            });
+    }
+}
+
+function deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        fetch(`/api/tasks/${taskId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', 'Task deleted successfully');
+                    refreshTasks();
+                } else {
+                    showToast('error', data.error || 'Failed to delete task');
+                }
+            });
+    }
+}
+
+function restartTask(taskId) {
+    if (confirm('This will restart the analysis for this channel. Continue?')) {
+        fetch(`/api/tasks/${taskId}/restart`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', 'Task restarted successfully');
+                    refreshTasks();
+                } else {
+                    showToast('error', data.error || 'Failed to restart task');
+                }
+            });
+    }
+}
+
+function clearCompletedTasks() {
+    if (confirm('This will remove all completed and failed tasks. Continue?')) {
+        fetch('/api/tasks/clear-completed', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', `${data.deleted_count} tasks cleared`);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('error', data.error || 'Failed to clear tasks');
+                }
+            });
+    }
+}
+
+// Toast function (reuse from other pages)
+function showToast(type, message) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1055';
+        document.body.appendChild(container);
+    }
+    
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = container.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+// Stop auto-refresh when page is not visible
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        startAutoRefresh();
+    } else {
+        stopAutoRefresh();
+    }
+});
+</script>
+{% endblock %}

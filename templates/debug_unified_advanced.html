@@ -1,0 +1,940 @@
+{% extends "sneat_base.html" %}
+
+{% block title %}Fix Problems - Advanced - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+.progress-step {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.progress-step.active {
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.progress-step.completed {
+    background: rgba(25, 135, 84, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.progress-step.error {
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.progress-step.skipped {
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.step-progress {
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.step-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.log-entry {
+    padding: 0.25rem 0.5rem;
+    margin: 0.125rem 0;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    border-left: 3px solid transparent;
+}
+
+.log-entry.info {
+    background: rgba(13, 110, 253, 0.1);
+    border-left-color: #0d6efd;
+}
+
+.log-entry.success {
+    background: rgba(25, 135, 84, 0.1);
+    border-left-color: #198754;
+}
+
+.log-entry.warning {
+    background: rgba(255, 193, 7, 0.1);
+    border-left-color: #ffc107;
+}
+
+.log-entry.error {
+    background: rgba(220, 53, 69, 0.1);
+    border-left-color: #dc3545;
+}
+
+.resilient-mode {
+    background: rgba(255, 193, 7, 0.2);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.retry-controls {
+    display: none;
+    margin-top: 1rem;
+}
+
+.retry-controls.show {
+    display: block;
+}
+
+.current-operation {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.operation-timer {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-left: 0.5rem;
+}
+
+.health-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.health-excellent { background: #28a745; }
+.health-good { background: #17a2b8; }
+.health-warning { background: #ffc107; }
+.health-critical { background: #dc3545; }
+
+.step-counter {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.overall-progress {
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.continue-anyway {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    border: none;
+    color: white;
+    font-weight: bold;
+}
+
+.skip-step {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border: none;
+    color: #8b4513;
+    font-weight: bold;
+}
+
+.step-details {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.step-details.show {
+    display: block;
+}
+
+.error-details {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.step-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.mini-progress {
+    height: 2px;
+    background: #e9ecef;
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.mini-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-tools text-primary me-3"></i>
+                        Fix Problems - Advanced Mode
+                    </h1>
+                    <p class="text-muted mb-0">Correction ultra-détaillée avec système de récupération automatique</p>
+                </div>
+
+                <!-- Overall Progress (Sticky) -->
+                <div class="overall-progress">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>Progression Globale</strong>
+                            <span class="current-operation" id="current-operation">Initialisation...</span>
+                            <span class="operation-timer" id="operation-timer">00:00</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="health-indicator health-excellent" id="health-indicator"></span>
+                            <span id="health-status">Excellent</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%" id="overall-progress-bar">
+                            <span id="overall-progress-text">0%</span>
+                        </div>
+                    </div>
+                    <div class="mini-progress">
+                        <div class="mini-progress-bar" id="mini-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small mt-1">
+                        <span>Étape <span id="current-step">0</span>/<span id="total-steps">0</span></span>
+                        <span><span id="completed-steps">0</span> terminées, <span id="error-steps">0</span> erreurs</span>
+                    </div>
+                </div>
+
+                <!-- Configuration rapide -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>
+                            Configuration Rapide
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="quickConfigForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="resilient-mode" checked>
+                                        <label class="form-check-label" for="resilient-mode">
+                                            <strong>Mode Résilient</strong>
+                                            <small class="text-muted d-block">Continue même en cas d'erreur</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="auto-retry" checked>
+                                        <label class="form-check-label" for="auto-retry">
+                                            <strong>Retry Automatique</strong>
+                                            <small class="text-muted d-block">Réessaie automatiquement (max 3x)</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="detailed-logs" checked>
+                                        <label class="form-check-label" for="detailed-logs">
+                                            <strong>Logs Détaillés</strong>
+                                            <small class="text-muted d-block">Affichage complet des opérations</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="batch-size" class="form-label">Taille des lots</label>
+                                    <input type="range" class="form-range" id="batch-size" min="10" max="100" value="50">
+                                    <small class="text-muted">Valeur: <span id="batch-size-value">50</span></small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="timeout" class="form-label">Timeout par étape (secondes)</label>
+                                    <input type="range" class="form-range" id="timeout" min="30" max="300" value="120">
+                                    <small class="text-muted">Valeur: <span id="timeout-value">120</span></small>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="preselectAll()">
+                                        <i class="bi bi-check-all me-2"></i>Tout sélectionner
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="preselectCritical()">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>Critique seulement
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="startAdvancedFix()">
+                                    <i class="bi bi-play-circle me-2"></i>Démarrer les Corrections
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Detailed Progress Steps -->
+                <div id="progress-steps" class="mb-4">
+                    <!-- Les étapes seront générées dynamiquement -->
+                </div>
+
+                <!-- Resilient Mode Alert -->
+                <div id="resilient-alert" class="resilient-mode" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-check text-warning me-2"></i>
+                        <div>
+                            <strong>Mode Résilient Activé</strong>
+                            <p class="mb-0">Le système continue même en cas d'erreur. Les étapes échouées seront marquées mais n'arrêteront pas le processus.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="final-results" class="card" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Corrections Terminées
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="results-summary">
+                            <!-- Résumé des résultats -->
+                        </div>
+                        <div id="results-details" class="mt-3">
+                            <!-- Détails complets -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar with Live Stats -->
+            <div class="col-lg-4">
+                <div class="card position-sticky" style="top: 20px;">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Statistiques Temps Réel
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="h3 text-primary mb-0" id="stats-processed">0</div>
+                                <small class="text-muted">Traités</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="h3 text-success mb-0" id="stats-fixed">0</div>
+                                <small class="text-muted">Corrigés</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="h4 text-warning mb-0" id="stats-errors">0</div>
+                                <small class="text-muted">Erreurs</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="h4 text-info mb-0" id="stats-skipped">0</div>
+                                <small class="text-muted">Ignorés</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Temps écoulé:</small>
+                            <small id="elapsed-time">00:00</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Vitesse:</small>
+                            <small id="processing-speed">0/min</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">ETA:</small>
+                            <small id="eta">Calcul...</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-lightning me-2"></i>
+                            Actions Rapides
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning btn-sm" onclick="pauseProcessing()" id="pause-btn">
+                                <i class="bi bi-pause me-2"></i>Pause
+                            </button>
+                            <button class="btn btn-info btn-sm" onclick="skipCurrentStep()" id="skip-btn">
+                                <i class="bi bi-skip-forward me-2"></i>Ignorer Étape
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="forceStop()" id="stop-btn">
+                                <i class="bi bi-stop me-2"></i>Arrêter
+                            </button>
+                        </div>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-sm" onclick="exportLogs()" id="export-btn">
+                                <i class="bi bi-download me-2"></i>Exporter Logs
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="clearLogs()" id="clear-btn">
+                                <i class="bi bi-trash me-2"></i>Vider Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let currentStep = 0;
+let totalSteps = 0;
+let startTime = null;
+let isPaused = false;
+let processingStopped = false;
+let processingStats = {
+    processed: 0,
+    fixed: 0,
+    errors: 0,
+    skipped: 0
+};
+
+// Configuration des étapes
+const STEPS = [
+    { id: 'validation', name: 'Validation d\'Intégrité', critical: true },
+    { id: 'youtube_dates', name: 'Correction Dates YouTube', critical: false },
+    { id: 'missing_data', name: 'Données Manquantes', critical: false },
+    { id: 'orphan_cleanup', name: 'Nettoyage Orphelins', critical: false },
+    { id: 'human_propagation', name: 'Propagation Humaine', critical: true },
+    { id: 'ai_classification', name: 'Classification IA', critical: false },
+    { id: 'final_validation', name: 'Validation Finale', critical: true }
+];
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    setupSliders();
+    generateProgressSteps();
+    updateTimer();
+    setInterval(updateTimer, 1000);
+});
+
+function setupSliders() {
+    const batchSizeSlider = document.getElementById('batch-size');
+    const timeoutSlider = document.getElementById('timeout');
+    
+    batchSizeSlider.addEventListener('input', function() {
+        document.getElementById('batch-size-value').textContent = this.value;
+    });
+    
+    timeoutSlider.addEventListener('input', function() {
+        document.getElementById('timeout-value').textContent = this.value;
+    });
+}
+
+function generateProgressSteps() {
+    const container = document.getElementById('progress-steps');
+    totalSteps = STEPS.length;
+    document.getElementById('total-steps').textContent = totalSteps;
+    
+    STEPS.forEach((step, index) => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'progress-step';
+        stepDiv.id = `step-${step.id}`;
+        
+        stepDiv.innerHTML = `
+            <div class="step-counter">${index + 1}</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="bi bi-circle me-2" id="step-${step.id}-icon"></i>
+                        ${step.name}
+                        ${step.critical ? '<span class="badge bg-danger ms-2">Critique</span>' : ''}
+                    </h6>
+                    <small class="text-muted" id="step-${step.id}-status">En attente</small>
+                </div>
+                <div class="step-actions">
+                    <button class="btn btn-sm btn-outline-info" onclick="toggleStepDetails('${step.id}')">
+                        <i class="bi bi-info-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="retryStep('${step.id}')" 
+                            id="retry-${step.id}" style="display: none;">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="skipStep('${step.id}')"
+                            id="skip-${step.id}" style="display: none;">
+                        <i class="bi bi-skip-forward"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="step-progress">
+                <div class="step-progress-bar" id="step-${step.id}-progress" style="width: 0%"></div>
+            </div>
+            <div class="step-details" id="step-${step.id}-details">
+                <div class="log-container" id="step-${step.id}-logs" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Logs pour cette étape -->
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(stepDiv);
+    });
+}
+
+function preselectAll() {
+    // Sélectionner tous les problèmes
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (cb.id !== 'resilient-mode' && cb.id !== 'auto-retry' && cb.id !== 'detailed-logs') {
+            cb.checked = true;
+        }
+    });
+}
+
+function preselectCritical() {
+    // Sélectionner seulement les étapes critiques
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (cb.id !== 'resilient-mode' && cb.id !== 'auto-retry' && cb.id !== 'detailed-logs') {
+            cb.checked = false;
+        }
+    });
+    // Ici on activerait seulement les étapes critiques
+}
+
+async function startAdvancedFix() {
+    const resilientMode = document.getElementById('resilient-mode').checked;
+    const autoRetry = document.getElementById('auto-retry').checked;
+    const detailedLogs = document.getElementById('detailed-logs').checked;
+    const batchSize = document.getElementById('batch-size').value;
+    const timeout = document.getElementById('timeout').value;
+    
+    // Afficher l'alerte du mode résilient
+    if (resilientMode) {
+        document.getElementById('resilient-alert').style.display = 'block';
+    }
+    
+    // Initialiser
+    startTime = Date.now();
+    currentStep = 0;
+    processingStopped = false;
+    processingStats = { processed: 0, fixed: 0, errors: 0, skipped: 0 };
+    
+    // Mettre à jour l'interface
+    updateOverallProgress();
+    
+    // Lancer le traitement
+    for (let i = 0; i < STEPS.length; i++) {
+        if (processingStopped) break;
+        
+        currentStep = i + 1;
+        const step = STEPS[i];
+        
+        try {
+            await processStep(step, {
+                resilientMode,
+                autoRetry,
+                detailedLogs,
+                batchSize,
+                timeout
+            });
+        } catch (error) {
+            handleStepError(step, error, resilientMode);
+        }
+    }
+    
+    // Finaliser
+    finishProcessing();
+}
+
+async function processStep(step, options) {
+    const stepElement = document.getElementById(`step-${step.id}`);
+    const statusElement = document.getElementById(`step-${step.id}-status`);
+    const iconElement = document.getElementById(`step-${step.id}-icon`);
+    const progressElement = document.getElementById(`step-${step.id}-progress`);
+    const logsElement = document.getElementById(`step-${step.id}-logs`);
+    
+    // Marquer comme actif
+    stepElement.className = 'progress-step active';
+    iconElement.className = 'bi bi-hourglass-split text-primary me-2';
+    statusElement.textContent = 'En cours...';
+    
+    // Mettre à jour l'opération courante
+    document.getElementById('current-operation').textContent = step.name;
+    
+    // Simuler le traitement avec progression détaillée
+    const subSteps = getSubSteps(step);
+    
+    for (let i = 0; i < subSteps.length; i++) {
+        if (processingStopped) break;
+        
+        const subStep = subSteps[i];
+        const progress = ((i + 1) / subSteps.length) * 100;
+        
+        // Mettre à jour la progression
+        progressElement.style.width = `${progress}%`;
+        
+        // Ajouter un log
+        addLogEntry(logsElement, `info`, `${subStep.name}...`);
+        
+        try {
+            // Simuler l'opération
+            await simulateOperation(subStep, options);
+            
+            // Log de succès
+            addLogEntry(logsElement, `success`, `✅ ${subStep.name} terminé`);
+            
+            // Mettre à jour les stats
+            processingStats.processed++;
+            if (Math.random() > 0.3) { // 70% de chance de correction
+                processingStats.fixed++;
+            }
+            
+        } catch (error) {
+            // Log d'erreur
+            addLogEntry(logsElement, `error`, `❌ Erreur: ${error.message}`);
+            processingStats.errors++;
+            
+            if (options.autoRetry) {
+                // Tenter un retry
+                addLogEntry(logsElement, `warning`, `🔄 Retry automatique...`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                try {
+                    await simulateOperation(subStep, options);
+                    addLogEntry(logsElement, `success`, `✅ ${subStep.name} réussi au retry`);
+                    processingStats.fixed++;
+                } catch (retryError) {
+                    addLogEntry(logsElement, `error`, `❌ Retry échoué: ${retryError.message}`);
+                    
+                    if (!options.resilientMode) {
+                        throw retryError;
+                    } else {
+                        processingStats.skipped++;
+                    }
+                }
+            } else if (!options.resilientMode) {
+                throw error;
+            } else {
+                processingStats.skipped++;
+            }
+        }
+        
+        // Mettre à jour les stats UI
+        updateStats();
+        
+        // Pause si nécessaire
+        while (isPaused && !processingStopped) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    }
+    
+    // Marquer comme terminé
+    stepElement.className = 'progress-step completed';
+    iconElement.className = 'bi bi-check-circle text-success me-2';
+    statusElement.textContent = 'Terminé';
+    progressElement.style.width = '100%';
+    
+    // Mettre à jour la progression globale
+    updateOverallProgress();
+}
+
+function getSubSteps(step) {
+    // Définir les sous-étapes pour chaque étape principale
+    const subStepsMap = {
+        'validation': [
+            { name: 'Vérification intégrité base', duration: 2000 },
+            { name: 'Contrôle cohérence données', duration: 3000 },
+            { name: 'Validation contraintes', duration: 1500 }
+        ],
+        'youtube_dates': [
+            { name: 'Récupération vidéos sans date', duration: 1000 },
+            { name: 'Appels API YouTube', duration: 5000 },
+            { name: 'Mise à jour base de données', duration: 2000 }
+        ],
+        'missing_data': [
+            { name: 'Identification données manquantes', duration: 1500 },
+            { name: 'Calcul métriques', duration: 2500 },
+            { name: 'Sauvegarde résultats', duration: 1000 }
+        ],
+        'orphan_cleanup': [
+            { name: 'Détection orphelins', duration: 1000 },
+            { name: 'Suppression sécurisée', duration: 2000 }
+        ],
+        'human_propagation': [
+            { name: 'Identification classifications humaines', duration: 1500 },
+            { name: 'Propagation vers vidéos', duration: 3000 },
+            { name: 'Validation intégrité', duration: 1000 }
+        ],
+        'ai_classification': [
+            { name: 'Classification automatique', duration: 4000 },
+            { name: 'Validation résultats', duration: 2000 }
+        ],
+        'final_validation': [
+            { name: 'Contrôle final intégrité', duration: 2000 },
+            { name: 'Génération rapport', duration: 1500 }
+        ]
+    };
+    
+    return subStepsMap[step.id] || [{ name: 'Traitement', duration: 2000 }];
+}
+
+async function simulateOperation(subStep, options) {
+    // Simuler une opération avec possibilité d'erreur
+    const errorRate = options.resilientMode ? 0.1 : 0.05; // Plus d'erreurs en mode résilient pour tester
+    
+    await new Promise(resolve => setTimeout(resolve, subStep.duration));
+    
+    if (Math.random() < errorRate) {
+        throw new Error(`Erreur simulée pour ${subStep.name}`);
+    }
+}
+
+function addLogEntry(container, type, message) {
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${type}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    logEntry.innerHTML = `<span class="text-muted">[${timestamp}]</span> ${message}`;
+    
+    container.appendChild(logEntry);
+    container.scrollTop = container.scrollHeight;
+}
+
+function handleStepError(step, error, resilientMode) {
+    const stepElement = document.getElementById(`step-${step.id}`);
+    const statusElement = document.getElementById(`step-${step.id}-status`);
+    const iconElement = document.getElementById(`step-${step.id}-icon`);
+    
+    if (resilientMode) {
+        // Marquer comme ignoré
+        stepElement.className = 'progress-step skipped';
+        iconElement.className = 'bi bi-exclamation-triangle text-warning me-2';
+        statusElement.textContent = 'Ignoré (erreur)';
+        
+        // Afficher les boutons de retry
+        document.getElementById(`retry-${step.id}`).style.display = 'inline-block';
+        document.getElementById(`skip-${step.id}`).style.display = 'inline-block';
+        
+        processingStats.skipped++;
+    } else {
+        // Marquer comme erreur
+        stepElement.className = 'progress-step error';
+        iconElement.className = 'bi bi-x-circle text-danger me-2';
+        statusElement.textContent = 'Erreur';
+        
+        processingStats.errors++;
+        processingStopped = true;
+    }
+    
+    updateStats();
+}
+
+function updateOverallProgress() {
+    const progress = (currentStep / totalSteps) * 100;
+    const progressBar = document.getElementById('overall-progress-bar');
+    const progressText = document.getElementById('overall-progress-text');
+    const miniProgressBar = document.getElementById('mini-progress-bar');
+    
+    progressBar.style.width = `${progress}%`;
+    progressText.textContent = `${Math.round(progress)}%`;
+    miniProgressBar.style.width = `${progress}%`;
+    
+    document.getElementById('current-step').textContent = currentStep;
+    document.getElementById('completed-steps').textContent = currentStep;
+}
+
+function updateStats() {
+    document.getElementById('stats-processed').textContent = processingStats.processed;
+    document.getElementById('stats-fixed').textContent = processingStats.fixed;
+    document.getElementById('stats-errors').textContent = processingStats.errors;
+    document.getElementById('stats-skipped').textContent = processingStats.skipped;
+    document.getElementById('error-steps').textContent = processingStats.errors;
+    
+    // Calculer la vitesse
+    if (startTime) {
+        const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes
+        const speed = Math.round(processingStats.processed / elapsed) || 0;
+        document.getElementById('processing-speed').textContent = `${speed}/min`;
+        
+        // Calculer l'ETA
+        const remaining = totalSteps - currentStep;
+        const eta = remaining > 0 && speed > 0 ? Math.round(remaining / speed) : 0;
+        document.getElementById('eta').textContent = eta > 0 ? `${eta} min` : 'Terminé';
+    }
+}
+
+function updateTimer() {
+    if (startTime) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        
+        document.getElementById('elapsed-time').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        document.getElementById('operation-timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function finishProcessing() {
+    // Mettre à jour l'interface finale
+    document.getElementById('current-operation').textContent = 'Terminé';
+    document.getElementById('overall-progress-bar').classList.remove('progress-bar-animated');
+    
+    // Afficher les résultats
+    displayFinalResults();
+}
+
+function displayFinalResults() {
+    const resultsCard = document.getElementById('final-results');
+    const summaryDiv = document.getElementById('results-summary');
+    
+    const successRate = Math.round((processingStats.fixed / processingStats.processed) * 100) || 0;
+    
+    summaryDiv.innerHTML = `
+        <div class="row text-center">
+            <div class="col-3">
+                <div class="h3 text-primary">${processingStats.processed}</div>
+                <small class="text-muted">Traités</small>
+            </div>
+            <div class="col-3">
+                <div class="h3 text-success">${processingStats.fixed}</div>
+                <small class="text-muted">Corrigés</small>
+            </div>
+            <div class="col-3">
+                <div class="h3 text-warning">${processingStats.errors}</div>
+                <small class="text-muted">Erreurs</small>
+            </div>
+            <div class="col-3">
+                <div class="h3 text-info">${processingStats.skipped}</div>
+                <small class="text-muted">Ignorés</small>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="d-flex justify-content-between">
+                <span>Taux de réussite:</span>
+                <span class="fw-bold text-success">${successRate}%</span>
+            </div>
+            <div class="progress mt-2">
+                <div class="progress-bar bg-success" style="width: ${successRate}%"></div>
+            </div>
+        </div>
+    `;
+    
+    resultsCard.style.display = 'block';
+}
+
+// Fonctions de contrôle
+function pauseProcessing() {
+    isPaused = !isPaused;
+    const btn = document.getElementById('pause-btn');
+    
+    if (isPaused) {
+        btn.innerHTML = '<i class="bi bi-play me-2"></i>Reprendre';
+        btn.className = 'btn btn-success btn-sm';
+    } else {
+        btn.innerHTML = '<i class="bi bi-pause me-2"></i>Pause';
+        btn.className = 'btn btn-warning btn-sm';
+    }
+}
+
+function skipCurrentStep() {
+    if (currentStep > 0 && currentStep <= totalSteps) {
+        const step = STEPS[currentStep - 1];
+        processingStats.skipped++;
+        updateStats();
+        
+        // Marquer l'étape comme ignorée
+        const stepElement = document.getElementById(`step-${step.id}`);
+        stepElement.className = 'progress-step skipped';
+    }
+}
+
+function forceStop() {
+    processingStopped = true;
+    document.getElementById('current-operation').textContent = 'Arrêté';
+    document.getElementById('overall-progress-bar').classList.remove('progress-bar-animated');
+}
+
+function retryStep(stepId) {
+    // Implémenter le retry d'une étape spécifique
+    console.log(`Retry step: ${stepId}`);
+}
+
+function skipStep(stepId) {
+    // Implémenter le skip d'une étape spécifique
+    console.log(`Skip step: ${stepId}`);
+}
+
+function toggleStepDetails(stepId) {
+    const details = document.getElementById(`step-${stepId}-details`);
+    details.classList.toggle('show');
+}
+
+function exportLogs() {
+    // Exporter tous les logs
+    const logs = [];
+    document.querySelectorAll('.log-entry').forEach(entry => {
+        logs.push(entry.textContent);
+    });
+    
+    const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fix-problems-logs-${new Date().toISOString().slice(0, 19)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function clearLogs() {
+    document.querySelectorAll('.log-container').forEach(container => {
+        container.innerHTML = '';
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends "sneat_base.html" %}
+
+{% block title %}Country Insights - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .country-nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        overflow-x: auto;
+        padding-bottom: 0;
+    }
+    
+    .country-tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        position: relative;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .country-tab:hover {
+        color: white;
+    }
+    
+    .country-tab.active {
+        color: white;
+    }
+    
+    .country-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--bs-primary);
+    }
+    
+    .country-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .country-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .metric-card {
+        background: var(--glass-surface);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .metric-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .metric-icon {
+        font-size: 1.2rem;
+    }
+    
+    .metric-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .metric-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .metric-label {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.85);
+    }
+    
+    .metric-value {
+        font-weight: 600;
+        color: var(--bs-primary);
+    }
+    
+    .metric-subtitle {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .badge-category {
+        background: rgba(102, 126, 234, 0.2);
+        color: #667eea;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .engagement-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .engagement-fill {
+        height: 100%;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        border-radius: 2px;
+        transition: width 0.5s ease;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .flag-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="page-title mb-4">
+        <i class="bi bi-globe-americas me-2"></i>
+        Country Insights
+    </h1>
+    
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Error: {{ error }}
+    </div>
+    {% else %}
+    
+    <!-- Country Navigation -->
+    <div class="country-nav">
+        {% for country in countries %}
+        <button class="country-tab {% if loop.first %}active{% endif %}" 
+                data-country="{{ country }}"
+                onclick="showCountry('{{ country }}')">
+            <span class="flag-icon">
+                {% if country == 'France' %}🇫🇷
+                {% elif country == 'Germany' %}🇩🇪
+                {% elif country == 'Belgium' %}🇧🇪
+                {% elif country == 'Netherlands' %}🇳🇱
+                {% else %}🌍
+                {% endif %}
+            </span>
+            {{ country }}
+        </button>
+        {% endfor %}
+    </div>
+    
+    <!-- Country Content -->
+    {% for country, insights in insights_by_country.items() %}
+    <div class="country-content {% if loop.first %}active{% endif %}" id="content-{{ country }}">
+        
+        {% if insights.metrics %}
+        
+        <div class="row">
+            <!-- Top Categories -->
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h3 class="metric-title">
+                        <i class="bi bi-trophy metric-icon"></i>
+                        Top Categories by Engagement
+                    </h3>
+                    {% if insights.metrics.top_categories %}
+                        {% for category in insights.metrics.top_categories %}
+                        <div class="metric-item">
+                            <div>
+                                <span class="metric-label">{{ category.category|capitalize }}</span>
+                                <div class="metric-subtitle">
+                                    {{ category.video_count }} videos • 
+                                    {{ "{:,.0f}".format(category.total_views).replace(',', ' ') }} views
+                                </div>
+                            </div>
+                            <span class="metric-value">{{ category.avg_engagement_rate }}%</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No category data available</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Optimal Duration -->
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h3 class="metric-title">
+                        <i class="bi bi-clock metric-icon"></i>
+                        Optimal Video Duration
+                    </h3>
+                    {% if insights.metrics.optimal_duration %}
+                        {% for duration in insights.metrics.optimal_duration %}
+                        <div class="metric-item">
+                            <div>
+                                <span class="metric-label">{{ duration.duration_range }}</span>
+                                <div class="metric-subtitle">{{ duration.video_count }} videos</div>
+                            </div>
+                            <span class="metric-value">{{ duration.avg_engagement_rate }}%</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No duration data available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Best Publishing Days -->
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h3 class="metric-title">
+                        <i class="bi bi-calendar-week metric-icon"></i>
+                        Best Publishing Days
+                    </h3>
+                    {% if insights.metrics.best_days %}
+                        {% for day in insights.metrics.best_days[:3] %}
+                        <div class="metric-item">
+                            <div>
+                                <span class="metric-label">{{ day.day }}</span>
+                                <div class="metric-subtitle">{{ day.video_count }} videos published</div>
+                            </div>
+                            <span class="metric-value">{{ "{:,.0f}".format(day.avg_views).replace(',', ' ') }} avg views</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No publishing day data available</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Video Types Performance -->
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h3 class="metric-title">
+                        <i class="bi bi-camera-video metric-icon"></i>
+                        Shorts vs Regular Videos
+                    </h3>
+                    {% if insights.metrics.video_types %}
+                        {% for video_type in insights.metrics.video_types %}
+                        <div class="metric-item">
+                            <div>
+                                <span class="metric-label">{{ video_type.type }}</span>
+                                <div class="metric-subtitle">
+                                    {{ video_type.count }} videos • 
+                                    {{ "{:,.0f}".format(video_type.avg_views).replace(',', ' ') }} avg views
+                                </div>
+                            </div>
+                            <span class="metric-value">{{ video_type.avg_engagement_rate }}%</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No video type data available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Competitors -->
+        <div class="metric-card">
+            <h3 class="metric-title">
+                <i class="bi bi-people metric-icon"></i>
+                Top Performing Competitors
+            </h3>
+            {% if insights.metrics.top_competitors %}
+                <div class="row">
+                    {% for competitor in insights.metrics.top_competitors %}
+                    <div class="col-md-4">
+                        <div class="metric-item" style="flex-direction: column; align-items: flex-start;">
+                            <span class="metric-label">{{ competitor.name }}</span>
+                            <div class="metric-subtitle">
+                                {{ competitor.video_count }} videos • 
+                                {{ "{:,.0f}".format(competitor.total_views).replace(',', ' ') }} total views
+                            </div>
+                            <div style="width: 100%; margin-top: 0.5rem;">
+                                <span class="metric-value">{{ competitor.avg_engagement_rate }}% engagement</span>
+                                <div class="engagement-bar">
+                                    <div class="engagement-fill" style="width: {{ competitor.avg_engagement_rate * 10 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-data">No competitor data available</div>
+            {% endif %}
+        </div>
+        
+        {% else %}
+        <div class="no-data">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <p class="mt-3">No data available for {{ country }}</p>
+        </div>
+        {% endif %}
+        
+    </div>
+    {% endfor %}
+    
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showCountry(country) {
+    // Update tabs
+    document.querySelectorAll('.country-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.country === country) {
+            tab.classList.add('active');
+        }
+    });
+    
+    // Update content
+    document.querySelectorAll('.country-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById('content-' + country).classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,435 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Brand Insights - Center Parcs France{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-bar-chart-alt-2 me-2"></i>
+                            Brand Insights - {{ brand_metrics.channel_name or 'Center Parcs France' }}
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">7 métriques clés pour analyser la performance de votre chaîne</p>
+                    </div>
+                    {% if insights.generated_at %}
+                    <div>
+                        <span class="badge bg-label-success">Dernière analyse: {{ insights.generated_at[:16] }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error handling -->
+    {% if not insights.success %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="bx bx-error-circle me-2"></i>
+                <strong>Erreur:</strong> {{ insights.error }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Brand Insights Cards -->
+    {% if insights.success and brand_metrics %}
+    <div class="row g-6">
+        
+        <!-- 1. Video Length -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">📹 Video Length</h6>
+                    </div>
+                    <div class="dropdown">
+                        <span class="badge bg-label-primary">{{ brand_metrics.video_length.total_videos }} vidéos</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex flex-column">
+                            <div class="card-title mb-2">
+                                <h5 class="m-0 me-2">{{ brand_metrics.video_length.avg_duration_minutes }}min</h5>
+                                <small class="text-muted">Durée moyenne</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="bx bx-time-five bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Range: {{ brand_metrics.video_length.min_duration_minutes }}min - {{ brand_metrics.video_length.max_duration_minutes }}min</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" role="progressbar" 
+                             style="width: {{ brand_metrics.video_length.shorts_percentage }}%" 
+                             aria-valuenow="{{ brand_metrics.video_length.shorts_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ brand_metrics.video_length.shorts_percentage }}% Shorts (≤60s)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Video Frequency -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">📅 Video Frequency</h6>
+                    </div>
+                    <div class="dropdown">
+                        <span class="badge bg-label-success">{{ brand_metrics.video_frequency.total_videos }} total</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex flex-column">
+                            <div class="card-title mb-2">
+                                <h5 class="m-0 me-2">{{ brand_metrics.video_frequency.videos_per_week }}</h5>
+                                <small class="text-muted">Vidéos/semaine</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="bx bx-calendar bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">{{ brand_metrics.video_frequency.days_active }} jours actifs</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ brand_metrics.video_frequency.consistency_score }}%" 
+                             aria-valuenow="{{ brand_metrics.video_frequency.consistency_score }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ brand_metrics.video_frequency.consistency_score }}% Consistency Score</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Most Liked Topics -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">❤️ Most Liked Topics</h6>
+                    </div>
+                    <div class="dropdown">
+                        <span class="badge bg-label-danger">Top 5</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for topic in brand_metrics.most_liked_topics %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar avatar-sm me-3">
+                            <span class="avatar-initial rounded bg-label-{% if loop.index0 % 5 == 0 %}primary{% elif loop.index0 % 5 == 1 %}success{% elif loop.index0 % 5 == 2 %}warning{% elif loop.index0 % 5 == 3 %}info{% else %}secondary{% endif %}">
+                                {{ loop.index }}
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ topic.title }}</h6>
+                            <small class="text-muted">{{ topic.like_ratio }}% ratio | {{ topic.views|format_number }} vues | {{ topic.category }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not brand_metrics.most_liked_topics %}
+                    <p class="text-muted mb-0">Aucune donnée de likes disponible</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Organic vs Paid Distribution -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">🌱 Organic vs Paid Distribution</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar avatar-sm me-3">
+                                    <span class="avatar-initial rounded bg-label-success">
+                                        <i class="bx bx-leaf bx-sm"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ brand_metrics.organic_vs_paid.organic_percentage }}%</h6>
+                                    <small class="text-muted">Organic</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar avatar-sm me-3">
+                                    <span class="avatar-initial rounded bg-label-warning">
+                                        <i class="bx bx-money bx-sm"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ brand_metrics.organic_vs_paid.paid_percentage }}%</h6>
+                                    <small class="text-muted">Paid</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ brand_metrics.organic_vs_paid.organic_percentage }}%" 
+                             aria-valuenow="{{ brand_metrics.organic_vs_paid.organic_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                        <div class="progress-bar bg-warning" role="progressbar" 
+                             style="width: {{ brand_metrics.organic_vs_paid.paid_percentage }}%" 
+                             aria-valuenow="{{ brand_metrics.organic_vs_paid.paid_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Organic: {{ brand_metrics.organic_vs_paid.organic_count }} vidéos ({{ brand_metrics.organic_vs_paid.organic_avg_views|format_number }} vues/vid)
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Hub/Help/Hero Distribution -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">🎯 Hub/Help/Hero Distribution</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="avatar avatar-sm mx-auto mb-2">
+                                <span class="avatar-initial rounded bg-label-danger">H</span>
+                            </div>
+                            <h6 class="mb-0">{{ brand_metrics.hub_help_hero.hero_percentage }}%</h6>
+                            <small class="text-muted">HERO</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="avatar avatar-sm mx-auto mb-2">
+                                <span class="avatar-initial rounded bg-label-primary">U</span>
+                            </div>
+                            <h6 class="mb-0">{{ brand_metrics.hub_help_hero.hub_percentage }}%</h6>
+                            <small class="text-muted">HUB</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="avatar avatar-sm mx-auto mb-2">
+                                <span class="avatar-initial rounded bg-label-info">H</span>
+                            </div>
+                            <h6 class="mb-0">{{ brand_metrics.hub_help_hero.help_percentage }}%</h6>
+                            <small class="text-muted">HELP</small>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                             style="width: {{ brand_metrics.hub_help_hero.hero_percentage }}%">
+                        </div>
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ brand_metrics.hub_help_hero.hub_percentage }}%">
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" 
+                             style="width: {{ brand_metrics.hub_help_hero.help_percentage }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Total: {{ brand_metrics.hub_help_hero.hero_count + brand_metrics.hub_help_hero.hub_count + brand_metrics.hub_help_hero.help_count }} vidéos catégorisées
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Thumbnail Consistency -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">🖼️ Thumbnail Consistency</h6>
+                    </div>
+                    <div class="dropdown">
+                        <span class="badge bg-label-info">{{ brand_metrics.thumbnail_consistency.total_videos }} vidéos</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex flex-column">
+                            <div class="card-title mb-2">
+                                <h5 class="m-0 me-2">{{ brand_metrics.thumbnail_consistency.consistency_percentage }}%</h5>
+                                <small class="text-muted">Consistance</small>
+                            </div>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-{% if brand_metrics.thumbnail_consistency.consistency_percentage >= 95 %}success{% elif brand_metrics.thumbnail_consistency.consistency_percentage >= 80 %}warning{% else %}danger{% endif %}">
+                                <i class="bx bx-image bx-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{% if brand_metrics.thumbnail_consistency.consistency_percentage >= 95 %}success{% elif brand_metrics.thumbnail_consistency.consistency_percentage >= 80 %}warning{% else %}danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ brand_metrics.thumbnail_consistency.consistency_percentage }}%" 
+                             aria-valuenow="{{ brand_metrics.thumbnail_consistency.consistency_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ brand_metrics.thumbnail_consistency.with_thumbnails }}/{{ brand_metrics.thumbnail_consistency.total_videos }} avec miniatures</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Shorts vs Long Form Ratio -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">📱 Shorts vs Long Form</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="avatar avatar-sm mx-auto mb-2">
+                                <span class="avatar-initial rounded bg-label-warning">📱</span>
+                            </div>
+                            <h6 class="mb-0">{{ brand_metrics.video_length.shorts_percentage }}%</h6>
+                            <small class="text-muted">SHORTS</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="avatar avatar-sm mx-auto mb-2">
+                                <span class="avatar-initial rounded bg-label-primary">🎬</span>
+                            </div>
+                            <h6 class="mb-0">{{ 100 - brand_metrics.video_length.shorts_percentage }}%</h6>
+                            <small class="text-muted">LONG FORM</small>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" 
+                             style="width: {{ brand_metrics.video_length.shorts_percentage }}%">
+                        </div>
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ 100 - brand_metrics.video_length.shorts_percentage }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Shorts (≤60s): {{ brand_metrics.video_length.shorts_count or 0 }} | Long: {{ (brand_metrics.video_length.total_videos or 0) - (brand_metrics.video_length.shorts_count or 0) }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Tone of Voice -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                    <div class="card-title mb-0">
+                        <h6 class="m-0 me-2">🗣️ Tone of Voice</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-2">
+                                    <span class="avatar-initial rounded bg-label-success">😍</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ brand_metrics.tone_of_voice.emotional_words }}</h6>
+                                    <small class="text-muted">Emotional</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-2">
+                                    <span class="avatar-initial rounded bg-label-primary">🚀</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ brand_metrics.tone_of_voice.action_words }}</h6>
+                                    <small class="text-muted">Action</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Longueur titre moyenne: {{ brand_metrics.tone_of_voice.avg_title_length }} caractères</small>
+                    </div>
+                    {% if brand_metrics.tone_of_voice.top_keywords %}
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for keyword in brand_metrics.tone_of_voice.top_keywords %}
+                        <span class="badge bg-label-secondary">{{ keyword }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <small class="text-muted">Mots-clés en analyse...</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- No data message -->
+    {% if not brand_metrics %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="avatar mx-auto mb-3">
+                        <span class="avatar-initial rounded bg-label-secondary" style="width: 60px; height: 60px;">
+                            <i class="bx bx-data" style="font-size: 24px;"></i>
+                        </span>
+                    </div>
+                    <h5 class="mb-2">Aucune donnée disponible</h5>
+                    <p class="text-muted">Center Parcs France n'a pas encore été analysé ou ne contient pas de données suffisantes.</p>
+                    <a href="/concurrents" class="btn btn-primary">
+                        <i class="bx bx-plus me-2"></i>Analyser la chaîne
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Format numbers helper
+    function formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        } else {
+            return num.toString();
+        }
+    }
+
+    // Add number formatting filter
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Brand Insights loaded for {{ brand_metrics.channel_name or "Center Parcs France" }}');
+    });
+</script>
+{% endblock %}
