@@ -1,0 +1,336 @@
+{% extends "sneat_base_layout.html" %}
+
+{% block title %}Settings - YT Analyzer{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-6">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-cog me-2"></i>
+                            Paramètres & Configuration
+                        </h5>
+                        <p class="card-subtitle text-muted mb-0">Gestion des patterns de classification et outils système</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Settings -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-briefcase me-2"></i>
+                        Business Settings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info p-3 mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Configuration Paid vs Organic</h6>
+                                <small>Basé sur un seuil de vues : au-dessus de {{ current_settings.paid_threshold if current_settings else 10000 }} vues = Paid, en-dessous = Organic.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paid vs Organic Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-light-success">
+                                    <h6 class="card-title mb-0 text-success">
+                                        <i class="bx bx-leaf me-2"></i>
+                                        Organic Content
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">Contenu naturel et non promotionnel</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Détection automatique:</span>
+                                        <span class="badge bg-success">Activée</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Vidéos organiques:</span>
+                                        <span class="fw-medium">{{ organic_stats.count if organic_stats else 'N/A' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Taux d'engagement:</span>
+                                        <span class="fw-medium">{{ "{:.1f}%".format(organic_stats.engagement) if organic_stats else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-light-warning">
+                                    <h6 class="card-title mb-0 text-warning">
+                                        <i class="bx bx-dollar me-2"></i>
+                                        Paid Content
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">Contenu promotionnel et payant</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Seuil de détection:</span>
+                                        <span class="badge bg-warning">{{ current_settings.paid_threshold if current_settings else 10000 }} vues</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Vidéos payantes:</span>
+                                        <span class="fw-medium">{{ paid_stats.count if paid_stats else 'N/A' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Taux d'engagement:</span>
+                                        <span class="fw-medium">{{ "{:.1f}%".format(paid_stats.engagement) if paid_stats else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <button class="btn btn-outline-primary" onclick="refreshBusinessSettings()">
+                            <i class="bx bx-refresh me-2"></i>
+                            Actualiser les Statistiques
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-zap me-2"></i>
+                        Actions Rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info p-3 mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Maintenance & Corrections</h6>
+                                <small>Pour les opérations de maintenance avancées, utilisez la page dédiée Fix Problems.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-warning">
+                                            <i class="bx bx-wrench"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Fix Problems</h6>
+                                    <p class="small text-muted mb-3">Corrections système, re-classification, maintenance</p>
+                                    <a href="/fix-problems" class="btn btn-warning">
+                                        <i class="bx bx-external-link me-2"></i>Ouvrir Fix Problems
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <div class="avatar mx-auto mb-3">
+                                        <span class="avatar-initial rounded bg-label-info">
+                                            <i class="bx bx-trending-up"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-2">Topic Analysis</h6>
+                                    <p class="small text-muted mb-3">Analyse automatique des topics des vidéos</p>
+                                    <button class="btn btn-outline-info" onclick="redirectToTopicAnalysis()">
+                                        <i class="bx bx-play me-2"></i>Voir dans Fix Problems
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Patterns (Read-Only) -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-shield-check me-2"></i>
+                        Classification Patterns (Lecture Seule)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning p-3 mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Protection Hiérarchique</h6>
+                                <small>🥇 Humain > 🥈 Sentence Transformer > 🥉 Patterns. Pour modifier les patterns, utilisez Fix Problems.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <div class="avatar mx-auto mb-2">
+                                        <span class="avatar-initial rounded bg-label-danger">
+                                            <i class="bx bx-fire"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-1">HERO Patterns</h6>
+                                    <span class="badge bg-danger">{{ hero_patterns|length if hero_patterns else 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <div class="avatar mx-auto mb-2">
+                                        <span class="avatar-initial rounded bg-label-info">
+                                            <i class="bx bx-home"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-1">HUB Patterns</h6>
+                                    <span class="badge bg-info">{{ hub_patterns|length if hub_patterns else 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <div class="avatar mx-auto mb-2">
+                                        <span class="avatar-initial rounded bg-label-primary">
+                                            <i class="bx bx-help-circle"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-1">HELP Patterns</h6>
+                                    <span class="badge bg-primary">{{ help_patterns|length if help_patterns else 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <div class="avatar mx-auto mb-2">
+                                        <span class="avatar-initial rounded bg-label-success">
+                                            <i class="bx bx-check-circle"></i>
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-1">Total Patterns</h6>
+                                    <span class="badge bg-success">{{ (hero_patterns|length + hub_patterns|length + help_patterns|length) if (hero_patterns and hub_patterns and help_patterns) else 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="/fix-problems" class="btn btn-outline-warning">
+                            <i class="bx bx-wrench me-2"></i>
+                            Modifier les Patterns dans Fix Problems
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-server me-2"></i>
+                        Statut Système
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bx bx-data bx-lg text-primary mb-2"></i>
+                                <h6 class="mb-1">Base de Données</h6>
+                                <span class="badge bg-success">Connectée</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bx bx-brain bx-lg text-info mb-2"></i>
+                                <h6 class="mb-1">IA Models</h6>
+                                <span class="badge bg-success">Actifs</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bx bx-cloud bx-lg text-warning mb-2"></i>
+                                <h6 class="mb-1">YouTube API</h6>
+                                <span class="badge bg-success">Disponible</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bx bx-cog bx-lg text-secondary mb-2"></i>
+                                <h6 class="mb-1">Background Tasks</h6>
+                                <span class="badge bg-success">En marche</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Settings -->
+<script>
+// Business Settings Functions
+function refreshBusinessSettings() {
+    fetch('/api/business-settings-status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Business settings updated:', data);
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur de connexion');
+        });
+}
+
+// Redirect functions for actions moved to Fix Problems
+function redirectToTopicAnalysis() {
+    window.location.href = '/fix-problems';
+}
+</script>
+{% endblock %}
