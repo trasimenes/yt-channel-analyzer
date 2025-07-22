@@ -23,8 +23,9 @@ class UnifiedFixService:
     Principe SRP: une seule responsabilité = corriger les problèmes
     """
     
-    def __init__(self, logger: logging.Logger = None):
+    def __init__(self, logger=None):
         self.logger = logger or logging.getLogger(__name__)
+        self.debug_logger = None  # Pour le DebugLogger si fourni
         self.stats = {
             'problems_fixed': 0,
             'data_fixed': 0,
@@ -34,6 +35,24 @@ class UnifiedFixService:
         }
         self.issues_fixed = []
     
+    def set_debug_logger(self, debug_logger):
+        """Définir le debug logger pour un logging détaillé"""
+        self.debug_logger = debug_logger
+    
+    def _log(self, level: str, message: str, details: Dict[str, Any] = None, step: str = None):
+        """Log helper qui utilise le debug_logger si disponible, sinon le logger standard"""
+        if self.debug_logger:
+            getattr(self.debug_logger, level)(message, details, step)
+        else:
+            # Fallback au logger standard
+            log_msg = f"[{step}] {message}" if step else message
+            if level == 'error':
+                self.logger.error(log_msg)
+            elif level == 'warning':
+                self.logger.warning(log_msg)
+            else:
+                self.logger.info(log_msg)
+    
     def run_unified_fix(self, options: Dict[str, Any]) -> Dict[str, Any]:
         """
         CORRIGER TOUS LES PROBLÈMES EN UNE SEULE FOIS
@@ -41,42 +60,59 @@ class UnifiedFixService:
         """
         try:
             selected_fixes = options.get('selected_fixes', [])
-            self.logger.info(f"🚀 Démarrage correction unifiée: {len(selected_fixes)} types de corrections")
+            api_limit = options.get('api_limit', 100)
+            batch_size = options.get('batch_size', 50)
+            
+            self._log('info', f"Démarrage correction unifiée", {
+                'selected_fixes': selected_fixes,
+                'api_limit': api_limit,
+                'batch_size': batch_size,
+                'fix_count': len(selected_fixes)
+            }, "UNIFIED_START")
             
             # Étape 1: Validation d'intégrité CRITIQUE
             if 'data_integrity' in selected_fixes:
+                self._log('info', "🔍 Validation d'intégrité des données", step="DATA_INTEGRITY")
                 self._fix_data_integrity(options)
             
             # Étape 2: Correction des dates YouTube
             if 'youtube_dates' in selected_fixes:
+                self._log('info', "📅 Correction des dates YouTube", step="YOUTUBE_DATES")
                 self._fix_youtube_dates(options)
             
             # Étape 3: Données manquantes
             if 'missing_data' in selected_fixes:
+                self._log('info', "🔍 Recherche des données manquantes", step="MISSING_DATA")
                 self._fix_missing_data(options)
             
             # Étape 4: Données orphelines
             if 'orphan_data' in selected_fixes:
+                self._log('info', "🧹 Nettoyage des données orphelines", step="ORPHAN_DATA")
                 self._fix_orphan_data(options)
             
             # Étape 5: Propagation classifications humaines
             if 'human_propagation' in selected_fixes:
+                self._log('info', "👨‍💻 Propagation des classifications humaines", step="HUMAN_PROPAGATION")
                 self._fix_human_propagation(options)
             
             # Étape 6: Re-classification automatique
             if 'reclassify_videos' in selected_fixes:
+                self._log('info', "🤖 Re-classification automatique des vidéos", step="RECLASSIFY_VIDEOS")
                 self._fix_reclassify_videos(options)
             
             # Étape 7: Classification des playlists
             if 'classify_playlists' in selected_fixes:
+                self._log('info', "📋 Classification automatique des playlists", step="CLASSIFY_PLAYLISTS")
                 self._fix_classify_playlists(options)
             
             # Étape 8: Tracking des classifications
             if 'classification_tracking' in selected_fixes:
+                self._log('info', "📊 Mise à jour du tracking des classifications", step="CLASSIFICATION_TRACKING")
                 self._fix_classification_tracking(options)
             
             # Étape 9: Validation finale
             if 'final_validation' in selected_fixes:
+                self._log('info', "✅ Validation finale de l'intégrité", step="FINAL_VALIDATION")
                 final_report = self._final_validation(options)
             else:
                 final_report = None
@@ -103,31 +139,48 @@ class UnifiedFixService:
     
     def _fix_data_integrity(self, options: Dict[str, Any]):
         """Corriger l'intégrité des données"""
-        self.logger.info("🔍 Correction de l'intégrité des données...")
+        self._log('info', "Début validation intégrité", step="DATA_INTEGRITY")
         
         try:
             # Valider et corriger automatiquement
             auto_fix = options.get('auto_fix_errors', True)
+            self._log('debug', f"Appel validate_data_integrity avec auto_fix={auto_fix}", step="DATA_INTEGRITY")
+            
             result = validate_data_integrity(fix_errors=auto_fix)
+            
+            self._log('debug', "Résultat validate_data_integrity", {'result': result}, "DATA_INTEGRITY")
             
             if result['success']:
                 fixed_count = result.get('stats', {}).get('auto_fixes_applied', 0)
+                issues = result.get('issues', [])
+                
                 self.stats['data_fixed'] += fixed_count
                 self.stats['problems_fixed'] += fixed_count
                 self.issues_fixed.append(f"Intégrité des données: {fixed_count} corrections appliquées")
-                self.logger.info(f"✅ Intégrité corrigée: {fixed_count} corrections")
+                
+                self._log('success', f"Intégrité corrigée: {fixed_count} corrections", {
+                    'fixed_count': fixed_count,
+                    'issues_found': len(issues),
+                    'auto_fix': auto_fix,
+                    'stats': result.get('stats', {})
+                }, "DATA_INTEGRITY")
             else:
-                self.logger.error(f"❌ Erreur intégrité: {result.get('error', 'Erreur inconnue')}")
+                error_msg = result.get('error', 'Erreur inconnue')
+                self._log('error', f"Erreur validation intégrité: {error_msg}", {
+                    'full_result': result
+                }, "DATA_INTEGRITY")
                 
         except Exception as e:
-            self.logger.error(f"❌ Erreur lors de la correction d'intégrité: {e}")
+            self._log('error', "Exception lors de la validation intégrité", 
+                     step="DATA_INTEGRITY", exception=e)
     
     def _fix_youtube_dates(self, options: Dict[str, Any]):
         """Corriger les dates YouTube"""
-        self.logger.info("📅 Correction des dates YouTube...")
+        self._log('info', "Début correction des dates YouTube", step="YOUTUBE_DATES")
         
         try:
             # Utiliser le script existant
+            self._log('debug', "Import des modules pour correction dates", step="YOUTUBE_DATES")
             from scripts.calculate_shorts_stats import update_video_dates_from_youtube
             from ..database.base import get_db_connection
             
@@ -135,6 +188,7 @@ class UnifiedFixService:
             cursor = conn.cursor()
             
             # Récupérer les concurrents avec des dates à corriger
+            self._log('info', "Recherche des vidéos avec dates à corriger", step="YOUTUBE_DATES")
             cursor.execute("""
                 SELECT DISTINCT concurrent_id 
                 FROM video 
@@ -146,12 +200,34 @@ class UnifiedFixService:
             competitors_to_update = cursor.fetchall()
             api_limit = options.get('api_limit', 100)
             
+            self._log('info', f"Trouvé {len(competitors_to_update)} concurrents à traiter", {
+                'competitors_count': len(competitors_to_update),
+                'api_limit': api_limit
+            }, "YOUTUBE_DATES")
+            
             dates_fixed = 0
             for (competitor_id,) in competitors_to_update:
-                self.logger.info(f"   📊 Correction dates concurrent {competitor_id}...")
-                result = update_video_dates_from_youtube(competitor_id, limit=api_limit)
-                if result:
-                    dates_fixed += 50  # Estimation
+                self._log('info', f"Traitement concurrent {competitor_id}", {
+                    'competitor_id': competitor_id,
+                    'api_limit': api_limit
+                }, "YOUTUBE_DATES")
+                
+                try:
+                    result = update_video_dates_from_youtube(competitor_id, limit=api_limit)
+                    if result:
+                        dates_fixed += 50  # Estimation
+                        self._log('success', f"Dates mises à jour pour concurrent {competitor_id}", {
+                            'competitor_id': competitor_id,
+                            'estimated_fixed': 50
+                        }, "YOUTUBE_DATES")
+                    else:
+                        self._log('warning', f"Aucune mise à jour pour concurrent {competitor_id}", {
+                            'competitor_id': competitor_id
+                        }, "YOUTUBE_DATES")
+                except Exception as e:
+                    self._log('error', f"Erreur pour concurrent {competitor_id}", {
+                        'competitor_id': competitor_id
+                    }, "YOUTUBE_DATES", exception=e)
             
             conn.close()
             
@@ -159,10 +235,18 @@ class UnifiedFixService:
                 self.stats['dates_fixed'] = dates_fixed
                 self.stats['problems_fixed'] += dates_fixed
                 self.issues_fixed.append(f"Dates YouTube: {dates_fixed} vidéos corrigées")
-                self.logger.info(f"✅ Dates corrigées: {dates_fixed} vidéos")
+                self._log('success', f"Correction dates terminée: {dates_fixed} vidéos", {
+                    'total_fixed': dates_fixed,
+                    'competitors_processed': len(competitors_to_update)
+                }, "YOUTUBE_DATES")
+            else:
+                self._log('info', "Aucune date à corriger trouvée", {
+                    'competitors_checked': len(competitors_to_update)
+                }, "YOUTUBE_DATES")
             
         except Exception as e:
-            self.logger.error(f"❌ Erreur lors de la correction des dates: {e}")
+            self._log('error', "Exception lors de la correction des dates", 
+                     step="YOUTUBE_DATES", exception=e)
     
     def _fix_missing_data(self, options: Dict[str, Any]):
         """Corriger les données manquantes"""

@@ -138,7 +138,7 @@ class VideoManager:
                 thumbnail_url = video.get('thumbnail', '')
                 
                 # Traiter la date de publication
-                published_at = self.db_utils.parse_date(video.get('publication_date'))
+                published_at = self.db_utils.parse_date(video.get('published_at') or video.get('publication_date'))
                 
                 # Traiter la durée
                 duration_seconds = self.db_utils.parse_duration_to_seconds(video.get('duration', ''))
@@ -332,7 +332,7 @@ class VideoManager:
         description = video.get('description', '')
         url = video.get('url', '')
         thumbnail_url = video.get('thumbnail', '')
-        published_at = self.db_utils.parse_date(video.get('publication_date'))
+        published_at = self.db_utils.parse_date(video.get('published_at') or video.get('publication_date'))
         duration_seconds = self.db_utils.parse_duration_to_seconds(video.get('duration', ''))
         duration_text = video.get('duration', '')
         view_count = self.db_utils.parse_view_count(video.get('views') or video.get('view_count') or 0)
@@ -361,7 +361,7 @@ class VideoManager:
         description = video.get('description', '')
         url = video.get('url', '')
         thumbnail_url = video.get('thumbnail', '')
-        published_at = self.db_utils.parse_date(video.get('publication_date'))
+        published_at = self.db_utils.parse_date(video.get('published_at') or video.get('publication_date'))
         duration_seconds = self.db_utils.parse_duration_to_seconds(video.get('duration', ''))
         duration_text = video.get('duration', '')
         view_count = self.db_utils.parse_view_count(video.get('views') or video.get('view_count') or 0)

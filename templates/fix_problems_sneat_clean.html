@@ -60,6 +60,69 @@
                         </div>
                     </div>
 
+                    <!-- Update All Values - NEW SECTION -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-label-primary">
+                                    <h6 class="card-title mb-0 text-primary">
+                                        <i class="bx bx-refresh-alt me-2"></i>
+                                        Update All Values Everywhere
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-3">
+                                                <i class="bx bx-info-circle me-1"></i>
+                                                Mise à jour complète de toutes les valeurs, statistiques et calculs dans l'ensemble du système. 
+                                                Cette opération recalcule toutes les métriques, statistiques de concurrents, et vues.
+                                            </p>
+                                            <div class="d-flex align-items-center gap-2 mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="update-competitor-stats" checked>
+                                                    <label class="form-check-label" for="update-competitor-stats">
+                                                        Statistiques concurrents
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="update-playlist-stats" checked>
+                                                    <label class="form-check-label" for="update-playlist-stats">
+                                                        Statistiques playlists
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="update-global-metrics" checked>
+                                                    <label class="form-check-label" for="update-global-metrics">
+                                                        Métriques globales
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="run-sentiment-analysis" checked>
+                                                    <label class="form-check-label" for="run-sentiment-analysis">
+                                                        Analyse sentiment (background)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button type="button" class="btn btn-primary btn-lg" onclick="updateAllValues()">
+                                                <i class="bx bx-refresh me-2"></i>
+                                                Update All Values
+                                            </button>
+                                            <div id="update-all-status" class="mt-2 d-none">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <small class="text-muted ms-2">Updating...</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Fix Selection -->
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -150,6 +213,9 @@
                                 <button class="btn btn-outline-secondary" onclick="selectAllFixes()">
                                     <i class="bx bx-check-square me-2"></i>Tout Sélectionner
                                 </button>
+                                <button class="btn btn-outline-info" onclick="toggleDebugLogs()" id="debug-toggle-btn">
+                                    <i class="bx bx-bug me-2"></i>Debug Logs
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -166,6 +232,58 @@
                         </div>
                         <div id="unified-fix-status" class="text-center mt-2">
                             <small class="text-muted">Initialisation...</small>
+                        </div>
+                    </div>
+
+                    <!-- Debug Logs Panel -->
+                    <div id="debug-logs-panel" class="mt-4" style="display: none;">
+                        <div class="card bg-dark text-white">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="text-white mb-0">
+                                    <i class="bx bx-bug me-2"></i>Debug Logs - Fix Everything
+                                </h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-light btn-sm" onclick="refreshDebugLogs()">
+                                        <i class="bx bx-refresh"></i>
+                                    </button>
+                                    <button class="btn btn-outline-light btn-sm" onclick="clearDebugLogs()">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                    <button class="btn btn-outline-light btn-sm" onclick="autoRefreshDebugLogs()" id="auto-refresh-btn">
+                                        <i class="bx bx-play"></i> Auto
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <!-- Debug Summary -->
+                                <div id="debug-summary" class="p-3 border-bottom border-secondary">
+                                    <div class="row text-center">
+                                        <div class="col">
+                                            <small class="text-muted d-block">Total Logs</small>
+                                            <span id="debug-total-count" class="text-white fw-bold">0</span>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted d-block">Erreurs</small>
+                                            <span id="debug-error-count" class="text-danger fw-bold">0</span>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted d-block">Warnings</small>
+                                            <span id="debug-warning-count" class="text-warning fw-bold">0</span>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted d-block">Succès</small>
+                                            <span id="debug-success-count" class="text-success fw-bold">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Logs Container -->
+                                <div id="debug-logs-container" class="p-3" style="max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px;">
+                                    <div class="text-muted text-center">
+                                        <i class="bx bx-time"></i> En attente des logs...
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -442,6 +560,443 @@
             </div>
         </div>
     </div>
+
+    <!-- Section Propagation des patterns multilingues -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-refresh me-2"></i>
+                        Propagation des patterns multilingues
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Cette fonction met à jour tous les endroits qui utilisent la classification HERO/HUB/HELP</strong>
+                        <ul class="mt-2 mb-0">
+                            <li>Re-classifie toutes les vidéos avec la logique multilingue</li>
+                            <li>Met à jour les fonctions de classification</li>
+                            <li>Applique la détection automatique de langue</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" onclick="propagatePatterns()">
+                                    <i class="bx bx-refresh me-2"></i>
+                                    Propager les patterns multilingues
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="reclassifyAllVideos()">
+                                    <i class="bx bx-bot me-2"></i>
+                                    Re-classifier toutes les vidéos
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="small text-muted">Patterns</div>
+                                        <span class="badge bg-warning" id="patterns-status">À vérifier</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="small text-muted">Classification</div>
+                                        <span class="badge bg-warning" id="classification-status">À vérifier</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Classification automatique -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-bot me-2"></i>
+                        Classification automatique HERO/HUB/HELP
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Classifier automatiquement les vidéos non classifiées</strong>
+                        <p class="mb-0 mt-2">Utilise la logique multilingue et l'IA pour classifier les vidéos sans catégorie.</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" onclick="classifyAllUnclassified()">
+                                    <i class="bx bx-bot me-2"></i>
+                                    Classifier les vidéos non classifiées
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="runGlobalAiClassification()">
+                                    <i class="bx bx-play-circle me-2"></i>
+                                    Classification IA globale (Playlists + Vidéos)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="small text-muted">Vidéos classifiées</div>
+                                        <div class="h5 mb-0 text-success" id="classified-videos">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="small text-muted">Non classifiées</div>
+                                        <div class="h5 mb-0 text-warning" id="unclassified-videos">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="classification-results" class="mt-4" style="display: none;">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="bx bx-check-circle me-2"></i>
+                                    Résultats de classification
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="classification-details"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Database Synchronization -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-sync me-2"></i>
+                        Database Synchronization
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-4">
+                        <i class="bx bx-error me-2"></i>
+                        <strong>Synchronize competitor data between cache and database</strong>
+                        <p class="mb-0 mt-2">Ensure all competitor data is properly stored and accessible.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="display-6 mb-2">💾</div>
+                                <h6 class="text-secondary">Cache Status</h6>
+                                <div id="cache-status" class="h4 text-primary">-</div>
+                                <small class="text-muted">competitors in cache</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="display-6 mb-2">🗄️</div>
+                                <h6 class="text-secondary">Database Status</h6>
+                                <div id="db-status" class="h4 text-success">-</div>
+                                <small class="text-muted">competitors in database</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="display-6 mb-2">⚠️</div>
+                                <h6 class="text-secondary">Sync Needed</h6>
+                                <div id="sync-needed" class="h4 text-warning">-</div>
+                                <small class="text-muted">competitors missing from DB</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="checkCompetitorStatus()">
+                                <i class="bx bx-search me-2"></i>
+                                Check Status
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-warning w-100" onclick="updateDatabaseSchema()">
+                                <i class="bx bx-data me-2"></i>
+                                Update Schema
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary w-100" onclick="syncCompetitorsToDb()" id="sync-btn">
+                                <i class="bx bx-cloud-upload me-2"></i>
+                                Sync to Database
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="cleanDuplicateCompetitors()">
+                                <i class="bx bx-trash me-2"></i>
+                                Clean Duplicates
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Vérification d'intégrité CRITIQUE -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-shield-quarter me-2"></i>
+                        🛡️ Vérification d'intégrité CRITIQUE (Supervision humaine)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-4">
+                        <i class="bx bx-error me-2"></i>
+                        <strong>Protection supervision humaine :</strong> Vérifiez que toutes les classifications humaines sont protégées.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">🔍 Vérification d'intégrité</h6>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-info" onclick="verifyIntegrityAdvanced()">
+                                    <i class="bx bx-shield-quarter me-2"></i>
+                                    Vérifier l'intégrité complète
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="checkFunctionsSafety()">
+                                    <i class="bx bx-cog me-2"></i>
+                                    Vérifier la sécurité des fonctions
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="mb-3">🛠️ Réparation</h6>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success" onclick="fixClassificationTracking()">
+                                    <i class="bx bx-wrench me-2"></i>
+                                    Réparer le tracking manquant
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="updateDatabaseSchemaWithHumanProtection()">
+                                    <i class="bx bx-data me-2"></i>
+                                    Mettre à jour le schéma (Protection humaine)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="integrityResults" class="mt-4" style="display: none;">
+                        <h6>📊 Résultats de vérification</h6>
+                        <div id="integrityReport"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Tableau DATA -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-table me-2"></i>
+                        DATA - Vérification des Fonctions Métier
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Tableau éditable des besoins métier</strong>
+                        <p class="mb-0 mt-2">Ajoutez vos besoins métier et vérifiez automatiquement si les fonctions correspondantes existent dans le code.</p>
+                    </div>
+
+                    <!-- Actions du tableau -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <button type="button" class="btn btn-success" onclick="addNewRow()">
+                                <i class="bx bx-plus me-2"></i>Ajouter une ligne
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="saveAndVerifyData()">
+                                <i class="bx bx-check me-2"></i>Save & Vérifier
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-secondary" onclick="exportDataTable()">
+                                <i class="bx bx-export me-2"></i>Export
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" onclick="loadSampleData()">
+                                <i class="bx bx-data me-2"></i>Load Sample
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DataTable -->
+                    <div class="table-responsive">
+                        <table id="businessTable" class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40%">Besoin métier</th>
+                                    <th style="width: 25%">Level</th>
+                                    <th style="width: 20%">Fonction présente</th>
+                                    <th style="width: 15%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="businessTableBody">
+                                <!-- Les lignes seront ajoutées dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Résultats de vérification -->
+                    <div id="verificationResults" class="mt-4" style="display: none;">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">
+                                    <i class="bx bx-search-alt me-2"></i>
+                                    Résultats de vérification
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="verificationDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Snapshot -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-save me-2"></i>
+                        Database Snapshots - Sauvegardes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Snapshot Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <i class="bx bx-info-circle me-2"></i>
+                                <strong>Snapshot System:</strong> Créez des sauvegardes complètes de la base de données avant d'effectuer des modifications importantes.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Snapshot Actions -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="mb-3">Créer un Snapshot</h6>
+                                    <button class="btn btn-primary" onclick="createSnapshot()">
+                                        <i class="bx bx-camera"></i> Créer Snapshot
+                                    </button>
+                                    <div id="snapshot-progress" class="progress mt-3" style="display: none;">
+                                        <div id="snapshot-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="snapshot-status" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h6 class="mb-3">État Actuel</h6>
+                                    <div id="database-summary">
+                                        <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <span class="text-muted">Chargement...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Snapshots List -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">Snapshots Disponibles</h6>
+                            <div id="snapshots-list" class="table-responsive">
+                                <div class="text-center text-muted">
+                                    <i class="bx bx-loader-alt bx-spin"></i> Chargement des snapshots...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Console -->
+    {% if dev_mode %}
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="card-title mb-0 text-white">
+                        <i class="bx bx-terminal me-2"></i>
+                        Debug Console - SQL Query
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bx bx-error-circle me-2"></i>
+                        <strong>Mode Dev Only:</strong> Cette console permet d'exécuter des requêtes SELECT uniquement (read-only).
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SQL Query (SELECT only)</label>
+                        <textarea id="debug-query" class="form-control font-monospace" rows="4" placeholder="SELECT * FROM video LIMIT 10">SELECT * FROM video LIMIT 10</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <button class="btn btn-primary" onclick="executeDebugQuery()">
+                            <i class="bx bx-play"></i> Exécuter
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearDebugResults()">
+                            <i class="bx bx-trash"></i> Clear
+                        </button>
+                    </div>
+
+                    <div id="debug-results" style="display: none;">
+                        <h6 class="mb-2">Résultats:</h6>
+                        <div id="debug-output" class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Results will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 
 <!-- JavaScript for Fix Problems -->
@@ -512,7 +1067,8 @@ function runUnifiedFix() {
 }
 
 function selectAllFixes() {
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    // Sélectionner seulement les checkboxes de fix
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="fix-"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
     
     checkboxes.forEach(cb => {
@@ -716,5 +1272,1090 @@ function configureTopicAnalyzer() {
         });
     }
 }
+
+// Snapshot Functions
+function createSnapshot() {
+    const progressDiv = document.getElementById('snapshot-progress');
+    const progressBar = document.getElementById('snapshot-progress-bar');
+    const statusDiv = document.getElementById('snapshot-status');
+    
+    progressDiv.style.display = 'block';
+    progressBar.style.width = '0%';
+    statusDiv.innerHTML = '<small class="text-info">Création du snapshot en cours...</small>';
+    
+    fetch('/api/snapshot/create', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                progressBar.style.width = '100%';
+                statusDiv.innerHTML = `<small class="text-success">✅ Snapshot créé: ${data.filename}</small>`;
+                loadSnapshots();
+                loadDatabaseSummary();
+            } else {
+                progressBar.classList.add('bg-danger');
+                statusDiv.innerHTML = `<small class="text-danger">❌ Erreur: ${data.error}</small>`;
+            }
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 3000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            progressBar.classList.add('bg-danger');
+            statusDiv.innerHTML = '<small class="text-danger">❌ Erreur de connexion</small>';
+        });
+}
+
+function loadSnapshots() {
+    fetch('/api/snapshot/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.snapshots.length > 0) {
+                let html = '<table class="table table-sm"><thead><tr>';
+                html += '<th>Date</th><th>Fichier</th><th>Taille</th><th>Actions</th>';
+                html += '</tr></thead><tbody>';
+                
+                data.snapshots.forEach(snapshot => {
+                    const date = new Date(snapshot.date).toLocaleString();
+                    const size = (snapshot.size / 1024 / 1024).toFixed(2) + ' MB';
+                    html += `<tr>
+                        <td>${date}</td>
+                        <td>${snapshot.filename}</td>
+                        <td>${size}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="downloadSnapshot('${snapshot.filename}')">
+                                <i class="bx bx-download"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                document.getElementById('snapshots-list').innerHTML = html;
+            } else {
+                document.getElementById('snapshots-list').innerHTML = '<p class="text-muted">Aucun snapshot disponible</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('snapshots-list').innerHTML = '<p class="text-danger">Erreur de chargement</p>';
+        });
+}
+
+function loadDatabaseSummary() {
+    fetch('/api/snapshot/summary')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const stats = data.summary.statistics;
+                let html = '<dl class="row mb-0">';
+                html += `<dt class="col-sm-6">Total Concurrents:</dt><dd class="col-sm-6">${stats.total_concurrents}</dd>`;
+                html += `<dt class="col-sm-6">Total Playlists:</dt><dd class="col-sm-6">${stats.total_playlists}</dd>`;
+                html += `<dt class="col-sm-6">Total Vidéos:</dt><dd class="col-sm-6">${stats.total_videos}</dd>`;
+                html += `<dt class="col-sm-6">Playlists Classifiées:</dt><dd class="col-sm-6">${stats.classified_playlists}</dd>`;
+                html += `<dt class="col-sm-6">Vidéos Classifiées:</dt><dd class="col-sm-6">${stats.classified_videos}</dd>`;
+                html += '</dl>';
+                document.getElementById('database-summary').innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('database-summary').innerHTML = '<p class="text-danger">Erreur de chargement</p>';
+        });
+}
+
+function downloadSnapshot(filename) {
+    window.location.href = `/snapshots/${filename}`;
+}
+
+// Debug Console Functions
+function executeDebugQuery() {
+    const query = document.getElementById('debug-query').value.trim();
+    if (!query) {
+        alert('Veuillez entrer une requête SQL');
+        return;
+    }
+    
+    fetch('/api/debug/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultsDiv = document.getElementById('debug-results');
+        const outputDiv = document.getElementById('debug-output');
+        
+        if (data.success) {
+            let html = `<div class="alert alert-success mb-2">✅ ${data.row_count} lignes retournées</div>`;
+            
+            if (data.results.length > 0) {
+                html += '<table class="table table-sm table-bordered"><thead><tr>';
+                data.columns.forEach(col => {
+                    html += `<th>${col}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                data.results.forEach(row => {
+                    html += '<tr>';
+                    data.columns.forEach(col => {
+                        let value = row[col];
+                        if (value === null) value = '<span class="text-muted">NULL</span>';
+                        else if (typeof value === 'string' && value.length > 100) {
+                            value = value.substring(0, 100) + '...';
+                        }
+                        html += `<td>${value}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+            }
+            
+            outputDiv.innerHTML = html;
+        } else {
+            outputDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur: ${data.error}</div>`;
+        }
+        
+        resultsDiv.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('debug-output').innerHTML = '<div class="alert alert-danger">❌ Erreur de connexion</div>';
+        document.getElementById('debug-results').style.display = 'block';
+    });
+}
+
+function clearDebugResults() {
+    document.getElementById('debug-results').style.display = 'none';
+    document.getElementById('debug-output').innerHTML = '';
+}
+
+// Debug Logs Functions
+let debugLogsVisible = false;
+let debugAutoRefresh = false;
+let debugRefreshInterval = null;
+
+function toggleDebugLogs() {
+    const panel = document.getElementById('debug-logs-panel');
+    const btn = document.getElementById('debug-toggle-btn');
+    
+    debugLogsVisible = !debugLogsVisible;
+    
+    if (debugLogsVisible) {
+        panel.style.display = 'block';
+        btn.innerHTML = '<i class="bx bx-bug-alt me-2"></i>Cacher Debug';
+        refreshDebugLogs();
+    } else {
+        panel.style.display = 'none';
+        btn.innerHTML = '<i class="bx bx-bug me-2"></i>Debug Logs';
+        stopAutoRefresh();
+    }
+}
+
+function refreshDebugLogs() {
+    fetch('/api/debug/fix-logs')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayDebugLogs(data.logs, data.summary);
+            } else {
+                console.error('Error loading debug logs:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching debug logs:', error);
+        });
+}
+
+function displayDebugLogs(logs, summary) {
+    // Update summary
+    document.getElementById('debug-total-count').textContent = summary.total || 0;
+    document.getElementById('debug-error-count').textContent = summary.by_level?.error || 0;
+    document.getElementById('debug-warning-count').textContent = summary.by_level?.warning || 0;
+    document.getElementById('debug-success-count').textContent = summary.by_level?.success || 0;
+    
+    // Update logs container
+    const container = document.getElementById('debug-logs-container');
+    
+    if (logs.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center"><i class="bx bx-time"></i> Aucun log disponible</div>';
+        return;
+    }
+    
+    let html = '';
+    logs.forEach(log => {
+        const timestamp = new Date(log.timestamp).toLocaleTimeString();
+        const levelClass = {
+            'error': 'text-danger',
+            'warning': 'text-warning', 
+            'success': 'text-success',
+            'info': 'text-info',
+            'debug': 'text-light'
+        }[log.level] || 'text-light';
+        
+        const emoji = {
+            'error': '❌',
+            'warning': '⚠️', 
+            'success': '✅',
+            'info': '📋',
+            'debug': '🔍'
+        }[log.level] || '📋';
+        
+        const stepBadge = log.step ? `<span class="badge bg-secondary me-2">${log.step}</span>` : '';
+        
+        html += `<div class="mb-2 pb-2 border-bottom border-dark">`;
+        html += `<div class="${levelClass}">`;
+        html += `<small class="text-muted">${timestamp}</small> ${emoji} ${stepBadge}${log.message}`;
+        html += `</div>`;
+        
+        // Afficher les détails si présents
+        if (log.details && Object.keys(log.details).length > 0) {
+            html += `<div class="ms-3 mt-1 small text-muted">`;
+            for (const [key, value] of Object.entries(log.details)) {
+                if (key === 'exception' || key === 'traceback') {
+                    html += `<div><strong>${key}:</strong></div>`;
+                    html += `<pre class="text-danger small">${value}</pre>`;
+                } else if (typeof value === 'object') {
+                    html += `<div><strong>${key}:</strong> ${JSON.stringify(value, null, 2)}</div>`;
+                } else {
+                    html += `<div><strong>${key}:</strong> ${value}</div>`;
+                }
+            }
+            html += `</div>`;
+        }
+        
+        html += `</div>`;
+    });
+    
+    container.innerHTML = html;
+    
+    // Auto-scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+function clearDebugLogs() {
+    if (confirm('Êtes-vous sûr de vouloir vider les logs de debug ?')) {
+        fetch('/api/debug/fix-logs/clear', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    refreshDebugLogs();
+                }
+            });
+    }
+}
+
+function autoRefreshDebugLogs() {
+    const btn = document.getElementById('auto-refresh-btn');
+    
+    debugAutoRefresh = !debugAutoRefresh;
+    
+    if (debugAutoRefresh) {
+        btn.innerHTML = '<i class="bx bx-pause"></i> Auto';
+        btn.classList.remove('btn-outline-light');
+        btn.classList.add('btn-light');
+        
+        debugRefreshInterval = setInterval(refreshDebugLogs, 2000); // Refresh every 2 seconds
+    } else {
+        stopAutoRefresh();
+    }
+}
+
+function stopAutoRefresh() {
+    const btn = document.getElementById('auto-refresh-btn');
+    
+    debugAutoRefresh = false;
+    btn.innerHTML = '<i class="bx bx-play"></i> Auto';
+    btn.classList.remove('btn-light');
+    btn.classList.add('btn-outline-light');
+    
+    if (debugRefreshInterval) {
+        clearInterval(debugRefreshInterval);
+        debugRefreshInterval = null;
+    }
+}
+
+// Unified Fix Everything with Debug Logging
+function runUnifiedFix() {
+    const selectedFixes = [];
+    
+    // Sélectionner seulement les checkboxes de fix (éviter les autres checkboxes de la page)
+    document.querySelectorAll('input[type="checkbox"][id^="fix-"]:checked').forEach(checkbox => {
+        const value = checkbox.value.trim();
+        if (value && value !== 'on' && value !== '') {
+            selectedFixes.push(value);
+        }
+    });
+
+    if (selectedFixes.length === 0) {
+        alert('Veuillez sélectionner au moins un problème à corriger.');
+        return;
+    }
+
+    const apiLimit = parseInt(document.getElementById('api-limit').value) || 100;
+    const batchSize = parseInt(document.getElementById('batch-size').value) || 50;
+    
+    // Activer automatiquement les debug logs
+    if (!debugLogsVisible) {
+        toggleDebugLogs();
+    }
+    
+    // Activer l'auto-refresh
+    if (!debugAutoRefresh) {
+        autoRefreshDebugLogs();
+    }
+    
+    // Vider les anciens logs
+    clearDebugLogs();
+
+    const progressDiv = document.getElementById('unified-fix-progress');
+    const progressBar = document.getElementById('unified-fix-progress-bar');
+    const statusDiv = document.getElementById('unified-fix-status');
+    
+    progressDiv.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressBar.textContent = '0%';
+    statusDiv.innerHTML = '<small class="text-info">🔄 Démarrage de Fix Everything...</small>';
+
+    const requestData = {
+        selected_fixes: selectedFixes,
+        api_limit: apiLimit,
+        batch_size: batchSize
+    };
+
+    fetch('/api/fix-all-problems', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Arrêter l'auto-refresh des logs
+        stopAutoRefresh();
+        
+        if (data.success) {
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+            progressBar.className = 'progress-bar bg-success';
+            
+            const issuesFixed = data.issues_fixed || [];
+            statusDiv.innerHTML = `<small class="text-success">✅ Terminé ! ${issuesFixed.length} problèmes résolus</small>`;
+            
+            // Refresh final des logs
+            setTimeout(refreshDebugLogs, 1000);
+            
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 5000);
+        } else {
+            progressBar.className = 'progress-bar bg-danger';
+            statusDiv.innerHTML = `<small class="text-danger">❌ Erreur: ${data.error}</small>`;
+            
+            // Refresh final des logs pour voir l'erreur
+            setTimeout(refreshDebugLogs, 1000);
+        }
+    })
+    .catch(error => {
+        stopAutoRefresh();
+        console.error('Error:', error);
+        progressBar.className = 'progress-bar bg-danger';
+        statusDiv.innerHTML = '<small class="text-danger">❌ Erreur de connexion</small>';
+        
+        // Refresh des logs en cas d'erreur
+        setTimeout(refreshDebugLogs, 1000);
+    });
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSnapshots();
+    loadDatabaseSummary();
+    checkCompetitorStatus();
+    checkClassificationStatus();
+});
+
+// === NOUVELLES FONCTIONS DE DEBUG (migrées depuis debug.html) ===
+
+// Propagation functions
+async function propagatePatterns() {
+    console.log('Propagation des patterns multilingues...');
+    // À implémenter via API
+    alert('Fonction de propagation à implémenter');
+}
+
+async function reclassifyAllVideos() {
+    console.log('Re-classification de toutes les vidéos...');
+    // À implémenter via API
+    alert('Fonction de re-classification à implémenter');
+}
+
+// Classification functions
+async function classifyAllUnclassified() {
+    try {
+        const button = document.querySelector('button[onclick="classifyAllUnclassified()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-bot spinner-border spinner-border-sm me-2"></i> Classification en cours...';
+        
+        const response = await fetch('/api/classify-all-unclassified', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showClassificationResults(result);
+            alert(result.message);
+            checkClassificationStatus();
+        } else {
+            alert('Erreur lors de la classification: ' + result.error);
+        }
+        
+        button.disabled = false;
+        button.innerHTML = originalText;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la classification');
+    }
+}
+
+async function runGlobalAiClassification() {
+    try {
+        const button = document.querySelector('button[onclick="runGlobalAiClassification()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-play-circle spinner-border spinner-border-sm me-2"></i> Classification IA globale...';
+        
+        const response = await fetch('/api/global-ai-classification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showClassificationResults(result);
+            alert('Classification IA terminée: ' + result.playlists_classified + ' playlists et ' + result.videos_classified + ' vidéos classifiées');
+            checkClassificationStatus();
+        } else {
+            alert('Erreur lors de la classification IA: ' + result.error);
+        }
+        
+        button.disabled = false;
+        button.innerHTML = originalText;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la classification IA');
+    }
+}
+
+async function checkClassificationStatus() {
+    try {
+        // À implémenter avec une vraie API
+        document.getElementById('classified-videos').textContent = '?';
+        document.getElementById('unclassified-videos').textContent = '?';
+    } catch (error) {
+        console.error('Error checking classification status:', error);
+    }
+}
+
+function showClassificationResults(result) {
+    const resultsDiv = document.getElementById('classification-results');
+    const detailsDiv = document.getElementById('classification-details');
+    
+    let html = '<div class="row g-3">';
+    
+    if (result.total_classified !== undefined) {
+        html += `
+            <div class="col-md-6">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="h4 text-success mb-0">${result.total_classified}</div>
+                    <div class="small text-muted">Vidéos classifiées</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    if (result.playlists_classified !== undefined) {
+        html += `
+            <div class="col-md-6">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="h4 text-info mb-0">${result.playlists_classified}</div>
+                    <div class="small text-muted">Playlists classifiées</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    detailsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+}
+
+// Database sync functions
+async function checkCompetitorStatus() {
+    // À implémenter
+    console.log('Vérification du statut des concurrents...');
+}
+
+async function updateDatabaseSchema() {
+    console.log('Mise à jour du schéma de base de données...');
+    alert('Fonction de mise à jour du schéma à implémenter');
+}
+
+async function syncCompetitorsToDb() {
+    console.log('Synchronisation des concurrents vers la base de données...');
+    alert('Fonction de synchronisation à implémenter');
+}
+
+async function cleanDuplicateCompetitors() {
+    console.log('Nettoyage des doublons...');
+    alert('Fonction de nettoyage des doublons à implémenter');
+}
+
+// Integrity check functions
+async function verifyIntegrityAdvanced() {
+    try {
+        const button = document.querySelector('button[onclick="verifyIntegrityAdvanced()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-shield-quarter spinner-border spinner-border-sm me-2"></i> Vérification...';
+        
+        const response = await fetch('/api/verify-classification-integrity-advanced', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayIntegrityReport(result.report);
+            alert('Vérification d\'intégrité terminée!');
+        } else {
+            alert('Erreur lors de la vérification: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification:', error);
+        alert('Erreur lors de la vérification: ' + error.message);
+    } finally {
+        const button = document.querySelector('button[onclick="verifyIntegrityAdvanced()"]');
+        button.disabled = false;
+        button.innerHTML = '<i class="bx bx-shield-quarter me-2"></i> Vérifier l\'intégrité complète';
+    }
+}
+
+async function checkFunctionsSafety() {
+    try {
+        const button = document.querySelector('button[onclick="checkFunctionsSafety()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-cog spinner-border spinner-border-sm me-2"></i> Vérification...';
+        
+        const response = await fetch('/api/debug-functions-safety-check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displaySafetyReport(result.safety_report);
+            alert('Vérification de sécurité terminée!');
+        } else {
+            alert('Erreur lors de la vérification: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification:', error);
+        alert('Erreur lors de la vérification: ' + error.message);
+    } finally {
+        const button = document.querySelector('button[onclick="checkFunctionsSafety()"]');
+        button.disabled = false;
+        button.innerHTML = '<i class="bx bx-cog me-2"></i> Vérifier la sécurité des fonctions';
+    }
+}
+
+async function fixClassificationTracking() {
+    try {
+        const button = document.querySelector('button[onclick="fixClassificationTracking()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-wrench spinner-border spinner-border-sm me-2"></i> Réparation...';
+        
+        const response = await fetch('/api/fix-classification-tracking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Réparation terminée: ' + result.message);
+            
+            if (result.fixes_applied && result.fixes_applied.length > 0) {
+                const fixesHtml = result.fixes_applied.map(fix => `• ${fix}`).join('\n');
+                alert(`Corrections appliquées:\n${fixesHtml}`);
+            }
+        } else {
+            alert('Erreur lors de la réparation: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la réparation:', error);
+        alert('Erreur lors de la réparation: ' + error.message);
+    } finally {
+        const button = document.querySelector('button[onclick="fixClassificationTracking()"]');
+        button.disabled = false;
+        button.innerHTML = '<i class="bx bx-wrench me-2"></i> Réparer le tracking manquant';
+    }
+}
+
+async function updateDatabaseSchemaWithHumanProtection() {
+    try {
+        const button = document.querySelector('button[onclick="updateDatabaseSchemaWithHumanProtection()"]');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bx bx-data spinner-border spinner-border-sm me-2"></i> Mise à jour BDD...';
+        
+        const response = await fetch('/api/update-database-schema-with-human-protection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('🛡️ ' + result.message);
+            checkClassificationStatus();
+        } else {
+            alert('❌ Erreur lors de la mise à jour: ' + result.error);
+        }
+        
+        button.disabled = false;
+        button.innerHTML = originalText;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la mise à jour du schéma');
+    }
+}
+
+function displayIntegrityReport(report) {
+    const resultsDiv = document.getElementById('integrityResults');
+    const reportDiv = document.getElementById('integrityReport');
+    
+    let html = `
+        <div class="card">
+            <div class="card-header bg-${report.status === 'excellent' ? 'success' : report.status === 'critical' ? 'danger' : 'warning'} text-white">
+                <h6 class="mb-0">${report.summary}</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>📊 Statistiques</h6>
+                        <p><strong>Vidéos:</strong> ${report.stats.videos.total_classified} classifiées</p>
+                        <p><strong>Protégées (Humain):</strong> ${report.stats.videos.human_protected}</p>
+                        <p><strong>Classifiées IA:</strong> ${report.stats.videos.ai_classified}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>📋 Playlists</h6>
+                        <p><strong>Total:</strong> ${report.stats.playlists.total_classified}</p>
+                        <p><strong>Protégées (Humain):</strong> ${report.stats.playlists.human_protected}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    reportDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+}
+
+function displaySafetyReport(report) {
+    const resultsDiv = document.getElementById('integrityResults');
+    const reportDiv = document.getElementById('integrityReport');
+    
+    let html = `
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">${report.summary}</h6>
+            </div>
+            <div class="card-body">
+                <h6>🛡️ Fonctions sécurisées</h6>
+                <ul>
+    `;
+    
+    if (report.safe_functions) {
+        report.safe_functions.forEach(func => {
+            html += `<li><strong>${func.function}</strong>: ${func.protection}</li>`;
+        });
+    }
+    
+    html += '</ul></div></div>';
+    
+    reportDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+}
+
+// === FONCTIONS TABLEAU DATA ===
+
+let businessDataTable = [];
+let rowIdCounter = 1;
+
+// Initialiser le tableau avec des données par défaut
+function initBusinessTable() {
+    loadSampleData();
+}
+
+// Ajouter une nouvelle ligne
+function addNewRow() {
+    const newRow = {
+        id: rowIdCounter++,
+        besoin_metier: '',
+        level: 'Local Channel',
+        fonction_presente: 'NON'
+    };
+    businessDataTable.push(newRow);
+    renderTable();
+}
+
+// Supprimer une ligne
+function deleteRow(id) {
+    businessDataTable = businessDataTable.filter(row => row.id !== id);
+    renderTable();
+}
+
+// Charger des données d'exemple
+function loadSampleData() {
+    businessDataTable = [
+        { id: rowIdCounter++, besoin_metier: 'Views/Video', level: 'Local Channel', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Views/Video', level: 'Country Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Views/Video', level: 'European Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Likes/Video', level: 'Local Channel', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Likes/Video', level: 'Country Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Comments/Video', level: 'Local Channel', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Video Frequency', level: 'Country Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Most Liked Topics', level: 'European Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Hub-Hero-Help Distribution', level: 'Country Level', fonction_presente: 'NON' },
+        { id: rowIdCounter++, besoin_metier: 'Organic vs Paid Distribution', level: 'European Level', fonction_presente: 'NON' }
+    ];
+    renderTable();
+}
+
+// Rendre le tableau
+function renderTable() {
+    const tbody = document.getElementById('businessTableBody');
+    
+    if (businessDataTable.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    <i class="bx bx-info-circle me-2"></i>
+                    Aucune donnée. Cliquez sur "Ajouter une ligne" ou "Load Sample" pour commencer.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = businessDataTable.map(row => `
+        <tr>
+            <td>
+                <input type="text" class="form-control" value="${row.besoin_metier}" 
+                       onchange="updateRowData(${row.id}, 'besoin_metier', this.value)"
+                       placeholder="Ex: Views/Video">
+            </td>
+            <td>
+                <select class="form-select" onchange="updateRowData(${row.id}, 'level', this.value)">
+                    <option value="Local Channel" ${row.level === 'Local Channel' ? 'selected' : ''}>Local Channel</option>
+                    <option value="Country Level" ${row.level === 'Country Level' ? 'selected' : ''}>Country Level</option>
+                    <option value="European Level" ${row.level === 'European Level' ? 'selected' : ''}>European Level</option>
+                    <option value="Brand Level" ${row.level === 'Brand Level' ? 'selected' : ''}>Brand Level</option>
+                </select>
+            </td>
+            <td>
+                <select class="form-select" onchange="updateRowData(${row.id}, 'fonction_presente', this.value)">
+                    <option value="NON" ${row.fonction_presente === 'NON' ? 'selected' : ''}>NON</option>
+                    <option value="OUI" ${row.fonction_presente === 'OUI' ? 'selected' : ''}>OUI</option>
+                    <option value="PARTIEL" ${row.fonction_presente === 'PARTIEL' ? 'selected' : ''}>PARTIEL</option>
+                </select>
+            </td>
+            <td>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteRow(${row.id})">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour les données d'une ligne
+function updateRowData(id, field, value) {
+    const row = businessDataTable.find(r => r.id === id);
+    if (row) {
+        row[field] = value;
+    }
+}
+
+// Sauvegarder et vérifier les données
+async function saveAndVerifyData() {
+    if (businessDataTable.length === 0) {
+        alert('Aucune donnée à vérifier. Ajoutez des lignes au tableau.');
+        return;
+    }
+
+    const button = document.querySelector('button[onclick="saveAndVerifyData()"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Vérification...';
+
+    try {
+        // Filtrer les lignes vides
+        const dataToVerify = businessDataTable.filter(row => 
+            row.besoin_metier && row.besoin_metier.trim() !== ''
+        );
+
+        if (dataToVerify.length === 0) {
+            alert('Veuillez remplir au moins un besoin métier.');
+            return;
+        }
+
+        const response = await fetch('/api/verify-business-functions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                business_data: dataToVerify
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            displayVerificationResults(result);
+            alert(`Vérification terminée ! ${result.verified_count} fonctions vérifiées.`);
+        } else {
+            alert('Erreur lors de la vérification: ' + result.error);
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la vérification des fonctions.');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }
+}
+
+// Afficher les résultats de vérification
+function displayVerificationResults(result) {
+    const resultsDiv = document.getElementById('verificationResults');
+    const detailsDiv = document.getElementById('verificationDetails');
+
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-success text-white rounded">
+                    <h4>${result.stats.functions_found}</h4>
+                    <small>Fonctions trouvées</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-warning text-dark rounded">
+                    <h4>${result.stats.functions_missing}</h4>
+                    <small>Fonctions manquantes</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-info text-white rounded">
+                    <h4>${result.stats.functions_partial}</h4>
+                    <small>Fonctions partielles</small>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (result.verification_details && result.verification_details.length > 0) {
+        html += '<h6>Détails par fonction:</h6>';
+        html += '<div class="table-responsive"><table class="table table-sm">';
+        html += '<thead><tr><th>Besoin métier</th><th>Level</th><th>Status</th><th>Détails</th></tr></thead><tbody>';
+        
+        result.verification_details.forEach(detail => {
+            const statusClass = detail.status === 'OUI' ? 'success' : detail.status === 'PARTIEL' ? 'warning' : 'danger';
+            html += `
+                <tr>
+                    <td><strong>${detail.besoin_metier}</strong></td>
+                    <td>${detail.level}</td>
+                    <td><span class="badge bg-${statusClass}">${detail.status}</span></td>
+                    <td><small>${detail.details || 'N/A'}</small></td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+    }
+
+    // Mettre à jour le tableau avec les résultats
+    if (result.updated_data) {
+        result.updated_data.forEach(updatedRow => {
+            const row = businessDataTable.find(r => 
+                r.besoin_metier === updatedRow.besoin_metier && 
+                r.level === updatedRow.level
+            );
+            if (row) {
+                row.fonction_presente = updatedRow.fonction_presente;
+            }
+        });
+        renderTable();
+    }
+
+    detailsDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+}
+
+// Exporter les données
+function exportDataTable() {
+    if (businessDataTable.length === 0) {
+        alert('Aucune donnée à exporter.');
+        return;
+    }
+
+    const csvContent = [
+        ['Besoin métier', 'Level', 'Fonction présente'].join(','),
+        ...businessDataTable.map(row => [
+            `"${row.besoin_metier}"`,
+            `"${row.level}"`,
+            `"${row.fonction_presente}"`
+        ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `business-functions-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Function to update ALL values everywhere in the system
+async function updateAllValues() {
+    const button = event.target;
+    const statusDiv = document.getElementById('update-all-status');
+    const originalHtml = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Updating...';
+    button.disabled = true;
+    statusDiv.classList.remove('d-none');
+    
+    try {
+        // Step 1: Clear all cache
+        console.log('Step 1: Clearing all cache...');
+        await fetch('/api/clear-all-cache', { method: 'POST' });
+        
+        // Step 2: Recalculate all competitor statistics
+        console.log('Step 2: Recalculating competitor statistics...');
+        await fetch('/api/recalculate-all-stats', { method: 'POST' });
+        
+        // Step 3: Update all playlist statistics  
+        console.log('Step 3: Updating playlist statistics...');
+        await fetch('/api/update-playlist-stats', { method: 'POST' });
+        
+        // Step 4: Refresh all global metrics
+        console.log('Step 4: Refreshing global metrics...');
+        await fetch('/api/refresh-global-metrics', { method: 'POST' });
+        
+        // Step 5: Update all views and materialized data
+        console.log('Step 5: Updating database views...');
+        await fetch('/api/refresh-database-views', { method: 'POST' });
+        
+        // Step 5.5: Launch sentiment analysis in background if enabled (no wait)
+        const runSentimentAnalysis = document.getElementById('run-sentiment-analysis').checked;
+        if (runSentimentAnalysis) {
+            console.log('Step 5.5: Starting sentiment analysis in background...');
+            fetch('/api/start-bulk-sentiment-analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    analyze_titles: true,
+                    analyze_descriptions: true,
+                    analyze_comments: false,
+                    batch_size: 100,
+                    confidence_threshold: 0.6
+                })
+            }).catch(e => console.warn('Sentiment analysis start failed:', e));
+        }
+        
+        // Step 6: Clear all page caches
+        console.log('Step 6: Clearing page caches...');
+        const cacheEndpoints = [
+            '/api/clear-top-videos-cache',
+            '/api/clear-top-playlists-cache', 
+            '/api/clear-competitors-cache',
+            '/api/clear-dashboard-cache'
+        ];
+        
+        await Promise.all(cacheEndpoints.map(endpoint => 
+            fetch(endpoint, { method: 'POST' }).catch(e => console.warn(`Cache clear failed for ${endpoint}:`, e))
+        ));
+        
+        // Success
+        button.innerHTML = '<i class="bx bx-check me-2"></i>All Values Updated!';
+        button.className = 'btn btn-success btn-lg';
+        
+        const sentimentMessage = runSentimentAnalysis ? " Analyse sentiment démarrée en arrière-plan." : "";
+        statusDiv.innerHTML = `
+            <div class="alert alert-success py-2">
+                <i class="bx bx-check-circle me-2"></i>
+                <strong>Mise à jour terminée!</strong> Toutes les valeurs ont été recalculées.${sentimentMessage}
+            </div>
+        `;
+        
+        // Auto-refresh the current page after 2 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error updating all values:', error);
+        button.innerHTML = '<i class="bx bx-error me-2"></i>Error';
+        button.className = 'btn btn-danger btn-lg';
+        
+        statusDiv.innerHTML = `
+            <div class="alert alert-danger py-2">
+                <i class="bx bx-error-circle me-2"></i>
+                <strong>Erreur:</strong> ${error.message || 'Failed to update values'}
+            </div>
+        `;
+        
+        // Restore button after 3 seconds
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+            button.className = 'btn btn-primary btn-lg';
+            button.disabled = false;
+        }, 3000);
+    }
+}
+
+// Initialiser le tableau au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    initBusinessTable();
+});
 </script>
 {% endblock %}

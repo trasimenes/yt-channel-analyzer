@@ -3,7 +3,7 @@ import time
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import json
 import os
 
@@ -23,6 +23,9 @@ class BackgroundTask:
     end_time: Optional[str] = None
     error_message: Optional[str] = None
     channel_thumbnail: Optional[str] = None
+    task_type: str = 'channel_analysis'  # 'channel_analysis', 'sentiment_analysis', etc.
+    description: str = ''
+    extra_data: dict = field(default_factory=dict)
     
     def to_dict(self):
         return asdict(self)
@@ -61,6 +64,28 @@ class BackgroundTaskManager:
                 json.dump(tasks_data, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"[TASKS] Erreur lors de la sauvegarde des tâches: {e}")
+    
+    def start_generic_task(self, task_id: str, task_type: str, description: str, total_estimated: int = 0, extra_data: dict = None) -> str:
+        """Crée une tâche générique (non-YouTube)"""
+        
+        task = BackgroundTask(
+            id=task_id,
+            channel_url=task_type,  # Utilise task_type comme identifiant
+            channel_name=description,
+            status='running',
+            progress=0,
+            current_step='Initialisation...',
+            videos_found=0,
+            videos_processed=0,
+            total_estimated=total_estimated,
+            start_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            task_type=task_type,
+            description=description,
+            extra_data=extra_data or {}
+        )
+        self.tasks[task_id] = task
+        self.save_tasks()
+        return task_id
     
     def create_task(self, channel_url: str, channel_name: str) -> str:
         """Crée une nouvelle tâche"""
@@ -294,11 +319,11 @@ class BackgroundTaskManager:
         Args:
             task_id: ID de la tâche
             channel_url: URL de la chaîne YouTube
-            **kwargs: Paramètres supplémentaires ignorés pour compatibilité
+            **kwargs: Paramètres supplémentaires (max_videos, etc.)
         """
-        # Ignorer les paramètres supplémentaires comme max_videos
-        if kwargs:
-            print(f"[TASKS] Paramètres ignorés dans start_background_scraping: {kwargs}")
+        # 🚀 ACCEPTER les paramètres pour import complet
+        max_videos = kwargs.get('max_videos', 1000)
+        print(f"[TASKS] 📊 Paramètres reçus: max_videos={max_videos}")
             
         if task_id in self.running_tasks:
             return  # Déjà en cours
@@ -308,13 +333,13 @@ class BackgroundTaskManager:
         
         thread = threading.Thread(
             target=self._background_scraping_worker,
-            args=(task_id, channel_url),
+            args=(task_id, channel_url, max_videos),
             daemon=True
         )
         self.running_tasks[task_id] = thread
         thread.start()
     
-    def _background_scraping_worker(self, task_id: str, channel_url: str):
+    def _background_scraping_worker(self, task_id: str, channel_url: str, max_videos: int = 1000):
         """Worker pour le scraping en arrière-plan avec API YouTube"""
         try:
             from .youtube_adapter import get_channel_videos_data_api
@@ -379,9 +404,13 @@ class BackgroundTaskManager:
             self.update_task(task_id, current_step='⚡ Récupération vidéos via API...', progress=20)
             
             try:
+                # 🚀 UTILISER la limite reçue (0 = illimité)
+                video_limit = max_videos if max_videos > 0 else 10000  # 0 = illimité = 10000 max pour sécurité
+                print(f"[TASKS] 🎯 Limite vidéos: {video_limit} (max_videos={max_videos})")
+                
                 all_videos = get_channel_videos_data_api(
                     channel_url, 
-                    video_limit=1000
+                    video_limit=video_limit
                 )
                 print(f"[TASKS] ✅ API terminée, {len(all_videos) if all_videos else 0} vidéos récupérées")
                 self.update_task(task_id, current_step='✅ Vidéos récupérées...', progress=60)
@@ -408,8 +437,50 @@ class BackgroundTaskManager:
             # Mise à jour du cache avec toutes les vidéos
             from app import save_competitor_data
             try:
-                save_competitor_data(channel_url, all_videos)
+                competitor_id = save_competitor_data(channel_url, all_videos)
                 print(f"[TASKS] ✅ Sauvegarde réussie pour {channel_url}")
+                
+                # 🚀 CORRECTION À LA SOURCE : Auto-génération des statistiques
+                if competitor_id:
+                    print(f"[TASKS] 📊 Génération automatique des statistiques pour competitor_id: {competitor_id}")
+                    try:
+                        from .database.base import get_db_connection
+                        
+                        conn = get_db_connection()
+                        cursor = conn.cursor()
+                        
+                        # Créer/mettre à jour les statistiques dans competitor_stats
+                        cursor.execute('''
+                            INSERT OR REPLACE INTO competitor_stats (
+                                competitor_id, 
+                                total_videos, 
+                                total_views, 
+                                avg_views,
+                                last_updated
+                            ) VALUES (
+                                ?,
+                                (SELECT COUNT(*) FROM video WHERE concurrent_id = ?),
+                                (SELECT SUM(view_count) FROM video WHERE concurrent_id = ?),
+                                (SELECT AVG(view_count) FROM video WHERE concurrent_id = ?),
+                                datetime('now')
+                            )
+                        ''', (competitor_id, competitor_id, competitor_id, competitor_id))
+                        
+                        conn.commit()
+                        
+                        # Vérifier les résultats
+                        cursor.execute('SELECT total_videos, total_views FROM competitor_stats WHERE competitor_id = ?', (competitor_id,))
+                        stats = cursor.fetchone()
+                        if stats:
+                            print(f"[TASKS] ✅ Stats créées: {stats[0]} vidéos, {stats[1]:,} vues totales")
+                        
+                        conn.close()
+                        
+                    except Exception as stats_error:
+                        print(f"[TASKS] ⚠️ Erreur génération stats (non critique): {stats_error}")
+                        import traceback
+                        traceback.print_exc()
+                    
             except Exception as save_error:
                 print(f"[TASKS] ❌ Erreur de sauvegarde: {save_error}")
                 import traceback

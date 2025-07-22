@@ -319,11 +319,12 @@ class CompetitorManager:
                 c.subscriber_count,
                 c.country,
                 c.language,
-                COUNT(v.id) as video_count,
-                SUM(v.view_count) as total_views,
-                AVG(v.view_count) as avg_views,
+                COALESCE(cs.total_videos, COUNT(v.id)) as video_count,
+                COALESCE(cs.total_views, SUM(v.view_count)) as total_views,
+                COALESCE(cs.avg_views, AVG(v.view_count)) as avg_views,
                 MAX(v.published_at) as last_video_date
             FROM concurrent c
+            LEFT JOIN competitor_stats cs ON c.id = cs.competitor_id
             LEFT JOIN video v ON c.id = v.concurrent_id
             GROUP BY c.id
             ORDER BY video_count DESC

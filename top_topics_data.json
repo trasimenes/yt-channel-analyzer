@@ -1,2041 +1,2069 @@
 {
   "status": "completed",
-  "summary": {
-    "analyzed_videos": 3233,
-    "analyzed_playlists": 284,
-    "total_topics": 49,
-    "total_bigrams": 9402,
-    "analysis_date": "2025-07-20 21:22:39",
-    "sources": "Titres vidéos, descriptions vidéos, noms & descriptions de playlists"
-  },
+  "topics": [
+    {
+      "topic": "Wdr",
+      "frequency": 2514,
+      "total_views": 575537139,
+      "total_likes": 4699075,
+      "total_comments": 0,
+      "avg_views": 228932.83174224343,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 2514
+      }
+    },
+    {
+      "topic": "Hier",
+      "frequency": 1051,
+      "total_views": 216543290,
+      "total_likes": 1680387,
+      "total_comments": 444,
+      "avg_views": 206035.48049476687,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 1033,
+        "Netherlands": 15,
+        "International": 3
+      }
+    },
+    {
+      "topic": "Film",
+      "frequency": 943,
+      "total_views": 452989710,
+      "total_likes": 1773221,
+      "total_comments": 282,
+      "avg_views": 480370.84835630964,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 923,
+        "International": 19,
+        "France": 1
+      }
+    },
+    {
+      "topic": "Sich",
+      "frequency": 818,
+      "total_views": 182154088,
+      "total_likes": 1271190,
+      "total_comments": 514,
+      "avg_views": 222682.25916870416,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 789,
+        "International": 29
+      }
+    },
+    {
+      "topic": "Nicht",
+      "frequency": 750,
+      "total_views": 151565569,
+      "total_likes": 1274094,
+      "total_comments": 20,
+      "avg_views": 202087.42533333335,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 738,
+        "International": 12
+      }
+    },
+    {
+      "topic": "Weitere",
+      "frequency": 668,
+      "total_views": 141400043,
+      "total_likes": 1206464,
+      "total_comments": 0,
+      "avg_views": 211676.71107784432,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 666,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Alle",
+      "frequency": 664,
+      "total_views": 135173761,
+      "total_likes": 1035403,
+      "total_comments": 184,
+      "avg_views": 203574.94126506025,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 624,
+        "International": 27,
+        "Netherlands": 13
+      }
+    },
+    {
+      "topic": "Kanal",
+      "frequency": 644,
+      "total_views": 126313342,
+      "total_likes": 1024382,
+      "total_comments": 267,
+      "avg_views": 196138.7298136646,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 644
+      }
+    },
+    {
+      "topic": "Wunderschoen",
+      "frequency": 634,
+      "total_views": 146793008,
+      "total_likes": 1185757,
+      "total_comments": 0,
+      "avg_views": 231534.71293375394,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 634
+      }
+    },
+    {
+      "topic": "Auch",
+      "frequency": 631,
+      "total_views": 131966422,
+      "total_likes": 1085787,
+      "total_comments": 113,
+      "avg_views": 209138.54516640253,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 630,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Mediathek",
+      "frequency": 629,
+      "total_views": 120008332,
+      "total_likes": 1058150,
+      "total_comments": 0,
+      "avg_views": 190792.26073131955,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 629
+      }
+    },
+    {
+      "topic": "Camping",
+      "frequency": 613,
+      "total_views": 130248355,
+      "total_likes": 980853,
+      "total_comments": 259,
+      "avg_views": 212476.92495921697,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 524,
+        "France": 71,
+        "Netherlands": 14
+      }
+    },
+    {
+      "topic": "Nach",
+      "frequency": 611,
+      "total_views": 131992547,
+      "total_likes": 1149831,
+      "total_comments": 32,
+      "avg_views": 216027.08183306057,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 610,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Infos",
+      "frequency": 603,
+      "total_views": 128814150,
+      "total_likes": 1074611,
+      "total_comments": 0,
+      "avg_views": 213622.13930348257,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 596,
+        "International": 7
+      }
+    },
+    {
+      "topic": "Abonnieren",
+      "frequency": 571,
+      "total_views": 117084523,
+      "total_likes": 968040,
+      "total_comments": 128,
+      "avg_views": 205051.70402802102,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 571
+      }
+    },
+    {
+      "topic": "Bit",
+      "frequency": 569,
+      "total_views": 155867217,
+      "total_likes": 973702,
+      "total_comments": 331,
+      "avg_views": 273931.84007029876,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 553,
+        "Unknown": 8,
+        "International": 4
+      }
+    },
+    {
+      "topic": "Ihn",
+      "frequency": 566,
+      "total_views": 117893182,
+      "total_likes": 1016031,
+      "total_comments": 5,
+      "avg_views": 208291.8409893993,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 566
+      }
+    },
+    {
+      "topic": "Unser",
+      "frequency": 556,
+      "total_views": 115807950,
+      "total_likes": 986708,
+      "total_comments": 17,
+      "avg_views": 208287.6798561151,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 556
+      }
+    },
+    {
+      "topic": "Dir",
+      "frequency": 547,
+      "total_views": 111782961,
+      "total_likes": 959464,
+      "total_comments": 10,
+      "avg_views": 204356.41864716637,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 547
+      }
+    },
+    {
+      "topic": "Produziert",
+      "frequency": 541,
+      "total_views": 127128379,
+      "total_likes": 1010381,
+      "total_comments": 0,
+      "avg_views": 234987.76155268023,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 541
+      }
+    },
+    {
+      "topic": "Kannst",
+      "frequency": 536,
+      "total_views": 115722702,
+      "total_likes": 955281,
+      "total_comments": 4,
+      "avg_views": 215900.56343283583,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 534,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Wurden",
+      "frequency": 512,
+      "total_views": 107157165,
+      "total_likes": 893898,
+      "total_comments": 0,
+      "avg_views": 209291.337890625,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 512
+      }
+    },
+    {
+      "topic": "Wie",
+      "frequency": 499,
+      "total_views": 101705691,
+      "total_likes": 733243,
+      "total_comments": 160,
+      "avg_views": 203819.02004008016,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 483,
+        "International": 14,
+        "Netherlands": 2
+      }
+    },
+    {
+      "topic": "Stand",
+      "frequency": 495,
+      "total_views": 105825089,
+      "total_likes": 880891,
+      "total_comments": 2,
+      "avg_views": 213788.05858585858,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 494,
+        "Netherlands": 1
+      }
+    },
+    {
+      "topic": "Aus",
+      "frequency": 491,
+      "total_views": 110211029,
+      "total_likes": 879120,
+      "total_comments": 5,
+      "avg_views": 224462.38085539715,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 489,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Dieser",
+      "frequency": 481,
+      "total_views": 89738165,
+      "total_likes": 762184,
+      "total_comments": 2,
+      "avg_views": 186565.8316008316,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 479,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Fakten",
+      "frequency": 474,
+      "total_views": 98640226,
+      "total_likes": 832096,
+      "total_comments": 11,
+      "avg_views": 208101.74261603376,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 474
+      }
+    },
+    {
+      "topic": "Damaligen",
+      "frequency": 472,
+      "total_views": 99000696,
+      "total_likes": 834680,
+      "total_comments": 0,
+      "avg_views": 209747.2372881356,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 472
+      }
+    },
+    {
+      "topic": "Aussagen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Entsprechen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Aktualisiert",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Erlebnisreisen",
+      "frequency": 462,
+      "total_views": 106292292,
+      "total_likes": 897337,
+      "total_comments": 0,
+      "avg_views": 230069.8961038961,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 462
+      }
+    },
+    {
+      "topic": "Camper",
+      "frequency": 454,
+      "total_views": 119736131,
+      "total_likes": 939876,
+      "total_comments": 0,
+      "avg_views": 263735.9713656388,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 454
+      }
+    },
+    {
+      "topic": "Ardreisen",
+      "frequency": 449,
+      "total_views": 94193272,
+      "total_likes": 792485,
+      "total_comments": 0,
+      "avg_views": 209784.570155902,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 449
+      }
+    },
+    {
+      "topic": "Mehr",
+      "frequency": 441,
+      "total_views": 95840032,
+      "total_likes": 679062,
+      "total_comments": 190,
+      "avg_views": 217324.33560090704,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 437,
+        "International": 4
+      }
+    },
+    {
+      "topic": "Instagram",
+      "frequency": 438,
+      "total_views": 70895866,
+      "total_likes": 527277,
+      "total_comments": 334,
+      "avg_views": 161862.70776255708,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 389,
+        "International": 49
+      }
+    },
+    {
+      "topic": "Zum",
+      "frequency": 432,
+      "total_views": 102007443,
+      "total_likes": 721106,
+      "total_comments": 20,
+      "avg_views": 236128.34027777778,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 417,
+        "International": 15
+      }
+    },
+    {
+      "topic": "Urlaub",
+      "frequency": 406,
+      "total_views": 95607181,
+      "total_likes": 649801,
+      "total_comments": 168,
+      "avg_views": 235485.66748768472,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 406
+      }
+    },
+    {
+      "topic": "Gibt",
+      "frequency": 402,
+      "total_views": 108265715,
+      "total_likes": 796738,
+      "total_comments": 11,
+      "avg_views": 269317.69900497515,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 402
+      }
+    },
+    {
+      "topic": "Redaktion",
+      "frequency": 379,
+      "total_views": 77328681,
+      "total_likes": 654333,
+      "total_comments": 0,
+      "avg_views": 204033.4591029024,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 379
+      }
+    },
+    {
+      "topic": "Zwei",
+      "frequency": 375,
+      "total_views": 90395491,
+      "total_likes": 701875,
+      "total_comments": 56,
+      "avg_views": 241054.64266666668,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 374,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Einem",
+      "frequency": 362,
+      "total_views": 76763147,
+      "total_likes": 584443,
+      "total_comments": 86,
+      "avg_views": 212052.89226519337,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 352,
+        "International": 10
+      }
+    },
+    {
+      "topic": "Vacation",
+      "frequency": 349,
+      "total_views": 467930490,
+      "total_likes": 2860365,
+      "total_comments": 166013,
+      "avg_views": 1340775.0429799426,
+      "top_category": "hub",
+      "top_competitor": "Expedia",
+      "countries": {
+        "International": 335,
+        "France": 12,
+        "Germany": 2
+      }
+    },
+    {
+      "topic": "Seitdem",
+      "frequency": 341,
+      "total_views": 67264230,
+      "total_likes": 564219,
+      "total_comments": 0,
+      "avg_views": 197255.8064516129,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 341
+      }
+    },
+    {
+      "topic": "Geht",
+      "frequency": 335,
+      "total_views": 65468869,
+      "total_likes": 521014,
+      "total_comments": 90,
+      "avg_views": 195429.45970149254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 334,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Oder",
+      "frequency": 329,
+      "total_views": 69124388,
+      "total_likes": 400313,
+      "total_comments": 271,
+      "avg_views": 210104.5227963526,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 326,
+        "International": 3
+      }
+    },
+    {
+      "topic": "Ardmediathek",
+      "frequency": 328,
+      "total_views": 61843351,
+      "total_likes": 537400,
+      "total_comments": 0,
+      "avg_views": 188546.80182926828,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 328
+      }
+    },
+    {
+      "topic": "Wdrreisen",
+      "frequency": 321,
+      "total_views": 65307607,
+      "total_likes": 588620,
+      "total_comments": 0,
+      "avg_views": 203450.4890965732,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 321
+      }
+    },
+    {
+      "topic": "Jahr",
+      "frequency": 317,
+      "total_views": 76293143,
+      "total_likes": 577131,
+      "total_comments": 0,
+      "avg_views": 240672.37539432177,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 316,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Noch",
+      "frequency": 302,
+      "total_views": 71296167,
+      "total_likes": 496803,
+      "total_comments": 57,
+      "avg_views": 236080.02317880795,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 295,
+        "International": 7
+      }
+    }
+  ],
   "top_topics_by_frequency": [
     {
-      "topic": "campings",
-      "count": 847.0,
-      "avg_views": 43629,
-      "avg_likes": 172,
-      "avg_comments": 0,
-      "video_count": 76,
-      "engagement_rate": 0.39
+      "topic": "Wdr",
+      "frequency": 2514,
+      "total_views": 575537139,
+      "total_likes": 4699075,
+      "total_comments": 0,
+      "avg_views": 228932.83174224343,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 2514
+      }
     },
     {
-      "topic": "parken",
-      "count": 643.5,
-      "avg_views": 71171,
-      "avg_likes": 97,
-      "avg_comments": 2,
-      "video_count": 118,
-      "engagement_rate": 0.14
+      "topic": "Hier",
+      "frequency": 1051,
+      "total_views": 216543290,
+      "total_likes": 1680387,
+      "total_comments": 444,
+      "avg_views": 206035.48049476687,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 1033,
+        "Netherlands": 15,
+        "International": 3
+      }
     },
     {
-      "topic": "villages",
-      "count": 543.5,
-      "avg_views": 69780,
-      "avg_likes": 81,
-      "avg_comments": 2,
-      "video_count": 163,
-      "engagement_rate": 0.12
+      "topic": "Film",
+      "frequency": 943,
+      "total_views": 452989710,
+      "total_likes": 1773221,
+      "total_comments": 282,
+      "avg_views": 480370.84835630964,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 923,
+        "International": 19,
+        "France": 1
+      }
     },
     {
-      "topic": "koos",
-      "count": 499.5,
-      "avg_views": 3465,
-      "avg_likes": 12,
-      "avg_comments": 0,
-      "video_count": 42,
-      "engagement_rate": 0.35
+      "topic": "Sich",
+      "frequency": 818,
+      "total_views": 182154088,
+      "total_likes": 1271190,
+      "total_comments": 514,
+      "avg_views": 222682.25916870416,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 789,
+        "International": 29
+      }
     },
     {
-      "topic": "bollo",
-      "count": 465.0,
-      "avg_views": 513717,
-      "avg_likes": 578,
-      "avg_comments": 0,
-      "video_count": 41,
-      "engagement_rate": 0.11
+      "topic": "Nicht",
+      "frequency": 750,
+      "total_views": 151565569,
+      "total_likes": 1274094,
+      "total_comments": 20,
+      "avg_views": 202087.42533333335,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 738,
+        "International": 12
+      }
     },
     {
-      "topic": "bois",
-      "count": 389.5,
-      "avg_views": 19945,
-      "avg_likes": 38,
-      "avg_comments": 1,
-      "video_count": 85,
-      "engagement_rate": 0.2
+      "topic": "Weitere",
+      "frequency": 668,
+      "total_views": 141400043,
+      "total_likes": 1206464,
+      "total_comments": 0,
+      "avg_views": 211676.71107784432,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 666,
+        "International": 2
+      }
     },
     {
-      "topic": "resorts",
-      "count": 367.5,
-      "avg_views": 91694,
-      "avg_likes": 100,
-      "avg_comments": 4,
-      "video_count": 108,
-      "engagement_rate": 0.11
+      "topic": "Alle",
+      "frequency": 664,
+      "total_views": 135173761,
+      "total_likes": 1035403,
+      "total_comments": 184,
+      "avg_views": 203574.94126506025,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 624,
+        "International": 27,
+        "Netherlands": 13
+      }
     },
     {
-      "topic": "city",
-      "count": 367.0,
-      "avg_views": 1035781,
-      "avg_likes": 3076,
-      "avg_comments": 227,
-      "video_count": 372,
-      "engagement_rate": 0.32
+      "topic": "Kanal",
+      "frequency": 644,
+      "total_views": 126313342,
+      "total_likes": 1024382,
+      "total_comments": 267,
+      "avg_views": 196138.7298136646,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 644
+      }
     },
     {
-      "topic": "excellence",
-      "count": 366.0,
-      "avg_views": 5366,
-      "avg_likes": 19,
-      "avg_comments": 1,
-      "video_count": 82,
-      "engagement_rate": 0.37
+      "topic": "Wunderschoen",
+      "frequency": 634,
+      "total_views": 146793008,
+      "total_likes": 1185757,
+      "total_comments": 0,
+      "avg_views": 231534.71293375394,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 634
+      }
     },
     {
-      "topic": "guides",
-      "count": 358.5,
-      "avg_views": 2646720,
-      "avg_likes": 2264,
-      "avg_comments": 68,
-      "video_count": 44,
-      "engagement_rate": 0.09
+      "topic": "Auch",
+      "frequency": 631,
+      "total_views": 131966422,
+      "total_likes": 1085787,
+      "total_comments": 113,
+      "avg_views": 209138.54516640253,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 630,
+        "International": 1
+      }
     },
     {
-      "topic": "awards",
-      "count": 357.0,
-      "avg_views": 3089,
-      "avg_likes": 16,
-      "avg_comments": 1,
-      "video_count": 101,
-      "engagement_rate": 0.55
+      "topic": "Mediathek",
+      "frequency": 629,
+      "total_views": 120008332,
+      "total_likes": 1058150,
+      "total_comments": 0,
+      "avg_views": 190792.26073131955,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 629
+      }
     },
     {
-      "topic": "new",
-      "count": 341.0,
-      "avg_views": 370570,
-      "avg_likes": 759,
-      "avg_comments": 35,
-      "video_count": 398,
-      "engagement_rate": 0.21
+      "topic": "Camping",
+      "frequency": 613,
+      "total_views": 130248355,
+      "total_likes": 980853,
+      "total_comments": 259,
+      "avg_views": 212476.92495921697,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 524,
+        "France": 71,
+        "Netherlands": 14
+      }
     },
     {
-      "topic": "aan",
-      "count": 340.0,
-      "avg_views": 56189,
-      "avg_likes": 86,
-      "avg_comments": 1,
-      "video_count": 338,
-      "engagement_rate": 0.15
+      "topic": "Nach",
+      "frequency": 611,
+      "total_views": 131992547,
+      "total_likes": 1149831,
+      "total_comments": 32,
+      "avg_views": 216027.08183306057,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 610,
+        "International": 1
+      }
     },
     {
-      "topic": "cœur",
-      "count": 332.5,
-      "avg_views": 32035,
-      "avg_likes": 46,
-      "avg_comments": 1,
-      "video_count": 122,
-      "engagement_rate": 0.15
+      "topic": "Infos",
+      "frequency": 603,
+      "total_views": 128814150,
+      "total_likes": 1074611,
+      "total_comments": 0,
+      "avg_views": 213622.13930348257,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 596,
+        "International": 7
+      }
     },
     {
-      "topic": "vakantie",
-      "count": 327.5,
-      "avg_views": 65754,
-      "avg_likes": 38,
-      "avg_comments": 2,
-      "video_count": 295,
-      "engagement_rate": 0.06
+      "topic": "Abonnieren",
+      "frequency": 571,
+      "total_views": 117084523,
+      "total_likes": 968040,
+      "total_comments": 128,
+      "avg_views": 205051.70402802102,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 571
+      }
     },
     {
-      "topic": "check",
-      "count": 323.0,
-      "avg_views": 521107,
-      "avg_likes": 3344,
-      "avg_comments": 244,
-      "video_count": 290,
-      "engagement_rate": 0.69
+      "topic": "Bit",
+      "frequency": 569,
+      "total_views": 155867217,
+      "total_likes": 973702,
+      "total_comments": 331,
+      "avg_views": 273931.84007029876,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 553,
+        "Unknown": 8,
+        "International": 4
+      }
     },
     {
-      "topic": "bij",
-      "count": 322.0,
-      "avg_views": 41577,
-      "avg_likes": 64,
-      "avg_comments": 1,
-      "video_count": 309,
-      "engagement_rate": 0.16
+      "topic": "Ihn",
+      "frequency": 566,
+      "total_views": 117893182,
+      "total_likes": 1016031,
+      "total_comments": 5,
+      "avg_views": 208291.8409893993,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 566
+      }
     },
     {
-      "topic": "booking",
-      "count": 316.5,
-      "avg_views": 3446244,
-      "avg_likes": 541,
-      "avg_comments": 10,
-      "video_count": 121,
-      "engagement_rate": 0.02
+      "topic": "Unser",
+      "frequency": 556,
+      "total_views": 115807950,
+      "total_likes": 986708,
+      "total_comments": 17,
+      "avg_views": 208287.6798561151,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 556
+      }
     },
     {
-      "topic": "votre",
-      "count": 316.5,
-      "avg_views": 22479,
-      "avg_likes": 28,
-      "avg_comments": 0,
-      "video_count": 92,
-      "engagement_rate": 0.12
+      "topic": "Dir",
+      "frequency": 547,
+      "total_views": 111782961,
+      "total_likes": 959464,
+      "total_comments": 10,
+      "avg_views": 204356.41864716637,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 547
+      }
     },
     {
-      "topic": "most",
-      "count": 316.0,
-      "avg_views": 882849,
-      "avg_likes": 1802,
-      "avg_comments": 114,
-      "video_count": 202,
-      "engagement_rate": 0.22
+      "topic": "Produziert",
+      "frequency": 541,
+      "total_views": 127128379,
+      "total_likes": 1010381,
+      "total_comments": 0,
+      "avg_views": 234987.76155268023,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 541
+      }
     },
     {
-      "topic": "deze",
-      "count": 314.0,
-      "avg_views": 72462,
-      "avg_likes": 112,
-      "avg_comments": 1,
-      "video_count": 202,
-      "engagement_rate": 0.16
+      "topic": "Kannst",
+      "frequency": 536,
+      "total_views": 115722702,
+      "total_likes": 955281,
+      "total_comments": 4,
+      "avg_views": 215900.56343283583,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 534,
+        "International": 2
+      }
     },
     {
-      "topic": "inspired",
-      "count": 313.5,
-      "avg_views": 38164,
-      "avg_likes": 108,
-      "avg_comments": 8,
-      "video_count": 122,
-      "engagement_rate": 0.3
+      "topic": "Wurden",
+      "frequency": 512,
+      "total_views": 107157165,
+      "total_likes": 893898,
+      "total_comments": 0,
+      "avg_views": 209291.337890625,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 512
+      }
     },
     {
-      "topic": "places",
-      "count": 313.0,
-      "avg_views": 1128208,
-      "avg_likes": 3312,
-      "avg_comments": 250,
-      "video_count": 105,
-      "engagement_rate": 0.32
+      "topic": "Wie",
+      "frequency": 499,
+      "total_views": 101705691,
+      "total_likes": 733243,
+      "total_comments": 160,
+      "avg_views": 203819.02004008016,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 483,
+        "International": 14,
+        "Netherlands": 2
+      }
     },
     {
-      "topic": "team",
-      "count": 311.0,
-      "avg_views": 130249,
-      "avg_likes": 453,
-      "avg_comments": 6,
-      "video_count": 196,
-      "engagement_rate": 0.35
+      "topic": "Stand",
+      "frequency": 495,
+      "total_views": 105825089,
+      "total_likes": 880891,
+      "total_comments": 2,
+      "avg_views": 213788.05858585858,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 494,
+        "Netherlands": 1
+      }
     },
     {
-      "topic": "over",
-      "count": 305.0,
-      "avg_views": 402524,
-      "avg_likes": 583,
-      "avg_comments": 29,
-      "video_count": 826,
-      "engagement_rate": 0.15
+      "topic": "Aus",
+      "frequency": 491,
+      "total_views": 110211029,
+      "total_likes": 879120,
+      "total_comments": 5,
+      "avg_views": 224462.38085539715,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 489,
+        "International": 2
+      }
     },
     {
-      "topic": "europe",
-      "count": 305.0,
-      "avg_views": 224654,
-      "avg_likes": 1095,
-      "avg_comments": 86,
-      "video_count": 80,
-      "engagement_rate": 0.53
+      "topic": "Dieser",
+      "frequency": 481,
+      "total_views": 89738165,
+      "total_likes": 762184,
+      "total_comments": 2,
+      "avg_views": 186565.8316008316,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 479,
+        "International": 2
+      }
     },
     {
-      "topic": "domaine",
-      "count": 299.0,
-      "avg_views": 23987,
-      "avg_likes": 52,
-      "avg_comments": 2,
-      "video_count": 161,
-      "engagement_rate": 0.23
+      "topic": "Fakten",
+      "frequency": 474,
+      "total_views": 98640226,
+      "total_likes": 832096,
+      "total_comments": 11,
+      "avg_views": 208101.74261603376,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 474
+      }
     },
     {
-      "topic": "brands",
-      "count": 289.5,
-      "avg_views": 49515,
-      "avg_likes": 23,
-      "avg_comments": 1,
-      "video_count": 79,
-      "engagement_rate": 0.05
+      "topic": "Damaligen",
+      "frequency": 472,
+      "total_views": 99000696,
+      "total_likes": 834680,
+      "total_comments": 0,
+      "avg_views": 209747.2372881356,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 472
+      }
     },
     {
-      "topic": "find",
-      "count": 289.0,
-      "avg_views": 795057,
-      "avg_likes": 1186,
-      "avg_comments": 43,
-      "video_count": 761,
-      "engagement_rate": 0.15
+      "topic": "Aussagen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
     },
     {
-      "topic": "village",
-      "count": 287.0,
-      "avg_views": 60818,
-      "avg_likes": 103,
-      "avg_comments": 2,
-      "video_count": 282,
-      "engagement_rate": 0.17
+      "topic": "Entsprechen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
     },
     {
-      "topic": "its",
-      "count": 281.5,
-      "avg_views": 163124,
-      "avg_likes": 687,
-      "avg_comments": 31,
-      "video_count": 602,
-      "engagement_rate": 0.44
+      "topic": "Aktualisiert",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
     },
     {
-      "topic": "around",
-      "count": 281.5,
-      "avg_views": 280342,
-      "avg_likes": 368,
-      "avg_comments": 22,
-      "video_count": 113,
-      "engagement_rate": 0.14
+      "topic": "Erlebnisreisen",
+      "frequency": 462,
+      "total_views": 106292292,
+      "total_likes": 897337,
+      "total_comments": 0,
+      "avg_views": 230069.8961038961,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 462
+      }
     },
     {
-      "topic": "through",
-      "count": 273.5,
-      "avg_views": 648476,
-      "avg_likes": 1596,
-      "avg_comments": 103,
-      "video_count": 273,
-      "engagement_rate": 0.26
+      "topic": "Camper",
+      "frequency": 454,
+      "total_views": 119736131,
+      "total_likes": 939876,
+      "total_comments": 0,
+      "avg_views": 263735.9713656388,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 454
+      }
     },
     {
-      "topic": "vos",
-      "count": 273.0,
-      "avg_views": 76796,
-      "avg_likes": 75,
-      "avg_comments": 1,
-      "video_count": 170,
-      "engagement_rate": 0.1
+      "topic": "Ardreisen",
+      "frequency": 449,
+      "total_views": 94193272,
+      "total_likes": 792485,
+      "total_comments": 0,
+      "avg_views": 209784.570155902,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 449
+      }
     },
     {
-      "topic": "domaines",
-      "count": 270.5,
-      "avg_views": 34338,
-      "avg_likes": 105,
-      "avg_comments": 6,
-      "video_count": 24,
-      "engagement_rate": 0.32
+      "topic": "Mehr",
+      "frequency": 441,
+      "total_views": 95840032,
+      "total_likes": 679062,
+      "total_comments": 190,
+      "avg_views": 217324.33560090704,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 437,
+        "International": 4
+      }
     },
     {
-      "topic": "life",
-      "count": 270.0,
-      "avg_views": 1063235,
-      "avg_likes": 730,
-      "avg_comments": 21,
-      "video_count": 249,
-      "engagement_rate": 0.07
+      "topic": "Instagram",
+      "frequency": 438,
+      "total_views": 70895866,
+      "total_likes": 527277,
+      "total_comments": 334,
+      "avg_views": 161862.70776255708,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 389,
+        "International": 49
+      }
     },
     {
-      "topic": "clubs",
-      "count": 269.5,
-      "avg_views": 172211,
-      "avg_likes": 72,
-      "avg_comments": 0,
-      "video_count": 128,
-      "engagement_rate": 0.04
+      "topic": "Zum",
+      "frequency": 432,
+      "total_views": 102007443,
+      "total_likes": 721106,
+      "total_comments": 20,
+      "avg_views": 236128.34027777778,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 417,
+        "International": 15
+      }
     },
     {
-      "topic": "ski",
-      "count": 259.5,
-      "avg_views": 163436,
-      "avg_likes": 470,
-      "avg_comments": 6,
-      "video_count": 306,
-      "engagement_rate": 0.29
+      "topic": "Urlaub",
+      "frequency": 406,
+      "total_views": 95607181,
+      "total_likes": 649801,
+      "total_comments": 168,
+      "avg_views": 235485.66748768472,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 406
+      }
     },
     {
-      "topic": "gelegen",
-      "count": 256.5,
-      "avg_views": 104690,
-      "avg_likes": 617,
-      "avg_comments": 2,
-      "video_count": 78,
-      "engagement_rate": 0.59
+      "topic": "Gibt",
+      "frequency": 402,
+      "total_views": 108265715,
+      "total_likes": 796738,
+      "total_comments": 11,
+      "avg_views": 269317.69900497515,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 402
+      }
     },
     {
-      "topic": "avonturen",
-      "count": 256.0,
-      "avg_views": 283621,
-      "avg_likes": 316,
-      "avg_comments": 0,
-      "video_count": 36,
-      "engagement_rate": 0.11
+      "topic": "Redaktion",
+      "frequency": 379,
+      "total_views": 77328681,
+      "total_likes": 654333,
+      "total_comments": 0,
+      "avg_views": 204033.4591029024,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 379
+      }
     },
     {
-      "topic": "viewfinder",
-      "count": 255.0,
-      "avg_views": 119857,
-      "avg_likes": 971,
-      "avg_comments": 47,
-      "video_count": 59,
-      "engagement_rate": 0.85
+      "topic": "Zwei",
+      "frequency": 375,
+      "total_views": 90395491,
+      "total_likes": 701875,
+      "total_comments": 56,
+      "avg_views": 241054.64266666668,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 374,
+        "International": 1
+      }
     },
     {
-      "topic": "moments",
-      "count": 250.0,
-      "avg_views": 216117,
-      "avg_likes": 60,
-      "avg_comments": 4,
-      "video_count": 94,
-      "engagement_rate": 0.03
+      "topic": "Einem",
+      "frequency": 362,
+      "total_views": 76763147,
+      "total_likes": 584443,
+      "total_comments": 86,
+      "avg_views": 212052.89226519337,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 352,
+        "International": 10
+      }
     },
     {
-      "topic": "qui",
-      "count": 250.0,
-      "avg_views": 188276,
-      "avg_likes": 342,
-      "avg_comments": 10,
-      "video_count": 303,
-      "engagement_rate": 0.19
+      "topic": "Vacation",
+      "frequency": 349,
+      "total_views": 467930490,
+      "total_likes": 2860365,
+      "total_comments": 166013,
+      "avg_views": 1340775.0429799426,
+      "top_category": "hub",
+      "top_competitor": "Expedia",
+      "countries": {
+        "International": 335,
+        "France": 12,
+        "Germany": 2
+      }
     },
     {
-      "topic": "than",
-      "count": 247.5,
-      "avg_views": 1059633,
-      "avg_likes": 721,
-      "avg_comments": 26,
-      "video_count": 192,
-      "engagement_rate": 0.07
+      "topic": "Seitdem",
+      "frequency": 341,
+      "total_views": 67264230,
+      "total_likes": 564219,
+      "total_comments": 0,
+      "avg_views": 197255.8064516129,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 341
+      }
     },
     {
-      "topic": "day",
-      "count": 247.0,
-      "avg_views": 358880,
-      "avg_likes": 545,
-      "avg_comments": 16,
-      "video_count": 467,
-      "engagement_rate": 0.16
+      "topic": "Geht",
+      "frequency": 335,
+      "total_views": 65468869,
+      "total_likes": 521014,
+      "total_comments": 90,
+      "avg_views": 195429.45970149254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 334,
+        "International": 1
+      }
     },
     {
-      "topic": "home",
-      "count": 246.0,
-      "avg_views": 453425,
-      "avg_likes": 310,
-      "avg_comments": 7,
-      "video_count": 367,
-      "engagement_rate": 0.07
+      "topic": "Oder",
+      "frequency": 329,
+      "total_views": 69124388,
+      "total_likes": 400313,
+      "total_comments": 271,
+      "avg_views": 210104.5227963526,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 326,
+        "International": 3
+      }
     },
     {
-      "topic": "exceptional",
-      "count": 244.5,
-      "avg_views": 34928,
-      "avg_likes": 29,
-      "avg_comments": 0,
-      "video_count": 10,
-      "engagement_rate": 0.08
+      "topic": "Ardmediathek",
+      "frequency": 328,
+      "total_views": 61843351,
+      "total_likes": 537400,
+      "total_comments": 0,
+      "avg_views": 188546.80182926828,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 328
+      }
     },
     {
-      "topic": "explore",
-      "count": 244.0,
-      "avg_views": 344861,
-      "avg_likes": 1760,
-      "avg_comments": 111,
-      "video_count": 207,
-      "engagement_rate": 0.54
+      "topic": "Wdrreisen",
+      "frequency": 321,
+      "total_views": 65307607,
+      "total_likes": 588620,
+      "total_comments": 0,
+      "avg_views": 203450.4890965732,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 321
+      }
     },
     {
-      "topic": "book",
-      "count": 241.5,
-      "avg_views": 959013,
-      "avg_likes": 237,
-      "avg_comments": 7,
-      "video_count": 474,
-      "engagement_rate": 0.03
+      "topic": "Jahr",
+      "frequency": 317,
+      "total_views": 76293143,
+      "total_likes": 577131,
+      "total_comments": 0,
+      "avg_views": 240672.37539432177,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 316,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Noch",
+      "frequency": 302,
+      "total_views": 71296167,
+      "total_likes": 496803,
+      "total_comments": 57,
+      "avg_views": 236080.02317880795,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 295,
+        "International": 7
+      }
     }
   ],
   "top_topics_by_views": [
     {
-      "topic": "booking",
-      "count": 316.5,
-      "avg_views": 3446244,
-      "avg_likes": 541,
-      "avg_comments": 10,
-      "video_count": 121,
-      "engagement_rate": 0.02
-    },
-    {
-      "topic": "guides",
-      "count": 358.5,
-      "avg_views": 2646720,
-      "avg_likes": 2264,
-      "avg_comments": 68,
-      "video_count": 44,
-      "engagement_rate": 0.09
-    },
-    {
-      "topic": "places",
-      "count": 313.0,
-      "avg_views": 1128208,
-      "avg_likes": 3312,
-      "avg_comments": 250,
-      "video_count": 105,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "life",
-      "count": 270.0,
-      "avg_views": 1063235,
-      "avg_likes": 730,
-      "avg_comments": 21,
-      "video_count": 249,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "than",
-      "count": 247.5,
-      "avg_views": 1059633,
-      "avg_likes": 721,
-      "avg_comments": 26,
-      "video_count": 192,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "city",
-      "count": 367.0,
-      "avg_views": 1035781,
-      "avg_likes": 3076,
-      "avg_comments": 227,
-      "video_count": 372,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "book",
-      "count": 241.5,
-      "avg_views": 959013,
-      "avg_likes": 237,
-      "avg_comments": 7,
-      "video_count": 474,
-      "engagement_rate": 0.03
-    },
-    {
-      "topic": "most",
-      "count": 316.0,
-      "avg_views": 882849,
-      "avg_likes": 1802,
-      "avg_comments": 114,
-      "video_count": 202,
-      "engagement_rate": 0.22
-    },
-    {
-      "topic": "find",
-      "count": 289.0,
-      "avg_views": 795057,
-      "avg_likes": 1186,
-      "avg_comments": 43,
-      "video_count": 761,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "through",
-      "count": 273.5,
-      "avg_views": 648476,
-      "avg_likes": 1596,
-      "avg_comments": 103,
-      "video_count": 273,
-      "engagement_rate": 0.26
-    },
-    {
-      "topic": "check",
-      "count": 323.0,
-      "avg_views": 521107,
-      "avg_likes": 3344,
-      "avg_comments": 244,
-      "video_count": 290,
-      "engagement_rate": 0.69
-    },
-    {
-      "topic": "bollo",
-      "count": 465.0,
-      "avg_views": 513717,
-      "avg_likes": 578,
-      "avg_comments": 0,
-      "video_count": 41,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "home",
-      "count": 246.0,
-      "avg_views": 453425,
-      "avg_likes": 310,
-      "avg_comments": 7,
-      "video_count": 367,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "over",
-      "count": 305.0,
-      "avg_views": 402524,
-      "avg_likes": 583,
-      "avg_comments": 29,
-      "video_count": 826,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "new",
-      "count": 341.0,
-      "avg_views": 370570,
-      "avg_likes": 759,
-      "avg_comments": 35,
-      "video_count": 398,
-      "engagement_rate": 0.21
-    },
-    {
-      "topic": "day",
-      "count": 247.0,
-      "avg_views": 358880,
-      "avg_likes": 545,
-      "avg_comments": 16,
-      "video_count": 467,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "explore",
-      "count": 244.0,
-      "avg_views": 344861,
-      "avg_likes": 1760,
-      "avg_comments": 111,
-      "video_count": 207,
-      "engagement_rate": 0.54
-    },
-    {
-      "topic": "avonturen",
-      "count": 256.0,
-      "avg_views": 283621,
-      "avg_likes": 316,
-      "avg_comments": 0,
-      "video_count": 36,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "around",
-      "count": 281.5,
-      "avg_views": 280342,
-      "avg_likes": 368,
-      "avg_comments": 22,
-      "video_count": 113,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "europe",
-      "count": 305.0,
-      "avg_views": 224654,
-      "avg_likes": 1095,
-      "avg_comments": 86,
-      "video_count": 80,
-      "engagement_rate": 0.53
-    },
-    {
-      "topic": "moments",
-      "count": 250.0,
-      "avg_views": 216117,
-      "avg_likes": 60,
-      "avg_comments": 4,
-      "video_count": 94,
-      "engagement_rate": 0.03
-    },
-    {
-      "topic": "qui",
-      "count": 250.0,
-      "avg_views": 188276,
-      "avg_likes": 342,
-      "avg_comments": 10,
-      "video_count": 303,
-      "engagement_rate": 0.19
-    },
-    {
-      "topic": "clubs",
-      "count": 269.5,
-      "avg_views": 172211,
-      "avg_likes": 72,
-      "avg_comments": 0,
-      "video_count": 128,
-      "engagement_rate": 0.04
-    },
-    {
-      "topic": "ski",
-      "count": 259.5,
-      "avg_views": 163436,
-      "avg_likes": 470,
-      "avg_comments": 6,
-      "video_count": 306,
-      "engagement_rate": 0.29
-    },
-    {
-      "topic": "its",
-      "count": 281.5,
-      "avg_views": 163124,
-      "avg_likes": 687,
-      "avg_comments": 31,
-      "video_count": 602,
-      "engagement_rate": 0.44
-    },
-    {
-      "topic": "team",
-      "count": 311.0,
-      "avg_views": 130249,
-      "avg_likes": 453,
-      "avg_comments": 6,
-      "video_count": 196,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "viewfinder",
-      "count": 255.0,
-      "avg_views": 119857,
-      "avg_likes": 971,
-      "avg_comments": 47,
-      "video_count": 59,
-      "engagement_rate": 0.85
-    },
-    {
-      "topic": "gelegen",
-      "count": 256.5,
-      "avg_views": 104690,
-      "avg_likes": 617,
-      "avg_comments": 2,
-      "video_count": 78,
-      "engagement_rate": 0.59
-    },
-    {
-      "topic": "resorts",
-      "count": 367.5,
-      "avg_views": 91694,
-      "avg_likes": 100,
-      "avg_comments": 4,
-      "video_count": 108,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "vos",
-      "count": 273.0,
-      "avg_views": 76796,
-      "avg_likes": 75,
-      "avg_comments": 1,
-      "video_count": 170,
-      "engagement_rate": 0.1
-    },
-    {
-      "topic": "deze",
-      "count": 314.0,
-      "avg_views": 72462,
-      "avg_likes": 112,
-      "avg_comments": 1,
-      "video_count": 202,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "parken",
-      "count": 643.5,
-      "avg_views": 71171,
-      "avg_likes": 97,
-      "avg_comments": 2,
-      "video_count": 118,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "villages",
-      "count": 543.5,
-      "avg_views": 69780,
-      "avg_likes": 81,
-      "avg_comments": 2,
-      "video_count": 163,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "vakantie",
-      "count": 327.5,
-      "avg_views": 65754,
-      "avg_likes": 38,
-      "avg_comments": 2,
-      "video_count": 295,
-      "engagement_rate": 0.06
-    },
-    {
-      "topic": "village",
-      "count": 287.0,
-      "avg_views": 60818,
-      "avg_likes": 103,
-      "avg_comments": 2,
-      "video_count": 282,
-      "engagement_rate": 0.17
-    },
-    {
-      "topic": "aan",
-      "count": 340.0,
-      "avg_views": 56189,
-      "avg_likes": 86,
-      "avg_comments": 1,
-      "video_count": 338,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "brands",
-      "count": 289.5,
-      "avg_views": 49515,
-      "avg_likes": 23,
-      "avg_comments": 1,
-      "video_count": 79,
-      "engagement_rate": 0.05
-    },
-    {
-      "topic": "campings",
-      "count": 847.0,
-      "avg_views": 43629,
-      "avg_likes": 172,
-      "avg_comments": 0,
-      "video_count": 76,
-      "engagement_rate": 0.39
-    },
-    {
-      "topic": "bij",
-      "count": 322.0,
-      "avg_views": 41577,
-      "avg_likes": 64,
-      "avg_comments": 1,
-      "video_count": 309,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "inspired",
-      "count": 313.5,
-      "avg_views": 38164,
-      "avg_likes": 108,
-      "avg_comments": 8,
-      "video_count": 122,
-      "engagement_rate": 0.3
-    },
-    {
-      "topic": "exceptional",
-      "count": 244.5,
-      "avg_views": 34928,
-      "avg_likes": 29,
-      "avg_comments": 0,
-      "video_count": 10,
-      "engagement_rate": 0.08
-    },
-    {
-      "topic": "domaines",
-      "count": 270.5,
-      "avg_views": 34338,
-      "avg_likes": 105,
-      "avg_comments": 6,
-      "video_count": 24,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "cœur",
-      "count": 332.5,
-      "avg_views": 32035,
-      "avg_likes": 46,
-      "avg_comments": 1,
-      "video_count": 122,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "domaine",
-      "count": 299.0,
-      "avg_views": 23987,
-      "avg_likes": 52,
-      "avg_comments": 2,
-      "video_count": 161,
-      "engagement_rate": 0.23
-    },
-    {
-      "topic": "votre",
-      "count": 316.5,
-      "avg_views": 22479,
-      "avg_likes": 28,
-      "avg_comments": 0,
-      "video_count": 92,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "bois",
-      "count": 389.5,
-      "avg_views": 19945,
-      "avg_likes": 38,
-      "avg_comments": 1,
-      "video_count": 85,
-      "engagement_rate": 0.2
-    },
-    {
-      "topic": "excellence",
-      "count": 366.0,
-      "avg_views": 5366,
-      "avg_likes": 19,
-      "avg_comments": 1,
-      "video_count": 82,
-      "engagement_rate": 0.37
-    },
-    {
-      "topic": "koos",
-      "count": 499.5,
-      "avg_views": 3465,
-      "avg_likes": 12,
-      "avg_comments": 0,
-      "video_count": 42,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "awards",
-      "count": 357.0,
-      "avg_views": 3089,
-      "avg_likes": 16,
-      "avg_comments": 1,
-      "video_count": 101,
-      "engagement_rate": 0.55
-    }
-  ],
-  "top_topics_by_engagement": [
-    {
-      "topic": "viewfinder",
-      "count": 255.0,
-      "avg_views": 119857,
-      "avg_likes": 971,
-      "avg_comments": 47,
-      "video_count": 59,
-      "engagement_rate": 0.85
-    },
-    {
-      "topic": "check",
-      "count": 323.0,
-      "avg_views": 521107,
-      "avg_likes": 3344,
-      "avg_comments": 244,
-      "video_count": 290,
-      "engagement_rate": 0.69
-    },
-    {
-      "topic": "gelegen",
-      "count": 256.5,
-      "avg_views": 104690,
-      "avg_likes": 617,
-      "avg_comments": 2,
-      "video_count": 78,
-      "engagement_rate": 0.59
-    },
-    {
-      "topic": "awards",
-      "count": 357.0,
-      "avg_views": 3089,
-      "avg_likes": 16,
-      "avg_comments": 1,
-      "video_count": 101,
-      "engagement_rate": 0.55
-    },
-    {
-      "topic": "explore",
-      "count": 244.0,
-      "avg_views": 344861,
-      "avg_likes": 1760,
-      "avg_comments": 111,
-      "video_count": 207,
-      "engagement_rate": 0.54
-    },
-    {
-      "topic": "europe",
-      "count": 305.0,
-      "avg_views": 224654,
-      "avg_likes": 1095,
-      "avg_comments": 86,
-      "video_count": 80,
-      "engagement_rate": 0.53
-    },
-    {
-      "topic": "its",
-      "count": 281.5,
-      "avg_views": 163124,
-      "avg_likes": 687,
-      "avg_comments": 31,
-      "video_count": 602,
-      "engagement_rate": 0.44
-    },
-    {
-      "topic": "campings",
-      "count": 847.0,
-      "avg_views": 43629,
-      "avg_likes": 172,
-      "avg_comments": 0,
-      "video_count": 76,
-      "engagement_rate": 0.39
-    },
-    {
-      "topic": "excellence",
-      "count": 366.0,
-      "avg_views": 5366,
-      "avg_likes": 19,
-      "avg_comments": 1,
-      "video_count": 82,
-      "engagement_rate": 0.37
-    },
-    {
-      "topic": "koos",
-      "count": 499.5,
-      "avg_views": 3465,
-      "avg_likes": 12,
-      "avg_comments": 0,
-      "video_count": 42,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "team",
-      "count": 311.0,
-      "avg_views": 130249,
-      "avg_likes": 453,
-      "avg_comments": 6,
-      "video_count": 196,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "city",
-      "count": 367.0,
-      "avg_views": 1035781,
-      "avg_likes": 3076,
-      "avg_comments": 227,
-      "video_count": 372,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "places",
-      "count": 313.0,
-      "avg_views": 1128208,
-      "avg_likes": 3312,
-      "avg_comments": 250,
-      "video_count": 105,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "domaines",
-      "count": 270.5,
-      "avg_views": 34338,
-      "avg_likes": 105,
-      "avg_comments": 6,
-      "video_count": 24,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "inspired",
-      "count": 313.5,
-      "avg_views": 38164,
-      "avg_likes": 108,
-      "avg_comments": 8,
-      "video_count": 122,
-      "engagement_rate": 0.3
-    },
-    {
-      "topic": "ski",
-      "count": 259.5,
-      "avg_views": 163436,
-      "avg_likes": 470,
-      "avg_comments": 6,
-      "video_count": 306,
-      "engagement_rate": 0.29
-    },
-    {
-      "topic": "through",
-      "count": 273.5,
-      "avg_views": 648476,
-      "avg_likes": 1596,
-      "avg_comments": 103,
-      "video_count": 273,
-      "engagement_rate": 0.26
-    },
-    {
-      "topic": "domaine",
-      "count": 299.0,
-      "avg_views": 23987,
-      "avg_likes": 52,
-      "avg_comments": 2,
-      "video_count": 161,
-      "engagement_rate": 0.23
-    },
-    {
-      "topic": "most",
-      "count": 316.0,
-      "avg_views": 882849,
-      "avg_likes": 1802,
-      "avg_comments": 114,
-      "video_count": 202,
-      "engagement_rate": 0.22
-    },
-    {
-      "topic": "new",
-      "count": 341.0,
-      "avg_views": 370570,
-      "avg_likes": 759,
-      "avg_comments": 35,
-      "video_count": 398,
-      "engagement_rate": 0.21
-    },
-    {
-      "topic": "bois",
-      "count": 389.5,
-      "avg_views": 19945,
-      "avg_likes": 38,
-      "avg_comments": 1,
-      "video_count": 85,
-      "engagement_rate": 0.2
-    },
-    {
-      "topic": "qui",
-      "count": 250.0,
-      "avg_views": 188276,
-      "avg_likes": 342,
-      "avg_comments": 10,
-      "video_count": 303,
-      "engagement_rate": 0.19
-    },
-    {
-      "topic": "village",
-      "count": 287.0,
-      "avg_views": 60818,
-      "avg_likes": 103,
-      "avg_comments": 2,
-      "video_count": 282,
-      "engagement_rate": 0.17
-    },
-    {
-      "topic": "bij",
-      "count": 322.0,
-      "avg_views": 41577,
-      "avg_likes": 64,
-      "avg_comments": 1,
-      "video_count": 309,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "deze",
-      "count": 314.0,
-      "avg_views": 72462,
-      "avg_likes": 112,
-      "avg_comments": 1,
-      "video_count": 202,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "day",
-      "count": 247.0,
-      "avg_views": 358880,
-      "avg_likes": 545,
-      "avg_comments": 16,
-      "video_count": 467,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "aan",
-      "count": 340.0,
-      "avg_views": 56189,
-      "avg_likes": 86,
-      "avg_comments": 1,
-      "video_count": 338,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "cœur",
-      "count": 332.5,
-      "avg_views": 32035,
-      "avg_likes": 46,
-      "avg_comments": 1,
-      "video_count": 122,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "over",
-      "count": 305.0,
-      "avg_views": 402524,
-      "avg_likes": 583,
-      "avg_comments": 29,
-      "video_count": 826,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "find",
-      "count": 289.0,
-      "avg_views": 795057,
-      "avg_likes": 1186,
-      "avg_comments": 43,
-      "video_count": 761,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "parken",
-      "count": 643.5,
-      "avg_views": 71171,
-      "avg_likes": 97,
-      "avg_comments": 2,
-      "video_count": 118,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "around",
-      "count": 281.5,
-      "avg_views": 280342,
-      "avg_likes": 368,
-      "avg_comments": 22,
-      "video_count": 113,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "villages",
-      "count": 543.5,
-      "avg_views": 69780,
-      "avg_likes": 81,
-      "avg_comments": 2,
-      "video_count": 163,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "votre",
-      "count": 316.5,
-      "avg_views": 22479,
-      "avg_likes": 28,
-      "avg_comments": 0,
-      "video_count": 92,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "bollo",
-      "count": 465.0,
-      "avg_views": 513717,
-      "avg_likes": 578,
-      "avg_comments": 0,
-      "video_count": 41,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "resorts",
-      "count": 367.5,
-      "avg_views": 91694,
-      "avg_likes": 100,
-      "avg_comments": 4,
-      "video_count": 108,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "avonturen",
-      "count": 256.0,
-      "avg_views": 283621,
-      "avg_likes": 316,
-      "avg_comments": 0,
-      "video_count": 36,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "vos",
-      "count": 273.0,
-      "avg_views": 76796,
-      "avg_likes": 75,
-      "avg_comments": 1,
-      "video_count": 170,
-      "engagement_rate": 0.1
-    },
-    {
-      "topic": "guides",
-      "count": 358.5,
-      "avg_views": 2646720,
-      "avg_likes": 2264,
-      "avg_comments": 68,
-      "video_count": 44,
-      "engagement_rate": 0.09
-    },
-    {
-      "topic": "exceptional",
-      "count": 244.5,
-      "avg_views": 34928,
-      "avg_likes": 29,
-      "avg_comments": 0,
-      "video_count": 10,
-      "engagement_rate": 0.08
-    },
-    {
-      "topic": "life",
-      "count": 270.0,
-      "avg_views": 1063235,
-      "avg_likes": 730,
-      "avg_comments": 21,
-      "video_count": 249,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "than",
-      "count": 247.5,
-      "avg_views": 1059633,
-      "avg_likes": 721,
-      "avg_comments": 26,
-      "video_count": 192,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "home",
-      "count": 246.0,
-      "avg_views": 453425,
-      "avg_likes": 310,
-      "avg_comments": 7,
-      "video_count": 367,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "vakantie",
-      "count": 327.5,
-      "avg_views": 65754,
-      "avg_likes": 38,
-      "avg_comments": 2,
-      "video_count": 295,
-      "engagement_rate": 0.06
-    },
-    {
-      "topic": "brands",
-      "count": 289.5,
-      "avg_views": 49515,
-      "avg_likes": 23,
-      "avg_comments": 1,
-      "video_count": 79,
-      "engagement_rate": 0.05
-    },
-    {
-      "topic": "clubs",
-      "count": 269.5,
-      "avg_views": 172211,
-      "avg_likes": 72,
-      "avg_comments": 0,
-      "video_count": 128,
-      "engagement_rate": 0.04
-    },
-    {
-      "topic": "moments",
-      "count": 250.0,
-      "avg_views": 216117,
-      "avg_likes": 60,
-      "avg_comments": 4,
-      "video_count": 94,
-      "engagement_rate": 0.03
-    },
-    {
-      "topic": "book",
-      "count": 241.5,
-      "avg_views": 959013,
-      "avg_likes": 237,
-      "avg_comments": 7,
-      "video_count": 474,
-      "engagement_rate": 0.03
-    },
-    {
-      "topic": "booking",
-      "count": 316.5,
-      "avg_views": 3446244,
-      "avg_likes": 541,
-      "avg_comments": 10,
-      "video_count": 121,
-      "engagement_rate": 0.02
-    }
-  ],
-  "topics": [
-    {
-      "topic": "campings",
-      "count": 847.0,
-      "avg_views": 43629,
-      "avg_likes": 172,
-      "avg_comments": 0,
-      "video_count": 76,
-      "engagement_rate": 0.39
-    },
-    {
-      "topic": "parken",
-      "count": 643.5,
-      "avg_views": 71171,
-      "avg_likes": 97,
-      "avg_comments": 2,
-      "video_count": 118,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "villages",
-      "count": 543.5,
-      "avg_views": 69780,
-      "avg_likes": 81,
-      "avg_comments": 2,
-      "video_count": 163,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "koos",
-      "count": 499.5,
-      "avg_views": 3465,
-      "avg_likes": 12,
-      "avg_comments": 0,
-      "video_count": 42,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "bollo",
-      "count": 465.0,
-      "avg_views": 513717,
-      "avg_likes": 578,
-      "avg_comments": 0,
-      "video_count": 41,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "bois",
-      "count": 389.5,
-      "avg_views": 19945,
-      "avg_likes": 38,
-      "avg_comments": 1,
-      "video_count": 85,
-      "engagement_rate": 0.2
-    },
-    {
-      "topic": "resorts",
-      "count": 367.5,
-      "avg_views": 91694,
-      "avg_likes": 100,
-      "avg_comments": 4,
-      "video_count": 108,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "city",
-      "count": 367.0,
-      "avg_views": 1035781,
-      "avg_likes": 3076,
-      "avg_comments": 227,
-      "video_count": 372,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "excellence",
-      "count": 366.0,
-      "avg_views": 5366,
-      "avg_likes": 19,
-      "avg_comments": 1,
-      "video_count": 82,
-      "engagement_rate": 0.37
-    },
-    {
-      "topic": "guides",
-      "count": 358.5,
-      "avg_views": 2646720,
-      "avg_likes": 2264,
-      "avg_comments": 68,
-      "video_count": 44,
-      "engagement_rate": 0.09
-    },
-    {
-      "topic": "awards",
-      "count": 357.0,
-      "avg_views": 3089,
-      "avg_likes": 16,
-      "avg_comments": 1,
-      "video_count": 101,
-      "engagement_rate": 0.55
-    },
-    {
-      "topic": "new",
-      "count": 341.0,
-      "avg_views": 370570,
-      "avg_likes": 759,
-      "avg_comments": 35,
-      "video_count": 398,
-      "engagement_rate": 0.21
-    },
-    {
-      "topic": "aan",
-      "count": 340.0,
-      "avg_views": 56189,
-      "avg_likes": 86,
-      "avg_comments": 1,
-      "video_count": 338,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "cœur",
-      "count": 332.5,
-      "avg_views": 32035,
-      "avg_likes": 46,
-      "avg_comments": 1,
-      "video_count": 122,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "vakantie",
-      "count": 327.5,
-      "avg_views": 65754,
-      "avg_likes": 38,
-      "avg_comments": 2,
-      "video_count": 295,
-      "engagement_rate": 0.06
-    },
-    {
-      "topic": "check",
-      "count": 323.0,
-      "avg_views": 521107,
-      "avg_likes": 3344,
-      "avg_comments": 244,
-      "video_count": 290,
-      "engagement_rate": 0.69
-    },
-    {
-      "topic": "bij",
-      "count": 322.0,
-      "avg_views": 41577,
-      "avg_likes": 64,
-      "avg_comments": 1,
-      "video_count": 309,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "booking",
-      "count": 316.5,
-      "avg_views": 3446244,
-      "avg_likes": 541,
-      "avg_comments": 10,
-      "video_count": 121,
-      "engagement_rate": 0.02
-    },
-    {
-      "topic": "votre",
-      "count": 316.5,
-      "avg_views": 22479,
-      "avg_likes": 28,
-      "avg_comments": 0,
-      "video_count": 92,
-      "engagement_rate": 0.12
-    },
-    {
-      "topic": "most",
-      "count": 316.0,
-      "avg_views": 882849,
-      "avg_likes": 1802,
-      "avg_comments": 114,
-      "video_count": 202,
-      "engagement_rate": 0.22
-    },
-    {
-      "topic": "deze",
-      "count": 314.0,
-      "avg_views": 72462,
-      "avg_likes": 112,
-      "avg_comments": 1,
-      "video_count": 202,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "inspired",
-      "count": 313.5,
-      "avg_views": 38164,
-      "avg_likes": 108,
-      "avg_comments": 8,
-      "video_count": 122,
-      "engagement_rate": 0.3
-    },
-    {
-      "topic": "places",
-      "count": 313.0,
-      "avg_views": 1128208,
-      "avg_likes": 3312,
-      "avg_comments": 250,
-      "video_count": 105,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "team",
-      "count": 311.0,
-      "avg_views": 130249,
-      "avg_likes": 453,
-      "avg_comments": 6,
-      "video_count": 196,
-      "engagement_rate": 0.35
-    },
-    {
-      "topic": "over",
-      "count": 305.0,
-      "avg_views": 402524,
-      "avg_likes": 583,
-      "avg_comments": 29,
-      "video_count": 826,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "europe",
-      "count": 305.0,
-      "avg_views": 224654,
-      "avg_likes": 1095,
-      "avg_comments": 86,
-      "video_count": 80,
-      "engagement_rate": 0.53
-    },
-    {
-      "topic": "domaine",
-      "count": 299.0,
-      "avg_views": 23987,
-      "avg_likes": 52,
-      "avg_comments": 2,
-      "video_count": 161,
-      "engagement_rate": 0.23
-    },
-    {
-      "topic": "brands",
-      "count": 289.5,
-      "avg_views": 49515,
-      "avg_likes": 23,
-      "avg_comments": 1,
-      "video_count": 79,
-      "engagement_rate": 0.05
-    },
-    {
-      "topic": "find",
-      "count": 289.0,
-      "avg_views": 795057,
-      "avg_likes": 1186,
-      "avg_comments": 43,
-      "video_count": 761,
-      "engagement_rate": 0.15
-    },
-    {
-      "topic": "village",
-      "count": 287.0,
-      "avg_views": 60818,
-      "avg_likes": 103,
-      "avg_comments": 2,
-      "video_count": 282,
-      "engagement_rate": 0.17
-    },
-    {
-      "topic": "its",
-      "count": 281.5,
-      "avg_views": 163124,
-      "avg_likes": 687,
-      "avg_comments": 31,
-      "video_count": 602,
-      "engagement_rate": 0.44
-    },
-    {
-      "topic": "around",
-      "count": 281.5,
-      "avg_views": 280342,
-      "avg_likes": 368,
-      "avg_comments": 22,
-      "video_count": 113,
-      "engagement_rate": 0.14
-    },
-    {
-      "topic": "through",
-      "count": 273.5,
-      "avg_views": 648476,
-      "avg_likes": 1596,
-      "avg_comments": 103,
-      "video_count": 273,
-      "engagement_rate": 0.26
-    },
-    {
-      "topic": "vos",
-      "count": 273.0,
-      "avg_views": 76796,
-      "avg_likes": 75,
-      "avg_comments": 1,
-      "video_count": 170,
-      "engagement_rate": 0.1
-    },
-    {
-      "topic": "domaines",
-      "count": 270.5,
-      "avg_views": 34338,
-      "avg_likes": 105,
-      "avg_comments": 6,
-      "video_count": 24,
-      "engagement_rate": 0.32
-    },
-    {
-      "topic": "life",
-      "count": 270.0,
-      "avg_views": 1063235,
-      "avg_likes": 730,
-      "avg_comments": 21,
-      "video_count": 249,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "clubs",
-      "count": 269.5,
-      "avg_views": 172211,
-      "avg_likes": 72,
-      "avg_comments": 0,
-      "video_count": 128,
-      "engagement_rate": 0.04
-    },
-    {
-      "topic": "ski",
-      "count": 259.5,
-      "avg_views": 163436,
-      "avg_likes": 470,
-      "avg_comments": 6,
-      "video_count": 306,
-      "engagement_rate": 0.29
-    },
-    {
-      "topic": "gelegen",
-      "count": 256.5,
-      "avg_views": 104690,
-      "avg_likes": 617,
-      "avg_comments": 2,
-      "video_count": 78,
-      "engagement_rate": 0.59
-    },
-    {
-      "topic": "avonturen",
-      "count": 256.0,
-      "avg_views": 283621,
-      "avg_likes": 316,
-      "avg_comments": 0,
-      "video_count": 36,
-      "engagement_rate": 0.11
-    },
-    {
-      "topic": "viewfinder",
-      "count": 255.0,
-      "avg_views": 119857,
-      "avg_likes": 971,
-      "avg_comments": 47,
-      "video_count": 59,
-      "engagement_rate": 0.85
-    },
-    {
-      "topic": "moments",
-      "count": 250.0,
-      "avg_views": 216117,
-      "avg_likes": 60,
-      "avg_comments": 4,
-      "video_count": 94,
-      "engagement_rate": 0.03
-    },
-    {
-      "topic": "qui",
-      "count": 250.0,
-      "avg_views": 188276,
-      "avg_likes": 342,
-      "avg_comments": 10,
-      "video_count": 303,
-      "engagement_rate": 0.19
-    },
-    {
-      "topic": "than",
-      "count": 247.5,
-      "avg_views": 1059633,
-      "avg_likes": 721,
-      "avg_comments": 26,
-      "video_count": 192,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "day",
-      "count": 247.0,
-      "avg_views": 358880,
-      "avg_likes": 545,
-      "avg_comments": 16,
-      "video_count": 467,
-      "engagement_rate": 0.16
-    },
-    {
-      "topic": "home",
-      "count": 246.0,
-      "avg_views": 453425,
-      "avg_likes": 310,
-      "avg_comments": 7,
-      "video_count": 367,
-      "engagement_rate": 0.07
-    },
-    {
-      "topic": "exceptional",
-      "count": 244.5,
-      "avg_views": 34928,
-      "avg_likes": 29,
-      "avg_comments": 0,
-      "video_count": 10,
-      "engagement_rate": 0.08
-    },
-    {
-      "topic": "explore",
-      "count": 244.0,
-      "avg_views": 344861,
-      "avg_likes": 1760,
-      "avg_comments": 111,
-      "video_count": 207,
-      "engagement_rate": 0.54
-    },
-    {
-      "topic": "book",
-      "count": 241.5,
-      "avg_views": 959013,
-      "avg_likes": 237,
-      "avg_comments": 7,
-      "video_count": 474,
-      "engagement_rate": 0.03
-    }
-  ],
-  "top_bigrams": [
-    {
-      "bigram": "center parcs",
-      "count": 297
-    },
-    {
-      "bigram": "vacation travel",
-      "count": 209
-    },
-    {
-      "bigram": "travel guide",
-      "count": 209
-    },
-    {
-      "bigram": "hof van",
-      "count": 67
-    },
-    {
-      "bigram": "van saksen",
-      "count": 67
-    },
-    {
-      "bigram": "awards excellence",
-      "count": 51
-    },
-    {
-      "bigram": "avonturen van",
-      "count": 48
-    },
-    {
-      "bigram": "visite virtuelle",
-      "count": 47
-    },
-    {
-      "bigram": "van bollo",
-      "count": 44
-    },
-    {
-      "bigram": "bollo seizoen",
-      "count": 44
-    },
-    {
-      "bigram": "viewfinder travel",
-      "count": 39
-    },
-    {
-      "bigram": "top rated",
-      "count": 39
-    },
-    {
-      "bigram": "rated hotels",
-      "count": 39
-    },
-    {
-      "bigram": "hotels near",
-      "count": 39
-    },
-    {
-      "bigram": "near popular",
-      "count": 39
-    },
-    {
-      "bigram": "popular attractions",
-      "count": 39
-    },
-    {
-      "bigram": "one day",
-      "count": 37
-    },
-    {
-      "bigram": "vraies vacances",
-      "count": 34
-    },
-    {
-      "bigram": "habitue vite",
-      "count": 33
-    },
-    {
-      "bigram": "vite vraies",
-      "count": 33
-    },
-    {
-      "bigram": "découvrez camping",
-      "count": 33
-    },
-    {
-      "bigram": "walt world",
-      "count": 32
-    },
-    {
-      "bigram": "ski life",
-      "count": 30
-    },
-    {
-      "bigram": "off menu",
-      "count": 30
-    },
-    {
-      "bigram": "report center",
-      "count": 28
-    },
-    {
-      "bigram": "sight unscene",
-      "count": 27
-    },
-    {
-      "bigram": "park primeur",
-      "count": 25
-    },
-    {
-      "bigram": "entdecken sie",
-      "count": 25
-    },
-    {
-      "bigram": "get know",
-      "count": 24
-    },
-    {
-      "bigram": "primeur center",
-      "count": 22
-    },
-    {
-      "bigram": "camping étoiles",
-      "count": 22
-    },
-    {
-      "bigram": "disneyland resort",
-      "count": 22
-    },
-    {
-      "bigram": "all inclusive",
-      "count": 21
-    },
-    {
-      "bigram": "curio collection",
-      "count": 21
-    },
-    {
-      "bigram": "met bollo",
-      "count": 20
-    },
-    {
-      "bigram": "waldorf astoria",
-      "count": 20
-    },
-    {
-      "bigram": "domaines center",
-      "count": 19
-    },
-    {
-      "bigram": "bois daims",
-      "count": 19
-    },
-    {
-      "bigram": "koos voorleesverhalen",
-      "count": 19
-    },
-    {
-      "bigram": "voorleesverhalen deel",
-      "count": 19
-    },
-    {
-      "bigram": "resort spa",
-      "count": 18
-    },
-    {
-      "bigram": "camping domaine",
-      "count": 18
-    },
-    {
-      "bigram": "new york",
-      "count": 17
-    },
-    {
-      "bigram": "arts crafts",
-      "count": 17
-    },
-    {
-      "bigram": "pov report",
-      "count": 15
-    },
-    {
-      "bigram": "koos schlafgeschichte",
-      "count": 15
-    },
-    {
-      "bigram": "schlafgeschichte teil",
-      "count": 15
-    },
-    {
-      "bigram": "koos bedtime",
-      "count": 15
-    },
-    {
-      "bigram": "bedtime story",
-      "count": 15
-    },
-    {
-      "bigram": "story part",
-      "count": 15
-    }
-  ],
-  "categorized_topics": {
-    "hero": [
-      {
-        "topic": "excellence",
-        "count": 345.0
-      },
-      {
-        "topic": "awards",
-        "count": 334.0
-      },
-      {
-        "topic": "villages",
-        "count": 176.0
+      "topic": "Wdr",
+      "frequency": 2514,
+      "total_views": 575537139,
+      "total_likes": 4699075,
+      "total_comments": 0,
+      "avg_views": 228932.83174224343,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 2514
       }
-    ],
-    "hub": [
-      {
-        "topic": "parken",
-        "count": 556.5
-      },
-      {
-        "topic": "koos",
-        "count": 487.5
+    },
+    {
+      "topic": "Vacation",
+      "frequency": 349,
+      "total_views": 467930490,
+      "total_likes": 2860365,
+      "total_comments": 166013,
+      "avg_views": 1340775.0429799426,
+      "top_category": "hub",
+      "top_competitor": "Expedia",
+      "countries": {
+        "International": 335,
+        "France": 12,
+        "Germany": 2
       }
-    ],
-    "help": [
-      {
-        "topic": "campings",
-        "count": 522.0
-      },
-      {
-        "topic": "bois",
-        "count": 237.0
-      },
-      {
-        "topic": "booking",
-        "count": 196.0
-      },
-      {
-        "topic": "europe",
-        "count": 178.0
-      },
-      {
-        "topic": "votre",
-        "count": 176.5
-      },
-      {
-        "topic": "popular",
-        "count": 175.5
-      },
-      {
-        "topic": "sie",
-        "count": 150.5
+    },
+    {
+      "topic": "Film",
+      "frequency": 943,
+      "total_views": 452989710,
+      "total_likes": 1773221,
+      "total_comments": 282,
+      "avg_views": 480370.84835630964,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 923,
+        "International": 19,
+        "France": 1
       }
-    ]
-  }
+    },
+    {
+      "topic": "Hier",
+      "frequency": 1051,
+      "total_views": 216543290,
+      "total_likes": 1680387,
+      "total_comments": 444,
+      "avg_views": 206035.48049476687,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 1033,
+        "Netherlands": 15,
+        "International": 3
+      }
+    },
+    {
+      "topic": "Sich",
+      "frequency": 818,
+      "total_views": 182154088,
+      "total_likes": 1271190,
+      "total_comments": 514,
+      "avg_views": 222682.25916870416,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 789,
+        "International": 29
+      }
+    },
+    {
+      "topic": "Bit",
+      "frequency": 569,
+      "total_views": 155867217,
+      "total_likes": 973702,
+      "total_comments": 331,
+      "avg_views": 273931.84007029876,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 553,
+        "Unknown": 8,
+        "International": 4
+      }
+    },
+    {
+      "topic": "Nicht",
+      "frequency": 750,
+      "total_views": 151565569,
+      "total_likes": 1274094,
+      "total_comments": 20,
+      "avg_views": 202087.42533333335,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 738,
+        "International": 12
+      }
+    },
+    {
+      "topic": "Wunderschoen",
+      "frequency": 634,
+      "total_views": 146793008,
+      "total_likes": 1185757,
+      "total_comments": 0,
+      "avg_views": 231534.71293375394,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 634
+      }
+    },
+    {
+      "topic": "Weitere",
+      "frequency": 668,
+      "total_views": 141400043,
+      "total_likes": 1206464,
+      "total_comments": 0,
+      "avg_views": 211676.71107784432,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 666,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Alle",
+      "frequency": 664,
+      "total_views": 135173761,
+      "total_likes": 1035403,
+      "total_comments": 184,
+      "avg_views": 203574.94126506025,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 624,
+        "International": 27,
+        "Netherlands": 13
+      }
+    },
+    {
+      "topic": "Nach",
+      "frequency": 611,
+      "total_views": 131992547,
+      "total_likes": 1149831,
+      "total_comments": 32,
+      "avg_views": 216027.08183306057,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 610,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Auch",
+      "frequency": 631,
+      "total_views": 131966422,
+      "total_likes": 1085787,
+      "total_comments": 113,
+      "avg_views": 209138.54516640253,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 630,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Camping",
+      "frequency": 613,
+      "total_views": 130248355,
+      "total_likes": 980853,
+      "total_comments": 259,
+      "avg_views": 212476.92495921697,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 524,
+        "France": 71,
+        "Netherlands": 14
+      }
+    },
+    {
+      "topic": "Infos",
+      "frequency": 603,
+      "total_views": 128814150,
+      "total_likes": 1074611,
+      "total_comments": 0,
+      "avg_views": 213622.13930348257,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 596,
+        "International": 7
+      }
+    },
+    {
+      "topic": "Produziert",
+      "frequency": 541,
+      "total_views": 127128379,
+      "total_likes": 1010381,
+      "total_comments": 0,
+      "avg_views": 234987.76155268023,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 541
+      }
+    },
+    {
+      "topic": "Kanal",
+      "frequency": 644,
+      "total_views": 126313342,
+      "total_likes": 1024382,
+      "total_comments": 267,
+      "avg_views": 196138.7298136646,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 644
+      }
+    },
+    {
+      "topic": "Mediathek",
+      "frequency": 629,
+      "total_views": 120008332,
+      "total_likes": 1058150,
+      "total_comments": 0,
+      "avg_views": 190792.26073131955,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 629
+      }
+    },
+    {
+      "topic": "Camper",
+      "frequency": 454,
+      "total_views": 119736131,
+      "total_likes": 939876,
+      "total_comments": 0,
+      "avg_views": 263735.9713656388,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 454
+      }
+    },
+    {
+      "topic": "Ihn",
+      "frequency": 566,
+      "total_views": 117893182,
+      "total_likes": 1016031,
+      "total_comments": 5,
+      "avg_views": 208291.8409893993,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 566
+      }
+    },
+    {
+      "topic": "Abonnieren",
+      "frequency": 571,
+      "total_views": 117084523,
+      "total_likes": 968040,
+      "total_comments": 128,
+      "avg_views": 205051.70402802102,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 571
+      }
+    },
+    {
+      "topic": "Unser",
+      "frequency": 556,
+      "total_views": 115807950,
+      "total_likes": 986708,
+      "total_comments": 17,
+      "avg_views": 208287.6798561151,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 556
+      }
+    },
+    {
+      "topic": "Kannst",
+      "frequency": 536,
+      "total_views": 115722702,
+      "total_likes": 955281,
+      "total_comments": 4,
+      "avg_views": 215900.56343283583,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 534,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Dir",
+      "frequency": 547,
+      "total_views": 111782961,
+      "total_likes": 959464,
+      "total_comments": 10,
+      "avg_views": 204356.41864716637,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 547
+      }
+    },
+    {
+      "topic": "Aus",
+      "frequency": 491,
+      "total_views": 110211029,
+      "total_likes": 879120,
+      "total_comments": 5,
+      "avg_views": 224462.38085539715,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 489,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Gibt",
+      "frequency": 402,
+      "total_views": 108265715,
+      "total_likes": 796738,
+      "total_comments": 11,
+      "avg_views": 269317.69900497515,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 402
+      }
+    },
+    {
+      "topic": "Wurden",
+      "frequency": 512,
+      "total_views": 107157165,
+      "total_likes": 893898,
+      "total_comments": 0,
+      "avg_views": 209291.337890625,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 512
+      }
+    },
+    {
+      "topic": "Erlebnisreisen",
+      "frequency": 462,
+      "total_views": 106292292,
+      "total_likes": 897337,
+      "total_comments": 0,
+      "avg_views": 230069.8961038961,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 462
+      }
+    },
+    {
+      "topic": "Stand",
+      "frequency": 495,
+      "total_views": 105825089,
+      "total_likes": 880891,
+      "total_comments": 2,
+      "avg_views": 213788.05858585858,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 494,
+        "Netherlands": 1
+      }
+    },
+    {
+      "topic": "Zum",
+      "frequency": 432,
+      "total_views": 102007443,
+      "total_likes": 721106,
+      "total_comments": 20,
+      "avg_views": 236128.34027777778,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 417,
+        "International": 15
+      }
+    },
+    {
+      "topic": "Wie",
+      "frequency": 499,
+      "total_views": 101705691,
+      "total_likes": 733243,
+      "total_comments": 160,
+      "avg_views": 203819.02004008016,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 483,
+        "International": 14,
+        "Netherlands": 2
+      }
+    },
+    {
+      "topic": "Damaligen",
+      "frequency": 472,
+      "total_views": 99000696,
+      "total_likes": 834680,
+      "total_comments": 0,
+      "avg_views": 209747.2372881356,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 472
+      }
+    },
+    {
+      "topic": "Fakten",
+      "frequency": 474,
+      "total_views": 98640226,
+      "total_likes": 832096,
+      "total_comments": 11,
+      "avg_views": 208101.74261603376,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 474
+      }
+    },
+    {
+      "topic": "Aussagen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Entsprechen",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Aktualisiert",
+      "frequency": 470,
+      "total_views": 98453432,
+      "total_likes": 831252,
+      "total_comments": 0,
+      "avg_views": 209475.38723404254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 470
+      }
+    },
+    {
+      "topic": "Mehr",
+      "frequency": 441,
+      "total_views": 95840032,
+      "total_likes": 679062,
+      "total_comments": 190,
+      "avg_views": 217324.33560090704,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 437,
+        "International": 4
+      }
+    },
+    {
+      "topic": "Urlaub",
+      "frequency": 406,
+      "total_views": 95607181,
+      "total_likes": 649801,
+      "total_comments": 168,
+      "avg_views": 235485.66748768472,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 406
+      }
+    },
+    {
+      "topic": "Ardreisen",
+      "frequency": 449,
+      "total_views": 94193272,
+      "total_likes": 792485,
+      "total_comments": 0,
+      "avg_views": 209784.570155902,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 449
+      }
+    },
+    {
+      "topic": "Zwei",
+      "frequency": 375,
+      "total_views": 90395491,
+      "total_likes": 701875,
+      "total_comments": 56,
+      "avg_views": 241054.64266666668,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 374,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Dieser",
+      "frequency": 481,
+      "total_views": 89738165,
+      "total_likes": 762184,
+      "total_comments": 2,
+      "avg_views": 186565.8316008316,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 479,
+        "International": 2
+      }
+    },
+    {
+      "topic": "Redaktion",
+      "frequency": 379,
+      "total_views": 77328681,
+      "total_likes": 654333,
+      "total_comments": 0,
+      "avg_views": 204033.4591029024,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 379
+      }
+    },
+    {
+      "topic": "Einem",
+      "frequency": 362,
+      "total_views": 76763147,
+      "total_likes": 584443,
+      "total_comments": 86,
+      "avg_views": 212052.89226519337,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 352,
+        "International": 10
+      }
+    },
+    {
+      "topic": "Jahr",
+      "frequency": 317,
+      "total_views": 76293143,
+      "total_likes": 577131,
+      "total_comments": 0,
+      "avg_views": 240672.37539432177,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 316,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Noch",
+      "frequency": 302,
+      "total_views": 71296167,
+      "total_likes": 496803,
+      "total_comments": 57,
+      "avg_views": 236080.02317880795,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 295,
+        "International": 7
+      }
+    },
+    {
+      "topic": "Instagram",
+      "frequency": 438,
+      "total_views": 70895866,
+      "total_likes": 527277,
+      "total_comments": 334,
+      "avg_views": 161862.70776255708,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 389,
+        "International": 49
+      }
+    },
+    {
+      "topic": "Oder",
+      "frequency": 329,
+      "total_views": 69124388,
+      "total_likes": 400313,
+      "total_comments": 271,
+      "avg_views": 210104.5227963526,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 326,
+        "International": 3
+      }
+    },
+    {
+      "topic": "Seitdem",
+      "frequency": 341,
+      "total_views": 67264230,
+      "total_likes": 564219,
+      "total_comments": 0,
+      "avg_views": 197255.8064516129,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 341
+      }
+    },
+    {
+      "topic": "Geht",
+      "frequency": 335,
+      "total_views": 65468869,
+      "total_likes": 521014,
+      "total_comments": 90,
+      "avg_views": 195429.45970149254,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 334,
+        "International": 1
+      }
+    },
+    {
+      "topic": "Wdrreisen",
+      "frequency": 321,
+      "total_views": 65307607,
+      "total_likes": 588620,
+      "total_comments": 0,
+      "avg_views": 203450.4890965732,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 321
+      }
+    },
+    {
+      "topic": "Ardmediathek",
+      "frequency": 328,
+      "total_views": 61843351,
+      "total_likes": 537400,
+      "total_comments": 0,
+      "avg_views": 188546.80182926828,
+      "top_category": "uncategorized",
+      "top_competitor": "ARD Reisen",
+      "countries": {
+        "Germany": 328
+      }
+    }
+  ],
+  "summary": {
+    "total_topics": 22496,
+    "analyzed_videos": 2000,
+    "analyzed_playlists": 344,
+    "message": "Analyse complète de 2,000 vidéos et 344 playlists",
+    "brand_voice_analysis": {}
+  },
+  "categorized_topics": {},
+  "brand_voice_profiles": {},
+  "top_videos_by_voice": {},
+  "voice_recommendations": []
 }

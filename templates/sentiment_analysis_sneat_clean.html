@@ -26,6 +26,7 @@
         </div>
     </div>
 
+
     {% if error %}
     <!-- Error State -->
     <div class="row">
@@ -58,7 +59,7 @@
                             <i class="bx bx-video"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.total_videos or 0 }}</h4>
+                    <h4 class="mb-1">{{ (stats.get('total_videos_analyzed') if stats else 0) or 0 }}</h4>
                     <small class="text-muted">Total Videos Analyzed</small>
                 </div>
             </div>
@@ -71,7 +72,7 @@
                             <i class="bx bx-happy"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.positive_count or 0 }}</h4>
+                    <h4 class="mb-1">{{ (stats.get('positive_count') if stats else 0) or 0 }}</h4>
                     <small class="text-muted">Positive Content</small>
                 </div>
             </div>
@@ -84,7 +85,7 @@
                             <i class="bx bx-sad"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.negative_count or 0 }}</h4>
+                    <h4 class="mb-1">{{ (stats.get('negative_count') if stats else 0) or 0 }}</h4>
                     <small class="text-muted">Negative Content</small>
                 </div>
             </div>
@@ -97,7 +98,7 @@
                             <i class="bx bx-meh"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.neutral_count or 0 }}</h4>
+                    <h4 class="mb-1">{{ (stats.get('neutral_count') if stats else 0) or 0 }}</h4>
                     <small class="text-muted">Neutral Content</small>
                 </div>
             </div>
@@ -124,12 +125,12 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.positive_percent) }}%</h6>
+                                    <h6 class="mb-0">{{ "%.1f"|format((sentiment_breakdown.positive_percent if sentiment_breakdown else 0) or 0) }}%</h6>
                                     <small class="text-muted">Positive</small>
                                 </div>
                             </div>
                             <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: {{ sentiment_breakdown.positive_percent }}%"></div>
+                                <div class="progress-bar bg-success" style="width: {{ (sentiment_breakdown.positive_percent if sentiment_breakdown else 0) or 0 }}%"></div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-4">
@@ -140,12 +141,12 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.negative_percent) }}%</h6>
+                                    <h6 class="mb-0">{{ "%.1f"|format((sentiment_breakdown.negative_percent if sentiment_breakdown else 0) or 0) }}%</h6>
                                     <small class="text-muted">Negative</small>
                                 </div>
                             </div>
                             <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar bg-danger" style="width: {{ sentiment_breakdown.negative_percent }}%"></div>
+                                <div class="progress-bar bg-danger" style="width: {{ (sentiment_breakdown.negative_percent if sentiment_breakdown else 0) or 0 }}%"></div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-4">
@@ -156,12 +157,12 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">{{ "%.1f"|format(sentiment_breakdown.neutral_percent) }}%</h6>
+                                    <h6 class="mb-0">{{ "%.1f"|format((sentiment_breakdown.neutral_percent if sentiment_breakdown else 0) or 0) }}%</h6>
                                     <small class="text-muted">Neutral</small>
                                 </div>
                             </div>
                             <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar bg-secondary" style="width: {{ sentiment_breakdown.neutral_percent }}%"></div>
+                                <div class="progress-bar bg-secondary" style="width: {{ (sentiment_breakdown.neutral_percent if sentiment_breakdown else 0) or 0 }}%"></div>
                             </div>
                         </div>
                     </div>
@@ -184,7 +185,7 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="text-muted">Avg Sentiment Score:</span>
-                            <span class="fw-medium">{{ "%.3f"|format(stats.avg_sentiment_score or 0) }}</span>
+                            <span class="fw-medium">{{ "%.3f"|format((stats.get('avg_sentiment_score') if stats else 0) or 0) }}</span>
                         </div>
                         <small class="text-muted">Range: -1 (very negative) to +1 (very positive)</small>
                     </div>
@@ -192,12 +193,12 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="text-muted">Engagement Correlation:</span>
-                            <span class="fw-medium">{{ "%.3f"|format(stats.engagement_correlation or 0) }}</span>
+                            <span class="fw-medium">{{ "%.3f"|format((stats.get('engagement_correlation') if stats else 0) or 0) }}</span>
                         </div>
                         <small class="text-muted">Correlation between positive sentiment and engagement</small>
                     </div>
                     
-                    {% if stats.positive_percentage > 50 %}
+                    {% if stats.get('positive_percentage', 0) > 50 %}
                     <div class="alert alert-success p-2">
                         <small><i class="bx bx-check-circle me-1"></i>
                         Majority of content has positive sentiment</small>
@@ -260,7 +261,7 @@
                                 <small class="text-muted d-block">{{ video.channel }}</small>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
                                     <span class="badge bg-success">+{{ video.positive_score }}</span>
-                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                    <small class="text-muted">{{ "{:,}".format(video.views or 0) }} views</small>
                                 </div>
                             </div>
                         </div>
@@ -296,7 +297,7 @@
                                 <small class="text-muted d-block">{{ video.channel }}</small>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
                                     <span class="badge bg-danger">-{{ video.negative_score }}</span>
-                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                    <small class="text-muted">{{ "{:,}".format(video.views or 0) }} views</small>
                                 </div>
                             </div>
                         </div>
@@ -331,8 +332,8 @@
                                 <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
                                 <small class="text-muted d-block">{{ video.channel }}</small>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <span class="badge bg-secondary">{{ "%.1f"|format(video.engagement) }}%</span>
-                                    <small class="text-muted">{{ "{:,}".format(video.views) }} views</small>
+                                    <span class="badge bg-secondary">{{ "%.1f"|format(video.engagement or 0) }}%</span>
+                                    <small class="text-muted">{{ "{:,}".format(video.views or 0) }} views</small>
                                 </div>
                             </div>
                         </div>
@@ -386,5 +387,6 @@ function refreshAnalysis() {
         location.reload();
     }
 }
+
 </script>
 {% endblock %}

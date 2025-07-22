@@ -327,6 +327,12 @@ class YouTubeAPI:
             
             response = self._make_request('videos', params)
             
+            # Debug: afficher la réponse API
+            print(f"[API-DEBUG] 📥 Requête pour {len(batch_ids)} vidéos, réponse: {len(response.get('items', []))} items")
+            if len(response.get('items', [])) != len(batch_ids):
+                missing_count = len(batch_ids) - len(response.get('items', []))
+                print(f"[API-DEBUG] ⚠️ {missing_count} vidéos manquantes dans la réponse (supprimées/privées)")
+            
             for item in response.get('items', []):
                 duration = self._parse_duration(item.get('contentDetails', {}).get('duration', ''))
                 
@@ -353,9 +359,9 @@ class YouTubeAPI:
                     'duration': duration,
                     'duration_seconds': duration,
                     'is_short': is_short,
-                    'view_count': int(item.get('statistics', {}).get('viewCount', 0)),
-                    'like_count': int(item.get('statistics', {}).get('likeCount', 0)),
-                    'comment_count': int(item.get('statistics', {}).get('commentCount', 0)),
+                    'view_count': int(item.get('statistics', {}).get('viewCount', 0) or 0),
+                    'like_count': int(item.get('statistics', {}).get('likeCount', 0) or 0),
+                    'comment_count': int(item.get('statistics', {}).get('commentCount', 0) or 0),
                     'url': f"https://www.youtube.com/watch?v={item.get('id', '')}"
                 }
                 videos.append(video)
@@ -752,7 +758,24 @@ class YouTubeAPI:
 
 def create_youtube_client() -> YouTubeAPI:
     """Factory function pour créer un client YouTube API"""
-    return YouTubeAPI()
+    # Récupérer la clé API depuis la base de données
+    try:
+        from yt_channel_analyzer.database.base import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT value FROM app_config WHERE key = "youtube_api_key"')
+        result = cursor.fetchone()
+        api_key = result[0] if result else None
+        conn.close()
+        
+        if api_key:
+            return YouTubeAPI(api_key)
+        else:
+            print("[YOUTUBE-API] ⚠️ Clé API YouTube non trouvée en base, essai variable d'environnement")
+            return YouTubeAPI()
+    except Exception as e:
+        print(f"[YOUTUBE-API] ⚠️ Erreur récupération clé API depuis la base: {e}, essai variable d'environnement")
+        return YouTubeAPI()
 
 def get_api_quota_status() -> Dict:
     """Récupère le statut actuel du quota API YouTube"""

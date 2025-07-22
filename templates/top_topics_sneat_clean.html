@@ -13,7 +13,9 @@
                         <h5 class="card-title mb-0">
                             <i class="bx bx-trending-up me-2"></i>Top Topics Analysis
                         </h5>
-                        <p class="card-subtitle text-muted mb-0">Most popular topics across all competitor content</p>
+                        <p class="card-subtitle text-muted mb-0">
+                            <strong>Modèle:</strong> paraphrase-multilingual-mpnet-base-v2 + spaCy Large (en/fr/de/nl) | Extraction des mots-clés et fréquences
+                        </p>
                         {% if analysis_status == 'in_progress' %}
                         <div class="alert alert-info p-2 mt-2 mb-0">
                             <i class="bx bx-loader-alt bx-spin me-1"></i>
@@ -37,12 +39,44 @@
                                 <li><a class="dropdown-item" href="?sort_by=engagement&order={{ order }}&category={{ category_filter }}&limit={{ limit }}">By Engagement</a></li>
                             </ul>
                         </div>
-                        {% if analysis_status != 'in_progress' %}
-                        <button type="button" class="btn btn-sm btn-primary" onclick="startFullAnalysis()" id="analyseButton">
-                            <i class="bx bx-play-circle me-1"></i>
-                            <span class="d-none d-sm-inline-block">Analyse Complète</span>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="startTopicAnalysis()" id="analyseButton">
+                            <i class="bx bx-search-alt me-1"></i>
+                            <span class="d-none d-sm-inline-block">Analyser 8800 Vidéos</span>
                         </button>
-                        {% endif %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-download me-1"></i>Télécharger
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><h6 class="dropdown-header">Fichiers JSON</h6></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis/summary">
+                                    <i class="bx bx-file-blank me-2"></i>Résumé (JSON)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis/titles">
+                                    <i class="bx bx-file-blank me-2"></i>Tous les titres (JSON)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis/descriptions">
+                                    <i class="bx bx-file-blank me-2"></i>Toutes les descriptions (JSON)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis/frequencies">
+                                    <i class="bx bx-file-blank me-2"></i>Fréquences complètes (JSON)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis/grammar">
+                                    <i class="bx bx-brain me-2"></i>Analyse grammaticale (JSON)
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Fichiers CSV</h6></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis-csv/titles">
+                                    <i class="bx bx-table me-2"></i>Titres (CSV)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis-csv/descriptions">
+                                    <i class="bx bx-table me-2"></i>Descriptions (CSV)
+                                </a></li>
+                                <li><a class="dropdown-item" href="/api/download-analysis-csv/frequencies">
+                                    <i class="bx bx-table me-2"></i>Fréquences (CSV)
+                                </a></li>
+                            </ul>
+                        </div>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
                             <i class="bx bx-refresh"></i>
                             <span class="d-none d-sm-inline-block ms-1">Refresh</span>
@@ -99,8 +133,8 @@
                             <i class="bx bx-video"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ "{:,}".format(summary.analyzed_videos or 0) }}</h4>
-                    <small class="text-muted">Videos Analyzed</small>
+                    <h4 class="mb-1">{{ "{:,}".format(summary.total_videos_in_db or summary.analyzed_videos or 0) }}</h4>
+                    <small class="text-muted">Total Vidéos DB</small>
                 </div>
             </div>
         </div>
@@ -112,8 +146,8 @@
                             <i class="bx bx-collection"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ "{:,}".format(summary.analyzed_playlists or 0) }}</h4>
-                    <small class="text-muted">Playlists Analyzed</small>
+                    <h4 class="mb-1">{{ "{:,}".format(summary.videos_with_titles or 0) }}</h4>
+                    <small class="text-muted">Vidéos avec Titres</small>
                 </div>
             </div>
         </div>
@@ -122,11 +156,11 @@
                 <div class="card-body">
                     <div class="avatar mx-auto mb-2">
                         <span class="avatar-initial rounded bg-label-info">
-                            <i class="bx bx-trending-up"></i>
+                            <i class="bx bx-text"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ summary.top_topic or 'N/A' }}</h4>
-                    <small class="text-muted">Most Popular</small>
+                    <h4 class="mb-1">{{ "{:,}".format(summary.videos_with_descriptions or 0) }}</h4>
+                    <small class="text-muted">Vidéos avec Descriptions</small>
                 </div>
             </div>
         </div>
@@ -138,108 +172,445 @@
                             <i class="bx bx-data"></i>
                         </span>
                     </div>
-                    <h6 class="mb-1">{{ summary.sources or 'Vidéos & Playlists' }}</h6>
-                    <small class="text-muted">Sources Analyzed</small>
+                    <h6 class="mb-1">{{ summary.top_topic or 'N/A' }}</h6>
+                    <small class="text-muted">Mot le Plus Fréquent</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rapport de Couverture Détaillé -->
+    {% if summary.coverage_report %}
+    <div class="row mb-6">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-check-shield me-2"></i>Rapport de Vérification - Couverture de l'Analyse
+                    </h5>
+                    <p class="card-subtitle text-muted mb-0">Confirmation que TOUTES les données ont été analysées</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-success">
+                                        <i class="bx bx-check-circle"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Couverture Totale</h6>
+                                    <span class="badge bg-success">{{ summary.coverage_report.total_coverage }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-primary">
+                                        <i class="bx bx-title"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Titres Analysés</h6>
+                                    <span class="badge bg-primary">{{ summary.coverage_report.titles_coverage }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-info">
+                                        <i class="bx bx-text"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Descriptions Analysées</h6>
+                                    <span class="badge bg-info">{{ summary.coverage_report.descriptions_coverage }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bx bx-info-circle me-1"></i>
+                                Modèle utilisé: {{ summary.model_used or 'aucun' }}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                <i class="bx bx-time me-1"></i>
+                                Analysé le: {{ summary.analysis_date[:19] if summary.analysis_date else 'N/A' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Semantic Analysis Progress Bar -->
+    <div id="semantic-progress-bar" class="row mb-6" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Analyse sémantique en cours...</h6>
+                    <div class="progress mb-2">
+                        <div id="semantic-progress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small id="semantic-status" class="text-muted">Initialisation...</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Voice Semantic Analysis -->
+    {% if brand_voice_profiles or voice_recommendations %}
+    <div id="semantic-analysis-section" class="row mb-6">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-brain me-2"></i>Brand Voice Analysis
+                    </h5>
+                </div>
+                <div id="semantic-content" class="card-body">
+                    <!-- Actual semantic analysis results -->
+                <div class="card-body">
+                    {% if summary.brand_voice_analysis %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">Dominant Brand Voice Categories</h6>
+                            <div class="row">
+                                {% for category, score in summary.brand_voice_analysis.dominant_voice.items() %}
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <div class="card bg-label-primary h-100">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-primary mb-1">{{ category.replace('_', ' ').title() }}</h6>
+                                            <div class="progress mb-2" style="height: 8px;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ (score * 100)|round(1) }}%" 
+                                                     aria-valuenow="{{ (score * 100)|round(1) }}" 
+                                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="text-muted">{{ (score * 100)|round(1) }}%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if voice_recommendations %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">AI Recommendations</h6>
+                            {% for recommendation in voice_recommendations %}
+                            <div class="alert alert-info">
+                                <i class="bx bx-lightbulb me-2"></i>{{ recommendation }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if brand_voice_profiles %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="mb-3">Brand Voice by Country</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Country</th>
+                                            <th>Invitation Voyage</th>
+                                            <th>Emotions Positives</th>
+                                            <th>Urgence Exclusivité</th>
+                                            <th>Authenticité Locale</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for country, voices in brand_voice_profiles.items() %}
+                                        <tr>
+                                            <td><strong>{{ country }}</strong></td>
+                                            <td>
+                                                {% if voices.invitation_voyage %}
+                                                <span class="badge bg-label-primary">{{ (voices.invitation_voyage * 100)|round(1) }}%</span>
+                                                {% else %}
+                                                <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if voices.emotions_positives %}
+                                                <span class="badge bg-label-success">{{ (voices.emotions_positives * 100)|round(1) }}%</span>
+                                                {% else %}
+                                                <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if voices.urgence_exclusivite %}
+                                                <span class="badge bg-label-warning">{{ (voices.urgence_exclusivite * 100)|round(1) }}%</span>
+                                                {% else %}
+                                                <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if voices.authenticite_local %}
+                                                <span class="badge bg-label-info">{{ (voices.authenticite_local * 100)|round(1) }}%</span>
+                                                {% else %}
+                                                <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- Topics Table -->
+    <!-- Topics Analysis with Tabs -->
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h6 class="card-title mb-0">
-                        <i class="bx bx-list-ul me-2"></i>Top {{ limit }} Topics
-                    </h6>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bx bx-filter me-1"></i>{{ category_filter|title or 'All Categories' }}
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category=all&limit={{ limit }}">All Categories</a></li>
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category=hero&limit={{ limit }}">Hero Content</a></li>
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category=hub&limit={{ limit }}">Hub Content</a></li>
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category=help&limit={{ limit }}">Help Content</a></li>
-                            </ul>
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">
+                                <i class="bx bx-brain me-2"></i>Analyse Grammaticale Multilingue
+                                <span class="badge bg-success ms-2">AI</span>
+                            </h6>
+                            <p class="card-subtitle text-muted mb-0">Verbes, adjectifs, noms et mots consolidés</p>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bx bx-sort me-1"></i>{{ limit }} items
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                    data-bs-toggle="tooltip" data-bs-placement="left"
+                                    title="Modèles: paraphrase-multilingual-mpnet-base-v2 + spaCy Large (en_core_web_lg, fr_core_news_lg, de_core_news_lg, nl_core_news_lg)">
+                                <i class="bx bx-info-circle"></i>
                             </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category={{ category_filter }}&limit=25">25 items</a></li>
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category={{ category_filter }}&limit=50">50 items</a></li>
-                                <li><a class="dropdown-item" href="?sort_by={{ sort_by }}&order={{ order }}&category={{ category_filter }}&limit=100">100 items</a></li>
-                            </ul>
                         </div>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>
-                                    <a href="?sort_by=topic&order={{ 'asc' if sort_by == 'topic' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="text-decoration-none">
-                                        Topic <i class="bx bx-{{ 'up' if sort_by == 'topic' and order == 'asc' else 'down' }}-arrow-alt"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?sort_by=frequency&order={{ 'asc' if sort_by == 'frequency' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="text-decoration-none">
-                                        Frequency <i class="bx bx-{{ 'up' if sort_by == 'frequency' and order == 'asc' else 'down' }}-arrow-alt"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?sort_by=views&order={{ 'asc' if sort_by == 'views' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="text-decoration-none">
-                                        Avg Views <i class="bx bx-{{ 'up' if sort_by == 'views' and order == 'asc' else 'down' }}-arrow-alt"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?sort_by=engagement&order={{ 'asc' if sort_by == 'engagement' and order == 'desc' else 'desc' }}&category={{ category_filter }}&limit={{ limit }}" class="text-decoration-none">
-                                        Engagement <i class="bx bx-{{ 'up' if sort_by == 'engagement' and order == 'asc' else 'down' }}-arrow-alt"></i>
-                                    </a>
-                                </th>
-                                <th>Category</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for topic in topics %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>
-                                    <span class="fw-medium">{{ topic.topic or topic.word or 'N/A' }}</span>
-                                    {% if topic.examples %}
-                                    <br><small class="text-muted">{{ topic.examples[:100] }}{% if topic.examples|length > 100 %}...{% endif %}</small>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary">{{ topic.count or topic.frequency or 0 }}</span>
-                                </td>
-                                <td>
-                                    <span class="fw-medium">{{ "{:,}".format(topic.avg_views or 0) }}</span>
-                                </td>
-                                <td>
-                                    <span class="text-{{ 'success' if (topic.engagement_rate or 0) > 5 else ('warning' if (topic.engagement_rate or 0) > 2 else 'danger') }}">
-                                        {{ "{:.1f}".format(topic.engagement_rate or 0) }}%
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if topic.category %}
-                                    <span class="badge bg-{{ 'danger' if topic.category == 'hero' else ('primary' if topic.category == 'hub' else 'success') }}">
-                                        {{ topic.category|upper }}
-                                    </span>
-                                    {% else %}
-                                    <span class="text-muted">All</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="card-body">
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs card-header-tabs mb-3" id="grammarTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="verbs-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#verbs" type="button" role="tab">
+                                <i class="bx bx-run me-1"></i>
+                                <span>Verbes</span>
+                                <span class="badge bg-danger ms-2" id="verbs-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="adjectives-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#adjectives" type="button" role="tab">
+                                <i class="bx bx-palette me-1"></i>
+                                <span>Adjectifs</span>
+                                <span class="badge bg-warning ms-2" id="adjectives-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="nouns-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#nouns" type="button" role="tab">
+                                <i class="bx bx-cube me-1"></i>
+                                <span>Noms</span>
+                                <span class="badge bg-success ms-2" id="nouns-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="consolidated-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#consolidated" type="button" role="tab">
+                                <i class="bx bx-collection me-1"></i>
+                                <span>Consolidé</span>
+                                <span class="badge bg-primary ms-2" id="consolidated-count">{{ topics|length or 0 }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="grammarTabContent">
+                        <!-- Verbs Tab -->
+                        <div class="tab-pane fade show active" id="verbs" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Verbe</th>
+                                            <th>Fréquence</th>
+                                            <th>Tags</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="verbs-table-body">
+                                        <tr><td colspan="4" class="text-center text-muted">Lancez l'analyse pour voir les verbes</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Adjectives Tab -->
+                        <div class="tab-pane fade" id="adjectives" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Adjectif</th>
+                                            <th>Fréquence</th>
+                                            <th>Tags</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adjectives-table-body">
+                                        <tr><td colspan="4" class="text-center text-muted">Lancez l'analyse pour voir les adjectifs</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Nouns Tab -->
+                        <div class="tab-pane fade" id="nouns" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nom</th>
+                                            <th>Fréquence</th>
+                                            <th>Tags</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nouns-table-body">
+                                        <tr><td colspan="4" class="text-center text-muted">Lancez l'analyse pour voir les noms</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Consolidated Tab -->
+                        <div class="tab-pane fade" id="consolidated" role="tabpanel">
+                            <!-- Consolidated Header with Controls -->
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bx bx-info-circle me-2"></i>
+                                        <strong>Consolidé :</strong> Top global verbes + adjectifs + noms avec tags de type grammatical
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-center justify-content-end gap-2">
+                                    <!-- Search Box -->
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                        <input type="text" id="consolidated-search" class="form-control" 
+                                               placeholder="Rechercher un mot..." autocomplete="off">
+                                    </div>
+                                    <!-- View Toggle -->
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" id="compact-view">
+                                            <i class="bx bx-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="detailed-view">
+                                            <i class="bx bx-grid-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filters Row -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <!-- Type Filters -->
+                                        <div class="filter-group">
+                                            <small class="text-muted me-2">Type:</small>
+                                            <button class="btn btn-sm btn-outline-danger active filter-type" data-type="VERBE">
+                                                <i class="bx bx-run me-1"></i>Verbes <span class="badge bg-danger ms-1" id="verbe-count">0</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning active filter-type ms-1" data-type="ADJECTIF">
+                                                <i class="bx bx-palette me-1"></i>Adjectifs <span class="badge bg-warning ms-1" id="adjectif-count">0</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success active filter-type ms-1" data-type="NOM">
+                                                <i class="bx bx-cube me-1"></i>Noms <span class="badge bg-success ms-1" id="nom-count">0</span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Language Filters -->
+                                        <div class="filter-group ms-3">
+                                            <small class="text-muted me-2">Langue:</small>
+                                            <button class="btn btn-sm btn-outline-info active filter-lang" data-lang="EN">🇬🇧 EN</button>
+                                            <button class="btn btn-sm btn-outline-info active filter-lang ms-1" data-lang="FR">🇫🇷 FR</button>
+                                            <button class="btn btn-sm btn-outline-info active filter-lang ms-1" data-lang="DE">🇩🇪 DE</button>
+                                            <button class="btn btn-sm btn-outline-info active filter-lang ms-1" data-lang="NL">🇳🇱 NL</button>
+                                        </div>
+
+                                        <!-- Frequency Filter -->
+                                        <div class="filter-group ms-3">
+                                            <small class="text-muted me-2">Fréq. min:</small>
+                                            <input type="range" id="freq-filter" class="form-range" style="width: 120px;" 
+                                                   min="0" max="1000" value="0" step="10">
+                                            <span class="badge bg-secondary ms-2" id="freq-value">0+</span>
+                                        </div>
+
+                                        <!-- Reset Filters -->
+                                        <button class="btn btn-sm btn-outline-secondary ms-auto" id="reset-filters">
+                                            <i class="bx bx-refresh me-1"></i>Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Results Counter -->
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <small class="text-muted">
+                                        <span id="filtered-count">0</span> mots affichés sur <span id="total-count">0</span> 
+                                        <span class="ms-2" id="filter-status"></span>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Compact Table View -->
+                            <div id="compact-table-view">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 50px;">#</th>
+                                                <th>Mot</th>
+                                                <th style="width: 100px;">Fréquence</th>
+                                                <th style="width: 120px;">Type</th>
+                                                <th style="width: 80px;">Langue</th>
+                                                <th style="width: 120px;" class="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="consolidated-table-body">
+                                            <tr><td colspan="6" class="text-center text-muted py-4">Lancez l'analyse pour voir le consolidé</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Cards View (Hidden by default) -->
+                            <div id="detailed-cards-view" style="display: none;">
+                                <div class="row" id="consolidated-cards-body">
+                                    <div class="col-12 text-center text-muted py-4">Lancez l'analyse pour voir les cards détaillées</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -305,8 +676,8 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <h6 class="mb-0">
-                            <i class="bx bx-analysis me-2"></i>
-                            Analyse Progressive en Cours
+                            <i class="bx bx-brain me-2"></i>
+                            Analyse Sémantique Multilingue en Cours
                         </h6>
                         <span id="progress-percentage" class="text-primary fw-bold">0%</span>
                     </div>
@@ -316,13 +687,13 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <small id="progress-status" class="text-muted">Initialisation...</small>
-                        <small id="progress-videos" class="text-muted">0 / 7500 vidéos</small>
+                        <small id="progress-videos" class="text-muted">0 / 8800 vidéos</small>
                     </div>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="stopAnalysis()">
-                            <i class="bx bx-stop-circle me-1"></i>
-                            Arrêter
-                        </button>
+                    <div class="mt-3">
+                        <div class="alert alert-info mb-0">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <small>Modèle: paraphrase-multilingual-mpnet-base-v2 | Extraction des mots-clés et fréquences</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -334,20 +705,19 @@
 let currentTaskId = null;
 let progressInterval = null;
 
-function startFullAnalysis() {
-    console.log('🚀 Démarrage de l\'analyse complète...');
+let analysisInterval = null;
+
+function startTopicAnalysis() {
+    console.log('🚀 Démarrage de l\'analyse sémantique des topics...');
     
     // Afficher la barre de progression
     const progressDiv = document.getElementById('analysis-progress');
     if (progressDiv) {
         progressDiv.style.display = 'block';
-        console.log('✅ Barre de progression affichée');
-    } else {
-        console.error('❌ Element analysis-progress non trouvé');
     }
     
     // Démarrer l'analyse
-    fetch('/api/start-topic-analysis', {
+    fetch('/api/analyze-topics', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -355,24 +725,21 @@ function startFullAnalysis() {
         },
         credentials: 'same-origin'
     })
-    .then(response => {
-        console.log('📡 Réponse reçue:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('📊 Données reçues:', data);
+        console.log('📊 Réponse:', data);
         if (data.success) {
-            currentTaskId = data.task_id;
-            console.log('🆔 Task ID:', currentTaskId);
-            // Commencer le suivi du progrès
-            progressInterval = setInterval(checkProgress, 2000); // Toutes les 2 secondes
-            console.log('⏰ Suivi de progression démarré');
+            // Commencer le suivi du progrès CHAQUE SECONDE
+            analysisInterval = setInterval(checkAnalysisProgress, 1000);
+            
+            // Désactiver le bouton
+            const btn = document.getElementById('analyseButton');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Analyse en cours...';
+            }
         } else {
-            console.error('❌ Erreur API:', data.error);
-            alert('Erreur lors du démarrage de l\'analyse: ' + (data.error || 'Erreur inconnue'));
+            alert('Erreur: ' + (data.error || 'Impossible de démarrer l\'analyse'));
             document.getElementById('analysis-progress').style.display = 'none';
         }
     })
@@ -383,60 +750,66 @@ function startFullAnalysis() {
     });
 }
 
-function checkProgress() {
-    if (!currentTaskId) {
-        console.warn('⚠️ Pas de task ID pour vérifier le progrès');
-        return;
-    }
+function checkAnalysisProgress() {
+    const timestamp = new Date().toLocaleTimeString();
     
-    console.log('🔄 Vérification du progrès pour task:', currentTaskId);
-    
-    fetch(`/api/topic-analysis-progress/${currentTaskId}`, {
+    fetch('/api/analyze-topics/status', {
         credentials: 'same-origin'
     })
     .then(response => {
-        console.log('📈 Réponse progression:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('📊 Données progression:', data);
+        // LOG DÉTAILLÉ pour debug
+        console.log(`🔍 [${timestamp}] Status détaillé:`, {
+            status: data.status,
+            progress: data.progress,
+            step: data.current_step,
+            total: data.total,
+            error: data.error
+        });
         
-        // Nouvelle structure de réponse directe (sans data.task)
+        // Mettre à jour la barre de progression
+        const progressPercentage = document.getElementById('progress-percentage');
+        const progressBar = document.getElementById('progress-bar');
+        const progressStatus = document.getElementById('progress-status');
+        const progressVideos = document.getElementById('progress-videos');
+        
         if (data.progress !== undefined) {
-            // Mettre à jour la barre de progression
-            const progressPercentage = document.getElementById('progress-percentage');
-            const progressBar = document.getElementById('progress-bar');
-            const progressStatus = document.getElementById('progress-status');
-            const progressVideos = document.getElementById('progress-videos');
+            progressPercentage.textContent = data.progress + '%';
+            progressBar.style.width = data.progress + '%';
+            progressStatus.textContent = data.current_step || 'En cours...';
+            progressVideos.textContent = `${data.progress}% - ${data.total || 0} vidéos`;
+        }
+        
+        // Si terminé, afficher les résultats
+        if (data.status === 'completed') {
+            clearInterval(analysisInterval);
+            document.getElementById('analysis-progress').style.display = 'none';
             
-            if (progressPercentage) progressPercentage.textContent = data.progress + '%';
-            if (progressBar) progressBar.style.width = data.progress + '%';
-            if (progressStatus) progressStatus.textContent = data.status || 'En cours...';
-            if (progressVideos) progressVideos.textContent = 
-                `${data.videos_analyzed || 0} / 7500 vidéos`;
+            // Récupérer et afficher les résultats
+            fetchAndDisplayResults();
             
-            console.log(`📊 Progression: ${data.progress}% - ${data.status}`);
-            
-            // Si terminé, arrêter le suivi et recharger la page
-            if (data.completed || data.progress >= 100) {
-                console.log('✅ Analyse terminée, rechargement de la page...');
-                clearInterval(progressInterval);
-                progressInterval = null;
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else if (data.error) {
-                console.error('❌ Erreur d\'analyse:', data.error);
-                clearInterval(progressInterval);
-                progressInterval = null;
-                alert('Erreur lors de l\'analyse: ' + data.error);
-                document.getElementById('analysis-progress').style.display = 'none';
+            // Réactiver le bouton
+            const btn = document.getElementById('analyseButton');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bx bx-search-alt me-1"></i>Analyser 8800 Vidéos';
             }
-        } else {
-            console.warn('⚠️ Structure de données inattendue:', data);
+        } else if (data.status === 'error') {
+            clearInterval(analysisInterval);
+            alert('Erreur: ' + data.error);
+            document.getElementById('analysis-progress').style.display = 'none';
+            
+            // Réactiver le bouton
+            const btn = document.getElementById('analyseButton');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bx bx-search-alt me-1"></i>Analyser 8800 Vidéos';
+            }
         }
     })
     .catch(error => {
@@ -445,64 +818,575 @@ function checkProgress() {
     });
 }
 
-function stopAnalysis() {
-    if (currentTaskId && confirm('Voulez-vous vraiment arrêter l\'analyse en cours ?')) {
-        fetch(`/api/stop-topic-analysis/${currentTaskId}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                clearInterval(progressInterval);
-                document.getElementById('analysis-progress').style.display = 'none';
-                currentTaskId = null;
-            }
+function fetchAndDisplayResults() {
+    fetch('/api/analyze-topics/results')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.results) {
+            displayAnalysisResults(data.results);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors de la récupération des résultats:', error);
+    });
+}
+
+function displayAnalysisResults(results) {
+    // Récupérer les résultats grammaticaux
+    fetch('/api/download-analysis/grammar')
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Données grammaticales non disponibles');
+    })
+    .then(grammarData => {
+        // Remplir les onglets avec les résultats
+        populateGrammarTabs(grammarData);
+    })
+    .catch(error => {
+        console.log('Analyse grammaticale non disponible:', error);
+        // Recharger la page pour afficher les résultats de base
+        location.reload();
+    });
+}
+
+function populateGrammarTabs(grammarData) {
+    // Remplir l'onglet des verbes
+    if (grammarData.verbs && grammarData.verbs.top_200) {
+        const verbsTableBody = document.getElementById('verbs-table-body');
+        const verbsCount = document.getElementById('verbs-count');
+        
+        verbsTableBody.innerHTML = '';
+        verbsCount.textContent = grammarData.verbs.unique_count || 0;
+        
+        grammarData.verbs.top_200.slice(0, 50).forEach((verb, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><span class="fw-medium">${verb.word}</span></td>
+                    <td><span class="badge bg-danger">${verb.count}</span></td>
+                    <td>
+                        <span class="badge bg-outline-danger">#action</span>
+                        <span class="badge bg-outline-secondary">#verbe</span>
+                    </td>
+                </tr>
+            `;
+            verbsTableBody.innerHTML += row;
         });
     }
+    
+    // Remplir l'onglet des adjectifs
+    if (grammarData.adjectives && grammarData.adjectives.top_200) {
+        const adjectivesTableBody = document.getElementById('adjectives-table-body');
+        const adjectivesCount = document.getElementById('adjectives-count');
+        
+        adjectivesTableBody.innerHTML = '';
+        adjectivesCount.textContent = grammarData.adjectives.unique_count || 0;
+        
+        grammarData.adjectives.top_200.slice(0, 50).forEach((adj, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><span class="fw-medium">${adj.word}</span></td>
+                    <td><span class="badge bg-warning">${adj.count}</span></td>
+                    <td>
+                        <span class="badge bg-outline-warning">#qualité</span>
+                        <span class="badge bg-outline-secondary">#adjectif</span>
+                    </td>
+                </tr>
+            `;
+            adjectivesTableBody.innerHTML += row;
+        });
+    }
+    
+    // Remplir l'onglet des noms
+    if (grammarData.nouns && grammarData.nouns.top_200) {
+        const nounsTableBody = document.getElementById('nouns-table-body');
+        const nounsCount = document.getElementById('nouns-count');
+        
+        nounsTableBody.innerHTML = '';
+        nounsCount.textContent = grammarData.nouns.unique_count || 0;
+        
+        grammarData.nouns.top_200.slice(0, 50).forEach((noun, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><span class="fw-medium">${noun.word}</span></td>
+                    <td><span class="badge bg-success">${noun.count}</span></td>
+                    <td>
+                        <span class="badge bg-outline-success">#objet</span>
+                        <span class="badge bg-outline-secondary">#nom</span>
+                    </td>
+                </tr>
+            `;
+            nounsTableBody.innerHTML += row;
+        });
+    }
+    
+    // Créer l'onglet consolidé avec tous les mots
+    createConsolidatedTab(grammarData);
+    
+    // Mettre à jour les compteurs dans les onglets
+    console.log('Onglets grammaticaux mis à jour avec les nouvelles données');
+}
+
+// Global variable to store all consolidated data
+let allWordsData = [];
+let filteredWordsData = [];
+
+function createConsolidatedTab(grammarData) {
+    // Reset global data
+    allWordsData = [];
+    
+    // Créer un array consolidé avec tous les mots
+    // Ajouter les verbes avec leur type
+    if (grammarData.verbs && grammarData.verbs.top_200) {
+        grammarData.verbs.top_200.forEach(item => {
+            allWordsData.push({
+                word: item.word,
+                count: item.count,
+                type: 'VERBE',
+                typeColor: 'danger',
+                language: detectLanguage(item.word),
+                tags: ['#action', '#verbe']
+            });
+        });
+    }
+    
+    // Ajouter les adjectifs avec leur type
+    if (grammarData.adjectives && grammarData.adjectives.top_200) {
+        grammarData.adjectives.top_200.forEach(item => {
+            allWordsData.push({
+                word: item.word,
+                count: item.count,
+                type: 'ADJECTIF',
+                typeColor: 'warning',
+                language: detectLanguage(item.word),
+                tags: ['#qualité', '#adjectif']
+            });
+        });
+    }
+    
+    // Ajouter les noms avec leur type
+    if (grammarData.nouns && grammarData.nouns.top_200) {
+        grammarData.nouns.top_200.forEach(item => {
+            allWordsData.push({
+                word: item.word,
+                count: item.count,
+                type: 'NOM',
+                typeColor: 'success',
+                language: detectLanguage(item.word),
+                tags: ['#objet', '#nom']
+            });
+        });
+    }
+    
+    // Trier par fréquence décroissante
+    allWordsData.sort((a, b) => b.count - a.count);
+    
+    // Limiter aux 200 premiers pour la performance
+    allWordsData = allWordsData.slice(0, 200);
+    
+    // Update counts in filter buttons
+    updateFilterCounts();
+    
+    // Initial render with all data
+    filteredWordsData = [...allWordsData];
+    renderConsolidatedData();
+    
+    // Initialize filter event listeners
+    initializeConsolidatedFilters();
+    
+    console.log(`✅ Onglet consolidé créé avec ${allWordsData.length} mots triés par fréquence`);
+}
+
+function updateFilterCounts() {
+    const verbeCount = allWordsData.filter(w => w.type === 'VERBE').length;
+    const adjectifCount = allWordsData.filter(w => w.type === 'ADJECTIF').length;
+    const nomCount = allWordsData.filter(w => w.type === 'NOM').length;
+    
+    document.getElementById('verbe-count').textContent = verbeCount;
+    document.getElementById('adjectif-count').textContent = adjectifCount;
+    document.getElementById('nom-count').textContent = nomCount;
+    document.getElementById('consolidated-count').textContent = allWordsData.length;
+}
+
+function renderConsolidatedData() {
+    const isCompactView = document.getElementById('compact-view').classList.contains('active');
+    
+    if (isCompactView) {
+        renderCompactView();
+    } else {
+        renderDetailedView();
+    }
+    
+    // Update counters
+    document.getElementById('filtered-count').textContent = filteredWordsData.length;
+    document.getElementById('total-count').textContent = allWordsData.length;
+    
+    // Update filter status
+    const statusEl = document.getElementById('filter-status');
+    if (filteredWordsData.length < allWordsData.length) {
+        statusEl.textContent = '(filtré)';
+        statusEl.className = 'text-primary';
+    } else {
+        statusEl.textContent = '';
+    }
+}
+
+function renderCompactView() {
+    const tableBody = document.getElementById('consolidated-table-body');
+    const maxFreq = Math.max(...allWordsData.map(w => w.count));
+    
+    tableBody.innerHTML = '';
+    
+    filteredWordsData.forEach((word, index) => {
+        const intensityPercent = (word.count / maxFreq * 100).toFixed(0);
+        const row = `
+            <tr class="word-row" style="--intensity: ${intensityPercent}%;">
+                <td><strong>${index + 1}</strong></td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-medium me-2">${word.word}</span>
+                        <div class="word-tags">
+                            ${word.tags.map(tag => `<span class="badge bg-outline-secondary me-1" style="font-size: 0.65em;">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2">${word.count}</span>
+                        <div class="progress" style="width: 50px; height: 4px;">
+                            <div class="progress-bar bg-primary" style="width: ${intensityPercent}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge bg-${word.typeColor}">${word.type}</span></td>
+                <td><span class="badge bg-outline-info">${word.language}</span></td>
+                <td class="text-center">
+                    <div class="word-actions" style="opacity: 0; transition: opacity 0.2s;">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="analyzeWord('${word.word}')" title="Analyser">
+                            <i class="bx bx-search-alt"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportWord('${word.word}')" title="Exporter">
+                            <i class="bx bx-download"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+    
+    // Show compact view, hide detailed
+    document.getElementById('compact-table-view').style.display = 'block';
+    document.getElementById('detailed-cards-view').style.display = 'none';
+}
+
+function renderDetailedView() {
+    const cardsBody = document.getElementById('consolidated-cards-body');
+    
+    cardsBody.innerHTML = '';
+    
+    filteredWordsData.forEach((word, index) => {
+        const card = `
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 word-card" style="transition: all 0.3s;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0 fw-bold">${word.word}</h6>
+                            <span class="badge bg-${word.typeColor} fs-6">${word.count}</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-${word.typeColor} me-1">${word.type}</span>
+                            <span class="badge bg-outline-info me-1">${word.language}</span>
+                        </div>
+                        <div class="mb-2">
+                            ${word.tags.map(tag => `<span class="badge bg-outline-secondary me-1" style="font-size: 0.7em;">${tag}</span>`).join('')}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="analyzeWord('${word.word}')">
+                                <i class="bx bx-search-alt me-1"></i>Analyser
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="exportWord('${word.word}')">
+                                <i class="bx bx-download me-1"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        cardsBody.innerHTML += card;
+    });
+    
+    // Show detailed view, hide compact
+    document.getElementById('compact-table-view').style.display = 'none';
+    document.getElementById('detailed-cards-view').style.display = 'block';
+}
+
+function initializeConsolidatedFilters() {
+    // Search functionality
+    const searchInput = document.getElementById('consolidated-search');
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    
+    // Type filters
+    document.querySelectorAll('.filter-type').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            applyFilters();
+        });
+    });
+    
+    // Language filters
+    document.querySelectorAll('.filter-lang').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            applyFilters();
+        });
+    });
+    
+    // Frequency filter
+    const freqFilter = document.getElementById('freq-filter');
+    const freqValue = document.getElementById('freq-value');
+    freqFilter.addEventListener('input', function() {
+        freqValue.textContent = this.value + '+';
+        applyFilters();
+    });
+    
+    // View toggles
+    document.getElementById('compact-view').addEventListener('click', function() {
+        document.getElementById('detailed-view').classList.remove('active');
+        this.classList.add('active');
+        renderConsolidatedData();
+    });
+    
+    document.getElementById('detailed-view').addEventListener('click', function() {
+        document.getElementById('compact-view').classList.remove('active');
+        this.classList.add('active');
+        renderConsolidatedData();
+    });
+    
+    // Reset filters
+    document.getElementById('reset-filters').addEventListener('click', resetConsolidatedFilters);
+    
+    // Hover effects for actions
+    setTimeout(() => {
+        document.querySelectorAll('.word-row').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                const actions = this.querySelector('.word-actions');
+                if (actions) actions.style.opacity = '1';
+            });
+            row.addEventListener('mouseleave', function() {
+                const actions = this.querySelector('.word-actions');
+                if (actions) actions.style.opacity = '0';
+            });
+        });
+    }, 100);
+}
+
+function applyFilters() {
+    const searchTerm = document.getElementById('consolidated-search').value.toLowerCase();
+    const activeTypes = [...document.querySelectorAll('.filter-type.active')].map(btn => btn.dataset.type);
+    const activeLangs = [...document.querySelectorAll('.filter-lang.active')].map(btn => btn.dataset.lang);
+    const minFreq = parseInt(document.getElementById('freq-filter').value);
+    
+    filteredWordsData = allWordsData.filter(word => {
+        // Search filter
+        if (searchTerm && !word.word.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+        
+        // Type filter
+        if (activeTypes.length > 0 && !activeTypes.includes(word.type)) {
+            return false;
+        }
+        
+        // Language filter
+        if (activeLangs.length > 0 && !activeLangs.includes(word.language)) {
+            return false;
+        }
+        
+        // Frequency filter
+        if (word.count < minFreq) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    renderConsolidatedData();
+}
+
+function resetConsolidatedFilters() {
+    // Reset search
+    document.getElementById('consolidated-search').value = '';
+    
+    // Reset type filters (all active)
+    document.querySelectorAll('.filter-type').forEach(btn => btn.classList.add('active'));
+    
+    // Reset language filters (all active)
+    document.querySelectorAll('.filter-lang').forEach(btn => btn.classList.add('active'));
+    
+    // Reset frequency filter
+    document.getElementById('freq-filter').value = 0;
+    document.getElementById('freq-value').textContent = '0+';
+    
+    // Apply filters
+    applyFilters();
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function analyzeWord(word) {
+    console.log(`🔍 Analyse du mot: ${word}`);
+    // TODO: Implémenter l'analyse détaillée
+    alert(`Analyse de "${word}" - Fonctionnalité à venir`);
+}
+
+function exportWord(word) {
+    console.log(`📥 Export du mot: ${word}`);
+    // TODO: Implémenter l'export
+    alert(`Export de "${word}" - Fonctionnalité à venir`);
+}
+
+function detectLanguage(word) {
+    // Détection basique de langue par patterns de mots
+    const patterns = {
+        'EN': ['find', 'discover', 'visit', 'stay', 'good', 'new', 'perfect', 'beautiful', 'hotel', 'city', 'holiday'],
+        'FR': ['découvrir', 'vacances', 'nouveau', 'bel', 'magnifique', 'domaine', 'famille', 'plage', 'montagne'],
+        'DE': ['entdecken', 'finden', 'reise', 'urlaub', 'schön', 'neu', 'wunderschön', 'stadt', 'familie', 'berg'],
+        'NL': ['ontdek', 'vinden', 'prachtig', 'nieuw', 'mooi', 'vakantie', 'natuur', 'strand', 'meer', 'familie']
+    };
+    
+    for (const [lang, words] of Object.entries(patterns)) {
+        if (words.includes(word.toLowerCase())) {
+            return lang;
+        }
+    }
+    
+    // Patterns par suffixes/préfixes courants
+    if (word.endsWith('en') || word.includes('ung') || word.includes('sch')) return 'DE';
+    if (word.endsWith('tion') || word.endsWith('eur') || word.endsWith('ance')) return 'FR';
+    if (word.endsWith('lijk') || word.endsWith('en') && word.length > 5) return 'NL';
+    
+    // Par défaut, anglais
+    return 'EN';
 }
 
 // Vérifier s'il y a une analyse en cours au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 DOM chargé, statut d\'analyse:', '{{ analysis_status }}');
-    
-    // Test du bouton
-    const button = document.getElementById('analyseButton');
-    if (button) {
-        console.log('✅ Bouton d\'analyse trouvé');
-        // Ajouter un event listener alternatif au cas où onclick ne fonctionne pas
-        button.addEventListener('click', function() {
-            console.log('🎯 Clic détecté sur le bouton');
-            startFullAnalysis();
-        });
-    } else {
-        console.error('❌ Bouton d\'analyse non trouvé - statut:', '{{ analysis_status }}');
-    }
-    
-    {% if analysis_status == 'in_progress' %}
-    console.log('🔄 Analyse en cours détectée, recherche du task_id...');
-    // Si analyse en cours, commencer le suivi
-    fetch('/api/running-topic-analysis')
+    // Initialiser les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    // Vérifier si une analyse est déjà en cours
+    fetch('/api/analyze-topics/status')
     .then(response => response.json())
     .then(data => {
-        console.log('📡 Réponse running-topic-analysis:', data);
-        if (data.success && data.task_id) {
-            currentTaskId = data.task_id;
+        if (data.status === 'running') {
+            // Afficher la barre de progression et commencer le suivi CHAQUE SECONDE
             document.getElementById('analysis-progress').style.display = 'block';
-            progressInterval = setInterval(checkProgress, 2000);
-            console.log('⏰ Suivi repris pour task:', data.task_id);
+            analysisInterval = setInterval(checkAnalysisProgress, 1000);
+            
+            // Désactiver le bouton
+            const btn = document.getElementById('analyseButton');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Analyse en cours...';
+            }
         } else {
-            console.log('ℹ️ Aucune analyse en cours côté serveur');
+            // Essayer de charger les résultats existants
+            loadExistingResults();
         }
+    })
+    .catch(error => {
+        console.log('Status check failed, trying to load existing results:', error);
+        loadExistingResults();
     });
-    {% endif %}
-    
-    // Test fonction globale
-    window.testAnalysis = function() {
-        console.log('🧪 Test manuel de la fonction startFullAnalysis');
-        startFullAnalysis();
-    };
-    console.log('🧪 Fonction testAnalysis() disponible dans la console');
 });
+
+function loadExistingResults() {
+    // Charger les résultats d'analyse grammaticale s'ils existent
+    fetch('/api/download-analysis/grammar')
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Pas de données grammaticales');
+    })
+    .then(grammarData => {
+        console.log('✅ Chargement des résultats existants');
+        populateGrammarTabs(grammarData);
+    })
+    .catch(error => {
+        console.log('Pas de résultats existants à charger:', error);
+    });
+}
 </script>
+
+<style>
+/* Skeleton loading effects */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-row {
+    height: 60px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+.skeleton-card {
+    height: 120px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.semantic-loading {
+    opacity: 0.7;
+}
+
+.semantic-loading .card-body {
+    background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 8px;
+}
+
+.table-loading tbody tr {
+    opacity: 0.6;
+}
+
+.table-loading tbody td {
+    background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+    color: transparent !important;
+}
+</style>
 
 {% endblock %}

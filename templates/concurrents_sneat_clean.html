@@ -144,7 +144,9 @@
                     <div class="card-title mb-0">
                         <div class="d-flex align-items-center">
                             <div class="avatar me-3">
-                                {% if competitor.thumbnail_url %}
+                                {% if competitor.thumbnail_local %}
+                                    <img src="{{ competitor.thumbnail_local }}" alt="{{ competitor.name }}" class="rounded">
+                                {% elif competitor.thumbnail_url %}
                                     <img src="{{ competitor.thumbnail_url }}" alt="{{ competitor.name }}" class="rounded">
                                 {% else %}
                                     <span class="avatar-initial rounded bg-label-secondary">
@@ -182,6 +184,9 @@
                             </a></li>
                             <li><a class="dropdown-item" href="/analyze-channel?channel_url={{ competitor.channel_url }}">
                                 <i class="bx bx-refresh me-2"></i>Refresh Data
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="editCountry({{ competitor.id }}, '{{ competitor.country or '' }}')">
+                                <i class="bx bx-flag me-2"></i>Change Country
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="deleteCompetitor({{ competitor.id }})">
@@ -588,6 +593,114 @@ function showNotification(type, message) {
             notification.remove();
         }
     }, 5000);
+}
+
+// Country editor functionality
+function editCountry(competitorId, currentCountry) {
+    const countries = [
+        'France', 'Germany', 'Netherlands', 'United Kingdom', 
+        'Italy', 'Spain', 'Belgium', 'Switzerland', 
+        'Austria', 'International', 'Unknown'
+    ];
+    
+    const countryEmojis = {
+        'France': '🇫🇷', 'Germany': '🇩🇪', 'Netherlands': '🇳🇱', 
+        'United Kingdom': '🇬🇧', 'Italy': '🇮🇹', 'Spain': '🇪🇸',
+        'Belgium': '🇧🇪', 'Switzerland': '🇨🇭', 'Austria': '🇦🇹',
+        'International': '🌍', 'Unknown': '🏳️'
+    };
+    
+    let html = `
+        <div class="modal fade" id="countryModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bx bx-flag me-2"></i>Change Country
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Country:</label>
+                            <select class="form-select" id="countrySelect">
+    `;
+    
+    countries.forEach(country => {
+        const selected = country === currentCountry ? 'selected' : '';
+        const emoji = countryEmojis[country] || '🏳️';
+        html += `<option value="${country}" ${selected}>${emoji} ${country}</option>`;
+    });
+    
+    html += `
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveCountry(${competitorId})">
+                            <i class="bx bx-save me-2"></i>Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('countryModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('countryModal'));
+    modal.show();
+}
+
+function saveCountry(competitorId) {
+    const selectedCountry = document.getElementById('countrySelect').value;
+    
+    // Show loading
+    const saveBtn = document.querySelector('#countryModal .btn-primary');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    // Send to API
+    fetch('/api/competitor/update-country', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            competitor_id: competitorId,
+            country: selectedCountry
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('countryModal'));
+            modal.hide();
+            
+            // Show success notification
+            showNotification('Country updated successfully!', 'success');
+            
+            // Reload page to show changes
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error(data.error || 'Failed to update country');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating country:', error);
+        showNotification('Error updating country: ' + error.message, 'error');
+    })
+    .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+    });
 }
 
 // Initialize on page load

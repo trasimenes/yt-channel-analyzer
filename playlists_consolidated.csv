@@ -1,0 +1,592 @@
+db_id,playlist_id,name,description,category,video_count,created_at,last_updated,classification_source,human_verified,is_human_validated,competitor_id,competitor_name,country
+69,PLLV950EiSCvPHj41ZcyVTdC2Sq1RdA3-8,Room Tours,"Get a sneak peek into a stay with Hilton. With over 20 distinct brands and more than 7,000 properties worldwide, Hilton offers you an exceptional stay — no matter where your travels take you.
+
+Hilton. For The Stay.",hub,99,2025-07-09 18:38:20.434924,2025-07-21 22:07:47,human,True,False,3,Hilton,International
+75,PLLV950EiSCvOQrdDKAzH6dTGQ0oWTjTz2,Shorts,,hub,99,2025-07-09 18:38:20.435384,2025-07-21 22:07:47,human,True,False,3,Hilton,International
+187,PLdgCSoJzrmKGadxAc1WHfukyzxFII2_-u,Expedia Vacation Travel Guides,Be inspired by all the amazing places in our world. Check out all our Vacation Travel Guides in one place,hub,93,2025-07-09 19:53:43.344155,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+25,PL73P7QjiWmZiZbZ03IL31y2PwssL0w_h4,Overig,,hero,90,2025-07-05 17:12:55.884712,2025-07-21 22:07:47,human,True,False,7,Landal,Netherlands
+350,PL08aBiIheuyBtKsaRMaNjumYKjEIgt8Ih,Neueste Videos,,help,90,2025-07-12 22:55:24.487433,2025-07-12 22:55:24.487439,human,True,False,20,TUI Deutschland,Germany
+53,PL0i3nKXRS-DDwcS0yo_yOXkY6tdEDbzaX,Explore our Resorts,Dive into our resorts and the countries they are located in!,hub,82,2025-07-05 17:34:20.953984,2025-07-21 22:07:47,human,True,False,6,Club Med,France
+51,PL0i3nKXRS-DBz_G-FXBuxOMh9twWsq6mQ,Club Med Insider,"We invite you to discover a destination and its resort through the eyes of the chief of village, GOs, GMs, clients.",hub,60,2025-07-05 17:34:20.953917,2025-07-21 22:07:47,human,True,False,6,Club Med,France
+189,PLdgCSoJzrmKFzl7LP0TdECxVXyzUWQBui,Expedia At Disney,,hub,45,2025-07-09 19:53:43.344200,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+285,PLZkZsSK33kzKJtF28vQcDjeWf1iEXJSvH,Hotels & Resorts in France,,help,43,2025-07-12 22:55:05.369937,2025-07-12 22:55:05.369939,human,True,False,14,Belambra,France
+135,PLu_CKZK3SEq8IPokNn2lntm9x9s1G2xer,Discover our Destinations,,hub,42,2025-07-09 19:38:41.987599,2025-07-21 22:07:47,human,True,False,4,Marriott Bonvoy,International
+355,PL08aBiIheuyBfCXG-7VOStyWVWmbMX4SW,TUI Reisevideos - Destinationen / Ausflüge / Hotels,,help,41,2025-07-12 22:55:24.487837,2025-07-12 22:55:24.487840,human,True,False,20,TUI Deutschland,Germany
+96,PLngX0v3VjNHL4St4kb4UgHtVj0yt57UQQ,Entertainment on demand,,hub,40,2025-07-09 19:22:44.087096,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+306,PLXwBZNgnDXtWUb8g94XgblWuw96uFdHMD,Les Campings Huttopia en France,"Huttopia Camping est une offre de vacances nature destinée aux familles qui recherchent une atmosphère calme et authentique pour leurs séjours.
+
+Dans les Campings Huttopia, vous êtes certain de séjourner au cœur de la nature : à la montagne, à la mer ou en forêt. Découvrez les plus belles régions de France en profitant d’un coin de nature exceptionnel pour une déconnexion réussie.
+
+La simplicité, la convivialité, le partage et la proximité avec la nature sont les mots d’ordres des Campings Huttopia. Choisissez un hébergement ou un emplacement traditionnel pour planter votre tente ou installer votre camping-car. 
+
+🏕 33 destinations Campings en France à découvrir : 
+https://europe.huttopia.com/destinations/campings/
+
+_____________________________________________________
+
+
+Huttopia Camping is a nature holiday offer for families looking for a calm and authentic atmosphere for their stays.
+
+In the Huttopia Campsites, you are sure to stay in the heart of nature: in the mountains, at the sea or in the forest. Discover the most beautiful regions of France by enjoying an exceptional corner of nature for a successful disconnection.
+
+🏕 Discover 33 Campings destinations in France
+https://europe.huttopia.com/en/destinations/campings-nature/",help,40,2025-07-12 22:55:14.174443,2025-07-21 22:07:47,human,True,False,17,Huttopia Campings & Villages,France
+194,PLdgCSoJzrmKEU6-my9oAZNlEtKZsdCbDX,Travel Blog | Expedia Viewfinder,"Welcome to the Expedia Viewfinder playlist. Here you'll find info, insider tips, and recommendations about some of the top destinations from around the world. Our group of resident viewfinders come from a variety of backgrounds, from family to luxurious to solo to LGBT travelers, bringing you expert advice about their favorite destinations around the world. No matter where you come from or how you travel, they have a view for you.",hub,39,2025-07-09 19:53:43.344282,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+5,PLQF0g2Fjoa9SYL6xKxBJn7K999f0M7YAG,Top Hotels in the US,"For the perfect stay in the USA, Booking.com’s got you covered! Our top hotels are rated high for their hospitality, features and amenities. Combine that with proximity to popular landmarks, and you’ve got a winner! Book a stay today at Booking.com.",help,39,2025-07-05 16:48:04.248885,2025-07-21 22:07:47,human,True,False,8,Booking.com,International
+52,PL0i3nKXRS-DDDsCgJ9Y6lyalgBcaUd8sK,What's up Club Med ?,Have a look at our newest Resorts and latest renovations!,hub,35,2025-07-05 17:34:20.953951,2025-07-21 22:07:47,human,True,False,6,Club Med,France
+94,PLngX0v3VjNHI-V0n_zS7OuOCFE1qAd4Jz,Binnenkijken | Parken,Kijk mee en ontdek onze verschillende bestemmingen.,hero,35,2025-07-09 19:22:44.087026,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+270,PLZdK_emUC9UzvMCEF_adTKmKkI-FrY7UF,Nos campings-villages en France,"Plutôt Corse, Côte d'Azur, Bretagne, Côte Atlantique, Région parisienne ou Occitanie ? Retrouvez tous les campings-villages Homair Vacances en France : bit.ly/homair-campFr",hub,35,2025-07-12 22:52:54.963601,2025-07-21 22:07:47,human,True,False,16,HOMAIR,France
+134,PLu_CKZK3SEq-69z2NpSbZNzKJvJuaJAEa,Discover our Destinations: Cities,,hub,33,2025-07-09 19:38:41.987364,2025-07-21 22:07:47,human,True,False,4,Marriott Bonvoy,International
+272,PLZkZsSK33kzLaMaSBNuFq6deP-Ll0I-pb,"Belambra, Au plus vrai des vacances - Campagne Eté 2025",On s'habitue vite à la restauration gourmande chez Belambra !,hero,33,2025-07-12 22:55:05.363899,2025-07-21 22:07:47,human,True,False,14,Belambra,France
+21,PL73P7QjiWmZjFCwlXxpHxPCr4qr7CzjBM,Landal TV,"Met Landal TV brengen wij ons populaire Fun & Entertainment-programma gewoon bij jou thuis! Kids kunnen thuis aan de slag met fantastische knutsels, heerlijke recepten, genieten van voorleesmomenten met Bollo en nog véél meer!",hub,32,2025-07-05 17:12:55.884335,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+95,PLngX0v3VjNHLMUWjjcUHmUlPonCWs_yjg,Koos,,hub,31,2025-07-09 19:22:44.087061,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+191,PLdgCSoJzrmKGpVH1P4gs6CZsPbdVFeR_1,One Day in an Amazing City,,hub,30,2025-07-09 19:53:43.344232,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+50,PL0i3nKXRS-DBIw734PDXbpvHmsDIWK85L,(Y)our vision,Immerse yourself in the Club Med spirit!,hero,30,2025-07-05 17:34:20.953881,2025-07-21 22:07:47,human,True,False,6,Club Med,France
+76,PLLV950EiSCvMy8pQANyglGvaXorQj42Bv,Off the Menu,"See the beauty of staying with Hilton through a culinary lens. You'll meet our culinary Team Members, who show you how they put passion and pride into their recipes and the restaurants.
+
+Hilton. For The Stay.",hub,29,2025-07-09 18:38:20.435463,2025-07-21 22:07:47,human,True,False,3,Hilton,International
+131,PLu_CKZK3SEq9sZMO40iTjcVuqjxGciS6l,Get to Know Marriott Bonvoy,,help,26,2025-07-09 19:38:41.987130,2025-07-21 22:07:47,human,True,False,4,Marriott Bonvoy,International
+205,PLdgCSoJzrmKEjJ3ThUmzq75F9j-w-wTyQ,Korea | Expedia,,hub,25,2025-07-09 19:53:43.344460,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+122,PLu_CKZK3SEq-uaHmNV7MSypAecZKJYYze,了解万豪旅享家,,help,25,2025-07-09 19:38:41.986036,2025-07-21 22:07:47,human,True,False,4,Marriott Bonvoy,International
+123,PLu_CKZK3SEq_Fe_DSyxd9NV-4OAZ7e2mX,Entdecken Sie Marriott Bonvoy,,help,25,2025-07-09 19:38:41.986112,2025-07-21 22:07:47,human,True,False,4,Marriott Bonvoy,International
+124,PLu_CKZK3SEq8c7m0cblzf10qKN3qp5c5b,Découvrez Marriott Bonvoy,,hub,25,2025-07-09 19:38:41.986185,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+125,PLu_CKZK3SEq-TIFj0Ah_wsLNq1SlIgIAL,‫تعرّف على‫Marriott Bonvoy,,hub,25,2025-07-09 19:38:41.986258,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+126,PLu_CKZK3SEq8ov7K2w51c5acF4NiuXivR,Conozca Marriott Bonvoy,,hub,25,2025-07-09 19:38:41.986337,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+29,PL73P7QjiWmZinpP-NXlWtQOCkQcgIGfu7,Landal Ski Life,,hub,25,2025-07-05 17:12:55.884866,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+220,PLjjUTxMsgMmey-vnc32ovMoGKDXrI-TN4,Park Primeur | Center Parcs,"Bij Center Parcs doen we er alles aan om je de mooiste vakantieherinneringen te bezorgen. We verrassen je steeds weer met vernieuwde cottages, compleet nieuwe parken en nieuwe activiteiten. In de Park Primeur video's lichten we deze vernieuwingen uit zodat jij volledig op de hoogte blijft! 
+
+Bekijk naast de Park Primeur video's ook deze pagina waar alle vernieuwingen te vinden zijn: https://www.centerparcs.nl/nl-nl/nieuwe-standaard_sck",hub,25,2025-07-09 20:17:20.313571,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+284,PLZkZsSK33kzKQ4qr2E5KqJevabdrPKcqx,Team Belambra,"La parole est donnée au équipes des Clubs Belambra ! Aux petits soins pour nos clients, nos équipes qualifiées et professionnelles sont toujours disponibles pour faire de votre séjour une réussite.",hub,25,2025-07-12 22:55:05.369887,2025-07-21 22:07:47,human,True,False,14,Belambra,France
+103,PLSJ_YwCMBTtY1XQKotDF95tQjSkhjUGzO,France 3 📺,,hub,24,2025-07-09 19:36:43.349102,2025-07-09 22:15:23.081426,ai,False,False,10,VVF,France
+320,PLOZNuB-7l6V4IRReEa1ys9zRAWA7r4r0b,Nos Villages,Découvrez en vidéos nos 29 villages en France,,23,2025-07-12 22:55:20.689455,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+201,PLdgCSoJzrmKHvd8a3lMwyYuBiE-MB86yU,Popular Destinations,,hub,22,2025-07-09 19:53:43.344391,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+16,PL73P7QjiWmZigTXxs9t-O38R6sLI68Aez,De Avonturen van Bollo,"Bollo en zijn vriendjes Saar, Max, Bijtje en Egel nemen je mee de natuur in! Samen beleven ze vele avonturen. Zo gaan ze kamperen, schatzoeken, vliegeren, picknicken en nog veel meer. Kijk je mee?",hub,22,2025-07-05 17:12:55.884079,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+17,PL73P7QjiWmZhm8ypR5nfH0d8bzJjOPbVM,Landal Kids,"Het beste van Bollo's avonturen en Landal TV zodat je voor, tijdens en na je reis nog eventjes Echt Vakantie kunt vieren.",hero,22,2025-07-05 17:12:55.884127,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+41,PLC40C0FB05D1CC660,Parken in Duitsland,Video-impressies van de in Duitsland gelegen parken van Landal GreenParks.,hub,22,2025-07-05 17:12:55.885638,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+230,PLe_YVMnS1oXaw93XiuJarcdhoqEBrLq5K,Airbnb.org,"Airbnb.org is a 501(c)(3) nonprofit organization that facilitates emergency stays for people in large-scale crises around the world.
+
+Airbnb.org leverages Airbnb, Inc.’s technology, services, and other resources at no charge to carry out Airbnb.org’s charitable purpose.
+
+Airbnb.org is a separate and independent entity from Airbnb, Inc. Airbnb, Inc. does not charge service fees for Airbnb.org supported stays on its platform.",hub,22,2025-07-11 12:28:06.101395,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+273,PLZkZsSK33kzLTv5oo7QzQB_AVvmvp83K7,"Vacances d'hiver 2024, Belambra au plus vrai des vacances",Ski aux pieds au coeur de 17 destinations dans les plus belles stations françaises !,hub,22,2025-07-12 22:55:05.364180,2025-07-21 22:07:47,human,True,False,14,Belambra,France
+146,PLu_CKZK3SEq_t2FigFTr3INpnVvGiKzgN,We Are Why We Travel | #MarriottTRAVELER,"From snake readings in New Orleans to biking the best of Orlando, MARRIOTT TRAVELER brings you unexpected moments you’ll want to share and experience — videos by local filmmakers and global travel enthusiasts at the forefront of culture in cities around the world. Experience here, share everywhere. Be a #MarriottTRAVELER.
+
+Read More about Marriott Traveler - http://traveler.marriott.com
+Subscribe to Marriott on YouTube - http://bit.ly/MarriottonYouTube
+Book Direct at http://Marriott.com",hub,21,2025-07-09 19:38:41.988679,2025-07-09 22:15:22.923638,ai,False,False,4,Marriott Bonvoy,International
+19,PL73P7QjiWmZhHAYLwYGSMad01jDdm27Ic,Ontdek Landal,,hub,21,2025-07-05 17:12:55.884261,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+33,PLF99F0F2CCC7EFB8D,Parken in Limburg (NL),Video-impressies van de in Limburg gelegen parken van Landal GreenParks.,hub,21,2025-07-05 17:12:55.885279,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+349,PL08aBiIheuyCmCF9MYilwZG19M-s2B7Kb,So entsteht ein Lächeln: Entdecke deine #smilestory.,"Entdecke die Welt und dein Lächeln auf tui.com/kinder:  http://www.tui.com/short/hIJM9
+Unsere Mitarbeiter, machen ihren Job weltweit mit Leidenschaft & sind  für Euch als TUI Urlaubsexperten vor Ort immer auf der Suche nach tollen Reiseerlebnissen. Lass Dich inspirieren und entdecke deine eigene #smilestory: www.tui.com/smilestory
+
+
+#tui #smilestory",hub,21,2025-07-12 22:55:24.487339,2025-07-21 22:07:47,human,True,False,20,TUI Deutschland,Germany
+297,PLFFD3663F6A67E8EF,Vacances Mer Clubs de Vacances Séjour Eté | Belambra Clubs,"Vivez une expérience Club 100% made in France ! Passez des vacances inoubliables, dans une atmosphère chaleureuse et conviviale au cœur des plus beaux endroits de France.",hub,20,2025-07-12 22:55:05.371514,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+269,PLZdK_emUC9UykBWYZeLahkcVxQAaoe_Zh,L'esprit Homair Vacances,"Parcs aquatiques, toboggans, animations, vacances en plein air et mobil-homes tout confort... c'est ça l'esprit-camping Homair Vacances !",hero,20,2025-07-12 22:52:54.963582,2025-07-15 23:28:12.802697,human,True,False,16,HOMAIR,France
+142,PLu_CKZK3SEq-ziipBNm10CCWBYxVJx63n,Go Beyond Game Day with Marriott,"We’re all about going beyond game day to bring you exclusive experiences, hilarious game shows, and access to some of the NFL’s biggest stars. Get your game face on with some of our favorite football experiences.",help,19,2025-07-09 19:38:41.988439,2025-07-09 22:15:22.902967,ai,False,False,4,Marriott Bonvoy,International
+60,PLSjhlvQVKFhtmmBV71qQv0D2FYEyAHzS0,Het Resort,,hub,19,2025-07-05 18:35:12.634588,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+334,PL08aBiIheuyBjRlqje9jezZduArbbzauI,Beliebte TUI Hotels,,hub,19,2025-07-12 22:55:24.483961,2025-07-21 22:07:47,human,True,False,20,TUI Deutschland,Germany
+168,PLdgCSoJzrmKEz8BO8V2GD6-EE2CBsRUOT,Expedia Vacation Travel Guides | 2019,,hub,17,2025-07-09 19:53:43.343755,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+127,PLu_CKZK3SEq9kbSKwuwckrY-vNzvIt8Bg,Mercedes AMG-Petronas F1 x Marriott Bonvoy,,hub,17,2025-07-09 19:38:41.986410,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+39,PLC32A6FBEE8C03578,Parken op de Waddeneilanden (NL),Video-impressies van de gelegen parken van Landal GreenParks op de Waddeneilanden.,hub,17,2025-07-05 17:12:55.885563,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+58,PLSjhlvQVKFhvnZJ7J9XUtxCdLPFh02ERn,Kids,,hub,17,2025-07-05 18:35:12.634549,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+265,PLZdK_emUC9UwPvHDkVxEnAVOT7q5SGrAy,Ça vient de se passer... événements et actualités Homair Vacances,"Découvrez ici les derniers événements Homair Vacances, les actualités et les plus beaux souvenis de vos vacances...",hub,17,2025-07-12 22:52:54.963492,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+181,PLdgCSoJzrmKEt0Lm9rBsYHSW3oBRozPAK,Expedia At Walt Disney World,,hub,16,2025-07-09 19:53:43.344043,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+71,PLLV950EiSCvOCVOhgfehSRnlje7XAjOww,Stay in the Music with Hilton,"Since hosting the first GRAMMYs® in 1959, Hilton has been home to music’s most iconic moments. Hilton helps fans and musicians stay close to what matters most. 
+
+When music takes you places, It Matters Where You Stay. 
+
+#HiltonForTheStay",hero,16,2025-07-09 18:38:20.435061,2025-07-21 22:07:47,human,True,False,3,Hilton,International
+40,PLE814C11CAC993571,Parken in Gelderland (NL),Video-impressies van de in Gelderland gelegen parken van Landal GreenParks.,hub,16,2025-07-05 17:12:55.885603,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+264,PLZdK_emUC9Uym0iRMO1VMhGMTPtAYdYCD,Top parcs aquatiques Campings - Homair Vacances,Nos campings avec top parcs aquatiques & nouveaux projets de parcs aquatiques :,hub,16,2025-07-12 22:52:54.963471,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+307,PLXwBZNgnDXtXk-DrN2ZSkh5t1VVnDRPW1,Les hébergements chez Huttopia,"Toile & Bois ou Pierre & Bois, découvrez les hébergements tout équipés prêts à vous accueillir sur les campings et villages Huttopia !
+
+Les amoureux de nature trouveront leur bonheur parmi nos tentes en Toile & Bois. La nuit venue, dormez sous la toile et laissez-vous bercer par le bruissement du vent ou le chant des oiseaux... Avec de vrais lits, un plancher en bois, parfois même un poêle à bois ou une salle de bains ! 
+
+Pour des envies de confort ""comme à la maison"", optez pour un hébergement en Pierre & Bois : avec 1 ou 2 chambres et des terrasses en bois, vous allez aimer vous retrouver en toute simplicité à votre chalet, mobile-home, roulotte...
+
+Découvrez tous nos hébergements Campings et Villages sur https://europe.huttopia.com/tous-nos-hebergements/
+
+_____________________________________________________
+
+
+Canvas & Wood or Pierre & Bois, discover fully equipped accommodation ready to welcome you on Huttopia campsites and villages!
+
+For ""home-like"" comfort desires, opt for an accommodation: with 1 or 2 bedrooms and wooden terraces, you will love to find your chalet, mobile home, trailer ...
+
+Discover all our accommodations Campings and Villages on https://europe.huttopia.com/en/all-our-accommodation/",help,16,2025-07-12 22:55:14.174513,2025-07-21 22:07:47,human,True,False,17,Huttopia Campings & Villages,France
+184,PLdgCSoJzrmKFfTYE-hTtdinl4r_Y6msUS,Sight UnScene 2016,"Expedia and NFFTY have partnered to uncover the hidden gems of cities around the globe. Check out our series of short films by NFFTY filmmakers that offer a glimpse of hometowns from a local’s perspective, and find out what makes these cities  unique travel destinations.",hero,15,2025-07-09 19:53:43.344101,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+203,PLdgCSoJzrmKHBB8Njk2KZ3BpCW1tr9acM,Australia | Expedia,,hub,15,2025-07-09 19:53:43.344429,2025-07-21 22:07:47,human,True,False,1,Expedia,International
+130,PLu_CKZK3SEq833rGaLvhyqdwQCaSr9pii,About the Journey,What does it mean to truly know a city? About the Journey is a travel show about venturing off the beaten path to better understand the places we visit.,hub,15,2025-07-09 19:38:41.987036,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+137,PLu_CKZK3SEq8G26q8bg8hEtsrdTq_9VSw,Marriott Bonvoy Moments,"Marriott Bonvoy Moments give members unrivaled access to incredible experiences such as sporting events, culinary, entertainment, and more! Learn more at marriottbonvoy.moments.com.",hub,15,2025-07-09 19:38:41.987811,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+254,PL4_9YHQqdJeDzIY178C1suzS-K11t_yPH,Les Animaux de Center Parcs,"Faîtes la connaissance des animaux qui peuplent la nature de nos Domaines Center Parcs. Nos Domaines Center Parcs, notamment le Domaine du Bois aux Daims, sont caractérisés par l’omniprésence d’animaux dans tout le Domaine, et tout particulièrement dans le Cœur animalier qui abrite plusieurs espèces de nos forêts : renards, sangliers, cerf, etc. que l’on peut observer depuis des affûts dans la Canopée.",hub,15,2025-07-11 19:53:29.415927,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+28,PL73P7QjiWmZgpOjnFsgfQnmKW1pC6G2x-,Seizoenen en feestdagen,,hub,15,2025-07-05 17:12:55.884830,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+215,PLjjUTxMsgMmfv9q9EpDFKI_enDS6RzVzL,POV Report | Center Parcs,"Hulp nodig bij het plannen van je volgende bezoek aan Center parcs? In onze ‘Point of view’ (POV) report video’s nemen we je mee door vier van onze Center Parcs vakantieparken, namelijk: Erperheide, De Eemhof, Het Heijderbos en de Limburgse Peel. Of je nou de comfortabele cottages, de Jungle Dome of Aqua mundo wil bekijken, in deze video’s komen al deze hoogtepunten aan bod.",hub,15,2025-07-09 20:17:20.313400,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+92,PLngX0v3VjNHLJkNWZeCyZfPtFE9z0ikjc,Real Estate bij Roompot,,hub,15,2025-07-09 19:22:44.086945,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+326,PLOZNuB-7l6V4KJwORt1XNZ4WjcAlXsnRg,Siblu à la TV,,,15,2025-07-12 22:55:20.714114,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+192,PLdgCSoJzrmKE0HJw1bAkOvDc_ZhQl8yGz,Yellow Room,,hub,14,2025-07-09 19:53:43.344248,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+45,PLAC442FBBFBF4DDA0,Parken in Oostenrijk,Video-impressies van de in Oostenrijk gelegen parken van Landal GreenParks.,hub,14,2025-07-05 17:12:55.885784,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+102,PLSJ_YwCMBTtbYJ95nWDcL9PT47iqyJanh,Inspiration 😍,,hero,14,2025-07-09 19:36:43.349065,2025-07-09 22:15:23.078530,ai,False,False,10,VVF,France
+59,PLSjhlvQVKFhvsQWLIwnLwkelvNdZYBtnN,Zwembad,,hub,14,2025-07-05 18:35:12.634569,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+231,PLe_YVMnS1oXb0C15qbRDI5PA4HX5Xr-zr,Airbnb it,,hero,14,2025-07-11 12:28:06.101930,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+281,PLZkZsSK33kzLYg5GKRyylMgFvmWj-5hst,"Belambra, au plus vrai des vacances - Campagne",,hub,14,2025-07-12 22:55:05.369287,2025-07-21 11:46:39.571233,ai,False,False,14,Belambra,France
+298,PL0BB62AF4204E575D,Vacances Hiver Séjour Montagne Ski | Belambra Clubs,"Se dépenser et se ressourcer au cœur des plus beaux domaines skiables français, aux pieds des pistes.",hub,14,2025-07-12 22:55:05.371738,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+325,PLOZNuB-7l6V4s5t2z8fv0McD6qQY-uR72,Les Vadrouilles de Corentin,,,14,2025-07-12 22:55:20.713742,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+310,PLIqGTcxAg1TWpCa2SFNzLP4cI1ZZRs2bf,Awards of Excellence 2021,,,14,2025-07-12 22:55:17.005606,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+313,PLIqGTcxAg1TWhkBZIUDHraqKhdNir24lc,Awards of Excellence 2018,Marriott International is pleased to announce the honorees for the 2018 Marriott Awards of Excellence. The Awards of Excellence program embodies the culture of our company and recognizes associates across our global brands and hotels that best represent our core values. Every day our honorees exemplify the company's legendary spirit to serve and bring these values to life for our guests.,,14,2025-07-12 22:55:17.006133,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+354,PL08aBiIheuyBg0F0YO3SRaNLFwDF6dRle,So soll Urlaub sein,"TUI bringt Dich zu jeder Jahreszeit in die schönsten Ziele und besten Hotels. Lass Dich hier für Deine nächste Reise inspirieren & profitiere im Urlaub von der TUI Qualität, erstklassigem Service, Hotels mit Bestnoten und fairen Preisen.",hub,14,2025-07-12 22:55:24.487750,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+64,PLLV950EiSCvNS-BKkw0T9P8p_HZW1jAXv,Fuel Your Passion for Sports with Hilton,,hero,13,2025-07-09 18:38:20.434226,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+67,PLLV950EiSCvOEhHRQ1CHTFLROaJameYGd,What’s new at Hilton,Stay on top of all the latest and greatest from Hilton and be inspired for your next epic adventure.,hub,13,2025-07-09 18:38:20.434777,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+216,PLjjUTxMsgMmcu-Me3ek2hM0ceH8QDuE3R,Review Report | Center Parcs,In Review Report vertelt reviewer Glenn alle ins & outs van onze Center Parcs vakantieparken. Van de keukeninventaris van onze vernieuwde vakantiehuizen tot de leukste waterglijbanen en spannendste activiteiten. Hij duikt in de wereld van Center Parcs en geeft antwoord op alles wat jij wilt weten!,help,13,2025-07-09 20:17:20.313436,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+279,PLZkZsSK33kzLYjvnby5_t3Az_O1Jri13R,Ils l'ont dit : nos vacanciers racontent leur séjour Belambra,"Nos vacanciers se prêtent au jeu de l'interview. Ils dévoilent leurs meilleurs moments, leurs souvenirs, leurs vacances Belambra. 
+
+Belambra, au plus vrai des vacances",hub,13,2025-07-12 22:55:05.368325,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+286,PLZkZsSK33kzJvkfyrBytyK2OayHbbcfGr,Belambra Sports &Motion 2016 et 2017,"A l’occasion d’une année olympique riche en événements sportifs, Belambra Clubs, N°1 des clubs de vacances en France, met aux enchères chaque mois sur eBay.fr des cours particuliers avec de grands sportifs français au profit d’associations caritatives.",,13,2025-07-12 22:55:05.369977,2025-07-12 22:55:05.369979,ai,False,False,14,Belambra,France
+312,PLIqGTcxAg1TWn9wHonCd76HwuNE2kmaZY,Awards of Excellence 2019,,,13,2025-07-12 22:55:17.005982,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+314,PLIqGTcxAg1TVJyhF-KEkNKOh8xOkHG6pp,Awards of Excellence 2017,,,13,2025-07-12 22:55:17.006247,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+342,PL08aBiIheuyDUdziO-ZDQ2qtEkJTV8M3X,reisereporter 2018 - #dasbestejahreureslebens,"Der reisereporter, das größte crossmediale Reise-Magazin Deutschlands, und TUI, Deutschlands größter Reise-Veranstalter, schicken zwei #Reise-Duos zu den schönsten Plätzen der Welt. Sei Teil ihrer Reise – und folge ihnen hier, bei Instagram und auf http://www.reisereporter2018.de!",hub,13,2025-07-12 22:55:24.485964,2025-07-21 11:50:03.206062,ai,False,False,20,TUI Deutschland,Germany
+346,PL08aBiIheuyBTDcM7lf5yPk98Eq4Aqmpz,TUI Kampagnen,"Urlaub - die schönste Zeit des Jahres: Ob pauschal oder ganz individuell bei einem Städtetrip 🗽 – egal wohin es geht, bei TUI findet jeder Urlauber die passende Reise. Jetzt Sonne buchen und sparen in Deinem TUI Reisebüro oder auf tui.com:  http://www.tui.com/smiledeals/ 🌴",hub,13,2025-07-12 22:55:24.486905,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+160,PLdgCSoJzrmKGoRzDZbG24VwriLHyeC3YP,Birthday,,hub,12,2025-07-09 19:53:43.343620,2025-07-09 22:15:22.157664,ai,False,False,1,Expedia,International
+161,PLdgCSoJzrmKGJ5znP0umS2M0ClKMbg8_M,Favorite Food,,hero,12,2025-07-09 19:53:43.343638,2025-07-09 22:15:22.163521,ai,False,False,1,Expedia,International
+193,PLdgCSoJzrmKEc1YpoWXwBLzp45ulF2fSy,Sight UnScene,"Expedia and NFFTY have partnered to uncover the hidden gems of cities around the globe. Check out our series of short films by NFFTY filmmakers that offer a glimpse of hometowns from a local’s perspective, and find out what makes these cities  unique travel destinations.",hero,12,2025-07-09 19:53:43.344263,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+199,PLdgCSoJzrmKGKuwc2FJEt9fdNd6PEOYyJ,South America | Expedia Travel Guides,,hero,12,2025-07-09 19:53:43.344360,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+129,PLu_CKZK3SEq-GhtDrLt58t7EnAHO4vOhD,About the Journey - Full Episodes,"What does it mean to truly know a city? About the Journey is a travel show about venturing off the beaten path to better understand the places we visit. In Season 3, travel journalist and Marriott Bonvoy member Oneika Raymond visits under-the-radar neighborhoods in six iconic cities across the world. With the help of locals who know their neighborhoods best, Oneika learns what makes these places one-of-a-kind: from the sights, sounds and flavors, to the hidden gems, and so much more.",hub,12,2025-07-09 19:38:41.986902,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+147,PLu_CKZK3SEq_r2CD-TjAAZtlXejmjOkSW,Tripping with Sonia Gil,"Join travel fanatic and #MarriottTraveler, Sonia Gil on snake readings in New Orleans, air boat rides in Orlando and epic bar crawls in Chicago. Experience here, share everywhere - http://bit.ly/MarriottTraveler
+
+Subscribe to Marriott on YouTube - http://bit.ly/MarriottonYouTube",hero,12,2025-07-09 19:38:41.988719,2025-07-09 22:15:22.928512,ai,False,False,4,Marriott Bonvoy,International
+100,PLSJ_YwCMBTtaXnT7olKOFmZxlS0-nioYW,"[MEET THE TEAM] 🦉 - Avant vos vacances, partez à la rencontre de nos équipes !",,hub,12,2025-07-09 19:36:43.348973,2025-07-21 22:07:47,ai,False,False,10,VVF,France
+263,PLZdK_emUC9UzuG1azqsraHHB362C0PT9H,On recrute ! Rejoignez la Team Homair Vacances,,hub,12,2025-07-12 22:52:54.963448,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+311,PLIqGTcxAg1TUpS-P6V6bE6wewPAYzaWFQ,Awards of Excellence 2020,,,12,2025-07-12 22:55:17.005874,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+317,PLIqGTcxAg1TXaFxVDhZx1W2d78YAgls1r,Awards of Excellence 2016,"Get to know some of our best teams and associates around the world. From Washington DC to Berlin to Durban, South Africa, these team members excel at their jobs, creating a positive and caring environment at work and also serve as strong role models for colleagues, guests, their families, and members of the community. Because they take care of us and our guests, we’re honoring them with our awards of excellence.
+
+Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY
+Book Direct at http://Marriott.com",,12,2025-07-12 22:55:17.008755,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+353,PL08aBiIheuyCA057a7Et36Zif-UN0DtwB,"Blogger, YouTuber & Instagramer auf Reisen","Erfahrt hier, was unsere Reise- und Lifestyleblogger erleben und welche Eindrücke Sie mit Ihrer Kamera für Euch festhalten.",hub,12,2025-07-12 22:55:24.487689,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+177,PLdgCSoJzrmKEgSyy34Hpc6DqjgIUzSYVY,Expedia At Disneyland Resort,,hub,11,2025-07-09 19:53:43.343971,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+197,PLdgCSoJzrmKFIfLr_O2emyy4tXhu0QNGC,Life at Expedia,,hub,11,2025-07-09 19:53:43.344330,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+68,PLLV950EiSCvMtoKPkvw4XMbm6qDxshZKY,My 9 Things,"Get an unfiltered glimpse into why your favorite creators stay with Hilton. Discover how they travel, learn what they can and can’t live without and see a side of these personalities you’ve never seen before!",hub,11,2025-07-09 18:38:20.434846,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+128,PLu_CKZK3SEq9yvqCixhxAkndhxsf52pEX,StoryBooked Films,"A #documentary short film series featuring the journeys of creative travelers around the world discovering how #travel can inspire and transform us. 
+
+Produced by the Marriott Content Studio.",hub,11,2025-07-09 19:38:41.986692,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+246,PL4_9YHQqdJeDqVPD_jUrJbwTZC_CR2EBl,Les Vacances à Center Parcs,"Center Parcs est LA destination de vacances pour tout le monde ! Venez entre famille, entre amis, avec vos enfants et passez les vacances idéales à Center Parcs !",hub,11,2025-07-11 19:53:29.413557,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+255,PL4_9YHQqdJeAnQI8MqzBvGKnb6ZF3jLCP,Les Activités à Center Parcs,"En vacances, que vous soyez plus sensations fortes ou détente au soleil, vous trouverez forcément votre bonheur à Center Parcs. Dans cette playlist, découvrez nos meilleures activités en vidéo.",help,11,2025-07-11 19:53:29.415971,2025-07-21 22:07:47,human,True,False,5,Center Parcs France,France
+14,PL73P7QjiWmZiHX0EteGrYfmNW47969ufO,Echt liefde voor de natuur,Meer (aandacht voor) duurzaamheid begint bij jezelf. Daarom houden wij bij Landal ons heel veel bezig met het inzetten van duurzame initiatieven.,hub,11,2025-07-05 17:12:55.883910,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+37,PLCEAF12DDB375E61A,Parken in Drenthe (NL),Video-impressies van de in Drenthe gelegen parken van Landal GreenParks.,hub,11,2025-07-05 17:12:55.885486,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+262,PLZdK_emUC9UwJ3_oRVbjigF2KMVXerv9p,Aventuriers Homair Vacances : ils ont testé nos campings et nous disent tout !,"Ils ont testé les campings Homair Vacances, en famille : parcs aquatiques avec toboggans, mobil-homes, activités, animations et services... voici le récit de leurs aventures dans nos campings 4 et 5 étoiles !",hub,11,2025-07-12 22:52:54.963406,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+318,PLIqGTcxAg1TXRsBXXq-QKloWt9t51AY1h,Awards of Excellence 2015,,,11,2025-07-12 22:55:17.008942,2025-07-12 22:55:17.008951,ai,False,False,19,Marriott International,International
+335,PL08aBiIheuyCv1SRIlLt2MLuFsDgTQ5wi,TOP Reiseziele,,,11,2025-07-12 22:55:24.484165,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+159,PLdgCSoJzrmKGdrxHNCLb6601iwDszeRqR,Explore with Expedia,,hub,10,2025-07-09 19:53:43.343599,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+186,PLdgCSoJzrmKHooMkCbpL00HE0EB-OPCP_,St. Jude Dream Adventures,"For kids at St. Jude Children's Research Hospital who can't travel themselves, Expedia decided to bring travel to them.",hub,10,2025-07-09 19:53:43.344139,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+77,PLLV950EiSCvNgfzmr2NTPC3IpIfueHs7l,How To...,"How To... shares the expert advice of Hilton’s talented Team Members, including event planners, housekeepers, aestheticians, interior designers and more. Since 1919, Hilton has been sharing the light and warmth of hospitality with the world — going the extra mile to always create the perfect stay. Now, we're bringing all the tips and tricks of our 103-year history directly to you!  
+
+Subscribe now so you don't miss an episode. ► https://www.youtube.com/hilton ",help,10,2025-07-09 18:38:20.435540,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+119,PLu_CKZK3SEq-WcMfg-TICZ29ZQ1peTq3N,Meet Our Brands,"Marriott Bonvoy has over 30 hotel brands and 10,000 global destinations. Where can we take you?",hero,10,2025-07-09 19:38:41.985813,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+140,PLu_CKZK3SEq-Hol0_KbT3GuqcSTZ6Z-zR,2015 Awards Of Excellence Honorees,"For more stories about the people at the heart of Marriott, visit Marriott.com/HeartoftheHouse
+Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY
+Book Direct at http://Marriott.com",hero,10,2025-07-09 19:38:41.988228,2025-07-09 22:15:22.889395,ai,False,False,4,Marriott Bonvoy,International
+141,PLu_CKZK3SEq-0-cTOV4gaHtdirhjrzqMU,Autograph Collection Hotels Presents The Individualists | Season 2,"See what it’s all about when Autograph Collection Hotels brings you Season 2 of The Individualists, a collection of stories from leaders in film. Hear what they believe makes a good story and learn how travel influences them and the stories they tell just as much as their stories influence the world.
+
+The Individualists celebrates the art of storytelling in a series of portraits and short films. Personal anecdotes from independent leaders in film explore individuality and its affect on their lives and their craft. 
+
+The Individualists is proudly presented by Autograph Collection Hotels.
+
+Visit the Autograph Collection Hotels official website - http://www.autographhotels.com 
+
+Subscribe to Autograph Collection Hotels on YouTube - http://youtube.com/AutographHotels
+Autograph Collection Hotels on Facebook - http://facebook.com/autographcollection
+Autograph Collection Hotels on Twitter - http://twitter.com/Autograph
+Autograph Collection Hotels on Instagram - http://instagram.com/Autographhotels",hero,10,2025-07-09 19:38:41.988381,2025-07-09 22:15:22.899535,ai,False,False,4,Marriott Bonvoy,International
+237,PL4_9YHQqdJeBzV3QUqlbIWZpYZGakr3v3,Bêtes & Méchants,"Je m’appelle Ginette Lèchtons, spécialiste des monstres, sorciers et autres créatures horrifiques, et je suis chargée par Center Parcs d’aller à la rencontre des méchants de la région pour mieux les connaître et vous dévoiler leur vraie histoire ! 
+
+Ecoutez « Bêtes et méchants » un podcast pour toute la famille qui regarde les méchants en face et qui les fait parler. Vous seuls serez juges de leur bonne foi !",hub,10,2025-07-11 19:53:29.413211,2025-07-21 22:07:47,human,True,False,5,Center Parcs France,France
+242,PL4_9YHQqdJeBIEabUEQF2Jq3yoXSmxRJO,Visite Guidée,"Et si on découvrait ensemble tous les recoins d'un Center Parcs ?  Rejoignez-nous pour une visite commentée et exclusive : cottages, Action Factory, Hôtel… Center Parcs n'aura plus aucun secret pour vous ! Pour une immersion encore plus grande dans nos domaines, c'est comme si vous y étiez !",hub,10,2025-07-11 19:53:29.413410,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+251,PL4_9YHQqdJeDpA7K1pXObr_g4uvaMdJ-f,Les Domaines de Center Parcs en France,Vous voulez voir à quoi ressemble votre prochain lieu de vacances ? Découvrez nos domaines et l'expérience Center Parcs : du réveil fruité au cottage jusqu'au plouf à l'AquaMundo… A vous de créer vos propres souvenirs !,hub,10,2025-07-11 19:53:29.413770,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+253,PL4_9YHQqdJeAgjlYvCbPmrGx1_k1L8xrr,Les Domaines de Center Parcs,"Envie d'une parenthèse unique pour vous ressourcer au cœur de la nature ? Découvrez dans cette playlist tous nos domaines Center Parcs, et voyagez au cœur de ces lieux d'exception.",hub,10,2025-07-11 19:53:29.415858,2025-07-21 22:07:47,human,True,False,5,Center Parcs France,France
+47,PL0i3nKXRS-DDXnPQ3zy_33JX7a75ApAx4,Club Med Live,"Based on the idea that inspiration emerges from changes of scenery, Club Med Live is conceived as an artistic residency in the most beautiful places on Earth, combining travel and creation. 
+
+Learn more on www.clubmedlive.fr",hub,10,2025-07-05 17:34:20.953619,2025-07-21 22:07:47,human,True,False,6,Club Med,France
+15,PL73P7QjiWmZj54SyyN6SwpTCFekjA7fVa,Echt Vakantie,,hub,10,2025-07-05 17:12:55.884022,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+34,PL548518507817AEEA,Parken in Noord-Brabant (NL),Video-impressies van de in Noord-Brabant gelegen parken van Landal GreenParks.,hub,10,2025-07-05 17:12:55.885341,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+10,PLQF0g2Fjoa9Q9s2Qyn9gaaGNvkIyLWE17,Booking.com Sightseeing Guides,,hub,10,2025-07-05 16:48:04.249099,2025-07-05 17:48:24.764445,ai,False,False,8,Booking.com,International
+11,PLQF0g2Fjoa9QPHj57Bdrj4C9aFbezu0vs,Packing essentials and travel tips,"The anticipation for travel begins when you start packing. Luckily for you, Booking.com is your backup when you pack up. Flights become a breeze and the car becomes a cozy home-from-home with these packing essentials and travel tips. Whether it's friends, family or your awesome canine best friend beside you, our handy hacks is here to make the most of winter hot-spots, help you chill in summer and generally make travel that little bit better.",help,10,2025-07-05 16:48:04.249141,2025-07-05 17:48:24.765052,ai,False,False,8,Booking.com,International
+210,PLjjUTxMsgMmfVnsdxEX6tXoonRaQv3l4P,Thuis aan tafel | Zomerrecepten,"8 heerlijke zomerrecepten die je thuis of in je cottage kunt maken. Met elkaar en voor elkaar. De recepten zijn gemaakt door Wim Ballieu en Estée Strooker, vol lekkere zomerse smaken. Welk recept ga jij als eerste maken?",hub,10,2025-07-09 20:17:20.313221,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+217,PLjjUTxMsgMme378TG_QcInSeoRdma4LgB,Uitblinkers | Center Parcs,De meest spectaculaire glijbanen of de leukste Indoor Speelparadijzen? Die vind je bij Center Parcs. En wij hebben ze voor jou op een rij gezet in de Uitblinkers video’s!,hero,10,2025-07-09 20:17:20.313472,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+221,PLjjUTxMsgMmdtVj3-dfcOV6gDUUAWsh7z,Vakantieparken Nederland | Center Parcs,"Geniet met de hele familie van een vakantie in Nederland, langs de kust,  in de buurt van bruisende steden of in een bosrijk gebied. Ontdek de prachtige regio’s die Nederland te bieden heeft! 
+
+Lees hier alles over een vakantie in Nederland: https://www.centerparcs.nl/nl-nl/co_vakantiepark-nederland",hero,10,2025-07-09 20:17:20.313603,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+62,PLSjhlvQVKFhvFh9dwHcgw66kYcchuiESz,Boerderijen,,hub,10,2025-07-05 18:35:12.634624,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+232,PLe_YVMnS1oXaQaH5KVZoZXgNPaRGJDHAy,Airbnb Events,,hero,10,2025-07-11 12:28:06.109578,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+66,PLLV950EiSCvPuC70ZZ_oMJxTzUXiWgDzf,How To Hilton Honors | Enhance Your Stay.,"Discover how to maximize the value of Hilton Honors and enhance your stay with the hotel rewards program – from earning Points toward free nights, redeeming Points for dream stays, providing ease and convenience with the Hilton Honors app, earn bonus Points and more.",help,9,2025-07-09 18:38:20.434680,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+80,PLLV950EiSCvO-1PYU8TfyWgYskqGo-Wm5,Stay Hilton. Go Hawaii.,,hub,9,2025-07-09 18:38:20.435797,2025-07-09 22:15:22.556185,ai,False,False,3,Hilton,International
+133,PLu_CKZK3SEq9EMr9jLSlZqapKlBn-SQ_9,Travel by Design Films,"Step inside the minds of the creative visionaries behind the world’s most innovative hotels and be inspired to Travel by Design.
+
+Produced by the Marriott Content Studio.",hero,9,2025-07-09 19:38:41.987291,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+139,PLu_CKZK3SEq_wrXPNl4TEhMmpVzxcSZHm,You're not the same #withoutthegame | Courtyard Hotels: Official Hotel of the NFL,,hero,9,2025-07-09 19:38:41.988069,2025-07-09 22:15:22.881589,ai,False,False,4,Marriott Bonvoy,International
+144,PLu_CKZK3SEq-klV4WuPSwyJpdX2wWgMIW,Do Not Disturb: A Moxy Hotels Original Series with Host Taryn Southern,"Get personal with some of your favorite YouTube stars such as Flula, Mamrie Hart and Bart Baker as Taryn Southern takes us into their rooms and into their beds. Join us for exclusive interviews, games, and more. Think of it as a hotel slumber party with your favorites complete with awesome pajamas and Truth and Dare.
+
+Go behind the scenes on Instagram: https://instagram.com/moxyhotels/
+Learn more about Moxy Hotels: http://bit.ly/1PkX9ff",hero,9,2025-07-09 19:38:41.988586,2025-07-09 22:15:22.910801,ai,False,False,4,Marriott Bonvoy,International
+155,PLu_CKZK3SEq8oGo_GCGqWdnaw2fEujJg6,#LoveTravels,"Whether you’re an adventure seeker, vacationer or business traveler, this is the place to share your passions and show the world how love travels with you. Be inspired, intrigued and motivated to join our universal movement, because #LoveTravels.",hero,9,2025-07-09 19:38:41.989273,2025-07-09 22:15:22.969334,ai,False,False,4,Marriott Bonvoy,International
+247,PL4_9YHQqdJeBnhPen7EzIdtRX9LKxLD9p,Ils ont testé Center Parcs ...,"Virée entre amis, escapade en amoureux ou encore vacances en famille, il y a mille et une façons de vivre l’expérience Center Parcs ! Découvrez les témoignages de nos clients et suivez-les pendant leur séjour exceptionnel !",hub,9,2025-07-11 19:53:29.413592,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+248,PL4_9YHQqdJeArQVDHrOca8e9KiRKe2Dl6,Les Domaines de Center Parcs aux Pays-Bas,"Envie de partir en vacances aventure au cœur de la nature néerlandaise en famille ou entre amis ? Un séjour à Center Parcs aux Pays-Bas comblera vos attentes ! Découvrez nos Domaines néerlandais en Hollande Méridionale, en Hollande Septentrionale, en Brabant Septentrional, en Drenthe, en Flevoland, et dans le Limbourg.",hub,9,2025-07-11 19:53:29.413628,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+256,PL4_9YHQqdJeCHqkCJgjTImUdtIbiwPJ_f,Les Hébergements - Cottages à Center Parcs,"Découvrez nos différents hébergements à Center Parcs : cottages de 2 à 12 personnes, chambres d'hôtel ou hébergements insolites, vous trouverez forcément votre bonheur ! Ces hébergements entièrement équipés à la décoration raffinée sont idéals pour accueillir toute votre famille pour des vacances, ensemble, au cœur de la nature, dans la forêt.",hub,9,2025-07-11 19:53:29.416009,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+46,PL0i3nKXRS-DDQFW17Va95WJJ8pO9TyUYJ,That's l'Esprit Libre,"New image, new campaign: Over 70 years after its inception, Club Med enters a new era with
+the ambition of raising awareness about its unique lifestyle. Fresher, freer, elevated —That's l'Esprit Libre.",hero,9,2025-07-05 17:34:20.952135,2025-07-21 22:07:47,ai,False,False,6,Club Med,France
+32,PL73P7QjiWmZhYf1SDk7e0pmKPk_7_wP2y,Parken in Friesland en Groningen (NL),Video-impressies van de in Friesland en Groningen gelegen parken van Landal GreenParks.,hub,9,2025-07-05 17:12:55.885099,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+4,PLQF0g2Fjoa9Rx3kBJ1bPqk7VoVRjDjEUL,Tina Fey books whoever she wants to be,"Tina Fey hires body doubles to help her experience the amazing accommodations on Booking.com. Watch the epicness unfold. With so many possibilities on Booking.com, you can book whoever you want to be.
+
+Booking.com: Making it easier for everyone to experience the world with hotels, vacation homes and more.",hero,9,2025-07-05 16:48:04.248788,2025-07-05 17:48:24.763411,ai,False,False,8,Booking.com,International
+6,PLQF0g2Fjoa9S0vwONRLq3XthNEeDLiZlj,Experience Major League Baseball with Booking.com,"Turn your love for baseball into an unforgettable travel experience with thousands of great stays across the USA, from iconic stadiums to charming baseball towns. Join us as we experience the excitement of MLB Opening Weekend, All-Star Weekend, and the Division Series with some of your favorite legends like Ken Griffey Jr. Because where there’s MLB, there’s Booking.com. 
+
+Booking.com - Official partner of Major League Baseball.",hero,9,2025-07-05 16:48:04.248942,2025-07-21 22:07:47,ai,False,False,8,Booking.com,International
+9,PLQF0g2Fjoa9RKkKxU1vZShCcT7Os1HAzI,One Mission,,hub,9,2025-07-05 16:48:04.249066,2025-07-05 17:48:24.764290,ai,False,False,8,Booking.com,International
+224,PLjjUTxMsgMmd8HIwQqWbBn4FhHITOtOUX,Vloggers op vakantie,Bekijk hoe de Vakantie Vloggers tijdens hun vakantie in een Center Parcs vakantiepark quality time doorbrengen met elkaar. Van het uitproberen van verschillende restaurants tot het doen van de meest uitdagende activiteiten. Ontdek hoeveel lol de families samen hebben!,hub,9,2025-07-09 20:17:20.313699,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+89,PLngX0v3VjNHKPGSispCWihO5vs4e-wJOQ,Muziek & dansen,Zing en dans je mee?,hub,9,2025-07-09 19:22:44.086732,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+90,PLngX0v3VjNHKT1o4txGooC5VRTfXtRyhD,Arts & Crafts | Knutselen,,hub,9,2025-07-09 19:22:44.086769,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+260,PLZdK_emUC9UwnhvbgVN7pGvPi9Hjs3VGS,Homair : 140 destinations en Europe,,hero,9,2025-07-12 22:52:54.963249,2025-07-21 22:07:47,human,True,False,16,HOMAIR,France
+166,PLdgCSoJzrmKGU2FdnSzh6dpEJPijcxkl9,Local Lens,Exploring the world’s most interesting destinations through the lens of a talented local.,hub,8,2025-07-09 19:53:43.343722,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+150,PLu_CKZK3SEq8CNar_cyl3zPxt49c7F66C,Marriott Meeting Service Apps,Looking to manage your meetings and events without ever leaving your seat? Check out all of the great Marriott Meeting Service's Apps available at your fingertips! Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY,help,8,2025-07-09 19:38:41.988970,2025-07-09 22:15:22.946856,ai,False,False,4,Marriott Bonvoy,International
+152,PLu_CKZK3SEq8nv1uze1Ozh9EPDO0_GgPJ,Travel Itinerary Ideas & Inspiration,"From Sonoma Valley to Vienna, these videos highlight authentic and culturally rich destinations we recommend you visit on your next trip! 
+
+Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY",hero,8,2025-07-09 19:38:41.989048,2025-07-09 22:15:22.958081,ai,False,False,4,Marriott Bonvoy,International
+153,PLu_CKZK3SEq_cqg3D55Zk9-kHFYr1hvgn,Hotel Travel Apps & Innovations,Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY,hero,8,2025-07-09 19:38:41.989082,2025-07-09 22:15:22.961946,ai,False,False,4,Marriott Bonvoy,International
+225,PLjjUTxMsgMmdbI-CGvJXBNoSHWiI-Ybym,Vakantieparken Frankrijk | Center Parcs,"Ontdek de unieke regio’s tijdens een vakantie in Frankrijk. Van prachtige kastelen tot Disneyland® Paris. Beleef samen een actieve of ontspannende vakantie! 
+
+Lees hier alles over een vakantie in Frankrijk: https://www.centerparcs.nl/nl-nl/co_vakantiepark-frankrijk",hero,8,2025-07-09 20:17:20.313731,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+85,PLngX0v3VjNHLaGruBT1FIxot0RbRk1Aw6,Koos Animations,,hub,8,2025-07-09 19:22:44.086537,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+283,PLZkZsSK33kzJly9vY67TIuP1OCILzBpDR,"Belambra Clubs, N°1 des clubs de vacances en France","Passez des vacances exceptionnelles en famille
+chez Belambra Clubs ! Des vacances dans les plus beaux endroits de France, des souvenirs plein la tête et des émotions pour toute l’année.",hub,8,2025-07-12 22:55:05.369763,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+324,PLOZNuB-7l6V4GtPeWuckGC5rOP5BDD0uL,Découvrez nos mobil homes !,,,8,2025-07-12 22:55:20.713491,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+316,PLIqGTcxAg1TVBP-Sp7SVdw6rH2rSxOm_N,Social Impact,,,8,2025-07-12 22:55:17.008532,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+157,PLdgCSoJzrmKGcUt3MOiQd-OB8S16hR747,UK DC NMW Microstories 2025,,hub,7,2025-07-09 19:53:43.342693,2025-07-09 22:15:22.142436,ai,False,False,1,Expedia,International
+164,PLdgCSoJzrmKG-hoBJ4zdNdz3Tr5h_vqJw,Travel Tips,"Experienced travelers share their personal travel tips, hacks and advice.",help,7,2025-07-09 19:53:43.343688,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+200,PLdgCSoJzrmKEQ6PKvptpZh3grDr3NhJ7c,One Day in One Minute: Little City Series,,hub,7,2025-07-09 19:53:43.344376,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+109,PLu_CKZK3SEq-TtT0AC5GOs51R31zTUynJ,60 Seconds In,"Join us for 60 Seconds In interesting destinations, guided by everyday people and their stories.",hub,7,2025-07-09 19:38:41.984947,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+114,PLu_CKZK3SEq9p7taYlmVo9o8KYQFNpA0-,Splash into Summer,,hub,7,2025-07-09 19:38:41.985468,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+22,PL73P7QjiWmZijz_fTlTUToYENxzs-Qhe6,Parken in Denemarken,,hub,7,2025-07-05 17:12:55.884376,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+23,PL73P7QjiWmZjk6wyVc0LBpY80GIGE-WGp,Ontdek het met Ruben Smit,,hub,7,2025-07-05 17:12:55.884416,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+36,PL386D8CA01B5203C6,Parken in Overijssel (NL),Video-impressies van de in Overijssel gelegen parken van Landal GreenParks.,hub,7,2025-07-05 17:12:55.885441,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+42,PL8433D3D2C71BEEB0,Parken in België,Video-impressies van de in België gelegen parken van Landal GreenParks.,hub,7,2025-07-05 17:12:55.885674,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+207,PLjjUTxMsgMmck_2XcYB8lnQsOoLcpNXAt,Zen op Zondag,,hub,7,2025-07-09 20:17:20.311798,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+222,PLjjUTxMsgMmc_Mk6FkdqAfQS6QxDLEK4B,Uitvogelen,"Ook nieuwsgierig hoe iets werkt in Center Parcs? Uitvogelaar Suzanne neemt je mee op pad! Ze zoekt onder andere uit hoe een wildwaterbaan werkt, hoe je een indoor jungle levend houdt en hoe je in de vakantiestemming komt. Suzanne weet het uiteindelijk altijd uit te vogelen. Nieuwsgierig? Ga met haar mee op ontdekkingstocht.",hub,7,2025-07-09 20:17:20.313637,2025-07-09 22:15:22.053626,ai,False,False,9,Center Parcs,Netherlands
+226,PLjjUTxMsgMmeezQZ4OV49LQePR5y2hbQl,Vakantieparken Duitsland | Center Parcs,"Beleef een mooie tijd samen tijdens een familievakantie in Duitsland. Ontdek de prachtige Duitse natuurgebieden, gezellige dorpjes, het vulkaanlandschap, de kust en gebergtes. Ga voor een weekendje weg of een langere vakantie. In Duitsland is er genoeg te beleven, voor iedereen! 
+
+Lees hier alles over een vakantie in Duitsland: https://www.centerparcs.nl/nl-nl/co_vakantiepark-duitsland",hero,7,2025-07-09 20:17:20.313766,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+227,PLjjUTxMsgMmfIqGxTjYiHqCIUhF6xC34e,Vakantieparken België | Center Parcs,"Beleef samen een heerlijke familievakantie in België. Ontdek de bosrijke gebieden of geniet van de verre zeegezichten aan de kust. In België is jouw vakantie een perfecte mix van actie en rust!
+
+Lees hier alles over een vakantie in België:
+https://www.centerparcs.nl/nl-nl/co_vakantiepark-belgie",help,7,2025-07-09 20:17:20.313796,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+101,PLSJ_YwCMBTtYYjczlqcsAKvMBRZCF0bfY,VVF SERIES - Là où tout commence...,"Se recentrer sur les choses simples... Renouer avec ce qui nous entour...
+Voilà qui fait sens ! Nos vacances sont le point de départ pour vos expériences insolites et passionnantes. 
+Découvrez ""VVF Séries"", nos web-reportages qui vont vous inspirer dans le choix de vos vacances.",hub,7,2025-07-09 19:36:43.349021,2025-07-09 22:15:23.075901,ai,False,False,10,VVF,France
+87,PLngX0v3VjNHJkvJPSCFPFdKUFIcuaZ4G_,Koos Voorleesverhalen,,hub,7,2025-07-09 19:22:44.086657,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+88,PLngX0v3VjNHKgAi7EYYXYmkyj2Mc7U3rI,Koos Bedtime Story's,,hub,7,2025-07-09 19:22:44.086695,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+233,PLe_YVMnS1oXa5cxexm6FhshHP-F9K85Kh,Hosting Tools,,help,7,2025-07-11 12:28:06.113702,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+301,PLXwBZNgnDXtXKRsQzIADfg_5IwpkSIF4H,Les Villages Huttopia aux USA et Canada,"In The World Of Huttopia...
+Nature is the only luxury
+For 20 years, Huttopia has sought out unique natural sites and landscapes.
+A forest, an unspoilt location, a unique view, a tranquil setting and endless nature… You are at Huttopia!
+
+Get away from it all!
+The mind is at rest, turned to the sound of the breeze in the trees, and different experiences… At Huttopia, you can disconnect from daily life and reconnect with your loved ones.
+
+A promise: authenticity
+Camp with your tent or motorhome on natural sites or make the most of our aesthetic and comfortable ready-to-camp accommodation (wood and canvas): a promise of authentic holidays in the most beautiful regions of France.
+
+Comfort, at its most simple
+We strive to offer a new Art of Camping combined with simple comfort, based on the essentials. A comfy bed, a good mattress, sometimes a bathroom (but not always!), a wood stove… and environmentally-friendly innovations that will make your holidays even easier.
+
+Turn your holiday into an adventure…
+Visit a region and discover everything it has to offer, try an original activity, make new friends, sample a local speciality … In the Huttopia world, every day is a discovery.
+
+A sustainable vision
+Huttopia offers campings and villages that minimize their impact on the local surroundings and favour an approach towards greater sustainability.",hub,7,2025-07-12 22:55:14.173513,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+156,PLdgCSoJzrmKFpK3xcvgaKWISlagMKn9Zd,SG DC NMW Microstories 2025,,hub,6,2025-07-09 19:53:43.341387,2025-07-09 22:15:22.138993,ai,False,False,1,Expedia,International
+165,PLdgCSoJzrmKH04tUD-X0EfUI-NKZvTYhe,Where To: Canada,"Expedia and Destination Canada present Where To, a series about going beyond the expected search results of travel.",hub,6,2025-07-09 19:53:43.343705,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+169,PLdgCSoJzrmKEBIrj5L1vkdphAmbkrotlD,Collaborations | Expedia Travel Partners,,hero,6,2025-07-09 19:53:43.343771,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+196,PLdgCSoJzrmKG7Pu8xMRxfsbfH6s-208O_,Activities,,hub,6,2025-07-09 19:53:43.344314,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+202,PLdgCSoJzrmKEoanjxHEKVl2FyqCFRc3Lf,New Zealand | Expedia,,hub,6,2025-07-09 19:53:43.344412,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+63,PLLV950EiSCvM1A7THW4y6MHHEO9rUAD46,Hilton Saved My Stay,"Experience how Hilton saves the stay with genuine hospitality and meaningful human connection. In this series, Hilton found travelers in the middle of rough stays with competitors and swooped in to ""save"" them. Tune in to see why It Matters Where You Stay—and how Hilton consistently goes the extra mile for every guest.",hero,6,2025-07-09 18:38:20.428409,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+74,PLLV950EiSCvPGjX4N3629x_CTHJ9saBFY,The Stay Gifting Guide,"When your loved ones need a little less work and a lot more play, It Matters Where You Stay.
+Looking for sure-to-please holiday gift ideas? Get inspired with curated stays that are certain to make memories, ensuring this holiday gift lasts forever.",hub,6,2025-07-09 18:38:20.435306,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+116,PLu_CKZK3SEq8Thu_PBRH-mLDx9ZKe1JjG,Springtime Getaways,,hub,6,2025-07-09 19:38:41.985613,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+117,PLu_CKZK3SEq9gtxj6ZXmByW--4u4XzAy1,Cozy Winter Vibes,,hub,6,2025-07-09 19:38:41.985677,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+121,PLu_CKZK3SEq9tgJFe4LWVA-buZ0Zg6q6k,Travel By Design Podcast,"Behind the facade of every world-class hotel, there’s a story waiting to be heard. From a secluded overwater villa in the Maldives, to a rejuvenated royal palace in Budapest, to a trendy hotspot in downtown Los Angeles — join host Hamish Kilburn as he meets the architects, designers, and visionaries who dive deep into the craft of design and connect us to the world’s most extraordinary travel experiences. On each episode of Travel by Design Hamish chats with the creative mind behind a one-of-a-kind hotel — to hear how destination inspired their concept, how they brought it to life, and what it’s like to enjoy the space as a traveler.",hero,6,2025-07-09 19:38:41.985954,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+148,PLu_CKZK3SEq9CBaM8dTTDogGQ3iWZiqyO,Experience More with Mobile Check-In,"Marriott International has teamed with the Emmy-nominated, multi-platform internet and pop culture media brand What’s Trending and host Shira Lazar to produce five videos that feature a cross-range of YouTube influencers taking a tongue-in-cheek approach to capturing their personal journeys thanks to mobile check-in. Empowering travelers to experience more in cities around the world.",hero,6,2025-07-09 19:38:41.988753,2025-07-09 22:15:22.936047,ai,False,False,4,Marriott Bonvoy,International
+149,PLu_CKZK3SEq88xaSsTbd2EZyzcdqALdll,Marriott’s #LondonUnfiltered Challenge,"Marriott challenged five London bloggers to photograph a day in their city with just a disposable camera and no filters allowed. Watch our videos to see how they got on!
+
+Learn some more about #LondonUnfiltered: http://travel.marriott.co.uk/london/london-unfiltered/",hero,6,2025-07-09 19:38:41.988898,2025-07-09 22:15:22.939130,ai,False,False,4,Marriott Bonvoy,International
+151,PLu_CKZK3SEq__XfXwzwKEbGmeFWZiIlZq,Live Music Events at Renaissance Hotels,Enjoy live musical performances and special guest appearances at Renaissance Hotels. For more information and upcoming event listings visit -  http://renhotels.com/events,hub,6,2025-07-09 19:38:41.989012,2025-07-09 22:15:22.954578,ai,False,False,4,Marriott Bonvoy,International
+154,PLu_CKZK3SEq92p72s5JD3yxUibKE6L75N,Best of Marriott on YouTube,"Highlights and favorite videos from Marriott network on YouTube.
+
+Subscribe to Marriott on YouTube - http://bit.ly/1tNA6dY",hub,6,2025-07-09 19:38:41.989115,2025-07-09 22:15:22.965373,ai,False,False,4,Marriott Bonvoy,International
+241,PL4_9YHQqdJeChe0s0uLc3iS4-DZsdAWcE,L'Observatoire,"Vous vous posez des questions sur l'environnement qui vous entoure ? Vous êtes à la bonne porte. Venez avec nous pour découvrir les petits secrets de la nature, comment les insectes se comportent, pourquoi plante-t-on des forêts…? Vous en ressortirez que plus cultivé !",hub,6,2025-07-11 19:53:29.413374,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+243,PL4_9YHQqdJeABnwQC1LLh4lopIez9jDt4,Allô Center Parcs,"Allô allô, un problème, une question sur un cottage, sur nos équipements bébés, nos activités… on vous répond. Pas de panique, nous sommes là et prêts à vous aider !",hub,6,2025-07-11 19:53:29.413446,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+20,PL73P7QjiWmZjjv_y2yaZOv-qeF0eQ1ojC,Dansen met Bollo - Landal TV,,hub,6,2025-07-05 17:12:55.884298,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+44,PL4DD2CAE49584F7BE,Parken in Zwitserland,Video-impressies van de in Zwitserland gelegen parken van Landal GreenParks.,hub,6,2025-07-05 17:12:55.885749,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+2,PLQF0g2Fjoa9Shi-fwQIO_4OGdJ7QFid_g,MLB 2024,Learn about Booking.com and MLB's exciting partnership and how finding the right stay can make you a fan of any US city. Even your rival's,help,6,2025-07-05 16:48:04.248379,2025-07-21 22:07:47,ai,False,False,8,Booking.com,International
+86,PLngX0v3VjNHJT9IaHT6NIhEtGGt-BGHGl,Abenteuer mit Koos,,hero,6,2025-07-09 19:22:44.086614,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+280,PLZkZsSK33kzIjxShnpavZxmrzBcZ-yl0Y,Au plus vrai des vacances,,hub,6,2025-07-12 22:55:05.369056,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+323,PLOZNuB-7l6V7xdvyUb3bKXXKU72uw8MuU,Découvrez-les vite !,Découvrez vite les profils qui font l'esprit Siblu !,,6,2025-07-12 22:55:20.713029,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+268,PLZdK_emUC9UzIye7wL6o8icwZYWgetEHO,Nos campings-villages en Italie,"Plutôt Toscane, Vénétie, Lac de Garde ou Sardaigne ? Retrouvez tous les campings-villages Homair Vacances en Italie : bit.ly/homair-ITe",help,6,2025-07-12 22:52:54.963563,2025-07-21 22:07:47,human,True,False,16,HOMAIR,France
+305,PLXwBZNgnDXtWGDq-sqodkrGMOQte8xwN1,L'esprit Huttopia,"Vous êtes plutôt mer ? montagne ? ou l’âme d’un sportif ?
+
+Chez Huttopia vous choisissez vos vacances ! Des activités ludiques, de plein air, de détente ou à sensations vous attendent dans nos Campings et Villages Huttopia.
+
+Choisissez entre Camping et Village : https://europe.huttopia.com/camping-ou-village/
+
+Trouvez la destination idéale selon vos critères : https://europe.huttopia.com/vos-envies/
+
+_____________________________________________________
+
+You are rather sea? Mountain ? or the soul of an athlete?
+
+At Huttopia you choose your holidays! Fun, outdoor, relaxing or thrilling activities await you in our Huttopia Campsites and Villages.
+
+Choose between Camping and Village: https://europe.huttopia.com/en/campsite-or-village/
+
+Find the ideal destination according to your criteria: https://europe.huttopia.com/en/vos-envies/",hub,6,2025-07-12 22:55:14.174375,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+308,PLXwBZNgnDXtUiA1SxEnvjvgnIFvrXrAeA,Les Villages Huttopia en France,"Huttopia Village est une offre de vacances destinée aux familles qui recherchent un cadre de nature exceptionnel pour leurs séjours.
+
+Dans les Villages Huttopia, vous êtes certain de trouver un lieu unique où s’allient nature, confort et activités pour une déconnexion réussie au cœur de sites d’exception.
+
+Une forêt, un espace préservé, un point de vue unique, un lac, un étang ou encore des hébergements atypiques vous attendent pour vous faire bénéficier d’une expérience et d’instants uniques.
+
+🏔 4 destinations Villages en France à découvrir : https://europe.huttopia.com/destinations/villages/
+
+_____________________________________________________
+
+
+Huttopia Village is a holiday offer for families looking for an exceptional setting for their holidays.
+
+In Huttopia Villages, you are certain to find a unique place where nature, comfort and activities combine for a successful disconnection at the heart of exceptional sites.
+
+🏔 Discover 4 Villages destinations in France
+https://europe.huttopia.com/en/destinations/villages-forestiers/",hub,6,2025-07-12 22:55:14.174590,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+341,PL08aBiIheuyD-YKFtGGQhWyok54JM4u3A,TUI BLUE,,,6,2025-07-12 22:55:24.485751,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+167,PLdgCSoJzrmKGnO-1x7T-ZUSyNtZzktgeZ,Discover Your Expedia Yellow,"Yellow is the color of warmth, joy, and confidence. What does yellow mean to you? #ExpediaYellow",hub,5,2025-07-09 19:53:43.343738,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+179,PLdgCSoJzrmKGj1yyzXPTIjq8cM7wSDm4t,Hawaii | Expedia,,hub,5,2025-07-09 19:53:43.344010,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+112,PLu_CKZK3SEq8YpIihIWTWC3iJWRYCH67A,Fall Escapes and Cozy Moments,,hub,5,2025-07-09 19:38:41.985315,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+113,PLu_CKZK3SEq_94oIiulQOko30cYPlALAZ,Escape & Unwind: Relaxing Sights & Sounds of Marriott Bonvoy,"Travel around the world to experience the tranquil, scenic settings of Marriott Bonvoy.",hub,5,2025-07-09 19:38:41.985392,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+118,PLu_CKZK3SEq8rVmkxV7EdhjgTd8GuwDs0,Up Close & Unexpected x Mercedes-AMG PETRONAS F1 Team,"Join us on a thrilling tour across Europe and the Middle East to experience the most exciting races. Discover amazing destinations, unforgettable Marriott Bonvoy experiences, and exceptional hotels—all in one incredible journey.",hero,5,2025-07-09 19:38:41.985741,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+132,PLu_CKZK3SEq8j6MaX8XI6OwoUAZt8hJqe,Leadership Tips from Mercedes-AMG Petronas Formula One Team,,hub,5,2025-07-09 19:38:41.987219,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+136,PLu_CKZK3SEq-WnpUSd2zZJTGnsNa0x_w4,Good Travel Talk,,hero,5,2025-07-09 19:38:41.987680,2025-07-09 22:15:22.869681,ai,False,False,4,Marriott Bonvoy,International
+145,PLu_CKZK3SEq8XJw8kV3wvg_Q_4w04THwN,Hot Shoppe: An Original Marriott Series,"Join us in watching an original series that illustrates Marriott’s core values in five fictional stories. When it comes to service, nobody can beat J.W., Alice, and their Hot Shoppe team. Watch as they put people first, pursue excellence, embrace change, act with integrity, and serve our world.
+
+http://www.marriott.com/culture-and-values/core-values.mi",hero,5,2025-07-09 19:38:41.988621,2025-07-09 22:15:22.917087,ai,False,False,4,Marriott Bonvoy,International
+238,PL4_9YHQqdJeCTheYPGtJ769zZrPCnMB2Q,Les régions autour de nos domaines,"Avis aux curieux et aux friands de nouvelles aventures ! Si vous aimez l'expérience Center Parcs et que vous souhaitez enrichir votre séjour en visitant les belles régions qui entourent nos domaines, c'est par ici ! Il n'y a plus qu'à vous laissez-vous guider…",hub,5,2025-07-11 19:53:29.413259,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+245,PL4_9YHQqdJeAOsYN_0GGNk-wCi861zISo,Il Était Une Fois | Center Parcs,"Il était une fois un lieu unique, en osmose avec la nature, idéal pour vous ressourcer, profiter de vos proches, et vivre des moments inoubliables.",hub,5,2025-07-11 19:53:29.413522,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+250,PL4_9YHQqdJeCUDdTnFuLHKBUyrxjm2C0Q,Les Domaines de Center Parcs en Allemagne,"Envie de partir en vacances aventure au cœur de la nature allemande en famille ou entre amis ? Un séjour à Center Parcs en Allemagne comblera vos attentes ! Découvrez nos Domaines allemands en Allemagne du Sud, en Rhénanie du Nord, en Rhénanie Palatinat, dans le Saarland, en Lüneburger Heide et en Nordseeküste.",hub,5,2025-07-11 19:53:29.413733,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+18,PL73P7QjiWmZj0_5ltiWjS5QxyPOZNOk0Q,Homeoweners,,hub,5,2025-07-05 17:12:55.884213,2025-07-05 17:37:39.905957,ai,False,False,7,Landal,Netherlands
+24,PL73P7QjiWmZiuAt9yvMjNvj9ldWWdPYAw,Overige video's,,hub,5,2025-07-05 17:12:55.884635,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+30,FLs0JRl3oKLg4O3v37er3MlA,Favorites,,hero,5,2025-07-05 17:12:55.884907,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+31,PL73P7QjiWmZiQthPdlbTUJhbvMOn7qt0V,Parken in Flevoland (NL),Video-impressies van de in Flevoland gelegen parken van Landal GreenParks.,hub,5,2025-07-05 17:12:55.884946,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+1,PLQF0g2Fjoa9SEpwtFCuUCpvd60A1tOv-A,Find exactly what you're booking for,,hub,5,2025-07-05 16:48:04.247022,2025-07-21 22:07:47,human,True,False,8,Booking.com,International
+56,PLSjhlvQVKFhshGT45wQROUYtB73ZjfK9I,Academies,,hub,5,2025-07-05 18:35:12.634485,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+228,PLe_YVMnS1oXYpboGSSb4GjaibhG05UbGu,Don't just see a place,,hub,5,2025-07-11 12:28:06.094775,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+229,PLe_YVMnS1oXbasQ74-QSX0bMCdyvgSwYt,Get an Airbnb,,hero,5,2025-07-11 12:28:06.100765,2025-07-21 22:07:47,human,True,False,13,Airbnb,International
+278,PLZkZsSK33kzLI6_eoeWpTeeNHUH-gXWko,Au plus vrai des vacances : hiver 2023-2024,,hub,5,2025-07-12 22:55:05.365798,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+266,PLZdK_emUC9UwpsS-fcHzjld8wU0KqehFp,Animations !,,hub,5,2025-07-12 22:52:54.963514,2025-07-21 22:07:47,human,True,False,16,HOMAIR,France
+303,PLXwBZNgnDXtUmAe3Ye3h_sQXRycPfhxuK,Les destinations en 360° chez Huttopia,"Découvrez les destinations Campings et Villages Huttopia d'une toute autre manière ! Nous vous proposons des vidéos découvertes en 360°. Plongez dans l'univers du camping en bougeant votre téléphone, regardez tout autour de vous pour découvrir la destination !
+
+🏕🌲 En savoir plus sur les destinations Campings et Villages :
+https://europe.huttopia.com/destinations/
+
+_____________________________________________________________________________
+
+Discover Huttopia Campsites and Villages destinations in a whole new way! We offer you videos discovered in 360 °. Immerse yourself in the world of camping by moving your phone, look all around you to discover the destination!
+
+🏕🌲 Learn more about Campsites and Villages destinations:
+https://europe.huttopia.com/en/destinations/",hub,5,2025-07-12 22:55:14.174233,2025-07-21 11:49:54.412984,ai,False,False,17,Huttopia Campings & Villages,France
+337,PL08aBiIheuyBgzBuhLroJS2ggLbnTtSQZ,Nachhaltiges Reisen mit TUI,,hub,5,2025-07-12 22:55:24.484273,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+344,PL08aBiIheuyAkexnOQM-ipcfre3KNLD7X,TUI Care Foundation,,,5,2025-07-12 22:55:24.486569,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+347,PL08aBiIheuyC94WuOfaUzI6Hd5NH8abGG,Global Gourmet,,,5,2025-07-12 22:55:24.487035,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+348,PL08aBiIheuyC9Hl07QB0ZHjECftmo5ueK,Capture The Moment - Warum es sich lohnt zu reisen.,"Mit der Serie ""Capture The Moment“ schlägt TUI die Brücke zwischen sportlicher Passion und unvergesslichen Urlaubserlebnissen. In den emotionalen Videoclips erzählen Influencer, wie sie persönlich beide Leidenschaften vereinen.  Den Anfang macht Outdoor-Fotograf und Instagrammer @Hannes_Becker, dessen Wandertouren und Naturaufnahmen regelmäßig mehr als 780.000 Follower auf Instagram verfolgen: http://www.tui.com/short/WbE1x
+
+Jede Folge stellt den Protagonisten und seine persönliche Geschichte in den Vordergrund. #CaptureTheMoment",hub,5,2025-07-12 22:55:24.487235,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+352,PL08aBiIheuyAegTlu416XyKcIXVpr4uyw,Hinter den TUI Kulissen,,,5,2025-07-12 22:55:24.487616,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+158,PLdgCSoJzrmKGv9PK4gl8a74XDW5ElR5IW,MX DC NMW Micorstories 2025,,hub,4,2025-07-09 19:53:43.343530,2025-07-09 22:15:22.145889,ai,False,False,1,Expedia,International
+163,PLdgCSoJzrmKHC-ftBPXfnuYkuN6jx1lI7,Expedia: A Somewhere for Everyone,,hub,4,2025-07-09 19:53:43.343672,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+171,PLdgCSoJzrmKEVwKQKsY0DzJnMrZ10EU1U,"Expedia At Aulani, A Disney Resort & Spa",,hub,4,2025-07-09 19:53:43.343804,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+178,PLdgCSoJzrmKEPy4G0GR9AcNrxhy7nUYTu,Japan | Expedia,"Discover Japan’s best kept secret, Tohoku https://dj-tohoku.expedia.com
+
+Rugged mountains, dramatic coastlines, picturesque lakes, ancient history, hot springs… Tohoku is a destination for any type of traveler.  Start your inspirational journey around Tohoku now.",hero,4,2025-07-09 19:53:43.343988,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+180,PLdgCSoJzrmKFkuPLwESq4vTiHBTpt27li,Worlds Beyond | Expedia,"Welcome to Expedia’s new adventure travel series, Worlds Beyond! Follow us as we explore adventure destinations around the world.",hub,4,2025-07-09 19:53:43.344026,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+182,PLdgCSoJzrmKHxLsFnnmGkyxRANdkHLA2B,How To | Expedia Customer Support,,help,4,2025-07-09 19:53:43.344060,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+65,PLLV950EiSCvPjB23qfdbnEv1SrJDwDF40,Inspired Collection,"Explore the journeys of unique artists as they find inspiration in the vibrant cultures and distinct atmospheres of some of the world's most captivating cities. From historic beauty to bespoke charm, these boutique Hilton hotels offer more than just a place to stay - they become a source of creative awakening. Watch how each location shapes and transforms the individual's artistic path.",hero,4,2025-07-09 18:38:20.434370,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+81,PLLV950EiSCvPZiDPP9h3HJKE43LQfmNL1,eforea: spa at Hilton,,hub,4,2025-07-09 18:38:20.435874,2025-07-09 22:15:22.562631,ai,False,False,3,Hilton,International
+120,PLu_CKZK3SEq8LB39Q3VGuH6GyXauWuP8m,The Power of Travel Films,"A collection of short films following the travels of inspirational individuals who are making the world a better place through travel and building communities.
+
+Produced by the Marriott Content Studio.",hero,4,2025-07-09 19:38:41.985883,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+234,PL4_9YHQqdJeAZQMExGEkZUNFNb0rz8On3,Center Parcs part en Live !,"Center Parcs part en live !
+Retrouvez ici les rediffusions de nos Lives Experience .                                                                        
+Envie de découvrir à quoi ressemble un Center Parcs depuis chez vous ? Voici un format immersif et en direct qui vous plonge au cœur de nos domaines. 
+
+Notre Duo de choc est aux commandes !
+Tout au long de ces lives, ils vous embarquent pour une expérience unique : animations, découverte des lieux emblématiques de nos domaines et échanges spontanés avec notre équipe sur place.
+
+Et ce n’est pas tout : à chaque live, un jeu concours Center Parcs vous attend ! Tentez votre chance pour remporter des lots surprises… ou même un séjour Center Parcs .
+Ne manquez pas nos prochains lives ! Toutes les infos pour vivre l’expérience en direct ou préparer votre séjour à Center Parcs sur notre site :
+https://www.centerparcs.fr/",hub,4,2025-07-11 19:53:29.411343,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+257,PL4_9YHQqdJeDWRYaDFYhqV1qZ2Zziuhfr,#CesJoursEnFamille à Center Parcs,"Avec #CesJoursEnFamille, suivez plusieurs familles d'influenceurs à travers leur découverte de nos Domaines Center Parcs en France. Vous retrouverez des familles qui pourraient être la vôtre : une famille de 10 enfants, un couple avec leur bambin, un papa solo et sa fille, des grands-parents avec leurs petits enfants... et bien d'autres !",hub,4,2025-07-11 19:53:29.416049,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+35,PL15065621264AF01D,Parken in Noord- en Zuid-Holland (NL),Video-impressies van de in Noord- en Zuid-Holland gelegen parken van Landal GreenParks.,hub,4,2025-07-05 17:12:55.885385,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+208,PLjjUTxMsgMmfShj9Iehk6_nvg41yOcdhg,Thuis aan tafel | Winterrecepten,,hub,4,2025-07-09 20:17:20.313081,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+211,PLjjUTxMsgMmcymlvxwujj-BzdehxIr2ng,Een weg door de Sterrenhemel,"Stap in de betoverende wereld van de sterren samen met Julia en sterrenkundige Werner Hamelinck! In onze podcast vertellen we je alles wat je moet weten over de magie van de mooie sterrenhemel. Van handige tips om sterren te kijken tot de indrukwekkende verhalen achter de sterrenbeelden, we nemen je mee op een ontdekkingsreis door het universum. Dus, pak je koptelefoon, zet onze podcast aan, kijk naar de sterren en laat je verwonderen.
+
+Vergeet niet om de CP Sterren Journal in de shops bij een van onze parken te kopen voor een onvergetelijke ervaring!",hero,4,2025-07-09 20:17:20.313257,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+213,PLjjUTxMsgMmcncjnx2yrb_JLNL4j4vvea,Floris & Fauna,Op avontuur in eigen land? Absoluut! In de serie ‘Floris & Fauna’ ontdek je in de Nederlandse wildernis. We duiken naar de grootste meerval van Europa en gaan op zoek naar de 'Big 5'. Mis geen enkele aflevering! Vanaf aanstaande donderdag om de twee weken op ons YouTube-kanaal. Abonneer en laat het avontuur beginnen!,hero,4,2025-07-09 20:17:20.313324,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+218,PLjjUTxMsgMmdBEcNJl2Ej7ecnAuZmIcu6,Vakantie in elk seizoen,"Beleef alle seizoenen en feestelijke momenten samen bij Center Parcs. Warme zomers, koude winters en gezellige feestdagen: vier ze samen bij center Parcs en maak fijne herinneringen!",hub,4,2025-07-09 20:17:20.313506,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+223,PLjjUTxMsgMmdT4F4sEiTii62oYwEZK_j7,Center Parcs Thuis,"Altijd al dat heerlijke Center Parcs gevoel thuis willen hebben? Dat kan nu met Center Parcs Thuis, waar je via doe-het-zelf video’s de bekende Center Parcs activiteiten- en locaties in huis haalt. Van het Water Playhouse tot de Jungle Dome! Doe-het-zelfklussen die je samen met je kinderen aanpakt. Ben je klaar voor echte quality time samen? Na afloop levert dit vast en zeker nog meer quality time op!",hero,4,2025-07-09 20:17:20.313667,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+105,PLSJ_YwCMBTtaPPSFVJFvu1JWzWV6Fj7pD,La P'tite Fabrique 👩🏻‍🌾,,hub,4,2025-07-09 19:36:43.349143,2025-07-09 22:15:23.088056,ai,False,False,10,VVF,France
+84,PLngX0v3VjNHK2U-yI05XO-rPET23q-Jn2,Christmas Countdown | Aftellen tot kerst,,hub,4,2025-07-09 19:22:44.085332,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+91,PLngX0v3VjNHIKlUcbGGgNF_CJzuHngxgu,Fitness,,hub,4,2025-07-09 19:22:44.086803,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+55,PLSjhlvQVKFhvKBKG2nDM4A0J5maA_f4oW,Nino's Culinaire Kunst,,hub,4,2025-07-05 18:35:12.633820,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+57,PLSjhlvQVKFhum96ZBT12Q-eEtuOtV9xU1,Engels,,hub,4,2025-07-05 18:35:12.634526,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+282,PLZkZsSK33kzLfNUHX3IE0mnum9kc0IQB3,"Animations, sports et activités Belambra Clubs","Du sport et des activités pour tous ! En journée comme en soirée, les animateurs Belambra se mettent en quatre pour vous surprendre.",hub,4,2025-07-12 22:55:05.369413,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+327,PLE4938067E14693B3,Les mobil homes,,,4,2025-07-12 22:55:20.714462,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+267,PLZdK_emUC9UxDs9cIveX4H9YPKbVMLlBc,Nos campings-villages en Espagne,Plutôt Costa Brava ou Costa Dorada ? Retrouvez tous les campings-villages Homair Vacances en Espagne : bit.ly/homair-Esp,hub,4,2025-07-12 22:52:54.963545,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+302,PLXwBZNgnDXtXyHKJfoF8eZqF8F6XXo0hQ,Les 4 saisons | Huttopia,,,4,2025-07-12 22:55:14.174115,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+315,PLIqGTcxAg1TXN65pXBOqSF2YoN1YpHCGB,Heart of the House | Meet the People at the Heart of Our Business,,,4,2025-07-12 22:55:17.007408,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+338,PL08aBiIheuyBf0wp24ZWZpHOu7jLSpTFZ,Deals,,,4,2025-07-12 22:55:24.484322,2025-07-12 22:55:24.484325,ai,False,False,20,TUI Deutschland,Germany
+170,PLdgCSoJzrmKGABW-6yPlrfdBGZbblxI1f,Caribbean | Expedia Travel Guides,,hero,3,2025-07-09 19:53:43.343787,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+172,PLdgCSoJzrmKFGXIWkD_PoxZiYJ3q544p0,The Science of Travel with Bill Nye and Expedia,Bill Nye the Science Guy helps explain the technology behind Expedia and how it makes complex travel easier and faster.,help,3,2025-07-09 19:53:43.343820,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+185,PLdgCSoJzrmKEANnEHsxU9Qw_ayc4ahm_K,Brazil Vacation Travel Guides | Expedia,,hero,3,2025-07-09 19:53:43.344121,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+190,PLdgCSoJzrmKEeJ_LbDAaycIXhTGRKHrpt,Scandinavia | Expedia Travel Guides,,hero,3,2025-07-09 19:53:43.344216,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+198,PLdgCSoJzrmKFG5SAFCL_9nFfu-CzgO22T,Japan | Expedia Travel Guides,,hero,3,2025-07-09 19:53:43.344345,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+70,PLLV950EiSCvNlqYKOLE5XcLsnvjVX3Qw3,Stay Proud,,hub,3,2025-07-09 18:38:20.434995,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+79,PLLV950EiSCvNryJ0sEhCqOeUudJNO5rIy,Hilton. For The Stay.,"At Hilton, The Stay is at the heart of everything we do. Beyond the moments of checking in and checking out, it’s an approach to travel and life. It’s about letting go of pressure, being present for the moments that matter and pressing pause on the “go, go, go.”   
+
+We believe that wonderful things happen when we choose to stay. Join us and experience the beauty of The Stay for yourself.   
+
+Hilton. For The Stay. 
+
+#HiltonForTheStay #Hilton 
+
+Subscribe to Hilton on YouTube ► https://hil.tn/epp6nb  
+
+Find Your Stay ► https://hil.tn/9u4ahq
+
+Learn Why It Matters Where You Stay ►  https://www.hilton.com/en/p/for-the-stay/",hero,3,2025-07-09 18:38:20.435712,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+110,PLu_CKZK3SEq-jVRIzpSWD276vmFW0Tq5f,The Family Getaway,Follow along as we uncover off-the-beaten-path family friendly destinations!,hub,3,2025-07-09 19:38:41.985032,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+115,PLu_CKZK3SEq8t31ls68UQc2FZd8SYMYZs,Marriott Bonvoy x Orlando Pirates FC,,hub,3,2025-07-09 19:38:41.985541,2025-07-09 22:15:22.784597,ai,False,False,4,Marriott Bonvoy,International
+143,PLu_CKZK3SEq8kzbAPOEkzr7EYIFbkJkU6,Business Unusual | An Original Short Film Presented by Renaissance Hotels,"Business Unusual follows David (Yoshua Sudarso) on what seems like a doomed business trip to Chicago. Enduring one embarrassing mishap after another, including a run-in with Chip (Jason Gerhardt) that brings up painful memories from his past, David finds himself head down in his phone and struggling to come up with an idea that will wow Albright Glass into awarding him their account. But when he accepts an invitation to the bar for punch and to dance from Ella (Tia Carrere) he begins to see the world differently. If it’s been a while since you’ve looked up and around, it might be time to see how a new perspective can make all the difference.
+
+For updates, please follow us on:
+Instagram - https://www.instagram.com/renhotels/
+Twitter - https://twitter.com/renhotels
+Facebook - https://www.facebook.com/RenaissanceH...
+YouTube - https://www.youtube.com/renhotels",hub,3,2025-07-09 19:38:41.988532,2025-07-09 22:15:22.907226,ai,False,False,4,Marriott Bonvoy,International
+235,PL4_9YHQqdJeDHmtf4gZIUqu9bkUQJwRCj,Happy Thérapie,,,3,2025-07-11 19:53:29.413037,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+240,PL4_9YHQqdJeCawFrfR_lHv9OC9YXbczPC,Défis cuisine à Center Parcs,"Cuisiner dans les arbres ? Avec des gants de boxe ? Ici Jigmé, Valérian et d'autres… se sont lancés dans des courses contre la montre pour réaliser de délicieux plats. On a gouté, c'est vraiment succulent ! Prêt à suivre leurs aventures ?",hub,3,2025-07-11 19:53:29.413336,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+252,PL4_9YHQqdJeDCR3Gv_zdRO4DL6L9vd6sn,Meeting & Events à Center Parcs,"Grâce à Center Parcs Meeting & Event, vous pourrez organiser un séminaire original et efficace grâce à un lieu répondant à vos envies et à vos attentes. Nos Domaines Center Parcs en France rassemblent sur un même site les salles de réunion et les logements afin d'éviter les déplacements. Ainsi, la proximité des espaces de loisirs en pleine nature permet à vos invités d'alterner le travail et la détente et de faire connaissance avec leurs collègues en dehors du cadre de l'entreprise.",hub,3,2025-07-11 19:53:29.415751,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+38,PL4FD10CD492E028CE,Parken in Zeeland (NL),Video-impressies van de in Zeeland gelegen parken van Landal GreenParks.,hub,3,2025-07-05 17:12:55.885523,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+3,PLQF0g2Fjoa9Qi1XDR4tKPqryRDwjoE8Vw,Ghostbusters: Frozen Empire with Booking.com,"Finding your perfect stay is frighteningly easy!
+
+Whether you bust ghosts or are one yourself, there’s a place you’ll love on Booking.com.",hub,3,2025-07-05 16:48:04.248635,2025-07-21 22:07:47,ai,False,False,8,Booking.com,International
+12,PLQF0g2Fjoa9RSjSIP0IkcsjeorJLTKuBD,Booking.com mobile,,hub,3,2025-07-05 16:48:04.249179,2025-07-05 17:48:24.765305,ai,False,False,8,Booking.com,International
+209,PLjjUTxMsgMmdeYU7ftIfTDx1-5nuuUXPh,Recaps | Center Parcs,,hub,3,2025-07-09 20:17:20.313176,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+212,PLjjUTxMsgMmdO26FUlHn44W2ZjN937o2u,ASMR,,hub,3,2025-07-09 20:17:20.313291,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+214,PLjjUTxMsgMmdxPooypwWcY5nRWgV7WXW7,Ontdek de sfeervolle cottages van Center Parcs! 🏡✨,"Ontdek de gezellige en comfortabele wereld van de cottages in Center Parcs! Deze playlist neemt je mee op een virtuele rondleiding door de prachtige vakantieverblijven in de verschillende parken. Verken de sfeervol ingerichte interieurs, de moderne voorzieningen en de rustige omgevingen die perfect zijn om te ontspannen. Of je nu op zoek bent naar een knusse bungalow aan het water, een luxe villa in het bos of een bijzondere accommodatie midden in de natuur, Center Parcs heeft voor ieder wat wils. Laat je inspireren en droom weg bij de gedachte aan een onvergetelijk verblijf in een van deze heerlijke cottages!",hero,3,2025-07-09 20:17:20.313366,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+287,PLZkZsSK33kzKRdOp7HxoZxBQMXbly1p4V,"Vacances été Colleville-sur-Mer - Normandie ""Omaha Beach"" | Belambra Clubs","Passez des vacances d'été inoubliables en Normandie avec Belambra, sur un site naturel en bord de mer, au cœur de l'historique Omaha Beach",hub,3,2025-07-12 22:55:05.370132,2025-07-21 11:46:42.787035,ai,False,False,14,Belambra,France
+288,PLA3BC56901BFEC7E0,"Vacances été Borgo ""Pineto"" Corse | Belambra Clubs",Passez des vacances d'été inoubliables sur les grandes plages de Borgo en Corse avec Belambra.,hub,3,2025-07-12 22:55:05.370222,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+289,PL3D390F11D5E8941F,"Vacances hiver Les 2 Alpes ""L'Orée des Pistes"" | Belambra Clubs",Passez d'inoubliables vacances d'hiver à la montagne au Club Belambra des 2 Alpes dans les Alpes du Nord.,hub,3,2025-07-12 22:55:05.370320,2025-07-21 11:46:44.452343,ai,False,False,14,Belambra,France
+290,PL92EE462241F8ED32,"Vacances hiver Pyrénées Gourette ""Lou Sarri"" | Belambra Clubs",Passez d'inoubliables vacances d'hiver à la montagne au Club Belambra de Gourette dans les Pyrénées.,hub,3,2025-07-12 22:55:05.370401,2025-07-21 11:46:45.369321,ai,False,False,14,Belambra,France
+291,PL2382B61587E8BA04,"Vacances été Saint Jean de Monts Vendée ""Les Grands Espaces"" | Belambra Clubs","Passez d'inoubliables vacances d'été à la mer au Club Belambra de Saint Jean de Monts, Les Grands Espaces.",hub,3,2025-07-12 22:55:05.370475,2025-07-21 11:46:46.291114,ai,False,False,14,Belambra,France
+292,PLE670D04F184DE43A,"Vacances été Guidel Bretagne ""Les Portes de l'Océan"" | Belambra Clubs","Passez d'inoubliables vacances d'été à la mer au Club Belambra de Guidel, Les Portes de l'Océan.",hub,3,2025-07-12 22:55:05.370653,2025-07-21 11:46:46.927764,ai,False,False,14,Belambra,France
+293,PL049D5FF190887A1A,"Vacances été La Palmyre Charente ""Les Mathes"" | Belambra Clubs","Passez d'inoubliables vacances d'été à la mer au Club Belambra des Mathes, La Palmyre.",hub,3,2025-07-12 22:55:05.370750,2025-07-21 11:46:47.722283,ai,False,False,14,Belambra,France
+295,PL2F8A05628D177DB1,"Vacances hiver Arc 2000 ""Aiguille Rouge"" | Belambra Clubs","Passez des vacances d'hiver inoubliables dans le club Belambra d'Arc 2000 ""Aiguille Rouge""",hub,3,2025-07-12 22:55:05.371263,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+321,PLOZNuB-7l6V42sl5PSY5SDFojDxW1FALH,Siblu vous dit tout !,,,3,2025-07-12 22:55:20.711909,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+329,PLE9763EC6DEC71463,Le Domaine de Kerlann,,,3,2025-07-12 22:55:20.717669,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+261,PLZdK_emUC9UwEhOqJfL0WOru-1UPLAO9k,Nos campings-villages en Corse,,,3,2025-07-12 22:52:54.963278,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+299,PLXwBZNgnDXtUmdCwHEHV_Sbuj9K6WC4KK,Les Campings Huttopia aux Pays-Bas,"Huttopia Camping est une offre de vacances nature destinée aux familles qui recherchent une atmosphère calme et authentique pour leurs séjours.
+
+Dans les Campings Huttopia, vous êtes certain de séjourner au cœur de la nature : à la montagne, à la mer ou en forêt. Découvrez les plus belles régions des Pays-Bas en profitant d’un coin de nature exceptionnel pour une déconnexion réussie.
+
+La simplicité, la convivialité, le partage et la proximité avec la nature sont les mots d’ordres des Campings Huttopia. Choisissez un hébergement ou un emplacement traditionnel pour planter votre tente ou installer votre camping-car. 
+
+🏕 3 destinations Campings aux Pays-Bas à découvrir : 
+https://europe.huttopia.com/destinations/campings/
+
+_____________________________________________________
+
+
+ Huttopia Camping is a natural vacation offer designed for families looking for a calm, authentic atmosphere for their holidays.
+
+At a Huttopia campsite, you're sure to stay in the heart of nature: in the mountains, by the sea or in the forest. Discover the most beautiful regions of the Netherlands while enjoying an exceptional natural setting for a successful break.
+
+Simplicity, conviviality, sharing and closeness to nature are the watchwords of Huttopia campsites. Choose an accommodation or a traditional pitch to pitch your tent or set up your camper van. 
+
+🏕 3 campsite destinations in the Netherlands to discover : 
+https://europe.huttopia.com/destinations/campings/",hub,3,2025-07-12 22:55:14.171605,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+300,PLXwBZNgnDXtXcBL_2RfyLPgxP15TRnBgT,Les Récits de Voyage en Huttopia,,,3,2025-07-12 22:55:14.173338,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+309,PLIqGTcxAg1TX3VsmHHH_yx5kRorEOFvZA,Five Question Friday: GM Career Edition,,,3,2025-07-12 22:55:17.002433,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+173,PLdgCSoJzrmKE-Pxpi7ptx4m1-sLCR2yW0,Austria | Expedia Travel Guides,,hero,2,2025-07-09 19:53:43.343895,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+183,PLdgCSoJzrmKGxFj0wiZ-F7gIOx-nkq2eV,Australia | How Far,,hub,2,2025-07-09 19:53:43.344083,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+188,PLdgCSoJzrmKF0cVB7wIMdGEfZFolM10xF,Central America | Expedia Travel Guides,,hero,2,2025-07-09 19:53:43.344172,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+78,PLLV950EiSCvN_Zdm6tOo2nFfZ2eT8Lckg,Property Spotlights,,hub,2,2025-07-09 18:38:20.435631,2025-07-21 22:07:47,ai,False,False,3,Hilton,International
+82,PL0E98B592D0DAF9DA,Hilton Design,"Technology drives new design innovations by Hilton Hotels & Resorts. Hilton unveils the Hilton Design Studio a new cutting-edge online tool that transforms the way in which owners, developers and design firms implement the brand's forward-thinking design narrative. Hilton ValetTM and Hilton Connectivity Station, two ready-to-use owner solutions, allow the brand to continue to build on its evolving design narrative while enhancing the guest experience and demonstrating the influence of technology on its design innovations.",hero,2,2025-07-09 18:38:20.435949,2025-07-09 22:15:22.567233,ai,False,False,3,Hilton,International
+106,PLu_CKZK3SEq-C3D9iX5zskn4m81TcTqOy,The Secret Concierge featuring Jack Whitehall,,hero,2,2025-07-09 19:38:41.982112,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+111,PLu_CKZK3SEq96lXbBvYUPCLY1hssN_-Q6,Wellness with Westin,,hub,2,2025-07-09 19:38:41.985229,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+138,PLu_CKZK3SEq8jSDeoSgtW7RK3G07Wqg4H,Demi Lovato + DNCE | Exclusive Concert with Marriott Rewards,"Go one-on-one at the ultimate private concert. Marriott Rewards members received access to this exclusive experience on September 23, 2016 in Los Angeles, CA.",hero,2,2025-07-09 19:38:41.987928,2025-07-09 22:15:22.878242,ai,False,False,4,Marriott Bonvoy,International
+239,PL4_9YHQqdJeAS_iE7CY7QwPTE8HJnK345,ASMR Center Parcs,,hub,2,2025-07-11 19:53:29.413301,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+48,PL0i3nKXRS-DBCQLzbOMGiPx0lpyaCJSp0,Club Med Meetings & Events,,hub,2,2025-07-05 17:34:20.953791,2025-07-21 22:07:47,ai,False,False,6,Club Med,France
+27,PL73P7QjiWmZhDdsdPtS0vErMCA5NmZd-O,Parken in Utrecht (NL),,hub,2,2025-07-05 17:12:55.884793,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+8,PLQF0g2Fjoa9TsRrgI-vriv2kFCfPcpB6s,Uncover the World,,hub,2,2025-07-05 16:48:04.249031,2025-07-05 17:48:24.764157,ai,False,False,8,Booking.com,International
+219,PLjjUTxMsgMmd88hiS-kkXEHqDQmNiwYlc,Op vakantie met...,"Center Parcs is de ideale vakantiebestemming voor iedereen. Met je baby, peuter, kinderen, tieners, familie of gewoon met z’n tweeën… In Center Parcs maak je samen de mooiste vakantieherinneringen. 
+
+Met wie ga jij op vakantie? 
+https://www.centerparcs.nl/nl-nl/reisgezelschap_ms",hero,2,2025-07-09 20:17:20.313536,2025-07-21 22:07:47,ai,False,False,9,Center Parcs,Netherlands
+99,PLSJ_YwCMBTtbkNFcVcNdYIj2U5pxW98Ef,L'actu du Tourisme,"Retrouve toute l'actualité du secteur du Tourisme, ses nouveaux enjeux, les chiffres clés, sa transformation vers un tourisme régénérateur au travers d'interview et de tables rondes.",hub,2,2025-07-09 19:36:43.347783,2025-07-21 22:07:47,ai,False,False,10,VVF,France
+98,PLngX0v3VjNHLup2kUj0WMBvguDV1Nb4AH,Nieuw en vernieuwd,,hub,2,2025-07-09 19:22:44.087163,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+61,PLSjhlvQVKFhuwq5dySV0Hs1jVRPNPgeB_,Spa & Wellness,,hub,2,2025-07-05 18:35:12.634606,2025-07-21 22:07:47,ai,False,False,12,Hof van Saksen,Netherlands
+328,PL7A7F480BE588848D,Témoignages,,,2,2025-07-12 22:55:20.717411,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+330,PLV8i24kaaluCUxUhcXdSoGq8Svf4rFmJq,Specials,,,2,2025-07-12 22:55:23.508579,2025-07-21 22:07:47,ai,False,False,18,Sunparks France,France
+331,PLV8i24kaaluDkXf_XnI3b8ARgGepp09dD,Nos villages de vacances,,,2,2025-07-12 22:55:23.515387,2025-07-21 22:07:47,ai,False,False,18,Sunparks France,France
+332,PLV8i24kaaluCyfWe53K4o9e3Bjwu_fsfu,Onze vakantieparken,,hub,2,2025-07-12 22:55:23.515749,2025-07-21 22:07:47,ai,False,False,18,Sunparks France,France
+162,PLdgCSoJzrmKFJXia5S5qxEXSXCvyhAlhv,Open Spaces,,hub,1,2025-07-09 19:53:43.343655,2025-07-09 22:15:22.179425,ai,False,False,1,Expedia,International
+174,PLdgCSoJzrmKGVK0aHpaAG7QVkDP5_JyrV,South Africa | Expedia Travel Guides,,hero,1,2025-07-09 19:53:43.343920,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+175,PLdgCSoJzrmKH7WwdZ1vxM6RZI60j-1Sty,Africa | Expedia Travel Guides,,hero,1,2025-07-09 19:53:43.343937,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+176,PLdgCSoJzrmKEbQiElbwLJ46flt40lh0jH,Visit Britain,Discover amazing moments and unique destinations that only Britain can offer.,hub,1,2025-07-09 19:53:43.343954,2025-07-09 22:15:22.259215,ai,False,False,1,Expedia,International
+195,PLdgCSoJzrmKGbv8vko5bHEmGEgRc9ckXb,How-To Videos,,hub,1,2025-07-09 19:53:43.344298,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+204,PLdgCSoJzrmKGch5SqF0iCd1RCeUgU685z,Singapore | Expedia,,hub,1,2025-07-09 19:53:43.344444,2025-07-21 22:07:47,ai,False,False,1,Expedia,International
+107,PLu_CKZK3SEq8EHj3fDmsC81GhEXmiGd3A,COWBOY CARTER TOUR,Marriott Bonvoy is the Official Hotel Partner for the COWBOY CARTER TOUR.,hero,1,2025-07-09 19:38:41.984682,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+108,PLu_CKZK3SEq9nxHiOyB2Zdfl_KX6YVFkQ,Sleep Training for Grown-Ups with Westin Hotels and goop,,hero,1,2025-07-09 19:38:41.984805,2025-07-21 22:07:47,ai,False,False,4,Marriott Bonvoy,International
+244,PL4_9YHQqdJeC3uhGtioCh6lRuxkECFPG3,Aqua On Joue | Center Parcs,,hub,1,2025-07-11 19:53:29.413487,2025-07-21 11:46:24.400910,ai,False,False,5,Center Parcs France,France
+249,PL4_9YHQqdJeC1OPjzhNefYKzPO1YgYf_i,Les Domaines de Center Parcs en Belgique,"Envie de partir en vacances aventure au cœur de la nature belge en famille ou entre amis ? Un séjour à Center Parcs en Belgique comblera vos attentes ! Découvrez nos Domaines belges dans le Limbourg, dans les Ardennes et en Flandre Occidentale.",hub,1,2025-07-11 19:53:29.413695,2025-07-21 22:07:47,ai,False,False,5,Center Parcs France,France
+13,PL73P7QjiWmZivrjjIocMSjPFdSZHp0LUG,Beregoede Vakanties,,hub,1,2025-07-05 17:12:55.882808,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+26,PL73P7QjiWmZiq9jf16SKsG2OLTLGs7qWH,Parken in Hongarije,,hub,1,2025-07-05 17:12:55.884753,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+43,PL77BC7C45682D1A15,Parken in Tsjechië,Video-impressies van de in Tsjechië gelegen parken van Landal GreenParks.,hub,1,2025-07-05 17:12:55.885712,2025-07-21 22:07:47,ai,False,False,7,Landal,Netherlands
+7,PLQF0g2Fjoa9Rema9sNRxbjL-m_TEzL93o,Disney's The Little Mermaid with Booking.com,"From seaside hotels to beach front vacation rentals, castles to cottages, and everything in between!",hub,1,2025-07-05 16:48:04.248994,2025-07-21 22:07:47,ai,False,False,8,Booking.com,International
+104,PLSJ_YwCMBTtaakEPty31Yvhgmd8JKJH9z,Qui sommes-nous ? 🧐,,hub,1,2025-07-09 19:36:43.349122,2025-07-21 22:07:47,ai,False,False,10,VVF,France
+93,PLngX0v3VjNHLJgKfyZ58ziF9SyN1TB6w5,Zomer,,hub,1,2025-07-09 19:22:44.086990,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+97,PLngX0v3VjNHK7av67Am8i9VRzqIz2A1h2,WerkenbijRoompot.nl,,hub,1,2025-07-09 19:22:44.087130,2025-07-21 22:07:47,ai,False,False,11,Roompot,Netherlands
+271,PLZkZsSK33kzI4_TsYfjl9y4v5-x6sr8tp,Danse des clubs,,,1,2025-07-12 22:55:05.359523,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+274,PLZkZsSK33kzLec8jMH_FPszhg5AtTkKvg,"Flaine ""Panorama"" présentation du club",,,1,2025-07-12 22:55:05.364281,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+275,PLZkZsSK33kzI5ZGvv1GmrqIXWhiex62nu,"Unis pour réussir, convention 2023",,,1,2025-07-12 22:55:05.364371,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+276,PLZkZsSK33kzJHOifdhE9oqCKa73Jhkf7e,"Belambra ""Les Crêtes"" Deux Alpes, présentation du club",,hub,1,2025-07-12 22:55:05.365025,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+277,PLZkZsSK33kzKJtXy6_sAz3Qm04SBsnbUk,"Inauguration Belambra ""Les Crêtes "" aux 2 Alpes","Retour en image sur cette magnifique inauguration de notre tout nouveau club Belambra 5B situé au cœur du domaine skiable le plus haut de France, aux 2 Alpes.
+ 
+Avec son ambiance chaleureuse, cet établissement haut de gamme rejoint les plus emblématiques des clubs de montagne Belambra et proposera une formule ""all inclusive"" pour le plus grand bonheur des familles.",hero,1,2025-07-12 22:55:05.365365,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+294,PLF4861C6CE9F4BDBD,"Vacances été Morgat Bretagne ""Le Grand Hôtel de la Mer"" | Belambra Clubs",Passez vos vacances d'été dans un environnement somptueux à Morgat dans la magnifique région du Finistère.,hub,1,2025-07-12 22:55:05.371109,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+296,PL2BA8DB5A9B54444A,"Vacances hiver Les Menuires ""Neige et Ciel"" | Belambra Clubs",Passez des vacances d'hiver inoubliables dans le club Belambra des Menuires Neige et Ciel,hub,1,2025-07-12 22:55:05.371375,2025-07-21 22:07:47,ai,False,False,14,Belambra,France
+322,PLOZNuB-7l6V7Ip9aeW-tdM0dj8zjogobc,Découvrez la vie de propriétaire !,,,1,2025-07-12 22:55:20.712208,2025-07-21 22:07:47,ai,False,False,15,Siblu Villages,France
+258,PLZdK_emUC9UxpI_GbmM1qx4PFPJPQW1Vd,Interview,,,1,2025-07-12 22:52:54.961040,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+259,PLZdK_emUC9UzIn6vPpQj3Ra0HO-mkWM8S,Ça se passe chez nous !,"Explorez tous les métiers qui se cachent derrière les marques Homair, Marvilla Parks et Tohapi du groupe European Camping Group ! Une série d'interviews à suivre régulièrement pour en apprendre plus sur les métiers du camping et découvrir nos équipes ! ✨
+
+Bienvenue chez vous, avec nous !",hub,1,2025-07-12 22:52:54.963181,2025-07-21 22:07:47,ai,False,False,16,HOMAIR,France
+304,PLXwBZNgnDXtVPNWMWrjp3rLmiCqgs6Q42,CityKamp by Huttopia - Les campings urbains,,,1,2025-07-12 22:55:14.174324,2025-07-21 22:07:47,ai,False,False,17,Huttopia Campings & Villages,France
+319,PLIqGTcxAg1TV_3vxkUTVpy3ip2c4Nknt3,Our Culture,,,1,2025-07-12 22:55:17.009078,2025-07-21 22:07:47,ai,False,False,19,Marriott International,International
+333,PL08aBiIheuyBAAyUzga4QUqEyw2oXTjp8,Urlaub in Deutschland,,,1,2025-07-12 22:55:24.480280,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+340,PL08aBiIheuyAdp-FZPNDxBw_b8tQLTYNQ,Mallorca,,,1,2025-07-12 22:55:24.485506,2025-07-21 22:07:47,ai,False,False,20,TUI Deutschland,Germany
+343,PL08aBiIheuyDMexEiOgHeOayU9hpJfSlL,Nachhaltige Entwicklung,,,1,2025-07-12 22:55:24.486167,2025-07-12 22:55:24.486194,ai,False,False,20,TUI Deutschland,Germany
+206,PLF51BD0D22B6D9622,Villages,,hub,0,2025-07-09 20:12:36.661482,2025-07-09 22:15:23.102996,ai,False,False,2,Center Parcs,United Kingdom
+72,PLLV950EiSCvO1py5NhWYgCbMIcJzBw5_4,Canopy by Hilton,,hub,0,2025-07-09 18:38:20.435160,2025-07-09 22:15:22.523777,ai,False,False,3,Hilton,International
+73,PLLV950EiSCvOimFYrigYOZGV6RUyG90YS,Waldorf Astoria Hotels & Resorts,,hub,0,2025-07-09 18:38:20.435236,2025-07-09 22:15:22.526745,ai,False,False,3,Hilton,International
+83,PL8AB4925941D2308C,Hilton Signature Chefs,,hub,0,2025-07-09 18:38:20.436026,2025-07-09 22:15:22.572143,ai,False,False,3,Hilton,International
+236,PL4_9YHQqdJeBCDWiu5NhoNz0-Pu2z1set,Happy Thérapy,,,0,2025-07-11 19:53:29.413142,2025-07-11 19:53:29.413146,ai,False,False,5,Center Parcs France,France
+49,PL0i3nKXRS-DCONF0_e1EQWbFlHqleabk-,Through the eyes of...,Experience the Club Med journey through the eyes of...,hero,0,2025-07-05 17:34:20.953843,2025-07-05 17:48:24.780240,ai,False,False,6,Club Med,France
+54,PL0i3nKXRS-DCRlQHlQpPEiodqbnNvnVLI,Our villages from the sky | Drone Series,Enjoy a bird's eye view of Club Med resorts,hub,0,2025-07-05 17:34:20.954023,2025-07-05 17:48:24.780907,ai,False,False,6,Club Med,France
+336,PL08aBiIheuyC6UBM2f-72IFeRuaJBQmGG,TUI Magic Life,,,0,2025-07-12 22:55:24.484223,2025-07-12 22:55:24.484226,ai,False,False,20,TUI Deutschland,Germany
+339,PL08aBiIheuyDhWjJY5yQcEnCWPQtfQAnx,Reisen,,hub,0,2025-07-12 22:55:24.485291,2025-07-21 11:50:02.320180,ai,False,False,20,TUI Deutschland,Germany
+345,PL08aBiIheuyA26xnHXZrp8DAD3ThnQKtP,TUI SMILE DEALS FÜR FAMILIEN: TUI Kinderfestpreis ab 149 €,,,0,2025-07-12 22:55:24.486807,2025-07-12 22:55:24.486815,ai,False,False,20,TUI Deutschland,Germany
+351,PL08aBiIheuyAJ28vOANAOCY7ygie12LmP,#TUIBeach in Sicht,#TUIBeach in Sicht - Jetzt mitspielen und mit etwas Glück eine TUI BEACH Reise gewinnen: http://www.beach-in-sicht.de,hub,0,2025-07-12 22:55:24.487550,2025-07-21 11:50:08.388207,ai,False,False,20,TUI Deutschland,Germany

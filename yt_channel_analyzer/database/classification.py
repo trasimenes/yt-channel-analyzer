@@ -391,13 +391,32 @@ class PlaylistClassifier:
         self.db_utils = DatabaseUtils()
         # Initialiser un classificateur sémantique (Sentence Transformer)
         # Import léger ici pour éviter le coût au démarrage de modules non utilisés ailleurs
+        self.semantic_classifier = None
+        self._init_semantic_classifier()
+    
+    def _init_semantic_classifier(self):
+        """Initialiser le classificateur sémantique de façon asynchrone avec retry"""
         try:
+            # Tentative d'importation et d'initialisation
             from yt_channel_analyzer.semantic_classifier import SemanticHubHeroHelpClassifier
-            # On conserve une seule instance pour tout le cycle de vie
-            self.semantic_classifier = SemanticHubHeroHelpClassifier()
+            
+            # Vérification de la connectivité réseau avant d'essayer
+            import socket
+            try:
+                socket.gethostbyname('huggingface.co')
+                # Si on peut résoudre le domaine, on tente l'initialisation
+                self.semantic_classifier = SemanticHubHeroHelpClassifier()
+                print("[PLAYLIST-CLASSIFIER] ✅ Classificateur sémantique initialisé avec succès")
+            except socket.gaierror:
+                print("[PLAYLIST-CLASSIFIER] ⚠️ Pas de connexion à Hugging Face - mode patterns uniquement")
+                self.semantic_classifier = None
+        except ImportError:
+            print("[PLAYLIST-CLASSIFIER] ⚠️ Module semantic_classifier non disponible - mode patterns uniquement")
+            self.semantic_classifier = None
         except Exception as e:
-            # Fallback graceful : si le modèle ne peut pas être chargé, on reste sur les patterns
-            print(f"[PLAYLIST-CLASSIFIER] ❌ Impossible d'initialiser SemanticHubHeroHelpClassifier: {e}")
+            # Gestion gracieuse de toute autre erreur
+            print(f"[PLAYLIST-CLASSIFIER] ⚠️ Impossible d'initialiser le classificateur sémantique: {type(e).__name__}")
+            print("[PLAYLIST-CLASSIFIER] ℹ️ Utilisation du mode patterns par défaut")
             self.semantic_classifier = None
     
     def classify_playlist_with_ai(self, name: str, description: str = "") -> str:

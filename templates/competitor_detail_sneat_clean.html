@@ -156,6 +156,88 @@
         </div>
     </div>
 
+    <!-- Subscriber Growth Statistics -->
+    {% if subscriber_data.has_data %}
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-trending-up"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1 text-success">+{{ "{:,}".format(subscriber_data.stats.total_growth) }}</h4>
+                    <small class="text-muted">Total Growth</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="bx bx-percentage"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1 text-info">{{ "%.1f"|format(subscriber_data.stats.growth_percentage) }}%</h4>
+                    <small class="text-muted">Growth Rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ subscriber_data.stats.total_entries }}</h4>
+                    <small class="text-muted">Data Points</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="avatar mx-auto mb-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-time"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">{{ subscriber_data.stats.first_date }}</h4>
+                    <small class="text-muted">Tracking Since</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Subscriber Growth Chart -->
+    <div class="row mb-6">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bx bx-trending-up me-2"></i>Subscriber Growth
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if subscriber_data.has_data %}
+                    <div id="subscriberChart" style="height: 400px; width: 100%;"></div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bx bx-chart-line text-muted" style="font-size: 48px;"></i>
+                        <p class="text-muted mt-2">No subscriber growth data available</p>
+                        <small class="text-muted">Upload CSV data to see the growth chart</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Content Strategy Analysis -->
     <div class="row mb-6">
         <div class="col-md-8">
@@ -230,12 +312,12 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="text-muted">Shorts:</span>
-                            <span class="fw-medium">{{ stats.shorts_count or 0 }}</span>
+                            <span class="fw-medium">{{ shorts_data.shorts_count or 0 }}</span>
                         </div>
                         <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-warning" style="width: {{ stats.shorts_percentage or 0 }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ shorts_data.shorts_percentage or 0 }}%"></div>
                         </div>
-                        <small class="text-muted">{{ "%.1f"|format(stats.shorts_percentage or 0) }}% of content</small>
+                        <small class="text-muted">{{ "%.1f"|format(shorts_data.shorts_percentage or 0) }}% of content</small>
                     </div>
                     
                     <div class="mb-3">
@@ -342,21 +424,50 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h6 class="card-title mb-0">
-                        <i class="bx bx-time me-2"></i>Recent Videos
-                    </h6>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bx bx-filter me-1"></i>Filter
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="filterVideos('all')">All Videos</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="filterVideos('hero')">Hero Only</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="filterVideos('hub')">Hub Only</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="filterVideos('help')">Help Only</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="filterVideos('shorts')">Shorts Only</a></li>
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title mb-0">
+                            <i class="bx bx-time me-2"></i>Recent Videos
+                        </h6>
+                        <div class="d-flex align-items-center gap-3">
+                            <small class="text-muted">
+                                <span class="badge bg-label-success"><i class="bx bx-user-check"></i></span> Human
+                            </small>
+                            <small class="text-muted">
+                                <span class="badge bg-label-info"><i class="bx bx-brain"></i></span> AI
+                            </small>
+                            <small class="text-muted">
+                                <span class="badge bg-label-secondary"><i class="bx bx-tag"></i></span> Keywords
+                            </small>
+                        </div>
+                    </div>
+                    <!-- Modern Filter Tabs -->
+                    <div class="filter-tabs-container">
+                        <ul class="filter-tabs">
+                            <li class="filter-tab active" data-filter="all">
+                                <span class="tab-label">All</span>
+                                <span class="tab-count">{{ videos|length }}</span>
+                            </li>
+                            <li class="filter-tab" data-filter="hero">
+                                <span class="tab-label">Hero</span>
+                                <span class="tab-count">{{ videos_by_category.hero|length }}</span>
+                            </li>
+                            <li class="filter-tab" data-filter="hub">
+                                <span class="tab-label">Hub</span>
+                                <span class="tab-count">{{ videos_by_category.hub|length }}</span>
+                            </li>
+                            <li class="filter-tab" data-filter="help">
+                                <span class="tab-label">Help</span>
+                                <span class="tab-count">{{ videos_by_category.help|length }}</span>
+                            </li>
+                            <li class="filter-tab" data-filter="uncategorized">
+                                <span class="tab-label">Uncategorized</span>
+                                <span class="tab-count">{{ videos_by_category.uncategorized|length }}</span>
+                            </li>
+                            <li class="filter-tab" data-filter="shorts">
+                                <span class="tab-label">Shorts</span>
+                                <span class="tab-count">{{ videos|selectattr('is_short', 'equalto', 1)|list|length }}</span>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -404,6 +515,21 @@
                                         {% endif %}
                                         {% if video.is_short %}
                                             <span class="badge bg-label-warning ms-1">SHORT</span>
+                                        {% endif %}
+                                        {% if video.classification_source %}
+                                            {% if video.classification_source == 'human' or video.is_human_validated == 1 %}
+                                                <span class="badge bg-label-success ms-1" title="Classified by human">
+                                                    <i class="bx bx-user-check"></i>
+                                                </span>
+                                            {% elif video.classification_source in ['semantic', 'ai'] %}
+                                                <span class="badge bg-label-info ms-1" title="Classified by AI">
+                                                    <i class="bx bx-brain"></i> AI
+                                                </span>
+                                            {% elif video.classification_source == 'keyword' %}
+                                                <span class="badge bg-label-secondary ms-1" title="Classified by keywords">
+                                                    <i class="bx bx-tag"></i>
+                                                </span>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td>{{ "{:,}".format(video.view_count) if video.view_count else 'N/A' }}</td>
@@ -552,5 +678,223 @@ function uploadSubscriberData() {
         `;
     });
 }
+
+// Subscriber Growth Chart with Plotly
+{% if subscriber_data.has_data %}
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ subscriber_data.chart_data | tojson }};
+    console.log('Chart data:', chartData);
+    
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+        const dataset = chartData.datasets[0];
+        
+        const trace = {
+            x: chartData.labels,
+            y: dataset.data,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Subscribers',
+            line: {
+                color: 'rgba(99, 102, 241, 1)',
+                width: 3,
+                shape: 'spline'
+            },
+            marker: {
+                color: 'rgba(99, 102, 241, 1)',
+                size: 8,
+                line: {
+                    color: 'white',
+                    width: 2
+                }
+            },
+            hovertemplate: '<b>%{y:,.0f}</b> subscribers<br>%{x}<br><extra></extra>'
+        };
+        
+        const layout = {
+            title: {
+                text: '',
+                font: { size: 16 }
+            },
+            xaxis: {
+                title: 'Date',
+                gridcolor: 'rgba(0,0,0,0.1)',
+                tickangle: -45
+            },
+            yaxis: {
+                title: 'Subscribers',
+                gridcolor: 'rgba(0,0,0,0.1)',
+                tickformat: ',.0f'
+            },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {
+                family: 'Inter, sans-serif',
+                size: 12
+            },
+            showlegend: false,
+            margin: {
+                l: 60,
+                r: 20,
+                t: 20,
+                b: 60
+            }
+        };
+        
+        const config = {
+            displayModeBar: true,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
+            responsive: true
+        };
+        
+        Plotly.newPlot('subscriberChart', [trace], layout, config);
+    } else {
+        // Fallback: affichage d'un message d'erreur de debugging
+        document.getElementById('subscriberChart').innerHTML = `
+            <div class="text-center py-4">
+                <div class="alert alert-warning" role="alert">
+                    <i class="bx bx-info-circle me-2"></i>
+                    <strong>Debug:</strong> Chart data format issue
+                    <br><small class="text-muted">Check browser console for details</small>
+                </div>
+            </div>
+        `;
+        console.error('Invalid chart data format:', chartData);
+    }
+});
+{% endif %}
+
+// Modern Filter Tabs functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const videoRows = document.querySelectorAll('tbody tr');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            filterTabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            filterVideos(filterValue);
+        });
+    });
+});
+
+function filterVideos(filter) {
+    const videoRows = document.querySelectorAll('tbody tr');
+    
+    videoRows.forEach(row => {
+        if (filter === 'all') {
+            row.style.display = '';
+        } else if (filter === 'shorts') {
+            // Check if it's a short video using data attribute
+            const isShort = row.getAttribute('data-is-short');
+            if (isShort === '1') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        } else {
+            // Filter by category
+            const category = row.getAttribute('data-category') || '';
+            if (filter === 'uncategorized' && (category === '' || category === 'null')) {
+                row.style.display = '';
+            } else if (category === filter) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
 </script>
+
+<style>
+/* Modern Filter Tabs CSS */
+.filter-tabs-container {
+    padding: 0;
+    margin: 0;
+}
+
+.filter-tabs {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    position: relative;
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.filter-tab:hover {
+    color: #333;
+    background-color: rgba(105, 108, 255, 0.05);
+}
+
+.filter-tab.active {
+    color: #696cff;
+    border-bottom-color: #696cff;
+}
+
+.filter-tab.active .tab-count {
+    background-color: #696cff;
+    color: white;
+}
+
+.tab-label {
+    font-size: 0.875rem;
+}
+
+.tab-count {
+    background-color: #e0e0e0;
+    color: #666;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.filter-tab:hover .tab-count {
+    background-color: #d0d0d0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-tabs {
+        gap: 0.5rem;
+    }
+    
+    .filter-tab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+    
+    .tab-count {
+        font-size: 0.6875rem;
+        padding: 0.125rem 0.375rem;
+    }
+}
+</style>
+
+<!-- Plotly.js CDN pour le graphique de croissance des abonnés -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 {% endblock %}

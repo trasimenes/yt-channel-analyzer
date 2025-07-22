@@ -1,0 +1,2436 @@
+{
+  "verbs": {
+    "total_count": 200,
+    "unique_count": 200,
+    "top_200": [
+      {
+        "word": "find",
+        "count": 721
+      },
+      {
+        "word": "discover",
+        "count": 488
+      },
+      {
+        "word": "visit",
+        "count": 439
+      },
+      {
+        "word": "stay",
+        "count": 375
+      },
+      {
+        "word": "découvrir",
+        "count": 364
+      },
+      {
+        "word": "get",
+        "count": 351
+      },
+      {
+        "word": "entdecken",
+        "count": 338
+      },
+      {
+        "word": "make",
+        "count": 325
+      },
+      {
+        "word": "take",
+        "count": 324
+      },
+      {
+        "word": "finden",
+        "count": 269
+      },
+      {
+        "word": "explore",
+        "count": 229
+      },
+      {
+        "word": "know",
+        "count": 215
+      },
+      {
+        "word": "learn",
+        "count": 210
+      },
+      {
+        "word": "enjoy",
+        "count": 204
+      },
+      {
+        "word": "see",
+        "count": 194
+      },
+      {
+        "word": "gehen",
+        "count": 188
+      },
+      {
+        "word": "want",
+        "count": 179
+      },
+      {
+        "word": "check",
+        "count": 176
+      },
+      {
+        "word": "machen",
+        "count": 175
+      },
+      {
+        "word": "geben",
+        "count": 169
+      },
+      {
+        "word": "plan",
+        "count": 151
+      },
+      {
+        "word": "experience",
+        "count": 150
+      },
+      {
+        "word": "meet",
+        "count": 148
+      },
+      {
+        "word": "erleben",
+        "count": 143
+      },
+      {
+        "word": "go",
+        "count": 138
+      },
+      {
+        "word": "come",
+        "count": 137
+      },
+      {
+        "word": "inspire",
+        "count": 135
+      },
+      {
+        "word": "bieten",
+        "count": 132
+      },
+      {
+        "word": "offer",
+        "count": 131
+      },
+      {
+        "word": "liggen",
+        "count": 130
+      },
+      {
+        "word": "look",
+        "count": 129
+      },
+      {
+        "word": "situer",
+        "count": 128
+      },
+      {
+        "word": "zeigen",
+        "count": 124
+      },
+      {
+        "word": "join",
+        "count": 123
+      },
+      {
+        "word": "besuchen",
+        "count": 123
+      },
+      {
+        "word": "profiter",
+        "count": 115
+      },
+      {
+        "word": "gaan",
+        "count": 113
+      },
+      {
+        "word": "book",
+        "count": 110
+      },
+      {
+        "word": "ontdek",
+        "count": 107
+      },
+      {
+        "word": "feel",
+        "count": 101
+      },
+      {
+        "word": "bring",
+        "count": 99
+      },
+      {
+        "word": "help",
+        "count": 91
+      },
+      {
+        "word": "komen",
+        "count": 89
+      },
+      {
+        "word": "browse",
+        "count": 86
+      },
+      {
+        "word": "maken",
+        "count": 86
+      },
+      {
+        "word": "start",
+        "count": 85
+      },
+      {
+        "word": "erkunden",
+        "count": 84
+      },
+      {
+        "word": "kommen",
+        "count": 83
+      },
+      {
+        "word": "love",
+        "count": 82
+      },
+      {
+        "word": "kannst",
+        "count": 82
+      },
+      {
+        "word": "genieten",
+        "count": 81
+      },
+      {
+        "word": "vernieuwen",
+        "count": 81
+      },
+      {
+        "word": "matter",
+        "count": 80
+      },
+      {
+        "word": "let",
+        "count": 79
+      },
+      {
+        "word": "partir",
+        "count": 76
+      },
+      {
+        "word": "present",
+        "count": 75
+      },
+      {
+        "word": "give",
+        "count": 74
+      },
+      {
+        "word": "create",
+        "count": 74
+      },
+      {
+        "word": "liegen",
+        "count": 74
+      },
+      {
+        "word": "sehen",
+        "count": 73
+      },
+      {
+        "word": "nehmen",
+        "count": 71
+      },
+      {
+        "word": "lassen",
+        "count": 71
+      },
+      {
+        "word": "fahren",
+        "count": 71
+      },
+      {
+        "word": "vinden",
+        "count": 70
+      },
+      {
+        "word": "genießen",
+        "count": 69
+      },
+      {
+        "word": "welcome",
+        "count": 68
+      },
+      {
+        "word": "visiter",
+        "count": 68
+      },
+      {
+        "word": "need",
+        "count": 67
+      },
+      {
+        "word": "stehen",
+        "count": 67
+      },
+      {
+        "word": "wait",
+        "count": 66
+      },
+      {
+        "word": "relax",
+        "count": 66
+      },
+      {
+        "word": "use",
+        "count": 65
+      },
+      {
+        "word": "try",
+        "count": 65
+      },
+      {
+        "word": "set",
+        "count": 64
+      },
+      {
+        "word": "faire",
+        "count": 64
+      },
+      {
+        "word": "introduce",
+        "count": 63
+      },
+      {
+        "word": "laten",
+        "count": 62
+      },
+      {
+        "word": "stellen",
+        "count": 62
+      },
+      {
+        "word": "treffen",
+        "count": 61
+      },
+      {
+        "word": "host",
+        "count": 60
+      },
+      {
+        "word": "doen",
+        "count": 60
+      },
+      {
+        "word": "zien",
+        "count": 59
+      },
+      {
+        "word": "führen",
+        "count": 59
+      },
+      {
+        "word": "dive",
+        "count": 58
+      },
+      {
+        "word": "live",
+        "count": 57
+      },
+      {
+        "word": "keep",
+        "count": 57
+      },
+      {
+        "word": "wissen",
+        "count": 57
+      },
+      {
+        "word": "show",
+        "count": 56
+      },
+      {
+        "word": "work",
+        "count": 56
+      },
+      {
+        "word": "locate",
+        "count": 56
+      },
+      {
+        "word": "offrir",
+        "count": 56
+      },
+      {
+        "word": "réserver",
+        "count": 56
+      },
+      {
+        "word": "spend",
+        "count": 55
+      },
+      {
+        "word": "celebrate",
+        "count": 54
+      },
+      {
+        "word": "erfahren",
+        "count": 54
+      },
+      {
+        "word": "rater",
+        "count": 54
+      },
+      {
+        "word": "vivre",
+        "count": 54
+      },
+      {
+        "word": "lässt",
+        "count": 54
+      },
+      {
+        "word": "buchen",
+        "count": 52
+      },
+      {
+        "word": "testen",
+        "count": 52
+      },
+      {
+        "word": "pack",
+        "count": 51
+      },
+      {
+        "word": "include",
+        "count": 51
+      },
+      {
+        "word": "read",
+        "count": 49
+      },
+      {
+        "word": "abonnieren",
+        "count": 49
+      },
+      {
+        "word": "starten",
+        "count": 48
+      },
+      {
+        "word": "apprendre",
+        "count": 48
+      },
+      {
+        "word": "recognize",
+        "count": 46
+      },
+      {
+        "word": "abonner",
+        "count": 45
+      },
+      {
+        "word": "compare",
+        "count": 44
+      },
+      {
+        "word": "accueillir",
+        "count": 43
+      },
+      {
+        "word": "gehören",
+        "count": 43
+      },
+      {
+        "word": "run",
+        "count": 42
+      },
+      {
+        "word": "geniet",
+        "count": 42
+      },
+      {
+        "word": "choose",
+        "count": 41
+      },
+      {
+        "word": "venir",
+        "count": 41
+      },
+      {
+        "word": "vergeet",
+        "count": 41
+      },
+      {
+        "word": "lernen",
+        "count": 41
+      },
+      {
+        "word": "feature",
+        "count": 40
+      },
+      {
+        "word": "pouvoir",
+        "count": 40
+      },
+      {
+        "word": "tell",
+        "count": 40
+      },
+      {
+        "word": "passer",
+        "count": 40
+      },
+      {
+        "word": "verbinden",
+        "count": 40
+      },
+      {
+        "word": "entdecke",
+        "count": 40
+      },
+      {
+        "word": "talk",
+        "count": 39
+      },
+      {
+        "word": "beleef",
+        "count": 39
+      },
+      {
+        "word": "kennen",
+        "count": 39
+      },
+      {
+        "word": "win",
+        "count": 38
+      },
+      {
+        "word": "preserve",
+        "count": 38
+      },
+      {
+        "word": "choisir",
+        "count": 37
+      },
+      {
+        "word": "design",
+        "count": 36
+      },
+      {
+        "word": "connect",
+        "count": 35
+      },
+      {
+        "word": "suivre",
+        "count": 35
+      },
+      {
+        "word": "teleport",
+        "count": 35
+      },
+      {
+        "word": "begleiten",
+        "count": 35
+      },
+      {
+        "word": "become",
+        "count": 34
+      },
+      {
+        "word": "ask",
+        "count": 34
+      },
+      {
+        "word": "leben",
+        "count": 34
+      },
+      {
+        "word": "head",
+        "count": 33
+      },
+      {
+        "word": "lead",
+        "count": 33
+      },
+      {
+        "word": "abonneren",
+        "count": 33
+      },
+      {
+        "word": "entstehen",
+        "count": 33
+      },
+      {
+        "word": "think",
+        "count": 32
+      },
+      {
+        "word": "await",
+        "count": 32
+      },
+      {
+        "word": "verbringen",
+        "count": 32
+      },
+      {
+        "word": "volgen",
+        "count": 32
+      },
+      {
+        "word": "beginnen",
+        "count": 32
+      },
+      {
+        "word": "invite",
+        "count": 31
+      },
+      {
+        "word": "eat",
+        "count": 31
+      },
+      {
+        "word": "open",
+        "count": 31
+      },
+      {
+        "word": "earn",
+        "count": 31
+      },
+      {
+        "word": "mettre",
+        "count": 31
+      },
+      {
+        "word": "befinden",
+        "count": 31
+      },
+      {
+        "word": "lass",
+        "count": 31
+      },
+      {
+        "word": "uncover",
+        "count": 30
+      },
+      {
+        "word": "combine",
+        "count": 30
+      },
+      {
+        "word": "say",
+        "count": 30
+      },
+      {
+        "word": "retrouver",
+        "count": 30
+      },
+      {
+        "word": "staan",
+        "count": 30
+      },
+      {
+        "word": "sorgen",
+        "count": 30
+      },
+      {
+        "word": "suchen",
+        "count": 30
+      },
+      {
+        "word": "ziehen",
+        "count": 30
+      },
+      {
+        "word": "bekommen",
+        "count": 30
+      },
+      {
+        "word": "wagen",
+        "count": 30
+      },
+      {
+        "word": "savoir",
+        "count": 29
+      },
+      {
+        "word": "surround",
+        "count": 29
+      },
+      {
+        "word": "beantworten",
+        "count": 29
+      },
+      {
+        "word": "findesen",
+        "count": 29
+      },
+      {
+        "word": "erwarten",
+        "count": 29
+      },
+      {
+        "word": "bringen",
+        "count": 29
+      },
+      {
+        "word": "kosten",
+        "count": 29
+      },
+      {
+        "word": "call",
+        "count": 28
+      },
+      {
+        "word": "put",
+        "count": 27
+      },
+      {
+        "word": "gelten",
+        "count": 27
+      },
+      {
+        "word": "greet",
+        "count": 27
+      },
+      {
+        "word": "willen",
+        "count": 27
+      },
+      {
+        "word": "capture",
+        "count": 26
+      },
+      {
+        "word": "support",
+        "count": 26
+      },
+      {
+        "word": "nestle",
+        "count": 26
+      },
+      {
+        "word": "provide",
+        "count": 26
+      },
+      {
+        "word": "pay",
+        "count": 26
+      },
+      {
+        "word": "fly",
+        "count": 26
+      },
+      {
+        "word": "kaufen",
+        "count": 26
+      },
+      {
+        "word": "prendre",
+        "count": 26
+      },
+      {
+        "word": "tester",
+        "count": 26
+      },
+      {
+        "word": "ga",
+        "count": 26
+      },
+      {
+        "word": "nemen",
+        "count": 26
+      },
+      {
+        "word": "bieden",
+        "count": 26
+      },
+      {
+        "word": "lieben",
+        "count": 26
+      },
+      {
+        "word": "walk",
+        "count": 25
+      },
+      {
+        "word": "fill",
+        "count": 25
+      },
+      {
+        "word": "care",
+        "count": 25
+      },
+      {
+        "word": "aller",
+        "count": 25
+      },
+      {
+        "word": "warten",
+        "count": 25
+      },
+      {
+        "word": "inspirieren",
+        "count": 25
+      },
+      {
+        "word": "gefällt",
+        "count": 25
+      },
+      {
+        "word": "step",
+        "count": 24
+      },
+      {
+        "word": "mean",
+        "count": 24
+      },
+      {
+        "word": "build",
+        "count": 24
+      },
+      {
+        "word": "kijken",
+        "count": 24
+      },
+      {
+        "word": "sagen",
+        "count": 24
+      }
+    ]
+  },
+  "adjectives": {
+    "total_count": 200,
+    "unique_count": 200,
+    "top_200": [
+      {
+        "word": "good",
+        "count": 306
+      },
+      {
+        "word": "new",
+        "count": 296
+      },
+      {
+        "word": "perfect",
+        "count": 255
+      },
+      {
+        "word": "ready",
+        "count": 184
+      },
+      {
+        "word": "old",
+        "count": 155
+      },
+      {
+        "word": "beautiful",
+        "count": 145
+      },
+      {
+        "word": "great",
+        "count": 138
+      },
+      {
+        "word": "unique",
+        "count": 138
+      },
+      {
+        "word": "schön",
+        "count": 123
+      },
+      {
+        "word": "modern",
+        "count": 122
+      },
+      {
+        "word": "nächster",
+        "count": 114
+      },
+      {
+        "word": "local",
+        "count": 103
+      },
+      {
+        "word": "prachtig",
+        "count": 100
+      },
+      {
+        "word": "nieuw",
+        "count": 99
+      },
+      {
+        "word": "easy",
+        "count": 94
+      },
+      {
+        "word": "grand",
+        "count": 94
+      },
+      {
+        "word": "swiss",
+        "count": 92
+      },
+      {
+        "word": "echt",
+        "count": 89
+      },
+      {
+        "word": "besonderer",
+        "count": 79
+      },
+      {
+        "word": "alt",
+        "count": 77
+      },
+      {
+        "word": "endless",
+        "count": 76
+      },
+      {
+        "word": "vrai",
+        "count": 76
+      },
+      {
+        "word": "heerlijk",
+        "count": 75
+      },
+      {
+        "word": "spannend",
+        "count": 75
+      },
+      {
+        "word": "bavarian",
+        "count": 71
+      },
+      {
+        "word": "luxe",
+        "count": 69
+      },
+      {
+        "word": "beal",
+        "count": 68
+      },
+      {
+        "word": "aquatique",
+        "count": 68
+      },
+      {
+        "word": "deutsch",
+        "count": 65
+      },
+      {
+        "word": "leuk",
+        "count": 64
+      },
+      {
+        "word": "gezellig",
+        "count": 64
+      },
+      {
+        "word": "groß",
+        "count": 64
+      },
+      {
+        "word": "prochain",
+        "count": 61
+      },
+      {
+        "word": "large",
+        "count": 59
+      },
+      {
+        "word": "special",
+        "count": 59
+      },
+      {
+        "word": "direct",
+        "count": 59
+      },
+      {
+        "word": "free",
+        "count": 58
+      },
+      {
+        "word": "inclusive",
+        "count": 57
+      },
+      {
+        "word": "stunning",
+        "count": 56
+      },
+      {
+        "word": "famous",
+        "count": 55
+      },
+      {
+        "word": "big",
+        "count": 54
+      },
+      {
+        "word": "historic",
+        "count": 53
+      },
+      {
+        "word": "bel",
+        "count": 53
+      },
+      {
+        "word": "groot",
+        "count": 52
+      },
+      {
+        "word": "onvergetelijk",
+        "count": 52
+      },
+      {
+        "word": "natural",
+        "count": 51
+      },
+      {
+        "word": "social",
+        "count": 51
+      },
+      {
+        "word": "einzigartig",
+        "count": 51
+      },
+      {
+        "word": "wild",
+        "count": 50
+      },
+      {
+        "word": "virtuel",
+        "count": 50
+      },
+      {
+        "word": "wunderschön",
+        "count": 50
+      },
+      {
+        "word": "recent",
+        "count": 49
+      },
+      {
+        "word": "amazing",
+        "count": 49
+      },
+      {
+        "word": "authentic",
+        "count": 49
+      },
+      {
+        "word": "ideal",
+        "count": 49
+      },
+      {
+        "word": "long",
+        "count": 48
+      },
+      {
+        "word": "cultural",
+        "count": 48
+      },
+      {
+        "word": "high",
+        "count": 48
+      },
+      {
+        "word": "different",
+        "count": 48
+      },
+      {
+        "word": "mooi",
+        "count": 47
+      },
+      {
+        "word": "perfekt",
+        "count": 47
+      },
+      {
+        "word": "lang",
+        "count": 46
+      },
+      {
+        "word": "neu",
+        "count": 46
+      },
+      {
+        "word": "cool",
+        "count": 45
+      },
+      {
+        "word": "fantastic",
+        "count": 45
+      },
+      {
+        "word": "nouveau",
+        "count": 45
+      },
+      {
+        "word": "favourite",
+        "count": 45
+      },
+      {
+        "word": "hoch",
+        "count": 45
+      },
+      {
+        "word": "iconic",
+        "count": 44
+      },
+      {
+        "word": "private",
+        "count": 44
+      },
+      {
+        "word": "bon",
+        "count": 44
+      },
+      {
+        "word": "favorite",
+        "count": 43
+      },
+      {
+        "word": "grün",
+        "count": 43
+      },
+      {
+        "word": "traditional",
+        "count": 42
+      },
+      {
+        "word": "vibrant",
+        "count": 42
+      },
+      {
+        "word": "real",
+        "count": 42
+      },
+      {
+        "word": "small",
+        "count": 42
+      },
+      {
+        "word": "popular",
+        "count": 42
+      },
+      {
+        "word": "lively",
+        "count": 42
+      },
+      {
+        "word": "exclusive",
+        "count": 42
+      },
+      {
+        "word": "plein",
+        "count": 42
+      },
+      {
+        "word": "beliebt",
+        "count": 42
+      },
+      {
+        "word": "petit",
+        "count": 41
+      },
+      {
+        "word": "traumhaft",
+        "count": 41
+      },
+      {
+        "word": "ultimate",
+        "count": 40
+      },
+      {
+        "word": "friendly",
+        "count": 40
+      },
+      {
+        "word": "uniek",
+        "count": 40
+      },
+      {
+        "word": "zahlreich",
+        "count": 40
+      },
+      {
+        "word": "little",
+        "count": 39
+      },
+      {
+        "word": "french",
+        "count": 39
+      },
+      {
+        "word": "superb",
+        "count": 39
+      },
+      {
+        "word": "historisch",
+        "count": 38
+      },
+      {
+        "word": "goed",
+        "count": 38
+      },
+      {
+        "word": "spectaculair",
+        "count": 38
+      },
+      {
+        "word": "exciting",
+        "count": 37
+      },
+      {
+        "word": "idéal",
+        "count": 37
+      },
+      {
+        "word": "volledig",
+        "count": 36
+      },
+      {
+        "word": "geweldig",
+        "count": 35
+      },
+      {
+        "word": "warm",
+        "count": 34
+      },
+      {
+        "word": "major",
+        "count": 34
+      },
+      {
+        "word": "tropisch",
+        "count": 34
+      },
+      {
+        "word": "ancient",
+        "count": 33
+      },
+      {
+        "word": "incredible",
+        "count": 33
+      },
+      {
+        "word": "close",
+        "count": 33
+      },
+      {
+        "word": "young",
+        "count": 33
+      },
+      {
+        "word": "persönlich",
+        "count": 33
+      },
+      {
+        "word": "atemberaubend",
+        "count": 33
+      },
+      {
+        "word": "unforgettable",
+        "count": 32
+      },
+      {
+        "word": "magical",
+        "count": 32
+      },
+      {
+        "word": "well",
+        "count": 32
+      },
+      {
+        "word": "verschieden",
+        "count": 32
+      },
+      {
+        "word": "enfant",
+        "count": 32
+      },
+      {
+        "word": "spektakulär",
+        "count": 32
+      },
+      {
+        "word": "lustig",
+        "count": 32
+      },
+      {
+        "word": "important",
+        "count": 31
+      },
+      {
+        "word": "urban",
+        "count": 31
+      },
+      {
+        "word": "spectacular",
+        "count": 31
+      },
+      {
+        "word": "outdoor",
+        "count": 31
+      },
+      {
+        "word": "lekker",
+        "count": 31
+      },
+      {
+        "word": "sandy",
+        "count": 30
+      },
+      {
+        "word": "true",
+        "count": 30
+      },
+      {
+        "word": "beeindruckend",
+        "count": 30
+      },
+      {
+        "word": "wichtig",
+        "count": 29
+      },
+      {
+        "word": "malerisch",
+        "count": 29
+      },
+      {
+        "word": "wonderful",
+        "count": 28
+      },
+      {
+        "word": "indoor",
+        "count": 28
+      },
+      {
+        "word": "kulinarisch",
+        "count": 28
+      },
+      {
+        "word": "rich",
+        "count": 27
+      },
+      {
+        "word": "sure",
+        "count": 27
+      },
+      {
+        "word": "late",
+        "count": 27
+      },
+      {
+        "word": "inoubliable",
+        "count": 27
+      },
+      {
+        "word": "open",
+        "count": 26
+      },
+      {
+        "word": "impressive",
+        "count": 26
+      },
+      {
+        "word": "tropical",
+        "count": 26
+      },
+      {
+        "word": "extra",
+        "count": 26
+      },
+      {
+        "word": "exklusiv",
+        "count": 26
+      },
+      {
+        "word": "alpin",
+        "count": 26
+      },
+      {
+        "word": "toll",
+        "count": 26
+      },
+      {
+        "word": "hessisch",
+        "count": 26
+      },
+      {
+        "word": "münchner",
+        "count": 26
+      },
+      {
+        "word": "letzter",
+        "count": 26
+      },
+      {
+        "word": "culinary",
+        "count": 25
+      },
+      {
+        "word": "breathtaking",
+        "count": 25
+      },
+      {
+        "word": "simple",
+        "count": 25
+      },
+      {
+        "word": "professional",
+        "count": 25
+      },
+      {
+        "word": "meilleur",
+        "count": 25
+      },
+      {
+        "word": "exceptionnel",
+        "count": 25
+      },
+      {
+        "word": "bijzonder",
+        "count": 25
+      },
+      {
+        "word": "außergewöhnlich",
+        "count": 25
+      },
+      {
+        "word": "jung",
+        "count": 25
+      },
+      {
+        "word": "berühmt",
+        "count": 25
+      },
+      {
+        "word": "scenic",
+        "count": 24
+      },
+      {
+        "word": "premium",
+        "count": 24
+      },
+      {
+        "word": "naturel",
+        "count": 24
+      },
+      {
+        "word": "romantisch",
+        "count": 24
+      },
+      {
+        "word": "mobil",
+        "count": 24
+      },
+      {
+        "word": "unvergesslich",
+        "count": 24
+      },
+      {
+        "word": "bayerisch",
+        "count": 24
+      },
+      {
+        "word": "short",
+        "count": 23
+      },
+      {
+        "word": "picturesque",
+        "count": 23
+      },
+      {
+        "word": "fabulous",
+        "count": 23
+      },
+      {
+        "word": "available",
+        "count": 23
+      },
+      {
+        "word": "happy",
+        "count": 23
+      },
+      {
+        "word": "active",
+        "count": 23
+      },
+      {
+        "word": "hom",
+        "count": 23
+      },
+      {
+        "word": "legendär",
+        "count": 23
+      },
+      {
+        "word": "faszinierend",
+        "count": 23
+      },
+      {
+        "word": "hot",
+        "count": 22
+      },
+      {
+        "word": "charming",
+        "count": 22
+      },
+      {
+        "word": "italian",
+        "count": 22
+      },
+      {
+        "word": "fresh",
+        "count": 22
+      },
+      {
+        "word": "inspiring",
+        "count": 22
+      },
+      {
+        "word": "executive",
+        "count": 22
+      },
+      {
+        "word": "peaceful",
+        "count": 22
+      },
+      {
+        "word": "magnifique",
+        "count": 22
+      },
+      {
+        "word": "superbe",
+        "count": 22
+      },
+      {
+        "word": "zoek",
+        "count": 22
+      },
+      {
+        "word": "kulturell",
+        "count": 22
+      },
+      {
+        "word": "gut",
+        "count": 22
+      },
+      {
+        "word": "bekannt",
+        "count": 22
+      },
+      {
+        "word": "fine",
+        "count": 21
+      },
+      {
+        "word": "medieval",
+        "count": 21
+      },
+      {
+        "word": "pro",
+        "count": 21
+      },
+      {
+        "word": "fascinating",
+        "count": 21
+      },
+      {
+        "word": "white",
+        "count": 21
+      },
+      {
+        "word": "creative",
+        "count": 21
+      },
+      {
+        "word": "original",
+        "count": 21
+      },
+      {
+        "word": "klein",
+        "count": 21
+      },
+      {
+        "word": "weiß",
+        "count": 21
+      },
+      {
+        "word": "epic",
+        "count": 20
+      },
+      {
+        "word": "green",
+        "count": 20
+      },
+      {
+        "word": "digital",
+        "count": 20
+      },
+      {
+        "word": "haut",
+        "count": 20
+      },
+      {
+        "word": "ontspannen",
+        "count": 20
+      },
+      {
+        "word": "heel",
+        "count": 20
+      },
+      {
+        "word": "magisch",
+        "count": 20
+      },
+      {
+        "word": "riesig",
+        "count": 20
+      },
+      {
+        "word": "nicher",
+        "count": 20
+      },
+      {
+        "word": "unterschiedlich",
+        "count": 20
+      },
+      {
+        "word": "possible",
+        "count": 19
+      }
+    ]
+  },
+  "nouns": {
+    "total_count": 200,
+    "unique_count": 200,
+    "top_200": [
+      {
+        "word": "reise",
+        "count": 697
+      },
+      {
+        "word": "vacance",
+        "count": 643
+      },
+      {
+        "word": "hotel",
+        "count": 489
+      },
+      {
+        "word": "city",
+        "count": 382
+      },
+      {
+        "word": "holiday",
+        "count": 341
+      },
+      {
+        "word": "urlaub",
+        "count": 313
+      },
+      {
+        "word": "experience",
+        "count": 298
+      },
+      {
+        "word": "stay",
+        "count": 267
+      },
+      {
+        "word": "village",
+        "count": 262
+      },
+      {
+        "word": "trip",
+        "count": 260
+      },
+      {
+        "word": "information",
+        "count": 255
+      },
+      {
+        "word": "world",
+        "count": 249
+      },
+      {
+        "word": "nature",
+        "count": 247
+      },
+      {
+        "word": "home",
+        "count": 244
+      },
+      {
+        "word": "host",
+        "count": 243
+      },
+      {
+        "word": "moment",
+        "count": 239
+      },
+      {
+        "word": "short",
+        "count": 229
+      },
+      {
+        "word": "stadt",
+        "count": 228
+      },
+      {
+        "word": "family",
+        "count": 226
+      },
+      {
+        "word": "domaine",
+        "count": 223
+      },
+      {
+        "word": "tour",
+        "count": 215
+      },
+      {
+        "word": "vacation",
+        "count": 207
+      },
+      {
+        "word": "place",
+        "count": 206
+      },
+      {
+        "word": "folge",
+        "count": 206
+      },
+      {
+        "word": "day",
+        "count": 203
+      },
+      {
+        "word": "mediathek",
+        "count": 202
+      },
+      {
+        "word": "hiltonforthestay",
+        "count": 196
+      },
+      {
+        "word": "familie",
+        "count": 187
+      },
+      {
+        "word": "natuur",
+        "count": 183
+      },
+      {
+        "word": "guest",
+        "count": 176
+      },
+      {
+        "word": "year",
+        "count": 171
+      },
+      {
+        "word": "sport",
+        "count": 171
+      },
+      {
+        "word": "activity",
+        "count": 170
+      },
+      {
+        "word": "time",
+        "count": 162
+      },
+      {
+        "word": "region",
+        "count": 160
+      },
+      {
+        "word": "destination",
+        "count": 157
+      },
+      {
+        "word": "insel",
+        "count": 157
+      },
+      {
+        "word": "tip",
+        "count": 152
+      },
+      {
+        "word": "beach",
+        "count": 149
+      },
+      {
+        "word": "land",
+        "count": 149
+      },
+      {
+        "word": "art",
+        "count": 148
+      },
+      {
+        "word": "famille",
+        "count": 143
+      },
+      {
+        "word": "chef",
+        "count": 142
+      },
+      {
+        "word": "winter",
+        "count": 141
+      },
+      {
+        "word": "vakantie",
+        "count": 141
+      },
+      {
+        "word": "heart",
+        "count": 135
+      },
+      {
+        "word": "natur",
+        "count": 133
+      },
+      {
+        "word": "abenteuer",
+        "count": 129
+      },
+      {
+        "word": "ski",
+        "count": 128
+      },
+      {
+        "word": "way",
+        "count": 125
+      },
+      {
+        "word": "idea",
+        "count": 123
+      },
+      {
+        "word": "avontuur",
+        "count": 123
+      },
+      {
+        "word": "mountain",
+        "count": 122
+      },
+      {
+        "word": "site",
+        "count": 122
+      },
+      {
+        "word": "adventure",
+        "count": 121
+      },
+      {
+        "word": "kind",
+        "count": 119
+      },
+      {
+        "word": "plage",
+        "count": 119
+      },
+      {
+        "word": "water",
+        "count": 118
+      },
+      {
+        "word": "thing",
+        "count": 117
+      },
+      {
+        "word": "inspiration",
+        "count": 115
+      },
+      {
+        "word": "cœur",
+        "count": 115
+      },
+      {
+        "word": "strand",
+        "count": 115
+      },
+      {
+        "word": "spot",
+        "count": 114
+      },
+      {
+        "word": "welt",
+        "count": 114
+      },
+      {
+        "word": "story",
+        "count": 108
+      },
+      {
+        "word": "summer",
+        "count": 108
+      },
+      {
+        "word": "chaîne",
+        "count": 108
+      },
+      {
+        "word": "location",
+        "count": 107
+      },
+      {
+        "word": "blog",
+        "count": 105
+      },
+      {
+        "word": "wohnmobil",
+        "count": 105
+      },
+      {
+        "word": "brand",
+        "count": 104
+      },
+      {
+        "word": "culture",
+        "count": 103
+      },
+      {
+        "word": "museum",
+        "count": 103
+      },
+      {
+        "word": "highlight",
+        "count": 103
+      },
+      {
+        "word": "restaurant",
+        "count": 101
+      },
+      {
+        "word": "étoile",
+        "count": 99
+      },
+      {
+        "word": "thema",
+        "count": 98
+      },
+      {
+        "word": "weekend",
+        "count": 96
+      },
+      {
+        "word": "view",
+        "count": 95
+      },
+      {
+        "word": "team",
+        "count": 95
+      },
+      {
+        "word": "tradition",
+        "count": 95
+      },
+      {
+        "word": "fun",
+        "count": 94
+      },
+      {
+        "word": "history",
+        "count": 94
+      },
+      {
+        "word": "berg",
+        "count": 94
+      },
+      {
+        "word": "kanal",
+        "count": 94
+      },
+      {
+        "word": "traveler",
+        "count": 93
+      },
+      {
+        "word": "life",
+        "count": 92
+      },
+      {
+        "word": "begrüßung",
+        "count": 92
+      },
+      {
+        "word": "geschichte",
+        "count": 91
+      },
+      {
+        "word": "guide",
+        "count": 87
+      },
+      {
+        "word": "country",
+        "count": 87
+      },
+      {
+        "word": "ort",
+        "count": 87
+      },
+      {
+        "word": "mensch",
+        "count": 87
+      },
+      {
+        "word": "journey",
+        "count": 86
+      },
+      {
+        "word": "activité",
+        "count": 86
+      },
+      {
+        "word": "point",
+        "count": 85
+      },
+      {
+        "word": "top",
+        "count": 85
+      },
+      {
+        "word": "people",
+        "count": 84
+      },
+      {
+        "word": "challenge",
+        "count": 84
+      },
+      {
+        "word": "pool",
+        "count": 84
+      },
+      {
+        "word": "séjour",
+        "count": 84
+      },
+      {
+        "word": "région",
+        "count": 83
+      },
+      {
+        "word": "bois",
+        "count": 82
+      },
+      {
+        "word": "film",
+        "count": 81
+      },
+      {
+        "word": "vidéo",
+        "count": 81
+      },
+      {
+        "word": "town",
+        "count": 80
+      },
+      {
+        "word": "lake",
+        "count": 79
+      },
+      {
+        "word": "intro",
+        "count": 79
+      },
+      {
+        "word": "beauty",
+        "count": 78
+      },
+      {
+        "word": "kid",
+        "count": 78
+      },
+      {
+        "word": "camper",
+        "count": 78
+      },
+      {
+        "word": "room",
+        "count": 77
+      },
+      {
+        "word": "montagne",
+        "count": 76
+      },
+      {
+        "word": "minute",
+        "count": 74
+      },
+      {
+        "word": "kilometer",
+        "count": 74
+      },
+      {
+        "word": "interview",
+        "count": 73
+      },
+      {
+        "word": "work",
+        "count": 72
+      },
+      {
+        "word": "night",
+        "count": 72
+      },
+      {
+        "word": "infos",
+        "count": 70
+      },
+      {
+        "word": "aktivität",
+        "count": 69
+      },
+      {
+        "word": "friend",
+        "count": 67
+      },
+      {
+        "word": "fan",
+        "count": 67
+      },
+      {
+        "word": "food",
+        "count": 66
+      },
+      {
+        "word": "package",
+        "count": 66
+      },
+      {
+        "word": "forêt",
+        "count": 66
+      },
+      {
+        "word": "lac",
+        "count": 66
+      },
+      {
+        "word": "hébergement",
+        "count": 66
+      },
+      {
+        "word": "rust",
+        "count": 66
+      },
+      {
+        "word": "meer",
+        "count": 66
+      },
+      {
+        "word": "see",
+        "count": 66
+      },
+      {
+        "word": "getaway",
+        "count": 65
+      },
+      {
+        "word": "hauptstadt",
+        "count": 65
+      },
+      {
+        "word": "island",
+        "count": 64
+      },
+      {
+        "word": "ami",
+        "count": 64
+      },
+      {
+        "word": "woche",
+        "count": 64
+      },
+      {
+        "word": "love",
+        "count": 63
+      },
+      {
+        "word": "enfant",
+        "count": 63
+      },
+      {
+        "word": "roadtrip",
+        "count": 63
+      },
+      {
+        "word": "campingplatz",
+        "count": 63
+      },
+      {
+        "word": "kultur",
+        "count": 62
+      },
+      {
+        "word": "child",
+        "count": 61
+      },
+      {
+        "word": "envie",
+        "count": 61
+      },
+      {
+        "word": "pied",
+        "count": 61
+      },
+      {
+        "word": "süden",
+        "count": 61
+      },
+      {
+        "word": "sight",
+        "count": 60
+      },
+      {
+        "word": "recipe",
+        "count": 60
+      },
+      {
+        "word": "piscine",
+        "count": 60
+      },
+      {
+        "word": "aflevering",
+        "count": 60
+      },
+      {
+        "word": "piste",
+        "count": 59
+      },
+      {
+        "word": "episode",
+        "count": 58
+      },
+      {
+        "word": "choice",
+        "count": 58
+      },
+      {
+        "word": "design",
+        "count": 58
+      },
+      {
+        "word": "visite",
+        "count": 58
+      },
+      {
+        "word": "review",
+        "count": 58
+      },
+      {
+        "word": "landscape",
+        "count": 57
+      },
+      {
+        "word": "award",
+        "count": 57
+      },
+      {
+        "word": "week",
+        "count": 57
+      },
+      {
+        "word": "escape",
+        "count": 57
+      },
+      {
+        "word": "action",
+        "count": 57
+      },
+      {
+        "word": "endroit",
+        "count": 57
+      },
+      {
+        "word": "hiver",
+        "count": 57
+      },
+      {
+        "word": "wasser",
+        "count": 57
+      },
+      {
+        "word": "wohnwagen",
+        "count": 57
+      },
+      {
+        "word": "scene",
+        "count": 56
+      },
+      {
+        "word": "blogger",
+        "count": 56
+      },
+      {
+        "word": "vip",
+        "count": 56
+      },
+      {
+        "word": "welkom",
+        "count": 56
+      },
+      {
+        "word": "familienurlaub",
+        "count": 55
+      },
+      {
+        "word": "cadre",
+        "count": 54
+      },
+      {
+        "word": "service",
+        "count": 53
+      },
+      {
+        "word": "bike",
+        "count": 53
+      },
+      {
+        "word": "comfort",
+        "count": 53
+      },
+      {
+        "word": "exception",
+        "count": 53
+      },
+      {
+        "word": "local",
+        "count": 52
+      },
+      {
+        "word": "area",
+        "count": 52
+      },
+      {
+        "word": "station",
+        "count": 52
+      },
+      {
+        "word": "glijban",
+        "count": 52
+      },
+      {
+        "word": "book",
+        "count": 51
+      },
+      {
+        "word": "music",
+        "count": 51
+      },
+      {
+        "word": "road",
+        "count": 51
+      },
+      {
+        "word": "attraction",
+        "count": 51
+      },
+      {
+        "word": "sun",
+        "count": 51
+      },
+      {
+        "word": "community",
+        "count": 51
+      },
+      {
+        "word": "route",
+        "count": 51
+      },
+      {
+        "word": "على",
+        "count": 51
+      },
+      {
+        "word": "insider",
+        "count": 50
+      },
+      {
+        "word": "production",
+        "count": 50
+      },
+      {
+        "word": "collection",
+        "count": 50
+      },
+      {
+        "word": "kunst",
+        "count": 50
+      },
+      {
+        "word": "frage",
+        "count": 50
+      },
+      {
+        "word": "leben",
+        "count": 50
+      },
+      {
+        "word": "app",
+        "count": 49
+      },
+      {
+        "word": "reporter",
+        "count": 49
+      },
+      {
+        "word": "train",
+        "count": 49
+      },
+      {
+        "word": "wunderschön",
+        "count": 49
+      },
+      {
+        "word": "accommodation",
+        "count": 48
+      },
+      {
+        "word": "golf",
+        "count": 48
+      },
+      {
+        "word": "feedback",
+        "count": 48
+      },
+      {
+        "word": "com",
+        "count": 48
+      },
+      {
+        "word": "soleil",
+        "count": 48
+      }
+    ]
+  },
+  "spacy_available": true,
+  "models_used": {
+    "en": "<spacy.lang.en.English object at 0x15d8cc950>",
+    "fr": "<spacy.lang.fr.French object at 0x185643e90>",
+    "de": "<spacy.lang.de.German object at 0x186cf98e0>",
+    "nl": "<spacy.lang.nl.Dutch object at 0x18d74bb30>"
+  },
+  "language_stats": {
+    "fr": 2670,
+    "en": 7431,
+    "de": 2457,
+    "nl": 3714,
+    "other": 0
+  },
+  "total_words_analyzed": 105725,
+  "analysis_date": "2025-07-22T22:07:25.078796"
+}

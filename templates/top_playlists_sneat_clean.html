@@ -12,8 +12,9 @@
                     <div>
                         <h5 class="card-title mb-0">
                             <i class="bx bx-collection me-2"></i>Top Playlists - Global Ranking
+                            <span class="badge bg-primary ms-2">{{ stats.total_playlists or 0 }} Total</span>
                         </h5>
-                        <p class="card-subtitle text-muted mb-0">Best performing playlists across all competitors</p>
+                        <p class="card-subtitle text-muted mb-0">Best performing playlists across {{ stats.total_competitors or 0 }} competitors • {{ "{:,}".format(stats.total_videos) if stats.total_videos else '0' }} videos analyzed</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <div class="dropdown">
@@ -40,6 +41,10 @@
                                 <li><a class="dropdown-item" href="?sort_by=latest_video_date&order=desc&category={{ current_category }}">Most Recent</a></li>
                             </ul>
                         </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshData()" title="Refresh data">
+                            <i class="bx bx-refresh"></i>
+                            <span class="d-none d-sm-inline-block ms-1">Refresh</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -56,8 +61,13 @@
                             <i class="bx bx-collection"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.total_playlists or 0 }}</h4>
+                    <h4 class="mb-1 text-primary">{{ "{:,}".format(stats.total_playlists) if stats.total_playlists else '0' }}</h4>
                     <small class="text-muted">Total Playlists</small>
+                    {% if stats.total_playlists %}
+                    <div class="text-success mt-1">
+                        <small><i class="bx bx-check-circle me-1"></i>Updated</small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -69,8 +79,13 @@
                             <i class="bx bx-group"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.total_competitors or 0 }}</h4>
+                    <h4 class="mb-1 text-success">{{ "{:,}".format(stats.total_competitors) if stats.total_competitors else '0' }}</h4>
                     <small class="text-muted">Competitors</small>
+                    {% if stats.total_competitors %}
+                    <div class="text-success mt-1">
+                        <small><i class="bx bx-check-circle me-1"></i>Active</small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -82,8 +97,13 @@
                             <i class="bx bx-video"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.total_linked_videos or 0 }}</h4>
-                    <small class="text-muted">Linked Videos</small>
+                    <h4 class="mb-1 text-info">{{ "{:,}".format(stats.total_videos) if stats.total_videos else '0' }}</h4>
+                    <small class="text-muted">Total Videos</small>
+                    {% if stats.total_videos %}
+                    <div class="text-info mt-1">
+                        <small><i class="bx bx-video me-1"></i>Analyzed</small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -95,8 +115,13 @@
                             <i class="bx bx-list-ul"></i>
                         </span>
                     </div>
-                    <h4 class="mb-1">{{ stats.shown_playlists or 0 }}</h4>
+                    <h4 class="mb-1 text-warning">{{ "{:,}".format(stats.shown_playlists) if stats.shown_playlists else '0' }}</h4>
                     <small class="text-muted">Shown Playlists</small>
+                    {% if stats.shown_playlists and stats.total_playlists %}
+                    <div class="text-warning mt-1">
+                        <small><i class="bx bx-filter me-1"></i>{{ "{:.1f}".format(stats.shown_playlists / stats.total_playlists * 100) }}%</small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -284,4 +309,40 @@
         </div>
     </div>
 </div>
+
+<script>
+function refreshData() {
+    // Afficher un loader
+    const button = event.target.closest('button');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> <span class="d-none d-sm-inline-block ms-1">Refreshing...</span>';
+    button.disabled = true;
+    
+    // Vider le cache via l'API
+    fetch('/api/clear-top-playlists-cache', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Recharger la page après avoir vidé le cache
+            location.reload();
+        } else {
+            console.error('Erreur lors du vidage du cache:', data.error);
+            // Restaurer le bouton
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        // Restaurer le bouton
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    });
+}
+</script>
 {% endblock %}

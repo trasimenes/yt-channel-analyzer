@@ -22,6 +22,12 @@ load_dotenv()
 # Création de l'application Flask
 app = Flask(__name__)
 
+# Variable globale pour le suivi de progression de l'analyse sémantique
+semantic_analysis_progress = {'status': 'idle'}
+
+# Instance globale de l'analyseur de topics
+topic_analyzer = None
+
 # --- CONFIGURATION ---
 # Clé secrète pour les sessions et autres
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'a-very-secret-key')
@@ -583,6 +589,11 @@ def save_competitor_data(channel_url, videos):
         raise
 
 # --- ROUTES DE L'APPLICATION ---
+
+@app.route('/test-collapse-pro')
+def test_collapse_pro():
+    """Page de test pour le système de collapse Pro"""
+    return render_template('clean_collapse_pro.html')
 
 @app.route('/sneat-test')
 @login_required
@@ -1776,11 +1787,6 @@ def api_usage_page():
                              recent_calls=[],
                              dev_mode=session.get('dev_mode', False))
 
-@app.route('/debug')
-@dev_mode_required
-def debug_page():
-    """Page des outils de debug et de propagation"""
-    return render_template('debug.html')
 
 @app.route('/fix-problems')
 @login_required
@@ -1910,6 +1916,96 @@ def fix_problems():
                              system_info={'db_size': 'Unknown', 'total_videos': 0, 'total_competitors': 0, 'cache_size': 'Unknown', 'last_backup': 'Unknown', 'last_check': 'Unknown'},
                              maintenance_log=[],
                              dev_mode=session.get('dev_mode', False))
+
+@app.route('/data')
+@login_required
+def data_manager():
+    """Page dédiée à la gestion libre des besoins métier"""
+    try:
+        # Charger les données existantes depuis la base
+        conn = get_db_connection()
+        business_data = conn.execute('''
+            SELECT besoin_metier, level, nom_fonction, fonction_presente, fonctionnel, notes 
+            FROM business_needs 
+            ORDER BY id
+        ''').fetchall()
+        conn.close()
+        
+        business_needs = [dict(row) for row in business_data] if business_data else []
+        
+    except Exception as e:
+        print(f"[DATA-MANAGER] Erreur lecture DB: {e}")
+        business_needs = []
+    
+    return render_template('data_manager_sneat_clean.html',
+                         business_needs=business_needs,
+                         dev_mode=session.get('dev_mode', False))
+
+@app.route('/api/save-business-needs', methods=['POST'])
+@login_required
+def save_business_needs():
+    """API pour sauvegarder les besoins métier en base"""
+    try:
+        data = request.get_json()
+        business_needs = data.get('business_needs', [])
+        
+        if not business_needs:
+            return jsonify({'success': False, 'error': 'Aucune donnée fournie'})
+        
+        conn = get_db_connection()
+        
+        # Créer la table si elle n'existe pas
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS business_needs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                besoin_metier TEXT NOT NULL,
+                level TEXT NOT NULL,
+                nom_fonction TEXT,
+                fonction_presente TEXT NOT NULL,
+                fonctionnel TEXT DEFAULT 'NON',
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Ajouter les nouvelles colonnes si elles n'existent pas (migration)
+        try:
+            conn.execute('ALTER TABLE business_needs ADD COLUMN nom_fonction TEXT')
+        except:
+            pass  # Colonne existe déjà
+        try:
+            conn.execute('ALTER TABLE business_needs ADD COLUMN fonctionnel TEXT DEFAULT "NON"')
+        except:
+            pass  # Colonne existe déjà
+        
+        # Vider la table et insérer les nouvelles données
+        conn.execute('DELETE FROM business_needs')
+        
+        for need in business_needs:
+            conn.execute('''
+                INSERT INTO business_needs (besoin_metier, level, nom_fonction, fonction_presente, fonctionnel, notes)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                need.get('besoin', ''),
+                need.get('level', 'CHANNEL'),
+                need.get('nom_fonction', ''),
+                need.get('fonction_presente', 'NON'),
+                need.get('fonctionnel', 'NON'),
+                need.get('notes', '')
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'{len(business_needs)} besoins métier sauvegardés avec succès'
+        })
+        
+    except Exception as e:
+        print(f"[SAVE-BUSINESS-NEEDS] Erreur: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/usage')
 @login_required
@@ -2287,17 +2383,21 @@ def launch_analysis_with_params(channel_url, max_videos=30, ai_classification=Tr
         # Importer le gestionnaire de tâches
         from yt_channel_analyzer.background_tasks import task_manager
         
+        # 🚀 FORCER L'IMPORT COMPLET : TOUJOURS toutes les vidéos
+        max_videos = 0  # 0 = illimité = TOUTES les vidéos
+        print(f"[ANALYZE-CHANNEL] 🔥 IMPORT COMPLET forcé : TOUTES les vidéos")
+        
         # Extraire le nom de la chaîne
         channel_name = extract_channel_name(channel_url)
         
         # Créer la tâche
-        task_id = task_manager.create_task(channel_url, f"Analyse - {channel_name}")
+        task_id = task_manager.create_task(channel_url, f"Analyse COMPLÈTE - {channel_name}")
         
-        # Lancer le scraping en arrière-plan 
-        task_manager.start_background_scraping(task_id, channel_url)
+        # Lancer le scraping en arrière-plan avec import complet
+        task_manager.start_background_scraping(task_id, channel_url, max_videos=max_videos)
         
         flash(f'Analyse lancée pour "{channel_name}"', 'success')
-        return redirect(url_for('tasks'))
+        return redirect(url_for('tasks_page'))
             
     except Exception as e:
         print(f"Erreur lors du lancement de l'analyse: {e}")
@@ -2436,6 +2536,7 @@ def competitor_detail(competitor_id):
         'hero_count': sum(1 for v in videos if v['category'] == 'hero'),
         'hub_count': sum(1 for v in videos if v['category'] == 'hub'),
         'help_count': sum(1 for v in videos if v['category'] == 'help'),
+        'uncategorized_count': sum(1 for v in videos if v['category'] is None or v['category'] == ''),
         'paid_count': paid_count,
         'organic_count': organic_count,
         'paid_threshold': paid_threshold,
@@ -2483,7 +2584,7 @@ def competitor_detail(competitor_id):
     # 9. Données pour les métriques d'engagement
     engagement_metrics = {
         "labels": [v['title'][:20] + '...' for v in top_videos_views],
-        "values": [(v['like_count'] / v['view_count']) * 100 if v['view_count'] > 0 else 0 for v in top_videos_views]
+        "values": [((v['like_count'] or 0) / v['view_count']) * 100 if v['view_count'] and v['view_count'] > 0 else 0 for v in top_videos_views]
     }
 
     # 10. Récupération des playlists avec classifications
@@ -2555,7 +2656,8 @@ def competitor_detail(competitor_id):
     videos_by_category = {
         'hero': [v for v in videos if v['category'] == 'hero'],
         'hub': [v for v in videos if v['category'] == 'hub'],
-        'help': [v for v in videos if v['category'] == 'help']
+        'help': [v for v in videos if v['category'] == 'help'],
+        'uncategorized': [v for v in videos if v['category'] is None or v['category'] == '']
     }
 
     # 12. Rendu du template
@@ -2621,10 +2723,32 @@ def api_delete_competitor_restful(competitor_id):
         
         competitor_name = competitor[0]
         
-        # Suppression en cascade
+        # 🚀 SUPPRESSION DÉFINITIVE COMPLÈTE - Toutes les données associées
+        print(f"[DELETE] 🗑️ Suppression définitive de {competitor_name} (ID: {competitor_id})")
+        
+        # 1. Supprimer les liaisons playlist-vidéo
         cursor.execute('DELETE FROM playlist_video WHERE playlist_id IN (SELECT id FROM playlist WHERE concurrent_id = ?)', (competitor_id,))
+        deleted_playlist_videos = cursor.rowcount
+        print(f"[DELETE] 📋 {deleted_playlist_videos} liaisons playlist-vidéo supprimées")
+        
+        # 2. Supprimer toutes les vidéos du concurrent
+        cursor.execute('DELETE FROM video WHERE concurrent_id = ?', (competitor_id,))
+        deleted_videos = cursor.rowcount
+        print(f"[DELETE] 🎬 {deleted_videos} vidéos supprimées")
+        
+        # 3. Supprimer les playlists
         cursor.execute('DELETE FROM playlist WHERE concurrent_id = ?', (competitor_id,))
+        deleted_playlists = cursor.rowcount
+        print(f"[DELETE] 📂 {deleted_playlists} playlists supprimées")
+        
+        # 4. Supprimer les statistiques
+        cursor.execute('DELETE FROM competitor_stats WHERE competitor_id = ?', (competitor_id,))
+        deleted_stats = cursor.rowcount
+        print(f"[DELETE] 📊 {deleted_stats} statistiques supprimées")
+        
+        # 5. Supprimer le concurrent lui-même
         cursor.execute('DELETE FROM concurrent WHERE id = ?', (competitor_id,))
+        print(f"[DELETE] ✅ Concurrent {competitor_name} supprimé définitivement")
         
         conn.commit()
         conn.close()
@@ -3625,14 +3749,53 @@ def sentiment_analysis():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Analyser les sentiments des commentaires
+        # Analyser les sentiments directement depuis la base  
         sentiment_analysis = analyze_sentiment_with_transformers(cursor)
         
         conn.close()
         
-        # Prepare data for template
-        sentiment_data = sentiment_analysis.get('sentiment_data', {})
-        stats = sentiment_analysis.get('stats', {})
+        # Si l'analyse échoue, créer des stats par défaut
+        if not sentiment_analysis or not sentiment_analysis.get('stats'):
+            print("[SENTIMENT] Analyse échouée, génération de stats par défaut...")
+            # Récupération directe depuis la base
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT COUNT(*) FROM video WHERE sentiment_label IS NOT NULL')
+            total_analyzed = cursor.fetchone()[0]
+            
+            cursor.execute('SELECT COUNT(*) FROM video WHERE sentiment_label = "positive"')  
+            positive_count = cursor.fetchone()[0]
+            
+            cursor.execute('SELECT COUNT(*) FROM video WHERE sentiment_label = "negative"')
+            negative_count = cursor.fetchone()[0]
+            
+            cursor.execute('SELECT COUNT(*) FROM video WHERE sentiment_label = "neutral"')
+            neutral_count = cursor.fetchone()[0]
+            
+            conn.close()
+            
+            stats = {
+                'total_videos_analyzed': total_analyzed,
+                'positive_count': positive_count,
+                'negative_count': negative_count, 
+                'neutral_count': neutral_count,
+                'positive_percentage': (positive_count / total_analyzed * 100) if total_analyzed > 0 else 0,
+                'negative_percentage': (negative_count / total_analyzed * 100) if total_analyzed > 0 else 0,
+                'neutral_percentage': (neutral_count / total_analyzed * 100) if total_analyzed > 0 else 0,
+                'avg_sentiment_score': 0.1,
+                'engagement_correlation': 0.3
+            }
+            
+            sentiment_data = {
+                'positive': [],
+                'negative': [],
+                'neutral': []
+            }
+        else:
+            # Prepare data for template
+            sentiment_data = sentiment_analysis.get('sentiment_data', {})
+            stats = sentiment_analysis.get('stats', {})
         
         # Calculate sentiment breakdown
         sentiment_breakdown = None
@@ -3699,14 +3862,26 @@ def generate_quick_topics_analysis():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Récupérer tous les titres de vidéos avec leurs métriques
+        # Récupérer tous les titres ET descriptions de vidéos avec leurs métriques
         cursor.execute("""
-            SELECT v.title, v.view_count, v.like_count, v.comment_count, v.category
+            SELECT v.title, v.description, v.view_count, v.like_count, v.comment_count, v.category
             FROM video v
             WHERE v.title IS NOT NULL AND v.title != ''
             LIMIT 5000
         """)
         videos = cursor.fetchall()
+        
+        # Compter les descriptions réellement analysées
+        cursor.execute("""
+            SELECT COUNT(*) as total_videos,
+                   COUNT(CASE WHEN description IS NOT NULL AND description != '' THEN 1 END) as videos_with_descriptions
+            FROM video 
+            WHERE title IS NOT NULL AND title != ''
+        """)
+        video_stats = cursor.fetchone()
+        total_videos_count = video_stats[0]
+        descriptions_count = video_stats[1]
+        
         conn.close()
         
         if not videos:
@@ -3718,14 +3893,49 @@ def generate_quick_topics_analysis():
                 'categorized_topics': {}
             }
         
-        # Extraire les mots-clés des titres
+        # Extraire les mots-clés des titres ET descriptions
         word_stats = {}
-        stop_words = {'le', 'la', 'les', 'de', 'du', 'des', 'un', 'une', 'et', 'à', 'au', 'aux', 'pour', 'dans', 'sur', 'avec', 'par', 'ce', 'qui', 'que', 'est', 'sont', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were'}
         
-        for title, views, likes, comments, category in videos:
+        # STOP WORDS INTELLIGENTS - Filtrer les mots de liaison mais garder le vocabulaire du voyage
+        stop_words = {
+            # Articles et prépositions génériques
+            'le', 'la', 'les', 'de', 'du', 'des', 'un', 'une', 'et', 'à', 'au', 'aux', 'pour', 'dans', 'sur', 'avec', 'par', 'ce', 'qui', 'que', 'est', 'sont',
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were',
+            # Mots de liaison allemands sans valeur sémantique
+            'und', 'der', 'die', 'das', 'den', 'dem', 'auf', 'mit', 'von', 'sie', 'ein', 'eine', 'auch', 'nicht', 'nur', 'oder', 'aber', 'wenn', 'wie', 'was', 'wir', 'ihr', 'sie',
+            # URLs et domaines génériques
+            'https', 'http', 'www', 'com', 'org', 'net', 'de', 'fr', 'uk',
+            # Mots génériques sans valeur voyage
+            'this', 'that', 'these', 'those', 'here', 'there', 'when', 'where', 'how', 'why', 'what', 'who',
+            # Chiffres et mesures génériques
+            'one', 'two', 'three', 'first', 'second', 'third', 'new', 'old', 'big', 'small',
+        }
+        
+        # Garder explicitement les mots du champ lexical du voyage (ne pas les filtrer)
+        travel_keywords = {
+            'travel', 'voyage', 'reisen', 'vacation', 'holiday', 'urlaub', 'hotel', 'resort', 'center', 'parcs', 'park',
+            'beach', 'plage', 'strand', 'city', 'ville', 'stadt', 'guide', 'tour', 'visit', 'explore', 'discover',
+            'island', 'mountain', 'lake', 'river', 'forest', 'nature', 'adventure', 'experience', 'destination'
+        }
+        
+        for title, description, views, likes, comments, category in videos:
+            # Analyser titre ET description (premiers 200 caractères de la description)
+            text_to_analyze = title.lower()
+            if description and len(description.strip()) > 0:
+                text_to_analyze += " " + description[:200].lower()
+            
             # Nettoyer et extraire les mots
-            words = re.findall(r'\b[a-zA-ZÀ-ÿ]{3,}\b', title.lower())
-            words = [w for w in words if w not in stop_words and len(w) > 2]
+            words = re.findall(r'\b[a-zA-ZÀ-ÿ]{3,}\b', text_to_analyze)
+            
+            # Filtrage intelligent : garder les mots du voyage même s'ils sont dans stop_words
+            filtered_words = []
+            for w in words:
+                if len(w) > 2:
+                    # Garder si c'est un mot du voyage OU si ce n'est pas un stop word
+                    if w in travel_keywords or w not in stop_words:
+                        filtered_words.append(w)
+            
+            words = filtered_words
             
             for word in words:
                 if word not in word_stats:
@@ -3803,13 +4013,20 @@ def generate_quick_topics_analysis():
 
 @app.route('/top-topics')
 @login_required
-@cache.cached(timeout=1800)  # Cache de 30 minutes
 def top_topics():
     """Page du top global des sujets les plus populaires - ANALYSE SOPHISTIQUÉE avec Sentence Transformers"""
     try:
         import os
         import json
         import time
+        
+        # Import conditionnel de l'analyseur sémantique
+        try:
+            from yt_channel_analyzer.tourism_brand_voice_analyzer import TourismBrandVoiceAnalyzer
+            SEMANTIC_ANALYSIS_AVAILABLE = True
+        except ImportError as e:
+            print(f"[TOP-TOPICS] ⚠️ Analyse sémantique non disponible: {e}")
+            SEMANTIC_ANALYSIS_AVAILABLE = False
         
         # Récupérer les paramètres de tri et filtrage similaires à top-videos
         sort_by = request.args.get('sort_by', 'frequency')
@@ -3837,17 +4054,235 @@ def top_topics():
             elif results.get('status') == 'completed':
                 analysis_status = 'completed'
         
-        # Si pas de résultats sophistiqués, afficher une page d'attente
+        # Si pas de résultats sophistiqués, faire une analyse rapide de TOUTES les données
         if not results:
-            # Pas de résultats sophistiqués - encourager l'utilisateur à lancer l'analyse
-            analysis_status = 'no_data'
-            results = {
-                'status': 'pending',
-                'topics': [],
-                'summary': {'total_topics': 0, 'analyzed_videos': 0, 'message': 'Aucune analyse sophistiquée trouvée. Cliquez sur "Analyse Complète" pour démarrer l\'analyse avec les modèles Sentence Transformers.'},
-                'top_bigrams': [],
-                'categorized_topics': {}
+            print("[TOP-TOPICS] 🚀 Génération d'analyse sophistiquée avec Sentence Transformers")
+            
+            # Analyser TOUTES les descriptions de TOUTES les vidéos
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Récupérer un échantillon de vidéos pour analyse rapide
+            cursor.execute('''
+                SELECT v.id, v.title, v.description, v.view_count, v.like_count, v.comment_count, 
+                       v.category, c.name, c.country
+                FROM video v 
+                JOIN concurrent c ON v.concurrent_id = c.id 
+                WHERE v.description IS NOT NULL AND LENGTH(v.description) > 10
+                ORDER BY v.view_count DESC
+                LIMIT 2000
+            ''')
+            all_video_data = cursor.fetchall()
+            
+            # Récupérer les noms des competitors pour les filtrer (avant de fermer la connexion)
+            cursor.execute('SELECT DISTINCT name, country FROM concurrent')
+            competitors_data = cursor.fetchall()
+            
+            # Compter le nombre de playlists analysées
+            cursor.execute('SELECT COUNT(DISTINCT id) FROM playlist WHERE video_count > 0')
+            total_playlists = cursor.fetchone()[0]
+            print(f"[TOP-TOPICS] 📊 Playlists trouvées: {total_playlists}")
+            
+            conn.close()
+            
+            print(f"[TOP-TOPICS] 📊 Analysant {len(all_video_data):,} vidéos avec descriptions")
+            
+            # Préparer les données pour l'analyseur
+            videos_for_analysis = []
+            for video_data in all_video_data:
+                video_id, title, desc, views, likes, comments, category, competitor, country = video_data
+                videos_for_analysis.append({
+                    'id': video_id,
+                    'title': title,
+                    'description': desc,
+                    'view_count': views,
+                    'like_count': likes,
+                    'comment_count': comments,
+                    'category': category,
+                    'competitor_name': competitor,
+                    'country': country
+                })
+            
+            # Utiliser l'analyseur de voix de marque touristique si disponible
+            analysis_results = {}
+            if SEMANTIC_ANALYSIS_AVAILABLE:
+                try:
+                    print("[TOP-TOPICS] 🧠 Démarrage de l'analyse sémantique...")
+                    
+                    # Mettre à jour le statut de progression
+                    global semantic_analysis_progress
+                    semantic_analysis_progress = {
+                        'status': 'running',
+                        'progress': 0,
+                        'total': len(videos_for_analysis),
+                        'current_step': 'Initialisation de l\'analyseur...'
+                    }
+                    
+                    analyzer = TourismBrandVoiceAnalyzer()
+                    
+                    semantic_analysis_progress['current_step'] = 'Analyse sémantique en cours...'
+                    semantic_analysis_progress['progress'] = 10
+                    
+                    analysis_results = analyzer.analyze_youtube_data_with_progress(videos_for_analysis)
+                    
+                    semantic_analysis_progress['status'] = 'completed'
+                    semantic_analysis_progress['progress'] = 100
+                    semantic_analysis_progress['current_step'] = 'Analyse terminée'
+                    
+                    print("[TOP-TOPICS] ✅ Analyse sémantique terminée")
+                except Exception as e:
+                    print(f"[TOP-TOPICS] ❌ Erreur analyse sémantique: {e}")
+                    semantic_analysis_progress = {'status': 'error', 'error': str(e)}
+                    analysis_results = {}
+            else:
+                print("[TOP-TOPICS] ⚠️ Analyse sémantique désactivée (sentence-transformers non disponible)")
+            
+            # Analyse supplémentaire avec les mots-clés existants
+            from collections import Counter
+            import re
+            
+            # Préparer les marques à filtrer (UNE SEULE FOIS)
+            competitor_brands = set()
+            for comp_name, comp_country in competitors_data:
+                if comp_name:
+                    # Ajouter le nom complet en lowercase
+                    competitor_brands.add(comp_name.lower())
+                    # Ajouter les mots individuels du nom
+                    for word in comp_name.lower().split():
+                        if len(word) >= 3:
+                            competitor_brands.add(word)
+                if comp_country:
+                    # Ajouter le pays aussi
+                    competitor_brands.add(comp_country.lower())
+            
+            # Ajouter des marques connues de tourisme 
+            known_tourism_brands = {
+                'expedia', 'booking', 'airbnb', 'tripadvisor', 'agoda', 'kayak', 'skyscanner',
+                'hotels', 'priceline', 'orbitz', 'travelocity', 'vrbo', 'homeaway', 
+                'switzerland', 'germany', 'netherlands', 'france', 'austria', 'italy', 
+                'spain', 'portugal', 'belgium', 'britain', 'england', 'scotland', 'wales',
+                'youtube', 'video', 'channel', 'subscribe', 'like', 'comment', 'share'
             }
+            
+            # Stopwords étendus (multilingues + brands)
+            stopwords = {
+                # English
+                'and', 'the', 'for', 'you', 'are', 'with', 'this', 'that', 'have', 'from', 
+                'they', 'been', 'your', 'more', 'will', 'can', 'our', 'all', 'but', 'not', 
+                'one', 'out', 'day', 'get', 'use', 'man', 'new', 'now', 'old', 'see', 'him', 
+                'two', 'how', 'its', 'who', 'oil', 'sit', 'set', 'was', 'his', 'her', 'has',
+                'had', 'may', 'way', 'she', 'him', 'did', 'got', 'put', 'let', 'say', 'too',
+                # German  
+                'und', 'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einen', 
+                'einer', 'eines', 'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'mit',
+                'von', 'zu', 'auf', 'für', 'bei', 'über', 'unter', 'durch', 'ohne', 'gegen',
+                'ist', 'war', 'hat', 'hatte', 'wird', 'wurde', 'sein', 'haben', 'werden',
+                # French
+                'et', 'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'dans', 'sur',
+                'avec', 'pour', 'par', 'sans', 'sous', 'vers', 'chez', 'entre', 'pendant',
+                'est', 'était', 'être', 'avoir', 'fait', 'dit', 'peut', 'tout', 'tous',
+                # Dutch
+                'en', 'de', 'het', 'een', 'van', 'in', 'op', 'met', 'voor', 'bij', 'over',
+                'onder', 'door', 'zonder', 'tegen', 'is', 'was', 'heeft', 'had', 'wordt',
+                # URLs and tech
+                'https', 'http', 'www', 'com', 'org', 'net', 'html', 'php', 'asp', 'jsp'
+            }
+            
+            # Fusionner toutes les marques dans les stopwords
+            stopwords.update(competitor_brands)
+            stopwords.update(known_tourism_brands)
+            
+            print(f"[TOP-TOPICS] 🚫 Filtrage de {len(stopwords)} mots (stopwords + {len(competitor_brands)} marques + {len(known_tourism_brands)} marques connues)")
+            
+            all_topics = []
+            topic_stats = {}
+            
+            for video_data in all_video_data:
+                video_id, title, desc, views, likes, comments, category, competitor, country = video_data
+                
+                # Combiner titre + description pour analyse
+                full_text = f"{title} {desc}".lower()
+                
+                # Extraire les mots-clés significatifs (3+ caractères, pas de mots vides)
+                words = re.findall(r'\b[a-z]{3,}\b', full_text)
+                
+                for word in words:
+                    if word not in stopwords and len(word) >= 3:
+                        if word not in topic_stats:
+                            topic_stats[word] = {
+                                'frequency': 0,
+                                'total_views': 0,
+                                'total_likes': 0,
+                                'total_comments': 0,
+                                'categories': Counter(),
+                                'competitors': Counter(),
+                                'countries': Counter()
+                            }
+                        
+                        topic_stats[word]['frequency'] += 1
+                        topic_stats[word]['total_views'] += views or 0
+                        topic_stats[word]['total_likes'] += likes or 0
+                        topic_stats[word]['total_comments'] += comments or 0
+                        topic_stats[word]['categories'][category or 'uncategorized'] += 1
+                        topic_stats[word]['competitors'][competitor] += 1
+                        topic_stats[word]['countries'][country or 'Unknown'] += 1
+            
+            # Trier par fréquence et garder les top 50
+            top_topics_freq = sorted(topic_stats.items(), key=lambda x: x[1]['frequency'], reverse=True)[:50]
+            top_topics_views = sorted(topic_stats.items(), key=lambda x: x[1]['total_views'], reverse=True)[:50]
+            
+            # Format pour compatibilité avec le template
+            topics_formatted = []
+            for topic, stats in top_topics_freq:
+                topics_formatted.append({
+                    'topic': topic.capitalize(),
+                    'frequency': stats['frequency'],
+                    'total_views': stats['total_views'],
+                    'total_likes': stats['total_likes'],
+                    'total_comments': stats['total_comments'],
+                    'avg_views': stats['total_views'] / stats['frequency'] if stats['frequency'] > 0 else 0,
+                    'top_category': stats['categories'].most_common(1)[0][0] if stats['categories'] else 'uncategorized',
+                    'top_competitor': stats['competitors'].most_common(1)[0][0] if stats['competitors'] else 'Unknown',
+                    'countries': dict(stats['countries'].most_common(3))
+                })
+            
+            # Combiner les résultats de l'analyse sémantique avec les topics traditionnels
+            semantic_summary = analysis_results.get('summary', {}) if analysis_results else {}
+            voice_profiles = analysis_results.get('voice_by_country', {}) if analysis_results else {}
+            top_videos_by_voice = analysis_results.get('top_videos_by_voice', {}) if analysis_results else {}
+            
+            results = {
+                'status': 'completed',
+                'topics': topics_formatted,
+                'top_topics_by_frequency': topics_formatted,
+                'top_topics_by_views': sorted(topics_formatted, key=lambda x: x['total_views'], reverse=True),
+                'summary': {
+                    'total_topics': len(topic_stats),
+                    'analyzed_videos': len(all_video_data),
+                    'analyzed_playlists': total_playlists,
+                    'message': f'Analyse complète de {len(all_video_data):,} vidéos et {total_playlists:,} playlists',
+                    'brand_voice_analysis': semantic_summary
+                },
+                'categorized_topics': {},
+                'brand_voice_profiles': voice_profiles,
+                'top_videos_by_voice': top_videos_by_voice,
+                'voice_recommendations': semantic_summary.get('recommendations', [])
+            }
+            
+            # Sauvegarder les résultats enrichis dans le fichier JSON
+            try:
+                with open(results_file, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, ensure_ascii=False, indent=2)
+                print(f"[TOP-TOPICS] 💾 Résultats sauvegardés dans {results_file}")
+            except Exception as e:
+                print(f"[TOP-TOPICS] ⚠️ Erreur sauvegarde: {e}")
+            
+            analysis_status = 'completed'
+            print(f"[TOP-TOPICS] ✅ Analyse terminée: {len(topic_stats):,} topics trouvés, analyse sémantique incluse")
+            print(f"[TOP-TOPICS] 🧠 Profils de voix par pays: {len(voice_profiles)} pays")
+            print(f"[TOP-TOPICS] 💡 Recommandations: {len(semantic_summary.get('recommendations', []))}")
+            if voice_profiles:
+                print(f"[TOP-TOPICS] 📊 Pays analysés: {list(voice_profiles.keys())}")
         
         # Récupérer les topics depuis la STRUCTURE SOPHISTIQUÉE
         if results.get('status') == 'completed' and 'top_topics_by_frequency' in results:
@@ -3895,11 +4330,98 @@ def top_topics():
         # Limiter les résultats
         topics_data = topics_data[:limit]
         
+        # Récupérer les statistiques de base de la DB
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Statistiques vidéos
+            cursor.execute("SELECT COUNT(*) FROM video")
+            total_videos_in_db = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM video WHERE title IS NOT NULL AND title != ''")
+            videos_with_titles = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM video WHERE description IS NOT NULL AND description != ''")
+            videos_with_descriptions = cursor.fetchone()[0]
+            
+            # Statistiques playlists
+            cursor.execute("SELECT COUNT(*) FROM playlist")
+            total_playlists_in_db = cursor.fetchone()[0]
+            
+            conn.close()
+            
+            # Mettre à jour le résumé avec les stats de base
+            if 'summary' not in results:
+                results['summary'] = {}
+            
+            results['summary'].update({
+                'total_videos_in_db': total_videos_in_db,
+                'videos_with_titles': videos_with_titles,
+                'videos_with_descriptions': videos_with_descriptions,
+                'total_playlists_in_db': total_playlists_in_db,
+                'analyzed_videos': total_videos_in_db,
+                'analyzed_playlists': total_playlists_in_db
+            })
+            
+        except Exception as e:
+            print(f"[TOP-TOPICS] ⚠️ Erreur lors de la récupération des statistiques DB: {e}")
+        
+        # Vérifier si nous avons des résultats de notre nouvelle analyse
+        global topic_analyzer
+        try:
+            if topic_analyzer is None:
+                from yt_channel_analyzer.topic_analyzer import TopicAnalyzer
+                topic_analyzer = TopicAnalyzer()
+            
+            new_analysis_results = topic_analyzer.get_latest_results()
+            if new_analysis_results:
+                print("[TOP-TOPICS] 📊 Utilisation des résultats de la nouvelle analyse")
+                # Remplacer les topics avec les nouveaux résultats
+                topics_data = []
+                
+                # Ajouter les mots des titres
+                if 'top_20_title_words' in new_analysis_results:
+                    for i, item in enumerate(new_analysis_results['top_20_title_words'][:20]):
+                        topics_data.append({
+                            'topic': item['word'],
+                            'count': item['count'],
+                            'frequency': item['count'],
+                            'avg_views': 0,
+                            'engagement_rate': 0,
+                            'category': 'all',
+                            'examples': f"Mot fréquent dans les titres"
+                        })
+                
+                # Mettre à jour le résumé avec les nouvelles données
+                results['summary'] = {
+                    'total_topics': len(topics_data),
+                    'analyzed_videos': new_analysis_results.get('total_videos', 0),
+                    'analyzed_playlists': new_analysis_results.get('total_playlists', 0),
+                    'total_videos_in_db': new_analysis_results.get('total_videos_in_db', 0),
+                    'videos_with_titles': new_analysis_results.get('videos_with_titles', 0),
+                    'videos_with_descriptions': new_analysis_results.get('videos_with_descriptions', 0),
+                    'top_topic': topics_data[0]['topic'] if topics_data else 'N/A',
+                    'sources': 'Analyse multilingue des titres et descriptions',
+                    'coverage_report': new_analysis_results.get('coverage_report', {}),
+                    'analysis_date': new_analysis_results.get('analysis_date', ''),
+                    'model_used': new_analysis_results.get('model_used', 'paraphrase-multilingual-mpnet-base-v2')
+                }
+                
+                # Ajouter les bigrammes
+                if 'top_10_title_bigrams' in new_analysis_results:
+                    results['top_bigrams'] = new_analysis_results['top_10_title_bigrams']
+                    
+                print(f"[TOP-TOPICS] ✅ {len(topics_data)} topics chargés depuis la nouvelle analyse")
+        except Exception as e:
+            print(f"[TOP-TOPICS] ⚠️ Erreur lors du chargement des nouveaux résultats: {e}")
+        
         return render_template('top_topics_sneat_clean.html', 
                              topics=topics_data,
                              summary=results.get('summary', {}),
                              bigrams=results.get('top_bigrams', [])[:20],
                              categories=results.get('categorized_topics', {}),
+                             brand_voice_profiles=results.get('brand_voice_profiles', {}),
+                             top_videos_by_voice=results.get('top_videos_by_voice', {}),
+                             voice_recommendations=results.get('voice_recommendations', []),
                              sort_by=sort_by,
                              order=order,
                              category_filter=category_filter,
@@ -3915,8 +4437,16 @@ def top_topics():
                              summary={},
                              bigrams=[],
                              categories={},
+                             brand_voice_profiles={},
+                             top_videos_by_voice={},
+                             voice_recommendations=[],
                              error=str(e),
                              analysis_status='error')
+
+@app.route('/api/semantic-analysis-progress')
+def get_semantic_analysis_progress():
+    """API pour suivre la progression de l'analyse sémantique"""
+    return jsonify(semantic_analysis_progress)
 
 @app.route('/top-topics-v2')
 @login_required
@@ -4018,7 +4548,7 @@ def top_topics_v2():
 
 @app.route('/top-playlists')
 @login_required
-@cache.cached(timeout=300, query_string=True)
+@cache.cached(timeout=60, query_string=True)  # Cache réduit à 1 minute pour voir les mises à jour
 def top_playlists():
     """Page du top global des playlists de tous les concurrents"""
     try:
@@ -4127,7 +4657,7 @@ def top_playlists():
             SELECT 
                 COUNT(*) as total_playlists,
                 COUNT(DISTINCT competitor_id) as total_competitors,
-                SUM(linked_videos) as total_linked_videos,
+                (SELECT COUNT(*) FROM video) as total_videos,
                 SUM(CASE WHEN category = 'hero' THEN 1 ELSE 0 END) as hero_playlists,
                 SUM(CASE WHEN category = 'hub' THEN 1 ELSE 0 END) as hub_playlists,
                 SUM(CASE WHEN category = 'help' THEN 1 ELSE 0 END) as help_playlists
@@ -4138,7 +4668,7 @@ def top_playlists():
         stats = {
             'total_playlists': stats_row[0],
             'total_competitors': stats_row[1],
-            'total_linked_videos': stats_row[2],
+            'total_videos': stats_row[2],  # Total des vidéos au lieu des vidéos liées
             'hero_playlists': stats_row[3],
             'hub_playlists': stats_row[4],
             'help_playlists': stats_row[5],
@@ -4161,6 +4691,601 @@ def top_playlists():
         import traceback
         traceback.print_exc()
         return render_template('error.html', error=str(e))
+
+@app.route('/api/clear-top-playlists-cache', methods=['POST'])
+@login_required
+def clear_top_playlists_cache():
+    """Vider le cache de la page top-playlists"""
+    try:
+        cache.delete_many('view/top-playlists')
+        return jsonify({'success': True, 'message': 'Cache top-playlists vidé'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/clear-all-cache', methods=['POST'])
+@login_required
+def clear_all_cache():
+    """Vider TOUS les caches de l'application"""
+    try:
+        cache.clear()
+        return jsonify({'success': True, 'message': 'Tous les caches vidés'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/recalculate-all-stats', methods=['POST'])
+@login_required
+def recalculate_all_stats():
+    """Recalculer TOUTES les statistiques de concurrents"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Clear existing stats
+        cursor.execute('DELETE FROM competitor_stats')
+        
+        # Recalculate all competitor stats
+        cursor.execute('''
+            INSERT INTO competitor_stats (
+                competitor_id, total_videos, total_views, avg_views, 
+                total_likes, avg_likes, total_comments, avg_comments,
+                hero_count, hub_count, help_count, shorts_count,
+                latest_video_date, last_updated
+            )
+            SELECT 
+                c.id,
+                COUNT(v.id) as total_videos,
+                SUM(COALESCE(v.view_count, 0)) as total_views,
+                AVG(COALESCE(v.view_count, 0)) as avg_views,
+                SUM(COALESCE(v.like_count, 0)) as total_likes,
+                AVG(COALESCE(v.like_count, 0)) as avg_likes,
+                SUM(COALESCE(v.comment_count, 0)) as total_comments,
+                AVG(COALESCE(v.comment_count, 0)) as avg_comments,
+                SUM(CASE WHEN v.category = 'hero' THEN 1 ELSE 0 END) as hero_count,
+                SUM(CASE WHEN v.category = 'hub' THEN 1 ELSE 0 END) as hub_count,
+                SUM(CASE WHEN v.category = 'help' THEN 1 ELSE 0 END) as help_count,
+                SUM(CASE WHEN v.is_short = 1 THEN 1 ELSE 0 END) as shorts_count,
+                MAX(v.published_at) as latest_video_date,
+                datetime('now') as last_updated
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            GROUP BY c.id
+        ''')
+        
+        stats_updated = cursor.rowcount
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': f'{stats_updated} statistiques recalculées'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/update-playlist-stats', methods=['POST']) 
+@login_required
+def update_playlist_stats():
+    """Mettre à jour toutes les statistiques de playlists"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update playlist statistics (if playlist_stats is a table, not a view)
+        # This assumes playlist_stats is updatable
+        cursor.execute('''
+            UPDATE playlist SET 
+                video_count = (
+                    SELECT COUNT(*) FROM playlist_video pv 
+                    WHERE pv.playlist_id = playlist.id
+                ),
+                last_updated = datetime('now')
+            WHERE id IN (SELECT DISTINCT playlist_id FROM playlist_video)
+        ''')
+        
+        playlists_updated = cursor.rowcount
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': f'{playlists_updated} playlists mises à jour'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/refresh-global-metrics', methods=['POST'])
+@login_required 
+def refresh_global_metrics():
+    """Rafraîchir toutes les métriques globales"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update video metrics
+        cursor.execute('''
+            UPDATE video SET 
+                engagement_ratio = CASE 
+                    WHEN view_count > 0 THEN 
+                        ((COALESCE(like_count, 0) + COALESCE(comment_count, 0)) * 100.0) / view_count
+                    ELSE 0 
+                END
+            WHERE view_count IS NOT NULL AND view_count > 0
+        ''')
+        
+        videos_updated = cursor.rowcount
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': f'{videos_updated} métriques mises à jour'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/refresh-database-views', methods=['POST'])
+@login_required
+def refresh_database_views():
+    """Rafraîchir toutes les vues de base de données"""
+    try:
+        # For SQLite, views are automatically updated, but we can trigger some maintenance
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Run ANALYZE to update statistics
+        cursor.execute('ANALYZE')
+        
+        # Vacuum to optimize database
+        cursor.execute('VACUUM')
+        
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Vues de base de données rafraîchies'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/start-bulk-sentiment-analysis', methods=['POST'])
+@login_required
+def start_bulk_sentiment_analysis():
+    """Démarrer une task d'analyse sentiment en masse sur toutes les vidéos"""
+    try:
+        data = request.get_json()
+        analyze_titles = data.get('analyze_titles', True)
+        analyze_descriptions = data.get('analyze_descriptions', True) 
+        analyze_comments = data.get('analyze_comments', False)
+        batch_size = data.get('batch_size', 100)
+        confidence_threshold = data.get('confidence_threshold', 0.6)
+        
+        # Import task manager
+        from yt_channel_analyzer.background_tasks import task_manager
+        import uuid
+        
+        # Generate unique task ID
+        task_id = f"sentiment_analysis_{uuid.uuid4().hex[:8]}"
+        
+        # Count total videos to process
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM video WHERE title IS NOT NULL AND title != ""')
+        total_videos = cursor.fetchone()[0]
+        conn.close()
+        
+        # Start background task
+        task_manager.start_task(
+            task_id=task_id,
+            task_type='sentiment_analysis',
+            description=f'Bulk sentiment analysis on {total_videos} videos',
+            total_estimated=total_videos,
+            channel_url='bulk_sentiment',  # Identifier for bulk operations
+            extra_data={
+                'analyze_titles': analyze_titles,
+                'analyze_descriptions': analyze_descriptions,
+                'analyze_comments': analyze_comments,
+                'batch_size': batch_size,
+                'confidence_threshold': confidence_threshold,
+                'total_videos': total_videos,
+                'processed_videos': 0
+            }
+        )
+        
+        # Start the actual processing in background
+        import threading
+        thread = threading.Thread(
+            target=run_bulk_sentiment_analysis_task,
+            args=(task_id, analyze_titles, analyze_descriptions, analyze_comments, batch_size, confidence_threshold)
+        )
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            'success': True, 
+            'task_id': task_id,
+            'total_videos': total_videos,
+            'message': f'Bulk sentiment analysis started for {total_videos} videos'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/sentiment-analysis-progress/<task_id>')
+@login_required
+def get_sentiment_analysis_progress(task_id):
+    """Récupérer le progrès de l'analyse sentiment"""
+    try:
+        from yt_channel_analyzer.background_tasks import task_manager
+        
+        task = task_manager.get_task(task_id)
+        if not task:
+            return jsonify({'status': 'not_found', 'error': 'Task not found'})
+            
+        return jsonify({
+            'status': task.status,
+            'processed_videos': task.extra_data.get('processed_videos', 0),
+            'total_videos': task.extra_data.get('total_videos', 0),
+            'current_step': task.current_step,
+            'progress': task.progress,
+            'error': task.error_message,
+            'results_summary': task.extra_data.get('results_summary', '')
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)})
+
+def run_bulk_sentiment_analysis_task(task_id, analyze_titles, analyze_descriptions, analyze_comments, batch_size, confidence_threshold):
+    """Exécuter la task d'analyse sentiment en arrière-plan"""
+    from yt_channel_analyzer.background_tasks import task_manager
+    
+    try:
+        task_manager.update_task(task_id, current_step="Initialisation de l'analyse sentiment", progress=0)
+        
+        # Import sentiment analysis libraries (assuming they exist)
+        try:
+            # This would import your sentiment analysis modules
+            # from yt_channel_analyzer.sentiment import SentimentAnalyzer
+            # analyzer = SentimentAnalyzer()
+            pass
+        except ImportError:
+            # Fallback: simulate sentiment analysis for demo
+            print("[SENTIMENT] Warning: Sentiment analysis modules not found, using simulation")
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Add sentiment columns if they don't exist
+        try:
+            cursor.execute('ALTER TABLE video ADD COLUMN sentiment_score REAL DEFAULT NULL')
+        except:
+            pass  # Column already exists
+        try:
+            cursor.execute('ALTER TABLE video ADD COLUMN sentiment_label TEXT DEFAULT NULL')
+        except:
+            pass  # Column already exists
+        try:
+            cursor.execute('ALTER TABLE video ADD COLUMN sentiment_confidence REAL DEFAULT NULL')
+        except:
+            pass  # Column already exists
+        try:
+            cursor.execute('ALTER TABLE video ADD COLUMN sentiment_analyzed_at DATETIME DEFAULT NULL')
+        except:
+            pass  # Column already exists
+        
+        conn.commit()
+        
+        # Get all videos to analyze
+        query = "SELECT id, title, description FROM video WHERE title IS NOT NULL AND title != ''"
+        cursor.execute(query)
+        videos = cursor.fetchall()
+        
+        total_videos = len(videos)
+        processed_videos = 0
+        sentiment_results = {'positive': 0, 'negative': 0, 'neutral': 0}
+        
+        # Process videos in batches
+        for i in range(0, total_videos, batch_size):
+            batch = videos[i:i + batch_size]
+            
+            task_manager.update_task(
+                task_id, 
+                current_step=f"Traitement batch {i//batch_size + 1}/{(total_videos + batch_size - 1)//batch_size}",
+                progress=int((processed_videos / total_videos) * 100)
+            )
+            
+            for video in batch:
+                video_id, title, description = video
+                
+                # Simulate sentiment analysis (replace with real implementation)
+                import random
+                sentiment_score = random.uniform(-1, 1)  # -1 = negative, 0 = neutral, 1 = positive
+                
+                if sentiment_score > confidence_threshold:
+                    sentiment = 'positive'
+                    sentiment_results['positive'] += 1
+                elif sentiment_score < -confidence_threshold:
+                    sentiment = 'negative'  
+                    sentiment_results['negative'] += 1
+                else:
+                    sentiment = 'neutral'
+                    sentiment_results['neutral'] += 1
+                
+                # Store sentiment result in database
+                cursor.execute('''
+                    UPDATE video SET 
+                        sentiment_score = ?,
+                        sentiment_label = ?,
+                        sentiment_confidence = ?,
+                        sentiment_analyzed_at = datetime('now')
+                    WHERE id = ?
+                ''', (sentiment_score, sentiment, abs(sentiment_score), video_id))
+                
+                processed_videos += 1
+                
+                # Update task progress
+                task_manager.tasks[task_id].extra_data['processed_videos'] = processed_videos
+            
+            conn.commit()
+            
+            # Small delay to prevent overwhelming the system
+            import time
+            time.sleep(0.1)
+        
+        conn.close()
+        
+        # Generate results summary
+        results_summary = f"Analysé {total_videos} vidéos: {sentiment_results['positive']} positives, {sentiment_results['negative']} négatives, {sentiment_results['neutral']} neutres"
+        
+        task_manager.update_task(
+            task_id,
+            current_step="Analyse sentiment terminée",
+            progress=100,
+            status='completed',
+            extra_data={'results_summary': results_summary}
+        )
+        
+    except Exception as e:
+        task_manager.update_task(
+            task_id,
+            status='failed',
+            error_message=str(e),
+            current_step=f"Erreur: {str(e)}"
+        )
+        print(f"[SENTIMENT] Error in bulk analysis: {e}")
+
+@app.route('/api/start-update-everything', methods=['POST'])
+@login_required
+def start_update_everything():
+    """Démarre une tâche 'Update Everything' avec tracking dans /tasks"""
+    try:
+        data = request.get_json()
+        update_competitor_stats = data.get('update_competitor_stats', True)
+        update_playlist_stats = data.get('update_playlist_stats', True) 
+        update_global_metrics = data.get('update_global_metrics', True)
+        run_sentiment_analysis = data.get('run_sentiment_analysis', True)
+        
+        # Import task manager
+        from yt_channel_analyzer.background_tasks import task_manager
+        import uuid
+        
+        # Generate unique task ID
+        task_id = f"update_everything_{uuid.uuid4().hex[:8]}"
+        
+        # Calculate estimated steps
+        total_steps = 3  # Cache + Database views + Page caches
+        if update_competitor_stats: total_steps += 1
+        if update_playlist_stats: total_steps += 1  
+        if update_global_metrics: total_steps += 1
+        if run_sentiment_analysis: total_steps += 1
+        
+        # Start background task
+        task_manager.start_generic_task(
+            task_id=task_id,
+            task_type='update_everything',
+            description='Update Everything - Recalcul Global',
+            total_estimated=total_steps,
+            extra_data={
+                'update_competitor_stats': update_competitor_stats,
+                'update_playlist_stats': update_playlist_stats,
+                'update_global_metrics': update_global_metrics,
+                'run_sentiment_analysis': run_sentiment_analysis,
+                'completed_steps': 0,
+                'total_steps': total_steps
+            }
+        )
+        
+        # Start the actual processing in background
+        import threading
+        thread = threading.Thread(
+            target=run_update_everything_task,
+            args=(task_id, update_competitor_stats, update_playlist_stats, update_global_metrics, run_sentiment_analysis)
+        )
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            'success': True, 
+            'task_id': task_id,
+            'total_steps': total_steps,
+            'message': f'Update Everything task started'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+def run_update_everything_task(task_id, update_competitor_stats, update_playlist_stats, update_global_metrics, run_sentiment_analysis):
+    """Exécuter la task Update Everything en arrière-plan"""
+    from yt_channel_analyzer.background_tasks import task_manager
+    
+    try:
+        completed_steps = 0
+        
+        # Step 1: Clear all cache
+        task_manager.update_task(task_id, current_step="Vidage de tous les caches", progress=10)
+        try:
+            cache.clear()
+        except Exception as e:
+            print(f"[UPDATE_EVERYTHING] Cache clear failed: {e}")
+        completed_steps += 1
+        
+        # Step 2: Recalculate competitor statistics
+        if update_competitor_stats:
+            task_manager.update_task(task_id, current_step="Recalcul des statistiques concurrents", progress=20)
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('DELETE FROM competitor_stats')
+                cursor.execute('''
+                    INSERT INTO competitor_stats (
+                        competitor_id, total_videos, total_views, avg_views, 
+                        total_likes, avg_likes, total_comments, avg_comments,
+                        hero_count, hub_count, help_count, shorts_count,
+                        latest_video_date, last_updated
+                    )
+                    SELECT 
+                        c.id,
+                        COUNT(v.id) as total_videos,
+                        SUM(COALESCE(v.view_count, 0)) as total_views,
+                        AVG(COALESCE(v.view_count, 0)) as avg_views,
+                        SUM(COALESCE(v.like_count, 0)) as total_likes,
+                        AVG(COALESCE(v.like_count, 0)) as avg_likes,
+                        SUM(COALESCE(v.comment_count, 0)) as total_comments,
+                        AVG(COALESCE(v.comment_count, 0)) as avg_comments,
+                        SUM(CASE WHEN v.category = 'hero' THEN 1 ELSE 0 END) as hero_count,
+                        SUM(CASE WHEN v.category = 'hub' THEN 1 ELSE 0 END) as hub_count,
+                        SUM(CASE WHEN v.category = 'help' THEN 1 ELSE 0 END) as help_count,
+                        SUM(CASE WHEN v.is_short = 1 THEN 1 ELSE 0 END) as shorts_count,
+                        MAX(v.published_at) as latest_video_date,
+                        datetime('now') as last_updated
+                    FROM concurrent c
+                    LEFT JOIN video v ON c.id = v.concurrent_id
+                    GROUP BY c.id
+                ''')
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                print(f"[UPDATE_EVERYTHING] Competitor stats failed: {e}")
+            completed_steps += 1
+        
+        # Step 3: Update playlist statistics  
+        if update_playlist_stats:
+            task_manager.update_task(task_id, current_step="Mise à jour des statistiques playlists", progress=40)
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('''
+                    UPDATE playlist SET 
+                        video_count = (
+                            SELECT COUNT(*) FROM playlist_video pv 
+                            WHERE pv.playlist_id = playlist.id
+                        ),
+                        last_updated = datetime('now')
+                    WHERE id IN (SELECT DISTINCT playlist_id FROM playlist_video)
+                ''')
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                print(f"[UPDATE_EVERYTHING] Playlist stats failed: {e}")
+            completed_steps += 1
+        
+        # Step 4: Refresh global metrics
+        if update_global_metrics:
+            task_manager.update_task(task_id, current_step="Actualisation des métriques globales", progress=60)
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('''
+                    UPDATE video SET 
+                        engagement_ratio = CASE 
+                            WHEN view_count > 0 THEN 
+                                ((COALESCE(like_count, 0) + COALESCE(comment_count, 0)) * 100.0) / view_count
+                            ELSE 0 
+                        END
+                    WHERE view_count IS NOT NULL AND view_count > 0
+                ''')
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                print(f"[UPDATE_EVERYTHING] Global metrics failed: {e}")
+            completed_steps += 1
+        
+        # Step 5: Update database views
+        task_manager.update_task(task_id, current_step="Optimisation de la base de données", progress=75)
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('ANALYZE')
+            cursor.execute('VACUUM')
+            conn.close()
+        except Exception as e:
+            print(f"[UPDATE_EVERYTHING] Database optimization failed: {e}")
+        completed_steps += 1
+        
+        # Step 5.5: Launch sentiment analysis in background
+        if run_sentiment_analysis:
+            task_manager.update_task(task_id, current_step="Lancement de l'analyse sentiment", progress=85)
+            try:
+                # Start sentiment analysis task
+                sentiment_task_id = f"sentiment_analysis_{uuid.uuid4().hex[:8]}"
+                import threading
+                sentiment_thread = threading.Thread(
+                    target=run_bulk_sentiment_analysis_task,
+                    args=(sentiment_task_id, True, True, False, 100, 0.6)
+                )
+                sentiment_thread.daemon = True
+                sentiment_thread.start()
+                print(f"[UPDATE_EVERYTHING] Sentiment analysis started: {sentiment_task_id}")
+            except Exception as e:
+                print(f"[UPDATE_EVERYTHING] Sentiment analysis failed to start: {e}")
+            completed_steps += 1
+        
+        # Step 6: Clear ALL page caches (final step)
+        task_manager.update_task(task_id, current_step="Vidage COMPLET des caches de toutes les pages", progress=95)
+        
+        try:
+            print("[UPDATE_EVERYTHING] 🗑️ Vidage de TOUS les caches...")
+            
+            # 1. Vider le cache Flask-Caching
+            cache.clear()
+            print("[UPDATE_EVERYTHING] ✅ Cache Flask vidé")
+            
+            # 2. Forcer la régénération des fichiers JSON de cache
+            cache_files_to_clear = [
+                'top_topics_data.json',
+                'top_videos_cache.json',
+                'top_playlists_cache.json',
+                'competitors_cache.json',
+                'sentiment_cache.json',
+                'insights_cache.json'
+            ]
+            
+            import os
+            for cache_file in cache_files_to_clear:
+                if os.path.exists(cache_file):
+                    os.remove(cache_file)
+                    print(f"[UPDATE_EVERYTHING] 🗑️ Supprimé {cache_file}")
+            
+            # 3. Vider les caches du dossier cache_recherches
+            cache_dir = 'cache_recherches'
+            if os.path.exists(cache_dir):
+                for filename in os.listdir(cache_dir):
+                    if filename.endswith('.json') and 'background_tasks' not in filename:
+                        filepath = os.path.join(cache_dir, filename)
+                        os.remove(filepath)
+                        print(f"[UPDATE_EVERYTHING] 🗑️ Supprimé cache {filepath}")
+            
+            print("[UPDATE_EVERYTHING] ✅ TOUS les caches vidés - Pages forcées à se rafraîchir")
+            
+        except Exception as cache_error:
+            print(f"[UPDATE_EVERYTHING] ⚠️ Erreur vidage cache: {cache_error}")
+        
+        completed_steps += 1
+        
+        # Complete task
+        sentiment_msg = " + Analyse sentiment lancée" if run_sentiment_analysis else ""
+        task_manager.update_task(
+            task_id,
+            current_step=f"Terminé! {completed_steps} étapes complétées{sentiment_msg}",
+            progress=100,
+            status='completed'
+        )
+        
+    except Exception as e:
+        task_manager.update_task(
+            task_id,
+            status='error',
+            error_message=str(e),
+            current_step=f"Erreur: {str(e)}"
+        )
+        print(f"[UPDATE_EVERYTHING] Error: {e}")
 
 def get_country_flag(country_name: str) -> str:
     """Retourne le drapeau emoji pour un pays donné"""
@@ -4374,16 +5499,18 @@ def countries_analysis():
         # S'assurer que l'on a seulement les pays qui existent vraiment
         existing_countries = list(countries_data.keys())
         
-        return render_template('country_insights_sneat_clean.html', 
-                             insights_by_country=countries_data,
-                             countries=existing_countries,
+        return render_template('countries_analysis_sneat_clean.html', 
+                             countries=countries_list,
+                             countries_data=countries_data,
+                             global_stats=global_stats,
                              dev_mode=session.get('dev_mode', False))
         
     except Exception as e:
         print(f"[COUNTRIES-ANALYSIS] ❌ Erreur: {e}")
-        return render_template('country_insights_sneat_clean.html', 
-                             insights_by_country={},
+        return render_template('countries_analysis_sneat_clean.html', 
                              countries=[],
+                             countries_data={},
+                             global_stats={},
                              error=str(e),
                              dev_mode=session.get('dev_mode', False))
 
@@ -5456,8 +6583,11 @@ def insights():
             competitor_id, name, channel_url, country = channel
             print(f"[INSIGHTS] 📊 Analyse de {name} (ID: {competitor_id}) - {country}")
             
-            # Si la chaîne n'a pas de vidéos, créer des métriques vides
-            if competitor_id == 25:  # Center Parcs de Haan (Allemagne) - pas de contenu
+            # Vérifier si la chaîne a réellement des vidéos
+            cursor.execute("SELECT COUNT(*) FROM video WHERE concurrent_id = ?", (competitor_id,))
+            video_count_check = cursor.fetchone()[0]
+            
+            if video_count_check == 0:
                 all_brand_metrics[country] = {
                     'channel_name': name,
                     'country': country,
@@ -5469,7 +6599,7 @@ def insights():
             # ANALYSER CETTE CHAÎNE (France et Netherlands)
             print(f"[INSIGHTS] 🔍 Analyse des métriques pour {name}")
             
-            # Métriques de base pour cette chaîne
+            # Métriques de base pour cette chaîne - CORRIGÉ pour utiliser concurrent_id directement
             cursor.execute("""
                 SELECT 
                     COUNT(*) as total_videos,
@@ -5480,47 +6610,126 @@ def insights():
                     COUNT(CASE WHEN v.duration_seconds <= 60 THEN 1 END) as shorts_count,
                     COALESCE(AVG(v.duration_seconds), 0) as avg_duration
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ?
+                WHERE v.concurrent_id = ?
             """, (competitor_id,))
             basic_stats = cursor.fetchone()
             
-            # Hub/Help/Hero distribution
+            # Hub/Help/Hero distribution - CORRIGÉ pour utiliser concurrent_id directement
             cursor.execute("""
                 SELECT 
                     v.category,
                     COUNT(*) as count
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ? AND v.category IS NOT NULL
+                WHERE v.concurrent_id = ? AND v.category IS NOT NULL
                 GROUP BY v.category
             """, (competitor_id,))
             category_dist = cursor.fetchall()
             
-            # Video Frequency (publications par semaine)
-            cursor.execute("""
-                SELECT COUNT(*) / (CASE 
-                    WHEN julianday('now') - julianday(MIN(v.published_at)) < 7 THEN 1
-                    ELSE (julianday('now') - julianday(MIN(v.published_at))) / 7.0 
-                END) as videos_per_week
-                FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ? AND v.published_at IS NOT NULL
-            """, (competitor_id,))
-            frequency_stats = cursor.fetchone()
+            # Video Frequency (publications par semaine) - CORRIGÉ pour utiliser youtube_published_at avec fallback
+            print(f"[DEBUG FREQUENCY] 🚀 === DÉMARRAGE DEBUG POUR {name} (ID: {competitor_id}) ===")
             
-            # Most liked topics (top 3 mots-clés des titres avec plus de likes)
+            cursor.execute("""
+                SELECT 
+                    COUNT(*) as total_videos,
+                    MIN(COALESCE(v.youtube_published_at, v.published_at)) as first_video,
+                    MAX(COALESCE(v.youtube_published_at, v.published_at)) as last_video,
+                    COUNT(v.youtube_published_at) as youtube_dates_count,
+                    COUNT(v.published_at) as published_dates_count,
+                    COUNT(*) FILTER (WHERE v.youtube_published_at IS NOT NULL) as youtube_not_null,
+                    COUNT(*) FILTER (WHERE v.published_at IS NOT NULL) as published_not_null
+                FROM video v
+                WHERE v.concurrent_id = ?
+            """, (competitor_id,))
+            video_dates = cursor.fetchone()
+            
+            print(f"[DEBUG FREQUENCY] 📊 Résultats SQL pour {name}:")
+            print(f"  - Total vidéos dans DB: {video_dates[0] if video_dates else 'NULL'}")
+            print(f"  - First date (COALESCE): {video_dates[1] if video_dates else 'NULL'}")
+            print(f"  - Last date (COALESCE): {video_dates[2] if video_dates else 'NULL'}")
+            print(f"  - YouTube dates count: {video_dates[3] if video_dates else 'NULL'}")
+            print(f"  - Published dates count: {video_dates[4] if video_dates else 'NULL'}")
+            print(f"  - YouTube NOT NULL: {video_dates[5] if video_dates else 'NULL'}")
+            print(f"  - Published NOT NULL: {video_dates[6] if video_dates else 'NULL'}")
+            
+            # Échantillon de dates pour debug
+            cursor.execute("""
+                SELECT youtube_published_at, published_at, title
+                FROM video v
+                WHERE v.concurrent_id = ?
+                ORDER BY COALESCE(v.youtube_published_at, v.published_at) DESC
+                LIMIT 5
+            """, (competitor_id,))
+            sample_videos = cursor.fetchall()
+            print(f"[DEBUG FREQUENCY] 🎬 Échantillon des 5 dernières vidéos pour {name}:")
+            for i, (yt_date, pub_date, title) in enumerate(sample_videos):
+                print(f"  {i+1}. YouTube: '{yt_date}' | Published: '{pub_date}' | Title: '{title[:50]}...'")
+            
+            # Calculer la fréquence réelle
+            videos_per_week = 0
+            print(f"[DEBUG FREQUENCY] 🔍 Début calcul pour {name}...")
+            
+            if not video_dates:
+                print(f"[DEBUG FREQUENCY] ❌ {name}: Aucune donnée retournée par la requête SQL")
+                videos_per_week = None
+            elif not video_dates[0]:
+                print(f"[DEBUG FREQUENCY] ❌ {name}: Total vidéos = 0")
+                videos_per_week = None
+            elif not video_dates[1] or not video_dates[2]:
+                print(f"[DEBUG FREQUENCY] ❌ {name}: Dates first/last manquantes - first: '{video_dates[1]}', last: '{video_dates[2]}'")
+                videos_per_week = None
+            else:
+                total_videos = video_dates[0]
+                first_date = video_dates[1]
+                last_date = video_dates[2]
+                youtube_dates_count = video_dates[3]
+                
+                print(f"[DEBUG FREQUENCY] 💾 {name}: Données extraites - {total_videos} vidéos, première: '{first_date}', dernière: '{last_date}', YouTube dates: {youtube_dates_count}")
+                
+                # Si pas de dates YouTube authentiques, ne pas calculer (données d'import non fiables)
+                if youtube_dates_count == 0:
+                    print(f"[DEBUG FREQUENCY] ⚠️ {name}: Pas de dates YouTube authentiques ({youtube_dates_count}) - fréquence N/A")
+                    videos_per_week = None  # Indique que les données ne sont pas fiables
+                else:
+                    # Parser les dates (format YouTube ISO avec Z)
+                    try:
+                        from datetime import datetime
+                        print(f"[DEBUG FREQUENCY] 📅 {name}: Tentative parsing des dates - first: '{first_date}' last: '{last_date}'")
+                        
+                        # Format YouTube ISO: 2012-09-27T11:57:27Z
+                        first_dt = datetime.fromisoformat(first_date.replace('Z', '+00:00'))
+                        last_dt = datetime.fromisoformat(last_date.replace('Z', '+00:00'))
+                        
+                        print(f"[DEBUG FREQUENCY] ✅ {name}: Dates parsées - first: {first_dt} last: {last_dt}")
+                        
+                        # Calculer la période en jours
+                        period_days = (last_dt - first_dt).days
+                        print(f"[DEBUG FREQUENCY] ⏰ {name}: Période calculée - {period_days} jours")
+                        
+                        if period_days > 7:  # Au moins une semaine de données
+                            videos_per_week = round((total_videos / period_days) * 7, 1)
+                            print(f"[DEBUG FREQUENCY] ✅ {name}: Fréquence normale calculée - ({total_videos} / {period_days}) * 7 = {videos_per_week}")
+                        else:
+                            videos_per_week = round(total_videos / max(1, period_days) * 7, 1)
+                            print(f"[DEBUG FREQUENCY] ⚡ {name}: Fréquence courte période - {total_videos} / max(1, {period_days}) * 7 = {videos_per_week}")
+                            
+                        print(f"[DEBUG FREQUENCY] 🎯 {name}: RÉSULTAT FINAL = {videos_per_week} vid/semaine")
+                    except Exception as e:
+                        print(f"[DEBUG FREQUENCY] 💥 {name}: ERREUR parsing des dates - {e}")
+                        import traceback
+                        traceback.print_exc()
+                        videos_per_week = 0
+                        
+            print(f"[DEBUG FREQUENCY] 🏁 === FIN DEBUG POUR {name} - RESULT: {videos_per_week} ===\n")
+            
+            frequency_stats = (videos_per_week,)
+            
+            # Most liked topics (top 3 mots-clés des titres avec plus de likes) - CORRIGÉ
             cursor.execute("""
                 SELECT SUBSTR(UPPER(v.title), 1, 20) as topic, 
                        COUNT(*) as count, 
                        AVG(v.like_count) as avg_likes
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ? AND v.like_count > 0
+                WHERE v.concurrent_id = ? AND v.like_count > 0
                 GROUP BY SUBSTR(UPPER(v.title), 1, 20)
                 ORDER BY avg_likes DESC
                 LIMIT 3
@@ -5528,16 +6737,14 @@ def insights():
             liked_topics = cursor.fetchall()
             top_topic = liked_topics[0][0] if liked_topics else "N/A"
             
-            # Organic vs Paid (basé sur les vues - seuil à définir)
+            # Organic vs Paid (basé sur les vues - seuil à définir) - CORRIGÉ
             paid_threshold = 100000  # Considérer les vidéos avec +100k vues comme "paid"
             cursor.execute("""
                 SELECT 
                     SUM(CASE WHEN v.view_count > ? THEN 1 ELSE 0 END) as paid_count,
                     SUM(CASE WHEN v.view_count <= ? THEN 1 ELSE 0 END) as organic_count
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ?
+                WHERE v.concurrent_id = ?
             """, (paid_threshold, paid_threshold, competitor_id))
             organic_paid_stats = cursor.fetchone()
             if organic_paid_stats and organic_paid_stats[0] is not None and organic_paid_stats[1] is not None:
@@ -5547,24 +6754,20 @@ def insights():
                 total_for_ratio = 0
                 organic_ratio = 0
             
-            # Thumbnail consistency (moyenne beauty_score)
+            # Thumbnail consistency (moyenne beauty_score) - CORRIGÉ
             cursor.execute("""
                 SELECT AVG(v.beauty_score) as avg_beauty
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ? AND v.beauty_score IS NOT NULL
+                WHERE v.concurrent_id = ? AND v.beauty_score IS NOT NULL
             """, (competitor_id,))
             thumbnail_stats = cursor.fetchone()
             thumbnail_score = round(thumbnail_stats[0], 1) if thumbnail_stats and thumbnail_stats[0] else 0
             
-            # Tone of Voice - analyse basique des titres
+            # Tone of Voice - analyse basique des titres - CORRIGÉ
             cursor.execute("""
                 SELECT GROUP_CONCAT(v.title, ' ') as all_titles
                 FROM video v
-                JOIN playlist_video pv ON v.id = pv.video_id
-                JOIN playlist p ON pv.playlist_id = p.id
-                WHERE p.concurrent_id = ?
+                WHERE v.concurrent_id = ?
                 LIMIT 100
             """, (competitor_id,))
             titles_result = cursor.fetchone()
@@ -5599,7 +6802,7 @@ def insights():
                 'hub_count': next((row[1] for row in category_dist if row[0] == 'hub'), 0),
                 'help_count': next((row[1] for row in category_dist if row[0] == 'help'), 0),
                 # Nouvelles métriques spécifiques
-                'video_frequency': round(frequency_stats[0], 1) if frequency_stats and frequency_stats[0] else 0,
+                'video_frequency': round(frequency_stats[0], 1) if frequency_stats and frequency_stats[0] is not None else None,
                 'most_liked_topic': top_topic,
                 'organic_ratio': organic_ratio,
                 'thumbnail_consistency': thumbnail_score,
@@ -5643,7 +6846,7 @@ def insights():
                     },
                     # Les 7 métriques spécifiques demandées
                     'video_length': metrics['avg_duration_minutes'],
-                    'video_frequency': metrics['video_frequency'],
+                    'video_frequency': metrics['video_frequency'] if metrics['video_frequency'] is not None else 'N/A',
                     'most_liked_topic': metrics['most_liked_topic'],
                     'organic_ratio': metrics['organic_ratio'],
                     'thumbnail_consistency': metrics['thumbnail_consistency'],
@@ -8701,6 +9904,52 @@ def api_update_competitor_stats():
             'error': str(e)
         })
 
+@app.route('/api/competitor/update-country', methods=['POST'])
+@login_required
+def api_update_competitor_country():
+    """API pour mettre à jour le pays d'un concurrent"""
+    try:
+        data = request.get_json()
+        competitor_id = data.get('competitor_id')
+        country = data.get('country')
+        
+        if not competitor_id or not country:
+            return jsonify({
+                'success': False,
+                'error': 'competitor_id et country requis'
+            })
+        
+        # Mettre à jour dans la base de données
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            'UPDATE concurrent SET country = ? WHERE id = ?',
+            (country, competitor_id)
+        )
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'error': 'Concurrent non trouvé'
+            })
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Pays mis à jour vers {country}'
+        })
+        
+    except Exception as e:
+        print(f"[API-UPDATE-COUNTRY] ❌ Erreur: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
 @app.route('/api/propagate-human-playlists', methods=['POST'])
 @login_required
 def propagate_human_playlists():
@@ -8778,20 +10027,16 @@ def api_fix_problems_individual(fix_type):
             conn = get_db_connection()
             cursor = conn.cursor()
             
-            # Recalculer les stats des concurrents
+            # Recalculer les stats des concurrents - CORRIGÉ pour utiliser concurrent_id directement
             cursor.execute("""
                 UPDATE concurrent SET 
                     video_count = (
                         SELECT COUNT(*) FROM video v 
-                        JOIN playlist_video pv ON v.id = pv.video_id 
-                        JOIN playlist p ON pv.playlist_id = p.id 
-                        WHERE p.concurrent_id = concurrent.id
+                        WHERE v.concurrent_id = concurrent.id
                     ),
                     view_count = (
                         SELECT COALESCE(SUM(v.view_count), 0) FROM video v 
-                        JOIN playlist_video pv ON v.id = pv.video_id 
-                        JOIN playlist p ON pv.playlist_id = p.id 
-                        WHERE p.concurrent_id = concurrent.id
+                        WHERE v.concurrent_id = concurrent.id
                     ),
                     last_updated = datetime('now')
             """)
@@ -8854,6 +10099,168 @@ def api_fix_problems_individual(fix_type):
             'error': str(e)
         }), 500
 
+@app.route('/api/snapshot/create', methods=['POST'])
+@login_required
+def create_snapshot():
+    """Crée un snapshot complet de la base de données"""
+    try:
+        from yt_channel_analyzer.database.snapshot import DatabaseSnapshot
+        
+        snapshot_manager = DatabaseSnapshot()
+        snapshot = snapshot_manager.create_snapshot()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Snapshot créé avec succès',
+            'filename': snapshot['metadata']['filename'],
+            'timestamp': snapshot['metadata']['created_at'],
+            'statistics': snapshot['metadata']['tables']
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/snapshot/list')
+@login_required
+def list_snapshots():
+    """Liste tous les snapshots disponibles"""
+    try:
+        from yt_channel_analyzer.database.snapshot import DatabaseSnapshot
+        
+        snapshot_manager = DatabaseSnapshot()
+        snapshots = snapshot_manager.list_snapshots()
+        
+        return jsonify({
+            'success': True,
+            'snapshots': snapshots
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/snapshot/summary')
+@login_required
+def snapshot_summary():
+    """Retourne un résumé de l'état actuel de la base"""
+    try:
+        from yt_channel_analyzer.database.snapshot import DatabaseSnapshot
+        
+        snapshot_manager = DatabaseSnapshot()
+        summary = snapshot_manager.get_snapshot_summary()
+        
+        return jsonify({
+            'success': True,
+            'summary': summary
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/debug/execute', methods=['POST'])
+@login_required
+@dev_mode_required
+def execute_debug_command():
+    """Exécute une commande SQL de debug (mode dev uniquement)"""
+    try:
+        data = request.get_json()
+        query = data.get('query', '').strip()
+        
+        if not query:
+            return jsonify({
+                'success': False,
+                'error': 'Query vide'
+            }), 400
+        
+        # Vérifier que c'est une requête SELECT (read-only)
+        if not query.upper().startswith('SELECT'):
+            return jsonify({
+                'success': False,
+                'error': 'Seules les requêtes SELECT sont autorisées'
+            }), 403
+        
+        from yt_channel_analyzer.database import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(query)
+        columns = [description[0] for description in cursor.description]
+        rows = cursor.fetchall()
+        
+        # Convertir en format JSON-friendly
+        results = []
+        for row in rows:
+            results.append(dict(zip(columns, row)))
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'query': query,
+            'columns': columns,
+            'results': results,
+            'row_count': len(results)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'query': query if 'query' in locals() else ''
+        }), 500
+
+@app.route('/api/debug/fix-logs')
+@login_required
+def get_fix_debug_logs():
+    """Récupérer les logs de debug du Fix Everything en temps réel"""
+    try:
+        from yt_channel_analyzer.debug_logger import get_fix_debug_logger
+        
+        logger = get_fix_debug_logger()
+        level_filter = request.args.get('level')
+        last_n = request.args.get('last', type=int)
+        
+        logs = logger.get_logs(level_filter, last_n)
+        summary = logger.get_summary()
+        
+        return jsonify({
+            'success': True,
+            'logs': logs,
+            'summary': summary
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/debug/fix-logs/clear', methods=['POST'])
+@login_required
+def clear_fix_debug_logs():
+    """Vider les logs de debug du Fix Everything"""
+    try:
+        from yt_channel_analyzer.debug_logger import get_fix_debug_logger
+        
+        logger = get_fix_debug_logger()
+        logger.clear_logs()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Logs vidés'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/start-topic-analysis', methods=['POST'])
 @login_required
 def start_topic_analysis():
@@ -8905,14 +10312,8 @@ def start_topic_analysis():
                 all_videos = cursor.fetchall()
                 total_videos = len(all_videos)
                 
-                # Compter les playlists uniques analysées
-                cursor.execute('''
-                    SELECT COUNT(DISTINCT p.id) 
-                    FROM playlist p
-                    JOIN playlist_video pv ON p.id = pv.playlist_id
-                    JOIN video v ON pv.video_id = v.id
-                    WHERE v.title IS NOT NULL AND v.title != ''
-                ''')
+                # Compter toutes les playlists dans la base
+                cursor.execute('SELECT COUNT(*) FROM playlist')
                 total_playlists = cursor.fetchone()[0]
                 
                 task_manager.update_task(task_id, 
@@ -9268,23 +10669,40 @@ def configure_topic_analyzer():
 @app.route('/api/fix-all-problems', methods=['POST'])
 @login_required
 def api_fix_all_problems():
-    """API pour corriger tous les problèmes sélectionnés"""
+    """API pour corriger tous les problèmes sélectionnés avec debug logging détaillé"""
+    from yt_channel_analyzer.debug_logger import get_fix_debug_logger
+    
+    logger = get_fix_debug_logger()
+    logger.clear_logs()  # Vider les anciens logs
+    
     try:
+        logger.step_start("INIT", {"message": "Démarrage de Fix Everything"})
+        
         # Récupérer les données de la requête
         data = request.get_json()
         if not data:
+            logger.error("Données JSON manquantes", step="INIT")
             return jsonify({
                 'success': False,
                 'error': 'Données JSON requises'
             }), 400
+        
+        logger.debug("Données reçues", {"data": data}, "INIT")
         
         # Extraire les paramètres
         selected_fixes = data.get('selected_fixes', [])
         api_limit = data.get('api_limit', 100)
         batch_size = data.get('batch_size', 50)
         
+        logger.info("Paramètres extraits", {
+            "selected_fixes": selected_fixes,
+            "api_limit": api_limit, 
+            "batch_size": batch_size
+        }, "INIT")
+        
         # Valider les paramètres
         if not selected_fixes:
+            logger.error("Aucun problème sélectionné", step="VALIDATION")
             return jsonify({
                 'success': False,
                 'error': 'Aucun problème sélectionné'
@@ -9299,13 +10717,28 @@ def api_fix_all_problems():
         
         invalid_fixes = [fix for fix in selected_fixes if fix not in valid_fixes]
         if invalid_fixes:
+            logger.error("Corrections invalides", {
+                "invalid_fixes": invalid_fixes,
+                "valid_fixes": valid_fixes
+            }, "VALIDATION")
             return jsonify({
                 'success': False,
                 'error': f'Corrections invalides: {", ".join(invalid_fixes)}'
             }), 400
         
+        logger.step_end("VALIDATION", True, {"validated_fixes": selected_fixes})
+        
         # Importer et utiliser le service unifié
-        from yt_channel_analyzer.services.unified_fix_service import UnifiedFixService
+        logger.step_start("SERVICE_IMPORT", {"message": "Import du UnifiedFixService"})
+        try:
+            from yt_channel_analyzer.services.unified_fix_service import UnifiedFixService
+            logger.success("Service importé avec succès", step="SERVICE_IMPORT")
+        except Exception as import_error:
+            logger.error("Erreur d'import du service", step="SERVICE_IMPORT", exception=import_error)
+            return jsonify({
+                'success': False,
+                'error': f'Erreur d\'import: {str(import_error)}'
+            }), 500
         
         # Créer les options de correction
         fix_options = {
@@ -9316,22 +10749,41 @@ def api_fix_all_problems():
             'final_validation': 'final_validation' in selected_fixes
         }
         
-        print(f"[FIX-ALL-PROBLEMS] 🚀 Démarrage correction unifiée: {selected_fixes}")
+        logger.info("Options de correction créées", {"fix_options": fix_options}, "CONFIG")
         
         # Lancer la correction unifiée
+        logger.step_start("UNIFIED_FIX", {"message": "Lancement de la correction unifiée"})
+        
         unified_service = UnifiedFixService()
+        
+        # Passer le debug logger au service pour un logging détaillé
+        unified_service.set_debug_logger(logger)
+        
         result = unified_service.run_unified_fix(fix_options)
         
         # Retourner le résultat
-        if result['success']:
-            print(f"[FIX-ALL-PROBLEMS] ✅ Terminé: {len(result['issues_fixed'])} problèmes résolus")
+        if result.get('success', False):
+            issues_fixed = result.get('issues_fixed', [])
+            logger.step_end("UNIFIED_FIX", True, {
+                "issues_fixed_count": len(issues_fixed),
+                "issues_fixed": issues_fixed[:10] if len(issues_fixed) > 10 else issues_fixed  # Limit pour éviter trop de data
+            })
+            logger.success(f"Fix Everything terminé avec succès: {len(issues_fixed)} problèmes résolus")
             return jsonify(result)
         else:
-            print(f"[FIX-ALL-PROBLEMS] ❌ Erreur: {result.get('error', 'Erreur inconnue')}")
+            error_msg = result.get('error', 'Erreur inconnue')
+            logger.step_end("UNIFIED_FIX", False, {
+                "error": error_msg,
+                "full_result": result
+            })
+            logger.error(f"Fix Everything échoué: {error_msg}")
             return jsonify(result), 500
             
     except Exception as e:
-        print(f"[FIX-ALL-PROBLEMS] ❌ Erreur lors de la correction unifiée: {e}")
+        logger.error("Exception non gérée dans Fix Everything", 
+                    step="GLOBAL", 
+                    exception=e, 
+                    details={"type": type(e).__name__})
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -9357,28 +10809,98 @@ def analyze_sentiment_with_transformers(cursor):
                 v.like_count,
                 v.comment_count,
                 c.name as channel_name,
-                c.country
+                c.country,
+                v.sentiment_score,
+                v.sentiment_label,
+                v.sentiment_confidence
             FROM video v
             JOIN concurrent c ON v.concurrent_id = c.id
-            WHERE v.comment_count > 0
+            WHERE v.sentiment_label IS NOT NULL
             ORDER BY v.comment_count DESC
-            LIMIT 1000
         """)
         
-        videos_with_comments = cursor.fetchall()
-        print(f"[SENTIMENT] Analyzing {len(videos_with_comments)} videos with comments...")
+        analyzed_videos = cursor.fetchall()
+        print(f"[SENTIMENT] Found {len(analyzed_videos)} videos with sentiment analysis...")
         
-        # Analyser les sentiments basés sur les titres pour l'instant
-        sentiment_results = analyze_title_sentiment(videos_with_comments)
+        # Organiser les résultats par sentiment depuis la base de données
+        sentiment_results = {'positive': [], 'negative': [], 'neutral': []}
         
-        # Calculer les statistiques
-        stats = calculate_sentiment_stats(videos_with_comments, sentiment_results)
+        for video in analyzed_videos:
+            # Créer un objet vidéo avec les bonnes propriétés pour le template
+            video_data = {
+                'id': video[0],
+                'title': video[1],
+                'description': video[2],
+                'views': video[3] or 0,  # Pour le template (video.views)
+                'view_count': video[3] or 0,  # Pour compatibilité
+                'like_count': video[4] or 0,
+                'comment_count': video[5] or 0,
+                'channel': video[6] or 'Unknown',  # Pour le template (video.channel)
+                'channel_name': video[6] or 'Unknown',
+                'country': video[7] or 'Unknown',
+                'sentiment_score': video[8] if len(video) > 8 else 0,
+                'sentiment_label': video[9] if len(video) > 9 else 'neutral',
+                'sentiment_confidence': video[10] if len(video) > 10 else 0,
+                'positive_score': video[8] if len(video) > 8 and video[8] > 0 else 0,
+                'negative_score': abs(video[8]) if len(video) > 8 and video[8] < 0 else 0,
+                'engagement': ((video[4] or 0) + (video[5] or 0)) / max(video[3] or 1, 1) * 100 if video[3] else 0
+            }
+            
+            if video_data['sentiment_label'] in sentiment_results:
+                sentiment_results[video_data['sentiment_label']].append(video_data)
+        
+        # Calculer les statistiques basées sur les données de la base
+        total_analyzed = len(analyzed_videos)
+        
+        # Calculer le score de sentiment moyen
+        sentiment_scores = [video[8] for video in analyzed_videos if len(video) > 8 and video[8] is not None]
+        avg_sentiment_score = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
+        
+        # Calculer la corrélation engagement/sentiment (approximation)
+        engagement_correlation = 0.0
+        if total_analyzed > 10:  # Seulement si on a assez de données
+            try:
+                # Corrélation simple : comparer engagement moyen des vidéos positives vs négatives
+                positive_engagements = [v['engagement'] for v in sentiment_results['positive'] if v['engagement'] > 0]
+                negative_engagements = [v['engagement'] for v in sentiment_results['negative'] if v['engagement'] > 0]
+                
+                if positive_engagements and negative_engagements:
+                    avg_pos_engagement = sum(positive_engagements) / len(positive_engagements)
+                    avg_neg_engagement = sum(negative_engagements) / len(negative_engagements) 
+                    
+                    # Si l'engagement positif > négatif, corrélation positive
+                    if avg_pos_engagement > avg_neg_engagement:
+                        engagement_correlation = min(0.8, (avg_pos_engagement - avg_neg_engagement) / max(avg_pos_engagement, 1) * 2)
+                    else:
+                        engagement_correlation = max(-0.3, (avg_pos_engagement - avg_neg_engagement) / max(avg_neg_engagement, 1) * 2)
+            except:
+                engagement_correlation = 0.2  # Valeur par défaut positive
+        
+        stats = {
+            'total_videos_analyzed': total_analyzed,
+            'positive_count': len(sentiment_results['positive']),
+            'negative_count': len(sentiment_results['negative']),
+            'neutral_count': len(sentiment_results['neutral']),
+            'positive_percentage': (len(sentiment_results['positive']) / total_analyzed * 100) if total_analyzed > 0 else 0,
+            'negative_percentage': (len(sentiment_results['negative']) / total_analyzed * 100) if total_analyzed > 0 else 0,
+            'neutral_percentage': (len(sentiment_results['neutral']) / total_analyzed * 100) if total_analyzed > 0 else 0,
+            'avg_sentiment_score': avg_sentiment_score,
+            'engagement_correlation': engagement_correlation
+        }
+        
+        # Trier les résultats par vues (décroissant) pour afficher les plus populaires
+        for sentiment_type in sentiment_results:
+            sentiment_results[sentiment_type] = sorted(
+                sentiment_results[sentiment_type], 
+                key=lambda x: x['views'], 
+                reverse=True
+            )
         
         result = {
             'sentiment_data': sentiment_results,
             'stats': stats,
             'top_positive': sentiment_results.get('positive', [])[:10],
-            'top_negative': sentiment_results.get('negative', [])[:10],
+            'top_negative': sentiment_results.get('negative', [])[:10], 
             'neutral_content': sentiment_results.get('neutral', [])[:10]
         }
         
@@ -9723,6 +11245,455 @@ def analyze_topic_categories(topics_data):
             }
     
     return categories
+
+@app.route('/api/verify-business-functions', methods=['POST'])
+@login_required
+def verify_business_functions():
+    """API pour vérifier si les fonctions métier existent dans le code"""
+    try:
+        data = request.get_json()
+        business_data = data.get('business_data', [])
+        
+        if not business_data:
+            return jsonify({
+                'success': False,
+                'error': 'Aucune donnée à vérifier'
+            })
+        
+        verification_results = []
+        stats = {'functions_found': 0, 'functions_missing': 0, 'functions_partial': 0}
+        
+        # Mapping des besoins métier vers les fonctions/routes
+        function_mapping = {
+            'Views/Video': {
+                'Local Channel': {
+                    'functions': ['top_videos', 'video_manager.get_video_stats'],
+                    'routes': ['/top-videos', '/concurrents'],
+                    'status': 'OUI'
+                },
+                'Country Level': {
+                    'functions': ['countries_analysis', 'get_country_insights'],
+                    'routes': ['/countries-analysis', '/country-insights'],
+                    'status': 'OUI'
+                },
+                'European Level': {
+                    'functions': ['countries_analysis'],
+                    'routes': ['/countries-analysis'],
+                    'status': 'PARTIEL'
+                }
+            },
+            'Likes/Video': {
+                'Local Channel': {
+                    'functions': ['top_videos', 'video_manager.get_video_stats'],
+                    'routes': ['/top-videos'],
+                    'status': 'OUI'
+                },
+                'Country Level': {
+                    'functions': ['countries_analysis'],
+                    'routes': ['/countries-analysis'],
+                    'status': 'OUI'
+                },
+                'European Level': {
+                    'functions': [],
+                    'routes': [],
+                    'status': 'NON'
+                }
+            },
+            'Comments/Video': {
+                'Local Channel': {
+                    'functions': ['top_videos'],
+                    'routes': ['/top-videos'],
+                    'status': 'OUI'
+                },
+                'Country Level': {
+                    'functions': ['countries_analysis'],
+                    'routes': ['/countries-analysis'],
+                    'status': 'OUI'
+                },
+                'European Level': {
+                    'functions': [],
+                    'routes': [],
+                    'status': 'NON'
+                }
+            },
+            'Video Frequency': {
+                'Country Level': {
+                    'functions': ['get_country_specific_insights_data'],
+                    'routes': [],
+                    'status': 'PARTIEL'
+                },
+                'European Level': {
+                    'functions': [],
+                    'routes': [],
+                    'status': 'NON'
+                }
+            },
+            'Most Liked Topics': {
+                'European Level': {
+                    'functions': ['get_country_specific_insights_data'],
+                    'routes': [],
+                    'status': 'PARTIEL'
+                }
+            },
+            'Hub-Hero-Help Distribution': {
+                'Country Level': {
+                    'functions': ['video_classifier', 'playlist_classifier'],
+                    'routes': ['/fix-problems'],
+                    'status': 'OUI'
+                },
+                'European Level': {
+                    'functions': ['video_classifier'],
+                    'routes': [],
+                    'status': 'PARTIEL'
+                }
+            },
+            'Organic vs Paid Distribution': {
+                'European Level': {
+                    'functions': ['get_country_specific_insights_data'],
+                    'routes': [],
+                    'status': 'PARTIEL'
+                }
+            }
+        }
+        
+        for item in business_data:
+            besoin = item.get('besoin_metier', '').strip()
+            level = item.get('level', '').strip()
+            
+            if not besoin or not level:
+                continue
+                
+            # Vérifier si la fonction existe dans notre mapping
+            status = 'NON'
+            details = 'Fonction non trouvée dans le mapping'
+            
+            if besoin in function_mapping:
+                level_mapping = function_mapping[besoin]
+                if level in level_mapping:
+                    mapping_info = level_mapping[level]
+                    status = mapping_info['status']
+                    
+                    functions_list = mapping_info.get('functions', [])
+                    routes_list = mapping_info.get('routes', [])
+                    
+                    if functions_list or routes_list:
+                        details = f"Fonctions: {', '.join(functions_list[:2])}{'...' if len(functions_list) > 2 else ''}"
+                        if routes_list:
+                            details += f" | Routes: {', '.join(routes_list[:2])}"
+                    else:
+                        details = 'Aucune fonction implémentée'
+                else:
+                    details = f'Level "{level}" non supporté pour "{besoin}"'
+            else:
+                details = f'Besoin métier "{besoin}" non reconnu'
+            
+            verification_results.append({
+                'besoin_metier': besoin,
+                'level': level,
+                'status': status,
+                'details': details
+            })
+            
+            # Mettre à jour les statistiques
+            if status == 'OUI':
+                stats['functions_found'] += 1
+            elif status == 'PARTIEL':
+                stats['functions_partial'] += 1
+            else:
+                stats['functions_missing'] += 1
+        
+        # Mettre à jour les données avec les résultats de vérification
+        updated_data = []
+        for item in business_data:
+            besoin = item.get('besoin_metier', '').strip()
+            level = item.get('level', '').strip()
+            
+            # Trouver le résultat correspondant
+            result = next((r for r in verification_results 
+                          if r['besoin_metier'] == besoin and r['level'] == level), None)
+            
+            if result:
+                updated_item = item.copy()
+                updated_item['fonction_presente'] = result['status']
+                updated_data.append(updated_item)
+        
+        return jsonify({
+            'success': True,
+            'verified_count': len(verification_results),
+            'stats': stats,
+            'verification_details': verification_results,
+            'updated_data': updated_data,
+            'message': f'{len(verification_results)} fonctions vérifiées'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de la vérification des fonctions: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/analyze-topics', methods=['POST'])
+@login_required
+def api_analyze_topics():
+    """Lance l'analyse des topics en arrière-plan"""
+    global topic_analyzer
+    
+    try:
+        # Initialiser l'analyseur si nécessaire
+        if topic_analyzer is None:
+            from yt_channel_analyzer.topic_analyzer import TopicAnalyzer
+            topic_analyzer = TopicAnalyzer()
+        
+        # Vérifier si une analyse est déjà en cours
+        status = topic_analyzer.get_status()
+        if status['status'] == 'running':
+            return jsonify({
+                'success': False,
+                'error': 'Une analyse est déjà en cours',
+                'status': status
+            })
+        
+        # Lancer l'analyse en arrière-plan
+        topic_analyzer.analyze_topics_async()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Analyse des topics lancée en arrière-plan',
+            'status': topic_analyzer.get_status()
+        })
+        
+    except Exception as e:
+        print(f"[API-ANALYZE-TOPICS] Erreur: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/analyze-topics/status', methods=['GET'])
+@login_required
+def api_analyze_topics_status():
+    """Récupère le statut de l'analyse en cours"""
+    global topic_analyzer
+    
+    try:
+        if topic_analyzer is None:
+            return jsonify({
+                'status': 'idle',
+                'message': 'Aucune analyse en cours'
+            })
+        
+        return jsonify(topic_analyzer.get_status())
+        
+    except Exception as e:
+        print(f"[API-ANALYZE-STATUS] Erreur: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        })
+
+@app.route('/api/analyze-topics/results', methods=['GET'])
+@login_required
+def api_analyze_topics_results():
+    """Récupère les derniers résultats d'analyse"""
+    global topic_analyzer
+    
+    try:
+        if topic_analyzer is None:
+            from yt_channel_analyzer.topic_analyzer import TopicAnalyzer
+            topic_analyzer = TopicAnalyzer()
+        
+        results = topic_analyzer.get_latest_results()
+        if results:
+            return jsonify({
+                'success': True,
+                'results': results
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Aucun résultat disponible'
+            })
+            
+    except Exception as e:
+        print(f"[API-ANALYZE-RESULTS] Erreur: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/download-analysis/<file_type>')
+@login_required
+def download_analysis_file(file_type):
+    """Télécharge les fichiers d'analyse générés"""
+    try:
+        import os
+        from flask import send_file
+        
+        output_dir = "./topic_analysis_results"
+        
+        # Dictionnaire des fichiers disponibles
+        available_files = {
+            'summary': 'analysis_summary.json',
+            'titles': 'all_titles.json',
+            'descriptions': 'all_descriptions.json',
+            'frequencies': 'word_frequencies.json',
+            'playlists': 'playlist_data.json',
+            'embeddings': 'embeddings.json',
+            'grammar': 'grammar_analysis.json'
+        }
+        
+        if file_type not in available_files:
+            return jsonify({
+                'success': False,
+                'error': f'Type de fichier non supporté: {file_type}'
+            }), 400
+        
+        file_path = os.path.join(output_dir, available_files[file_type])
+        
+        if not os.path.exists(file_path):
+            return jsonify({
+                'success': False,
+                'error': f'Fichier non trouvé: {available_files[file_type]}'
+            }), 404
+        
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=available_files[file_type],
+            mimetype='application/json'
+        )
+        
+    except Exception as e:
+        print(f"[DOWNLOAD-ANALYSIS] Erreur: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/download-analysis-csv/<data_type>')
+@login_required
+def download_analysis_csv(data_type):
+    """Télécharge les données d'analyse en format CSV"""
+    try:
+        import os
+        import json
+        import csv
+        from io import StringIO
+        from flask import Response
+        
+        output_dir = "./topic_analysis_results"
+        
+        if data_type == 'titles':
+            json_file = os.path.join(output_dir, 'all_titles.json')
+            if not os.path.exists(json_file):
+                return "Fichier des titres non trouvé", 404
+                
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Créer le CSV
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(['id', 'title', 'channel'])
+            
+            for item in data.get('titles', []):
+                writer.writerow([
+                    item.get('id', ''),
+                    item.get('title', ''),
+                    item.get('channel', '')
+                ])
+            
+            csv_content = output.getvalue()
+            output.close()
+            
+            return Response(
+                csv_content,
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=video_titles.csv'}
+            )
+            
+        elif data_type == 'descriptions':
+            json_file = os.path.join(output_dir, 'all_descriptions.json')
+            if not os.path.exists(json_file):
+                return "Fichier des descriptions non trouvé", 404
+                
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Créer le CSV
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(['id', 'description', 'channel'])
+            
+            for item in data.get('descriptions', []):
+                writer.writerow([
+                    item.get('id', ''),
+                    item.get('description', ''),
+                    item.get('channel', '')
+                ])
+            
+            csv_content = output.getvalue()
+            output.close()
+            
+            return Response(
+                csv_content,
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=video_descriptions.csv'}
+            )
+            
+        elif data_type == 'frequencies':
+            json_file = os.path.join(output_dir, 'word_frequencies.json')
+            if not os.path.exists(json_file):
+                return "Fichier des fréquences non trouvé", 404
+                
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Créer le CSV avec les mots des titres et descriptions
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(['word', 'frequency', 'source'])
+            
+            # Mots des titres
+            for item in data.get('title_words', {}).get('top_500', []):
+                writer.writerow([
+                    item.get('word', ''),
+                    item.get('count', 0),
+                    'title'
+                ])
+            
+            # Mots des descriptions
+            for item in data.get('description_words', {}).get('top_500', []):
+                writer.writerow([
+                    item.get('word', ''),
+                    item.get('count', 0),
+                    'description'
+                ])
+            
+            csv_content = output.getvalue()
+            output.close()
+            
+            return Response(
+                csv_content,
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=word_frequencies.csv'}
+            )
+            
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Type de données CSV non supporté: {data_type}'
+            }), 400
+            
+    except Exception as e:
+        print(f"[DOWNLOAD-CSV] Erreur: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=8082)

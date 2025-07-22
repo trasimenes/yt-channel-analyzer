@@ -13,6 +13,9 @@ youtube_api_key.txt
 secrets.json
 config.json
 settings_private.json
+*client_secret*.json
+*oauth*
+*credentials*
 
 # Base de données avec données privées
 instance/

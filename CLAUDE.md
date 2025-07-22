@@ -82,6 +82,13 @@ WHERE category IS NULL OR category = 'uncategorized'
 - **competitor_detailed_stats**: Statistiques détaillées
 - **model_performance**: Performance des modèles
 
+## Gestion des miniatures des concurrents
+
+Les miniatures des chaînes YouTube sont stockées dans `/static/competitors/images/` avec comme nom de fichier `{concurrent_id}.jpg`.
+
+Par exemple : 
+- Center Parcs Ferienparks (ID 122) → `/static/competitors/images/122.jpg`
+
 ## Structure des playlists
 
 ### Colonnes disponibles
@@ -238,28 +245,140 @@ bitsandbytes>=0.41.0
 - ✅ `base.html` - Navbar Sneat complète avec search et user dropdown
 - 🔄 En cours : `/insights`, `/fix-problems`, `/learn`, `/api-usage`, `/top-videos`
 
-## 📊 Protocole de Comparaison à Trois Niveaux
+## 📊 Protocole de Comparaison à Trois Niveaux - Architecture en Empilement
 
-### Vue d'ensemble
-Le système d'analyse utilise un protocole de comparaison structuré à **trois niveaux hiérarchiques** pour permettre des insights précis et contextualisés.
+### ⚠️ RÈGLE FONDAMENTALE : INTÉGRITÉ DES DONNÉES PAR NIVEAU
 
-### 🌍 Niveau 1 : Européen/International
-**Scope** : Vue globale et benchmarking international
-- **Pays inclus** : France, Germany, Netherlands, United Kingdom, International
-- **Objectif** : Identifier les tendances macro et les best practices globales
-- **Cas d'usage** : Stratégie globale, expansion internationale, benchmarks de référence
+**Architecture hiérarchique :** `CHANNEL < COUNTRY < EUROPE`
 
-### 🏠 Niveau 2 : Local (Par Pays)
-**Scope** : Analyse spécifique par marché national
-- **Segmentation** : Par pays défini dans `concurrent.country`
-- **Objectif** : Comprendre les spécificités culturelles et locales
-- **Cas d'usage** : Adaptation locale, stratégie pays, concurrence directe
+```
+🌍 EUROPE/INTERNATIONAL (Niveau 3)
+    ↑ Consolidation depuis
+🏠 COUNTRY (Niveau 2) 
+    ↑ Consolidation depuis
+📺 CHANNEL (Niveau 1)
+```
 
-### 🏢 Niveau 3 : Marque (Exemple : Center Parcs)
-**Scope** : Analyse intra-marque et déclinaisons
-- **Segmentation** : Par nom de marque ou groupe
-- **Objectif** : Cohérence de marque et variations par filiale
-- **Cas d'usage** : Gouvernance de marque, alignement stratégique
+### 🔒 SÉCURISATION ABSOLUE DES STATS CHANNEL
+
+**PRIORITÉ CRITIQUE** : Les statistiques de chaque chaîne individuelle doivent être **blindées** car elles sont la fondation de tout le système.
+
+#### Pourquoi c'est critique :
+- **Effect domino** : Une erreur au niveau CHANNEL se propage à COUNTRY puis EUROPE
+- **Fausses consolidations** : Si les stats d'une chaîne sont erronées, toutes les analyses pays/européennes sont fausses
+- **Perte de confiance** : Un seul mauvais chiffre invalide tout le système d'analyse
+
+#### Contrôles obligatoires au niveau CHANNEL :
+```sql
+-- Vérifications d'intégrité par chaîne
+SELECT 
+    c.name,
+    COUNT(v.id) as video_count,
+    SUM(v.view_count) as total_views,
+    AVG(v.view_count) as avg_views,
+    -- Détection d'anomalies
+    CASE WHEN AVG(v.view_count) > 1000000 THEN 'SUSPECT_HIGH' 
+         WHEN AVG(v.view_count) < 100 THEN 'SUSPECT_LOW' 
+         ELSE 'OK' END as integrity_check
+FROM concurrent c 
+LEFT JOIN video v ON c.id = v.concurrent_id 
+GROUP BY c.id, c.name
+ORDER BY integrity_check DESC, total_views DESC;
+```
+
+### 🏗️ Niveaux Hiérarchiques
+
+#### 📺 Niveau 1 : CHANNEL (Base de données)
+**Scope** : Statistiques par chaîne individuelle
+- **Source** : Données directes YouTube API
+- **Responsabilité** : Exactitude des métriques individuelles
+- **Contrôles** : Validation des vues, likes, durées, dates
+- **Stockage** : Tables `concurrent`, `video`, `playlist`
+
+#### 🏠 Niveau 2 : COUNTRY (Consolidation)
+**Scope** : Agrégation par pays
+- **Source** : Consolidation depuis les CHANNELS du pays
+- **Calculs** :
+  ```sql
+  -- Exemple : Stats France
+  SELECT 
+      'France' as country,
+      COUNT(DISTINCT c.id) as channel_count,
+      COUNT(v.id) as total_videos,
+      SUM(v.view_count) as country_views,
+      AVG(v.view_count) as avg_views_per_video
+  FROM concurrent c 
+  JOIN video v ON c.id = v.concurrent_id 
+  WHERE c.country = 'France'
+  ```
+- **Dépendances** : Intégrité des données CHANNEL
+
+#### 🌍 Niveau 3 : EUROPE (Super-consolidation)
+**Scope** : Vue globale européenne/internationale
+- **Source** : Consolidation depuis les COUNTRIES
+- **Calculs** :
+  ```sql
+  -- Stats européennes
+  SELECT 
+      'Europe' as region,
+      COUNT(DISTINCT c.country) as country_count,
+      COUNT(DISTINCT c.id) as total_channels,
+      COUNT(v.id) as total_videos,
+      SUM(v.view_count) as europe_views
+  FROM concurrent c 
+  JOIN video v ON c.id = v.concurrent_id 
+  WHERE c.country IN ('France', 'Germany', 'Netherlands', 'United Kingdom')
+  ```
+- **Dépendances** : Intégrité des agrégations COUNTRY
+
+### 🛡️ Protocoles de Sécurisation
+
+#### 1. Validation des données CHANNEL
+- **Seuils de cohérence** : Vues min/max par vidéo selon l'âge de la chaîne
+- **Détection d'anomalies** : Pics suspects, valeurs nulles, dates incohérentes
+- **Audit trail** : Traçabilité des modifications de stats
+
+#### 2. Contrôles de consolidation COUNTRY
+- **Somme de contrôle** : Vérification que SUM(channels) = country_total
+- **Cohérence temporelle** : Dates de publication alignées avec les pays
+- **Distribution normale** : Détection des outliers par pays
+
+#### 3. Validation de super-consolidation EUROPE
+- **Réconciliation** : SUM(countries) = europe_total
+- **Benchmarks externes** : Comparaison avec sources publiques
+- **Alertes automatiques** : Notification si écarts > 5%
+
+### 🚨 Système d'Alertes d'Intégrité
+
+```python
+def validate_data_integrity():
+    alerts = []
+    
+    # Niveau CHANNEL
+    suspicious_channels = check_channel_anomalies()
+    if suspicious_channels:
+        alerts.append(f"⚠️ CHANNEL: {len(suspicious_channels)} chaînes suspectes")
+    
+    # Niveau COUNTRY  
+    country_discrepancies = validate_country_consolidation()
+    if country_discrepancies:
+        alerts.append(f"⚠️ COUNTRY: Écarts de consolidation détectés")
+        
+    # Niveau EUROPE
+    europe_integrity = validate_europe_consolidation()
+    if not europe_integrity:
+        alerts.append(f"🚨 EUROPE: Consolidation incohérente")
+    
+    return alerts
+```
+
+### 📋 TODO : Implémentation Sécurisée
+
+1. **Audit des données actuelles** : Identifier les incohérences existantes
+2. **Mise en place des contrôles** : Scripts de validation automatique  
+3. **Dashboard d'intégrité** : Monitoring temps réel des 3 niveaux
+4. **Processus de correction** : Workflow pour corriger les anomalies détectées
+5. **Documentation des seuils** : Définir les limites acceptables par métrique
 
 ### 📈 Métriques Objectives par Dimension
 
@@ -359,6 +478,94 @@ competitor_stats, competitor_frequency_stats
 - `/comparison/local/<country>` - Vue par pays
 - `/comparison/brand/<brand_name>` - Vue par marque
 
+## 📋 TODO FUTURES - Architecture Modulaire
+
+### 🎯 TODO 21.07.2025 : Stratégie modulaire pour "Competitors" et cohabitation YAML + SQLite
+
+**Objectif :** Isoler l'affichage statique du processing lourd pour une architecture plus maintenable.
+
+#### Structure de projet cible
+
+```
+yt-channel-analyzer/
+│
+├── data/
+│   ├── competitors.yaml     # source statique pour l'UI
+│   └── competitors.db       # base SQLite pour le processing
+│
+├── competitors/             # module « Vue » uniquement YAML‑driven
+│   ├── __init__.py
+│   ├── loader.py           # charge data/competitors.yaml
+│   ├── service.py          # logique métier légère (filtrage, tri, enrichissement)
+│   └── renderer.py         # génère le HTML/list CLI
+│
+└── processing/             # module « Batch » uniquement DB‑driven
+    ├── __init__.py
+    ├── db.py              # wrapper sqlite3.connect(competitors.db)
+    └── tasks.py           # fonctions lourdes de calcul, agrégations, rapports
+```
+
+#### Bénéfices attendus
+
+1. **Isolation complète :**
+   - L'UI "Competitors" ne touche jamais à SQLite — elle ne lit que le YAML
+   - Les batchs « processing » ne génèrent pas de HTML — ils ne touchent que la DB
+
+2. **Responsabilité unique :**
+   - `loader.py` = lecture de fichier YAML
+   - `service.py` = règles métier (filtrage, tri, enrichment)
+   - `renderer.py` = présentation
+   - `db.py` = connexion SQLite
+   - `tasks.py` = calculs & agrégations
+
+3. **Évolutivité :**
+   - Changement d'API : modifier seulement `loader.py`
+   - Changement de DB : modifier seulement `db.py`
+
+4. **Testabilité :**
+   - Mock `load_competitors()` pour tester la présentation
+   - Mock connexion SQLite pour tester les calculs
+
+#### Implémentation proposée
+
+```python
+# competitors/loader.py
+import yaml
+from pathlib import Path
+from functools import lru_cache
+
+@lru_cache(1)
+def load_competitors() -> list[dict]:
+    path = Path(__file__).parent.parent / "data" / "competitors.yaml"
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f).get("competitors", [])
+
+# competitors/service.py
+from .loader import load_competitors
+
+def get_active_competitors() -> list[dict]:
+    all_ = load_competitors()
+    active = [c for c in all_ if c.get("active", True)]
+    return sorted(active, key=lambda c: c["name"])
+
+def enrich_with_rank(comps: list[dict]) -> list[dict]:
+    for i, c in enumerate(comps, 1):
+        c["rank"] = i
+    return comps
+
+# processing/db.py
+import sqlite3
+from pathlib import Path
+
+DB = Path(__file__).parent.parent / "data" / "competitors.db"
+
+def get_connection():
+    return sqlite3.connect(DB)
+```
+
+**Flux :** loader → service (logique métier) → renderer (UI)  
+**Séparation :** Vue YAML ↔ Processing SQLite
+
 ## Commandes utiles
 
 ```bash
@@ -374,6 +581,9 @@ python build_theme.py
 # Examiner la base de données
 sqlite3 instance/database.db
 
-# Entraîner les modèles sémantiques
-python -c "from yt_channel_analyzer.semantic_classifier import AdvancedSemanticClassifier; clf = AdvancedSemanticClassifier(); clf.train_from_database()"
+# Entraîner les modèles sémantiques avec toutes les données humaines
+python train_semantic_model.py
+
+# Ou directement en Python :
+python -c "from yt_channel_analyzer.semantic_training import SemanticTrainingManager; trainer = SemanticTrainingManager(); trainer.extract_human_classifications(); trainer.train_semantic_model()"
 ```

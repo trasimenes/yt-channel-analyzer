@@ -205,7 +205,28 @@
         </div>
         {% endif %}
         
-        <div id="tasks-container">
+        <!-- Navigation Tabs -->
+        <div class="card mb-4">
+            <div class="card-header p-0">
+                <nav class="nav nav-tabs nav-justified" id="taskTabs" role="tablist">
+                    <button class="nav-link active" id="running-tasks-tab" data-bs-toggle="tab" data-bs-target="#running-tasks" type="button" role="tab">
+                        <i class="bx bx-play me-2"></i>Tâches en cours
+                    </button>
+                    <button class="nav-link" id="update-everything-tab" data-bs-toggle="tab" data-bs-target="#update-everything" type="button" role="tab">
+                        <i class="bx bx-refresh-alt me-2"></i>Update Everything
+                    </button>
+                    <button class="nav-link" id="sentiment-analysis-tab" data-bs-toggle="tab" data-bs-target="#sentiment-analysis" type="button" role="tab">
+                        <i class="bx bx-brain me-2"></i>Sentiment Analysis
+                    </button>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="taskTabContent">
+            <!-- Running Tasks Tab -->
+            <div class="tab-pane fade show active" id="running-tasks" role="tabpanel">
+                <div id="tasks-container">
             {% if tasks %}
             <div class="row" id="tasks-grid">
                 {% for task in tasks %}
@@ -344,6 +365,115 @@
                 </a>
             </div>
             {% endif %}
+                </div>
+            </div>
+            
+            <!-- Update Everything Tab -->
+            <div class="tab-pane fade" id="update-everything" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-refresh-alt me-2"></i>
+                            Update Everything - Recalcul Global
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <strong>Mise à jour complète</strong> de toutes les valeurs, statistiques et calculs du système.
+                            Cette opération recalcule toutes les métriques et lance l'analyse sentiment en arrière-plan.
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="update-competitor-stats-tasks" checked>
+                                <label class="form-check-label" for="update-competitor-stats-tasks">
+                                    Statistiques concurrents
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="update-playlist-stats-tasks" checked>
+                                <label class="form-check-label" for="update-playlist-stats-tasks">
+                                    Statistiques playlists
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="update-global-metrics-tasks" checked>
+                                <label class="form-check-label" for="update-global-metrics-tasks">
+                                    Métriques globales
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="run-sentiment-analysis-tasks" checked>
+                                <label class="form-check-label" for="run-sentiment-analysis-tasks">
+                                    Analyse sentiment (~9000 vidéos)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="updateAllValuesFromTasks()">
+                                <i class="bx bx-refresh me-2"></i>
+                                Update Everything
+                            </button>
+                            <div id="update-all-status-tasks" class="mt-3 d-none">
+                                <!-- Status will be updated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sentiment Analysis Tab -->
+            <div class="tab-pane fade" id="sentiment-analysis" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-brain me-2"></i>
+                            Sentiment Analysis - Analyse des Émotions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <strong>Analyse sentiment</strong> automatiquement intégrée dans "Update Everything".
+                            Cette tâche analyse le sentiment des titres et descriptions de toutes les vidéos.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="bx bx-happy text-success" style="font-size: 3rem;"></i>
+                                        <h6 class="mt-2">Contenu Positif</h6>
+                                        <p class="text-muted mb-0">Analyse des émotions positives</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <i class="bx bx-sad text-danger" style="font-size: 3rem;"></i>
+                                        <h6 class="mt-2">Contenu Négatif</h6>
+                                        <p class="text-muted mb-0">Détection des émotions négatives</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted">
+                                <i class="bx bx-info-circle me-1"></i>
+                                L'analyse sentiment se lance automatiquement avec "Update Everything"
+                            </p>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('update-everything-tab').click()">
+                                <i class="bx bx-arrow-right me-2"></i>
+                                Aller à Update Everything
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -507,6 +637,93 @@ async function deleteTask(taskId) {
     } catch (error) {
         console.error('Error:', error);
         showAlert('Erreur lors de la suppression de la tâche', 'danger');
+    }
+}
+
+// Function to update ALL values from tasks page
+async function updateAllValuesFromTasks() {
+    const button = event.target;
+    const statusDiv = document.getElementById('update-all-status-tasks');
+    const originalHtml = button.innerHTML;
+    
+    // Get settings
+    const updateCompetitorStats = document.getElementById('update-competitor-stats-tasks').checked;
+    const updatePlaylistStats = document.getElementById('update-playlist-stats-tasks').checked;
+    const updateGlobalMetrics = document.getElementById('update-global-metrics-tasks').checked;
+    const runSentimentAnalysis = document.getElementById('run-sentiment-analysis-tasks').checked;
+    
+    // Show loading state
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Updating...';
+    button.disabled = true;
+    statusDiv.classList.remove('d-none');
+    
+    try {
+        // Start the Update Everything background task
+        console.log('Starting Update Everything background task...');
+        const response = await fetch('/api/start-update-everything', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                update_competitor_stats: updateCompetitorStats,
+                update_playlist_stats: updatePlaylistStats,
+                update_global_metrics: updateGlobalMetrics,
+                run_sentiment_analysis: runSentimentAnalysis
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const taskId = data.task_id;
+            
+            // Success
+            button.innerHTML = '<i class="bx bx-check me-2"></i>Task Started!';
+            button.className = 'btn btn-success btn-lg';
+            
+            const sentimentMessage = runSentimentAnalysis ? " Analyse sentiment incluse." : "";
+            statusDiv.innerHTML = `
+                <div class="alert alert-success py-2">
+                    <i class="bx bx-check-circle me-2"></i>
+                    <strong>Tâche lancée!</strong> ID: ${taskId}.${sentimentMessage}
+                </div>
+            `;
+            
+            showAlert(`Update Everything task started: ${taskId}`, 'success');
+            
+            // Auto-refresh tasks after 2 seconds to show new task
+            setTimeout(() => {
+                refreshTasks();
+                button.innerHTML = originalHtml;
+                button.className = 'btn btn-primary btn-lg';
+                button.disabled = false;
+            }, 2000);
+            
+        } else {
+            throw new Error(data.error || 'Failed to start task');
+        }
+        
+    } catch (error) {
+        console.error('Error updating all values:', error);
+        button.innerHTML = '<i class="bx bx-error me-2"></i>Error';
+        button.className = 'btn btn-danger btn-lg';
+        
+        statusDiv.innerHTML = `
+            <div class="alert alert-danger py-2">
+                <i class="bx bx-error-circle me-2"></i>
+                <strong>Erreur:</strong> ${error.message || 'Failed to update values'}
+            </div>
+        `;
+        
+        showAlert('Erreur lors de la mise à jour: ' + error.message, 'danger');
+        
+        // Restore button after 3 seconds
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+            button.className = 'btn btn-primary btn-lg';
+            button.disabled = false;
+        }, 3000);
     }
 }
 

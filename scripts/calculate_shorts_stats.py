@@ -193,21 +193,15 @@ def update_video_dates_from_youtube(competitor_id, limit=50):
             # Mettre à jour la base
             for video_info in videos_info:
                 video_id = video_info['id']
-                published_at = video_info.get('snippet', {}).get('publishedAt')
-                duration = video_info.get('contentDetails', {}).get('duration')
+                # Notre client retourne published_at directement, pas dans snippet
+                published_at = video_info.get('published_at')
+                duration_seconds = video_info.get('duration_seconds', 0)
+                
+                print(f"[UPDATE-DEBUG] 📝 Vidéo {video_id}: published_at='{published_at}', duration={duration_seconds}s")
                 
                 if published_at:
-                    # Déterminer si c'est un Short basé sur la durée
-                    is_short = False
-                    if duration:
-                        # Parser la durée ISO 8601 (PT1M30S)
-                        import re
-                        match = re.match(r'PT(?:(\d+)M)?(?:(\d+)S)?', duration)
-                        if match:
-                            minutes = int(match.group(1) or 0)
-                            seconds = int(match.group(2) or 0)
-                            total_seconds = minutes * 60 + seconds
-                            is_short = total_seconds <= 60
+                    # Déterminer si c'est un Short basé sur la durée (notre client retourne déjà duration_seconds)
+                    is_short = duration_seconds <= 60 if duration_seconds > 0 else False
                     
                     cursor.execute("""
                         UPDATE video 

@@ -264,19 +264,19 @@
     {% if stats %}
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-value">{{ "{:,}".format(stats.total_videos) }}</div>
+            <div class="stat-value">{{ "{:,}".format(stats.get('total_videos_analyzed', 0)) }}</div>
             <div class="stat-label">Videos Analyzed</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ stats.avg_sentiment_score|round(2) }}</div>
+            <div class="stat-value">{{ (stats.get('avg_sentiment_score', 0) or 0)|round(2) }}</div>
             <div class="stat-label">Avg Sentiment Score</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ stats.positive_percentage|round(1) }}%</div>
+            <div class="stat-value">{{ (stats.get('positive_percentage', 0) or 0)|round(1) }}%</div>
             <div class="stat-label">Positive Content</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ stats.engagement_correlation|round(2) }}</div>
+            <div class="stat-value">{{ (stats.get('engagement_correlation', 0) or 0)|round(2) }}</div>
             <div class="stat-label">Engagement Correlation</div>
         </div>
     </div>

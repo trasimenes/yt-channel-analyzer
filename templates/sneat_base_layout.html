@@ -242,14 +242,6 @@
                         <span class="menu-header-text">Tools</span>
                     </li>
 
-                    <!-- Fix Problems -->
-                    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
-                        <a href="/fix-problems" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-wrench"></i>
-                            <div class="text-truncate" data-i18n="Fix Problems">Fix Problems</div>
-                        </a>
-                    </li>
-
                     <!-- Tasks -->
                     <li class="menu-item {% if request.endpoint == 'tasks_page' %}active{% endif %}">
                         <a href="/tasks" class="menu-link">
@@ -266,16 +258,19 @@
                         </a>
                     </li>
 
-                    <!-- Debug Section -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Debug</span>
-                    </li>
-
                     <!-- API Usage -->
                     <li class="menu-item {% if request.endpoint == 'api_usage_page' %}active{% endif %}">
                         <a href="/api-usage" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-data"></i>
                             <div class="text-truncate" data-i18n="API Usage">API Usage</div>
+                        </a>
+                    </li>
+
+                    <!-- DATA -->
+                    <li class="menu-item {% if request.endpoint == 'data_manager' %}active{% endif %}">
+                        <a href="/data" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
+                            <div class="text-truncate" data-i18n="DATA">DATA</div>
                         </a>
                     </li>
 
@@ -293,13 +288,14 @@
                         </a>
                     </li>
 
-                    <!-- Debug Tools -->
-                    <li class="menu-item {% if request.endpoint == 'debug_page' %}active{% endif %}">
-                        <a href="/debug" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-bug"></i>
-                            <div class="text-truncate" data-i18n="Debug Tools">Debug Tools</div>
+                    <!-- Fix Problems -->
+                    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+                        <a href="/fix-problems" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-wrench"></i>
+                            <div class="text-truncate" data-i18n="Fix Problems">Fix Problems</div>
                         </a>
                     </li>
+
                     {% endif %}
                 </ul>
             </aside>

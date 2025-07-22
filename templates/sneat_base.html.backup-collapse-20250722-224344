@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" data-assets-path="/static/sneat/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>{% block title %}YT Analyzer{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/sneat/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/fonts/boxicons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/static/sneat/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Layout fixes -->
+    <style type="text/css">
+    .layout-menu-fixed .layout-navbar-full .layout-menu,
+    .layout-page {
+      padding-top: 0px !important;
+    }
+    .content-wrapper {
+      padding-bottom: 0px !important;
+    }
+
+    /* Global Progress Bar */
+    .progress-bar-global {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: linear-gradient(135deg, #696cff 0%, #5a67d8 100%);
+        color: white;
+        padding: 8px 16px;
+        font-size: 13px;
+        box-shadow: 0 2px 12px rgba(105, 108, 255, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-bar-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .progress-bar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+    }
+
+    .progress-text {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .progress-text::before {
+        content: '⚡';
+        animation: pulse 1.5s infinite;
+    }
+
+    .progress-percentage {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .progress-bar-track {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.2);
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 1));
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        position: relative;
+    }
+
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Adjust body padding when progress bar is visible */
+    body.with-progress-bar {
+        padding-top: 46px;
+    }
+
+    .with-progress-bar .layout-wrapper {
+        margin-top: 0;
+    }
+
+    /* Menu Collapse Functionality */
+    .menu-sub {
+        display: none;
+        padding-left: 1.5rem;
+        margin-top: 0.25rem;
+    }
+
+    .menu-sub.show {
+        display: block;
+    }
+
+    .menu-toggle .menu-arrow {
+        transition: transform 0.3s ease;
+        margin-left: auto;
+        font-size: 0.875rem;
+    }
+
+    .menu-toggle.collapsed .menu-arrow {
+        transform: rotate(-90deg);
+    }
+
+    .menu-sub .menu-item .menu-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: rgba(var(--bs-body-color-rgb), 0.8);
+    }
+
+    .menu-sub .menu-item.active .menu-link {
+        color: var(--bs-primary);
+        background-color: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    /* Menu Collapse System - Full Menu Toggle */
+    .layout-menu-toggle {
+        display: none; /* Caché par défaut comme la version Pro */
+        padding: 0.5rem;
+        color: rgba(var(--bs-body-color-rgb), 0.8);
+        transition: all 0.25s ease;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Visible au survol et quand collapsed */
+    .layout-menu:hover .layout-menu-toggle,
+    .layout-menu-collapsed .layout-menu-toggle,
+    .layout-menu-toggle.d-block {
+        display: inline-flex !important;
+    }
+
+    .layout-menu-collapsed .app-brand-text,
+    .layout-menu-collapsed .menu-text {
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .layout-menu-collapsed .layout-menu {
+        width: 4.625rem;
+    }
+
+    .layout-menu-collapsed .menu-item .menu-link {
+        justify-content: center;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .layout-menu-collapsed .menu-sub {
+        display: none !important;
+    }
+
+    /* Animation du chevron */
+    .layout-menu-collapsed .layout-menu-toggle .bx-chevron-left {
+        transform: rotate(180deg);
+    }
+
+    /* Mobile Layout - Exact Pro reproduction */
+    @media (max-width: 1199.98px) {
+        .layout-menu-toggle {
+            display: inline-flex !important;
+        }
+        
+        /* Mobile menu behavior - uses layout-menu-expanded instead of show */
+        .layout-menu-expanded #layout-menu {
+            transform: translateX(0);
+        }
+        
+        #layout-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .layout-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .layout-menu-expanded .layout-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Disable collapsed behavior on mobile */
+        .layout-menu-collapsed .layout-menu {
+            width: auto !important;
+        }
+        
+        .layout-menu-collapsed .app-brand-text,
+        .layout-menu-collapsed .menu-text {
+            opacity: 1 !important;
+        }
+    }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Global Analysis Progress Bar -->
+    <div id="globalProgressBar" class="progress-bar-global" style="display: none;">
+        <div class="progress-bar-content">
+            <div class="progress-bar-info">
+                <span class="progress-text" id="progressText">Analyse en cours...</span>
+                <span class="progress-percentage" id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar  ">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a href="/" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <i class="bx bx-video" style="font-size: 2rem; color: var(--bs-primary);"></i>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bolder ms-2">YT Analyzer</span>
+                    </a>
+                    
+                    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+                        <i class="bx bx-chevron-left bx-sm align-middle"></i>
+                    </a>
+                </div>
+
+                <div class="menu-inner-shadow"></div>
+
+                <ul class="menu-inner py-1">
+                    <!-- Dashboard -->
+                    <li class="menu-item {% if request.endpoint in ['home', 'index'] %}active{% endif %}">
+                        <a href="/" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div data-i18n="Analytics">Dashboard</div>
+                        </a>
+                    </li>
+
+                    <!-- Competitors -->
+                    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+                        <a href="/concurrents" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-group"></i>
+                            <div data-i18n="Competitors">Competitors</div>
+                        </a>
+                    </li>
+
+                    <!-- Analytics Section -->
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#analytics-menu">
+                            <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+                            <div data-i18n="Analytics">Analytics</div>
+                            <i class="bx bx-chevron-down menu-arrow"></i>
+                        </a>
+                        <ul class="menu-sub collapse" id="analytics-menu">
+                            <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+                                <a href="/top-videos" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-trophy"></i>
+                                    <div data-i18n="Top Videos">Top Videos</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+                                <a href="/insights" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-bulb"></i>
+                                    <div data-i18n="Insights">Insights</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+                                <a href="/top-topics" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                                    <div data-i18n="Top Topics">Top Topics</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+                                <a href="/top-playlists" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-list-ul"></i>
+                                    <div data-i18n="Top Playlists">Top Playlists</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Learning -->
+                    <li class="menu-item {% if request.endpoint in ['learn', 'learn_guide'] %}active{% endif %}">
+                        <a href="/learn" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-book-open"></i>
+                            <div data-i18n="Learn">Learn</div>
+                            <div class="badge badge-center rounded-pill bg-danger w-px-20 h-px-20 ms-auto">
+                                <i class="bx bx-star bx-xs"></i>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Management Section -->
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#management-menu">
+                            <i class="menu-icon tf-icons bx bx-cog"></i>
+                            <div data-i18n="Management">Management</div>
+                            <i class="bx bx-chevron-down menu-arrow"></i>
+                        </a>
+                        <ul class="menu-sub collapse" id="management-menu">
+                            <li class="menu-item {% if request.endpoint == 'api_usage' %}active{% endif %}">
+                                <a href="/api-usage" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-data"></i>
+                                    <div data-i18n="API Usage">API Usage</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    {% if dev_mode %}
+                    <!-- DEV Section -->
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#dev-menu">
+                            <i class="menu-icon tf-icons bx bx-code-alt"></i>
+                            <div data-i18n="DEV">DEV</div>
+                            <i class="bx bx-chevron-down menu-arrow"></i>
+                        </a>
+                        <ul class="menu-sub collapse" id="dev-menu">
+                            <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                                <a href="/settings" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-cog"></i>
+                                    <div data-i18n="Settings">Settings & Patterns</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+                                <a href="/fix-problems" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-wrench"></i>
+                                    <div data-i18n="Fix Problems">Fix Problems</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint == 'data_manager' %}active{% endif %}">
+                                <a href="/data" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
+                                    <div data-i18n="DATA">DATA</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {% if request.endpoint in ['supervised_learning_page', 'human_classifications'] %}active{% endif %}">
+                                <a href="/supervised-learning" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-brain"></i>
+                                    <div data-i18n="AI Learning">AI Learning</div>
+                                    <div class="badge badge-center rounded-pill bg-success w-px-20 h-px-20 ms-auto">AI</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </aside>
+            <!-- / Menu -->
+
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+                <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-6 layout-menu-toggle-mobile" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-md"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Search -->
+                        <div class="navbar-nav align-items-center">
+                            <div class="nav-item d-flex align-items-center">
+                                <i class="bx bx-search bx-md"></i>
+                                <input type="text" class="form-control border-0 shadow-none ps-1 ps-sm-2" placeholder="Search..." aria-label="Search..." />
+                            </div>
+                        </div>
+                        <!-- /Search -->
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- User -->
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
+                                    <li>
+                                        <a class="dropdown-item pb-2 mb-1" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-2 pe-1">
+                                                    <div class="avatar avatar-online">
+                                                        <img src="/static/sneat/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-0">Admin</h6>
+                                                    <small class="text-muted">YT Analyzer</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider my-1"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/settings">
+                                            <i class="bx bx-cog bx-md me-3"></i><span>Settings</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/api-usage">
+                                            <i class="bx bx-data bx-md me-3"></i><span>API Usage</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ User -->
+                        </ul>
+                    </div>
+                </nav>
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        {% block content %}{% endblock %}
+                    </div>
+                    <!-- / Content -->
+
+                    <!-- Footer -->
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © 2025 YT Analyzer. Made with ❤️
+                            </div>
+                        </div>
+                    </footer>
+                    <!-- / Footer -->
+
+                    <div class="content-backdrop fade"></div>
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme JS -->
+    <script src="/static/sneat/assets/js/config.js"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Global Progress Bar Management
+        let globalProgressInterval = null;
+
+        function showGlobalProgressBar(text = 'Analyse en cours...') {
+            $('#globalProgressBar').show();
+            $('#progressText').text(text);
+            $('body').addClass('with-progress-bar');
+        }
+
+        function hideGlobalProgressBar() {
+            $('#globalProgressBar').hide();
+            $('body').removeClass('with-progress-bar');
+            if (globalProgressInterval) {
+                clearInterval(globalProgressInterval);
+                globalProgressInterval = null;
+            }
+        }
+
+        function updateGlobalProgress(percentage, text = null) {
+            $('#progressFill').css('width', percentage + '%');
+            $('#progressPercentage').text(Math.round(percentage) + '%');
+            if (text) {
+                $('#progressText').text(text);
+            }
+        }
+
+        function startGlobalProgressMonitoring() {
+            if (globalProgressInterval) return; // Déjà en cours
+            
+            globalProgressInterval = setInterval(function() {
+                $.get('/api/analyze-topics/status')
+                    .done(function(data) {
+                        console.log('🔄 Status global:', data.status, data.progress + '%', data.current_step);
+                        
+                        if (data.status === 'running') {
+                            if (!$('#globalProgressBar').is(':visible')) {
+                                showGlobalProgressBar();
+                            }
+                            updateGlobalProgress(data.progress, data.current_step);
+                        } else if (data.status === 'completed') {
+                            updateGlobalProgress(100, 'Analyse terminée ✅');
+                            setTimeout(function() {
+                                hideGlobalProgressBar();
+                                // Rafraîchir si on est sur la page top-topics
+                                if (window.location.pathname === '/top-topics') {
+                                    location.reload();
+                                }
+                            }, 3000);
+                        } else if (data.status === 'error') {
+                            updateGlobalProgress(0, 'Erreur d\'analyse ⚠️');
+                            setTimeout(hideGlobalProgressBar, 5000);
+                        } else if (data.status === 'idle') {
+                            hideGlobalProgressBar();
+                        }
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('❌ Erreur status global:', status, error);
+                        // Ne pas cacher en cas d'erreur réseau, juste continuer
+                    });
+            }, 1000); // Vérifier CHAQUE SECONDE
+        }
+
+        // Window Helpers - Exact reproduction of Sneat Pro
+        window.Helpers = {
+            LAYOUT_BREAKPOINT: 1200,
+            
+            // Check if screen is small
+            isSmallScreen: function() {
+                return window.innerWidth < this.LAYOUT_BREAKPOINT;
+            },
+            
+            // Check if menu is collapsed
+            isCollapsed: function() {
+                return document.documentElement.classList.contains('layout-menu-collapsed');
+            },
+            
+            // Toggle collapsed state
+            toggleCollapsed: function() {
+                if (this.isSmallScreen()) {
+                    // On mobile, toggle expanded class instead
+                    if (document.documentElement.classList.contains('layout-menu-expanded')) {
+                        document.documentElement.classList.remove('layout-menu-expanded');
+                    } else {
+                        document.documentElement.classList.add('layout-menu-expanded');
+                    }
+                } else {
+                    // On desktop, toggle collapsed class
+                    document.documentElement.classList.toggle('layout-menu-collapsed');
+                }
+            },
+            
+            // Set collapsed state
+            setCollapsed: function(collapsed) {
+                if (this.isSmallScreen()) {
+                    if (collapsed) {
+                        document.documentElement.classList.remove('layout-menu-expanded');
+                    } else {
+                        document.documentElement.classList.add('layout-menu-expanded');
+                    }
+                } else {
+                    if (collapsed) {
+                        document.documentElement.classList.add('layout-menu-collapsed');
+                    } else {
+                        document.documentElement.classList.remove('layout-menu-collapsed');
+                    }
+                }
+            }
+        };
+
+        // Menu functionality
+        $(document).ready(function() {
+            // Initialize menu togglers and bind click on each (Exact Pro reproduction)
+            let menuToggler = document.querySelectorAll('.layout-menu-toggle');
+            menuToggler.forEach(item => {
+                item.addEventListener('click', event => {
+                    event.preventDefault();
+                    window.Helpers.toggleCollapsed();
+                    
+                    // Enable menu state with local storage support (like Pro version)
+                    if (!window.Helpers.isSmallScreen()) {
+                        try {
+                            localStorage.setItem(
+                                'yt-analyzer-layoutCollapsed',
+                                String(window.Helpers.isCollapsed())
+                            );
+                        } catch (e) {}
+                    }
+                });
+            });
+
+            // Close menu when clicking overlay (Pro behavior)
+            $('.layout-overlay').on('click', function() {
+                if (window.Helpers.isSmallScreen()) {
+                    window.Helpers.setCollapsed(true);
+                }
+            });
+
+            // Menu collapse functionality
+            $('.menu-toggle').on('click', function(e) {
+                e.preventDefault();
+                const $this = $(this);
+                const target = $this.attr('data-bs-target');
+                const $target = $(target);
+                
+                // Toggle collapse
+                $target.slideToggle(300, function() {
+                    $target.toggleClass('show');
+                });
+                
+                // Toggle arrow rotation
+                $this.toggleClass('collapsed');
+                
+                // Save menu state
+                saveMenuState();
+            });
+
+            // Auto-expand menu if current page is in submenu
+            $('.menu-sub .menu-item.active').each(function() {
+                const $submenu = $(this).closest('.menu-sub');
+                const $toggle = $('[data-bs-target="#' + $submenu.attr('id') + '"]');
+                
+                $submenu.addClass('show').show();
+                $toggle.removeClass('collapsed');
+            });
+
+            // Restore menu state from localStorage
+            restoreMenuState();
+            restoreMainMenuState();
+            
+            // Add hover functionality for menu toggle (like Pro version)
+            addMenuToggleHover();
+
+            // Démarrer le monitoring de progression dès le chargement
+            startGlobalProgressMonitoring();
+        });
+
+        // Save menu state to localStorage
+        function saveMenuState() {
+            const openMenus = [];
+            $('.menu-sub.show').each(function() {
+                openMenus.push(this.id);
+            });
+            localStorage.setItem('yt_analyzer_menu_state', JSON.stringify(openMenus));
+        }
+
+        // Restore menu state from localStorage
+        function restoreMenuState() {
+            try {
+                const openMenus = JSON.parse(localStorage.getItem('yt_analyzer_menu_state') || '[]');
+                openMenus.forEach(function(menuId) {
+                    const $menu = $('#' + menuId);
+                    const $toggle = $('[data-bs-target="#' + menuId + '"]');
+                    
+                    if ($menu.length && $toggle.length) {
+                        $menu.addClass('show').show();
+                        $toggle.removeClass('collapsed');
+                    }
+                });
+            } catch (e) {
+                console.log('Menu state restore failed:', e);
+            }
+        }
+
+        // Restore main menu collapsed state (Pro exact key)
+        function restoreMainMenuState() {
+            try {
+                const isCollapsed = localStorage.getItem('yt-analyzer-layoutCollapsed') === 'true';
+                if (isCollapsed && !window.Helpers.isSmallScreen()) {
+                    window.Helpers.setCollapsed(true);
+                }
+            } catch (e) {
+                console.log('Main menu state restore failed:', e);
+            }
+        }
+
+        // Display menu toggle (layout-menu-toggle) on hover with delay (Exact Pro reproduction)
+        function addMenuToggleHover() {
+            let delay = function (elem, callback) {
+                let timeout = null;
+                elem.onmouseenter = function () {
+                    // Set timeout to be a timer which will invoke callback after 300ms (not for small screen)
+                    if (!window.Helpers.isSmallScreen()) {
+                        timeout = setTimeout(callback, 300);
+                    } else {
+                        timeout = setTimeout(callback, 0);
+                    }
+                };
+                
+                elem.onmouseleave = function () {
+                    // Clear any timers set to timeout
+                    document.querySelector('.layout-menu-toggle').classList.remove('d-block');
+                    clearTimeout(timeout);
+                };
+            };
+            
+            // Apply delay hover behavior to layout menu
+            delay(document.getElementById('layout-menu'), function () {
+                // not for small screen
+                if (!window.Helpers.isSmallScreen()) {
+                    document.querySelector('.layout-menu-toggle').classList.add('d-block');
+                }
+            });
+        }
+
+        // Fonctions globales pour les pages
+        window.showGlobalProgress = showGlobalProgressBar;
+        window.hideGlobalProgress = hideGlobalProgressBar;
+        window.updateGlobalProgress = updateGlobalProgress;
+    </script>
+</body>
+</html>
