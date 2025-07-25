@@ -1,0 +1,810 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Human Classifications - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .classification-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .classification-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+    }
+    
+    .stats-card {
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon.primary {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+    }
+    
+    .stat-icon.info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+    }
+    
+    .stat-icon.warning {
+        background: linear-gradient(135deg, #ff9f43 0%, #ff8c00 100%);
+        color: white;
+    }
+    
+    .stat-icon.success {
+        background: linear-gradient(135deg, #28c76f 0%, #20a55a 100%);
+        color: white;
+    }
+    
+    .stat-icon.secondary {
+        background: linear-gradient(135deg, #8592a3 0%, #6c757d 100%);
+        color: white;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0;
+    }
+    
+    .item-thumbnail {
+        width: 60px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        border: 2px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .item-thumbnail:hover {
+        border-color: #696cff;
+        transform: scale(1.1);
+    }
+    
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .type-video {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+        border: 1px solid rgba(23, 162, 184, 0.3);
+    }
+    
+    .type-playlist {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+        border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+    
+    .category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .category-hero {
+        background: rgba(255, 107, 107, 0.9);
+        color: white;
+    }
+    
+    .category-hub {
+        background: rgba(78, 205, 196, 0.9);
+        color: white;
+    }
+    
+    .category-help {
+        background: rgba(69, 183, 209, 0.9);
+        color: white;
+    }
+    
+    .classification-change {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .arrow-icon {
+        color: #696cff;
+        font-weight: bold;
+    }
+    
+    .confidence-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .confidence-high {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+        border: 1px solid rgba(40, 199, 111, 0.3);
+    }
+    
+    .confidence-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+        border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+    
+    .confidence-low {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+        border: 1px solid rgba(234, 84, 85, 0.3);
+    }
+    
+    .item-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.25rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+    
+    .item-meta {
+        font-size: 0.875rem;
+        color: #8592a3;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .competitor-badge {
+        background: #f5f5f9;
+        color: #566a7f;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .date-text {
+        font-size: 0.75rem;
+        color: #8592a3;
+    }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 0 0 0.5rem 0.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        background: transparent;
+        border: none;
+        border-radius: 0.5rem 0.5rem 0 0;
+        color: #566a7f;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: white;
+        color: #696cff;
+        border-bottom: 3px solid #696cff;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background: #f5f5f9;
+        color: #696cff;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #8592a3;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .filter-controls {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Grid View */
+    .grid-view {
+        display: none;
+    }
+    
+    .grid-view.active {
+        display: block;
+    }
+    
+    .classification-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .classification-item {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .classification-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+    }
+    
+    .item-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f5f5f9;
+    }
+    
+    /* Table View */
+    .table-view {
+        display: block;
+    }
+    
+    .table-view.active {
+        display: block;
+    }
+    
+    .table-view:not(.active) {
+        display: none;
+    }
+    
+    @media (max-width: 768px) {
+        .classification-grid {
+            grid-template-columns: 1fr;
+            padding: 1rem;
+        }
+        
+        .item-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .item-footer {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">IA /</span> Classifications Humaines
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-primary">
+                    <i class="bx bx-plus me-2"></i>
+                    Classifier Plus
+                </a>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-2-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stat-icon primary">
+                            <i class="bx bx-check-shield"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(total_count|default(0)) }}</div>
+                        <p class="stat-label">Classifications Totales</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stat-icon info">
+                            <i class="bx bx-play-circle"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(video_count|default(0)) }}</div>
+                        <p class="stat-label">Vidéos Reclassifiées</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stat-icon warning">
+                            <i class="bx bx-collection-play"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(playlist_count|default(0)) }}</div>
+                        <p class="stat-label">Playlists Classifiées</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stat-icon secondary">
+                            <i class="bx bx-share-alt"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(propagated_video_count|default(0)) }}</div>
+                        <p class="stat-label">Vidéos Propagées</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="stat-icon success">
+                            <i class="bx bx-buildings"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(affected_competitors|default(0)) }}</div>
+                        <p class="stat-label">Concurrents Concernés</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="card">
+            <div class="card-header p-0">
+                <div class="d-flex justify-content-between align-items-center p-3">
+                    <ul class="nav nav-tabs border-0" id="classificationsTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                                <i class="bx bx-list-ul me-2"></i>
+                                Tout ({{ total_count|default(0) }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button" role="tab">
+                                <i class="bx bx-play-circle me-2"></i>
+                                Vidéos ({{ video_count|default(0) }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="playlists-tab" data-bs-toggle="tab" data-bs-target="#playlists" type="button" role="tab">
+                                <i class="bx bx-collection-play me-2"></i>
+                                Playlists ({{ playlist_count|default(0) }})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="toggleView('table')" id="tableViewBtn">
+                            <i class="bx bx-list-ul"></i>
+                            Tableau
+                        </button>
+                        <button class="view-btn" onclick="toggleView('grid')" id="gridViewBtn">
+                            <i class="bx bx-grid-alt"></i>
+                            Grille
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content">
+                <!-- All Classifications Tab -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    {% if classifications %}
+                    <!-- Table View -->
+                    <div class="table-view active" id="tableView">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead style="background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%); color: white;">
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Aperçu</th>
+                                        <th>Contenu</th>
+                                        <th>Concurrent</th>
+                                        <th>Classification</th>
+                                        <th>Confiance</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in classifications %}
+                                    <tr>
+                                        <td>
+                                            {% if item.type == 'video' %}
+                                            <span class="type-badge type-video">
+                                                <i class="bx bx-play-circle"></i> Vidéo
+                                            </span>
+                                            {% else %}
+                                            <span class="type-badge type-playlist">
+                                                <i class="bx bx-collection-play"></i> Playlist
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.type == 'video' %}
+                                            <a href="https://www.youtube.com/watch?v={{ item.video_id }}" target="_blank">
+                                                <img src="{{ item.thumbnail_url }}" alt="Thumbnail" class="item-thumbnail">
+                                            </a>
+                                            {% else %}
+                                            <a href="https://www.youtube.com/playlist?list={{ item.playlist_id }}" target="_blank">
+                                                <img src="{{ item.thumbnail_url or '/static/playlist-default.png' }}" alt="Playlist" class="item-thumbnail">
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="item-title" title="{{ item.title }}">{{ item.title }}</div>
+                                            <div class="item-meta">
+                                                {% if item.type == 'video' %}
+                                                <div class="meta-item">
+                                                    <i class="bx bx-show"></i>
+                                                    {{ "{:,}".format(item.view_count|default(0)) }}
+                                                </div>
+                                                <div class="meta-item">
+                                                    <i class="bx bx-like"></i>
+                                                    {{ "{:,}".format(item.like_count|default(0)) }}
+                                                </div>
+                                                {% else %}
+                                                <div class="meta-item">
+                                                    <i class="bx bx-collection-play"></i>
+                                                    {{ item.video_count|default(0) }} vidéos
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="competitor-badge">{{ item.competitor_name }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="classification-change">
+                                                {% if item.ai_category and item.ai_category != item.human_category %}
+                                                <span class="category-badge category-{{ item.ai_category|lower }}">{{ item.ai_category|upper }}</span>
+                                                <span class="arrow-icon">→</span>
+                                                {% endif %}
+                                                <span class="category-badge category-{{ item.human_category|lower }}">{{ item.human_category|upper }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if item.confidence %}
+                                            <span class="confidence-badge {% if item.confidence >= 80 %}confidence-high{% elif item.confidence >= 60 %}confidence-medium{% else %}confidence-low{% endif %}">
+                                                {{ "{:.0f}%".format(item.confidence) }}
+                                            </span>
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="date-text">{{ item.created_at|format_datetime if item.created_at else 'N/A' }}</div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Grid View -->
+                    <div class="grid-view" id="gridView">
+                        <div class="classification-grid">
+                            {% for item in classifications %}
+                            <div class="classification-item">
+                                <div class="item-header">
+                                    {% if item.type == 'video' %}
+                                    <a href="https://www.youtube.com/watch?v={{ item.video_id }}" target="_blank">
+                                        <img src="{{ item.thumbnail_url }}" alt="Thumbnail" class="item-thumbnail" style="width: 80px; height: 60px;">
+                                    </a>
+                                    {% else %}
+                                    <a href="https://www.youtube.com/playlist?list={{ item.playlist_id }}" target="_blank">
+                                        <img src="{{ item.thumbnail_url or '/static/playlist-default.png' }}" alt="Playlist" class="item-thumbnail" style="width: 80px; height: 60px;">
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <div class="item-details">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            {% if item.type == 'video' %}
+                                            <span class="type-badge type-video">
+                                                <i class="bx bx-play-circle"></i> Vidéo
+                                            </span>
+                                            {% else %}
+                                            <span class="type-badge type-playlist">
+                                                <i class="bx bx-collection-play"></i> Playlist
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="item-title" title="{{ item.title }}">{{ item.title }}</div>
+                                        
+                                        <div class="item-meta">
+                                            {% if item.type == 'video' %}
+                                            <div class="meta-item">
+                                                <i class="bx bx-show"></i>
+                                                {{ "{:,}".format(item.view_count|default(0)) }}
+                                            </div>
+                                            <div class="meta-item">
+                                                <i class="bx bx-like"></i>
+                                                {{ "{:,}".format(item.like_count|default(0)) }}
+                                            </div>
+                                            {% else %}
+                                            <div class="meta-item">
+                                                <i class="bx bx-collection-play"></i>
+                                                {{ item.video_count|default(0) }} vidéos
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="item-footer">
+                                    <div>
+                                        <span class="competitor-badge">{{ item.competitor_name }}</span>
+                                    </div>
+                                    <div class="classification-change">
+                                        {% if item.ai_category and item.ai_category != item.human_category %}
+                                        <span class="category-badge category-{{ item.ai_category|lower }}">{{ item.ai_category|upper }}</span>
+                                        <span class="arrow-icon">→</span>
+                                        {% endif %}
+                                        <span class="category-badge category-{{ item.human_category|lower }}">{{ item.human_category|upper }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <div class="pagination-wrapper">
+                        <nav aria-label="Classifications pagination">
+                            <ul class="pagination mb-0">
+                                {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('human_classifications', page=page-1, per_page=per_page) }}">Précédent</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for p in range(max(1, page-2), min(total_pages+1, page+3)) %}
+                                <li class="page-item {% if p == page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('human_classifications', page=p, per_page=per_page) }}">{{ p }}</a>
+                                </li>
+                                {% endfor %}
+                                
+                                {% if page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('human_classifications', page=page+1, per_page=per_page) }}">Suivant</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bx bx-user-check empty-icon"></i>
+                        <h3>Aucune classification humaine</h3>
+                        <p>Commencez par classifier des vidéos et playlists pour voir les résultats ici.</p>
+                        <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-primary mt-3">
+                            <i class="bx bx-plus me-2"></i>
+                            Commencer la classification
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Videos Only Tab -->
+                <div class="tab-pane fade" id="videos" role="tabpanel">
+                    <div class="empty-state">
+                        <i class="bx bx-play-circle empty-icon"></i>
+                        <h3>Vue Vidéos uniquement</h3>
+                        <p>Cette vue sera disponible prochainement pour afficher uniquement les vidéos classifiées.</p>
+                    </div>
+                </div>
+                
+                <!-- Playlists Only Tab -->
+                <div class="tab-pane fade" id="playlists" role="tabpanel">
+                    <div class="empty-state">
+                        <i class="bx bx-collection-play empty-icon"></i>
+                        <h3>Vue Playlists uniquement</h3>
+                        <p>Cette vue sera disponible prochainement pour afficher uniquement les playlists classifiées.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'table';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const tableView = document.getElementById('tableView');
+    const gridView = document.getElementById('gridView');
+    const tableBtn = document.getElementById('tableViewBtn');
+    const gridBtn = document.getElementById('gridViewBtn');
+    
+    if (view === 'table') {
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableBtn) tableBtn.classList.add('active');
+        if (gridBtn) gridBtn.classList.remove('active');
+    } else {
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableBtn) tableBtn.classList.remove('active');
+        if (gridBtn) gridBtn.classList.add('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('humanClassificationsViewPreference', view);
+}
+
+// Restore view preference on load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('humanClassificationsViewPreference');
+    if (savedView && savedView !== 'table') {
+        toggleView(savedView);
+    }
+    
+    // Add smooth animations to cards
+    const cards = document.querySelectorAll('.classification-item, .stats-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+
+// Add hover effects to table rows
+document.addEventListener('DOMContentLoaded', function() {
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+</script>
+{% endblock %}

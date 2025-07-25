@@ -1,0 +1,768 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Transformers Dashboard - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .transformer-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .transformer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .status-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .status-icon.ready {
+        background: linear-gradient(135deg, #28c76f 0%, #20a55a 100%);
+        color: white;
+    }
+    
+    .status-icon.loading {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-icon.training {
+        background: linear-gradient(135deg, #ff9f43 0%, #ff8c00 100%);
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-icon.error {
+        background: linear-gradient(135deg, #ea5455 0%, #dc3545 100%);
+        color: white;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0;
+    }
+    
+    .model-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .model-card.loaded {
+        border-color: #28c76f;
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+    }
+    
+    .model-card.loading {
+        border-color: #696cff;
+        background: linear-gradient(135deg, #f5f5f9 0%, #e7e7ff 100%);
+    }
+    
+    .model-card.error {
+        border-color: #ea5455;
+        background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+    }
+    
+    .progress-custom {
+        height: 8px;
+        background: #e7e7ff;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar-custom {
+        height: 100%;
+        background: linear-gradient(90deg, #696cff 0%, #5f61e6 100%);
+        border-radius: 4px;
+        transition: width 0.8s ease;
+        position: relative;
+    }
+    
+    .model-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .model-name {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .model-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .model-status.ready {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .model-status.loading {
+        background: rgba(105, 108, 255, 0.1);
+        color: #696cff;
+    }
+    
+    .model-status.error {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .performance-chart {
+        height: 300px;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        border: 2px dashed #e7e7ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chart-placeholder {
+        text-align: center;
+        color: #8592a3;
+    }
+    
+    .recommendation-card {
+        border-left: 4px solid #696cff;
+        background: #f5f5f9;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    
+    .recommendation-card.warning {
+        border-left-color: #ff9f43;
+        background: #fff8f0;
+    }
+    
+    .recommendation-card.success {
+        border-left-color: #28c76f;
+        background: #f0fff4;
+    }
+    
+    .recommendation-card.error {
+        border-left-color: #ea5455;
+        background: #fff0f0;
+    }
+    
+    .system-metrics {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f5f9;
+    }
+    
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+    
+    .metric-name {
+        font-weight: 500;
+        color: #566a7f;
+    }
+    
+    .metric-value-small {
+        font-weight: 600;
+        color: #696cff;
+    }
+    
+    .debug-console {
+        background: #1a1d29;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        color: #00ff41;
+        border: 1px solid #333;
+    }
+    
+    .debug-header {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #444;
+    }
+    
+    .debug-content {
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 0.375rem;
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    
+    .log-entry {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 3px solid transparent;
+    }
+    
+    .log-entry.info { border-left-color: #17a2b8; }
+    .log-entry.success { border-left-color: #28a745; }
+    .log-entry.warning { border-left-color: #ffc107; }
+    .log-entry.error { border-left-color: #dc3545; }
+    .log-entry.debug { border-left-color: #6f42c1; }
+    
+    .log-timestamp {
+        color: #888;
+        font-size: 0.75rem;
+        min-width: 80px;
+        margin-right: 1rem;
+    }
+    
+    .log-level {
+        font-weight: 600;
+        min-width: 60px;
+        margin-right: 1rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    
+    .log-entry.info .log-level { color: #17a2b8; }
+    .log-entry.success .log-level { color: #28a745; }
+    .log-entry.warning .log-level { color: #ffc107; }
+    .log-entry.error .log-level { color: #dc3545; }
+    .log-entry.debug .log-level { color: #6f42c1; }
+    
+    .log-message {
+        color: #f8f9fa;
+        flex: 1;
+        word-wrap: break-word;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .spinning {
+        animation: spin 1s linear infinite;
+    }
+    
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            min-width: auto;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+        }
+        
+        .model-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">IA /</span> Transformers Dashboard
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+                <button class="btn btn-outline-success" onclick="optimizeModels()">
+                    <i class="bx bx-wrench me-2"></i>
+                    Optimiser
+                </button>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        {% if dashboard_data %}
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card transformer-card text-center">
+                    <div class="card-body">
+                        <div class="status-icon {{ dashboard_data.system_status|default('ready') }}">
+                            {% if dashboard_data.system_status == 'ready' %}
+                            <i class="bx bx-check-circle"></i>
+                            {% elif dashboard_data.system_status == 'loading' %}
+                            <i class="bx bx-loader-alt spinning"></i>
+                            {% elif dashboard_data.system_status == 'error' %}
+                            <i class="bx bx-error-circle"></i>
+                            {% else %}
+                            <i class="bx bx-cpu"></i>
+                            {% endif %}
+                        </div>
+                        <div class="metric-value">{{ dashboard_data.models_loaded|default(0) }}/{{ dashboard_data.models_total|default(0) }}</div>
+                        <p class="metric-label">Modèles Chargés</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card transformer-card text-center">
+                    <div class="card-body">
+                        <div class="status-icon ready">
+                            <i class="bx bx-memory-card"></i>
+                        </div>
+                        <div class="metric-value">{{ "{:.1f}".format(dashboard_data.memory_usage|default(0)) }}GB</div>
+                        <p class="metric-label">Mémoire Utilisée</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card transformer-card text-center">
+                    <div class="card-body">
+                        <div class="status-icon success">
+                            <i class="bx bx-trending-up"></i>
+                        </div>
+                        <div class="metric-value">{{ "{:,}".format(dashboard_data.predictions_today|default(0)) }}</div>
+                        <p class="metric-label">Prédictions Aujourd'hui</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card transformer-card text-center">
+                    <div class="card-body">
+                        <div class="status-icon warning">
+                            <i class="bx bx-time"></i>
+                        </div>
+                        <div class="metric-value">{{ "{:.2f}s".format(dashboard_data.avg_inference_time|default(0)) }}</div>
+                        <p class="metric-label">Temps Moyen</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Models Status -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-brain me-2"></i>
+                            État des Modèles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if dashboard_data and dashboard_data.models %}
+                        {% for model in dashboard_data.models %}
+                        <div class="model-card {{ model.status|default('ready') }}">
+                            <div class="model-info">
+                                <div class="model-name">{{ model.name|default('Modèle Inconnu') }}</div>
+                                <div class="model-status {{ model.status|default('ready') }}">
+                                    <span class="status-indicator"></span>
+                                    {% if model.status == 'ready' %}Prêt
+                                    {% elif model.status == 'loading' %}Chargement
+                                    {% elif model.status == 'error' %}Erreur
+                                    {% else %}{{ model.status|title }}{% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if model.status == 'loading' %}
+                            <div class="progress-custom">
+                                <div class="progress-bar-custom" style="width: {{ model.progress|default(0) }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ model.progress|default(0) }}% - {{ model.progress_message|default('Chargement en cours...') }}</small>
+                            {% endif %}
+                            
+                            <div class="row mt-3">
+                                <div class="col-4">
+                                    <small class="text-muted">Dimensions</small>
+                                    <div class="fw-bold">{{ model.dimensions|default('N/A') }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Taille</small>
+                                    <div class="fw-bold">{{ model.size|default('N/A') }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Utilisations</small>
+                                    <div class="fw-bold">{{ "{:,}".format(model.usage_count|default(0)) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bx bx-brain text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 text-muted">Aucun modèle chargé</h5>
+                            <p class="text-muted">Les modèles Transformers apparaîtront ici une fois initialisés.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Metrics -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-tachometer me-2"></i>
+                            Métriques Système
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if dashboard_data and dashboard_data.system_metrics %}
+                        {% for metric_name, metric_value in dashboard_data.system_metrics.items() %}
+                        <div class="metric-row">
+                            <div class="metric-name">{{ metric_name|title }}</div>
+                            <div class="metric-value-small">{{ metric_value }}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-3 text-center">
+                            <i class="bx bx-data text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2 mb-0">Métriques en cours de collecte...</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-bulb me-2"></i>
+                            Recommandations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if dashboard_data and dashboard_data.recommendations %}
+                        {% for recommendation in dashboard_data.recommendations %}
+                        <div class="recommendation-card {{ recommendation.type|default('info') }}">
+                            <div class="fw-bold mb-1">{{ recommendation.title|default('Recommandation') }}</div>
+                            <small>{{ recommendation.message|default('Aucun détail disponible.') }}</small>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="recommendation-card success">
+                            <div class="fw-bold mb-1">Système Optimal</div>
+                            <small>Tous les modèles fonctionnent correctement.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-line-chart me-2"></i>
+                            Performance des Modèles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="performance-chart">
+                            <div class="chart-placeholder">
+                                <i class="bx bx-bar-chart-alt-2" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <h5>Graphique de Performance</h5>
+                                <p class="text-muted">Les métriques de performance en temps réel seront affichées ici.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Console -->
+        {% if dashboard_data and dashboard_data.debug_mode %}
+        <div class="debug-console">
+            <div class="debug-header">
+                <h6 class="mb-3">
+                    <i class="bx bx-terminal me-2"></i>
+                    Console de Debug
+                </h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-muted">Statut Système:</div>
+                        <div class="text-success">{{ dashboard_data.system_status|default('ACTIF')|upper }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted">Uptime:</div>
+                        <div class="text-info">{{ dashboard_data.uptime|default('N/A') }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted">Version:</div>
+                        <div class="text-warning">{{ dashboard_data.version|default('1.0.0') }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="debug-content">
+                {% if dashboard_data.logs %}
+                {% for log in dashboard_data.logs[-20:] %}
+                <div class="log-entry {{ log.level|default('info') }}">
+                    <div class="log-timestamp">{{ log.timestamp|default('00:00:00') }}</div>
+                    <div class="log-level">{{ log.level|default('INFO')|upper }}</div>
+                    <div class="log-message">{{ log.message|default('Log entry') }}</div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="log-entry info">
+                    <div class="log-timestamp">{{ moment().format('HH:mm:ss') }}</div>
+                    <div class="log-level">SYSTEM</div>
+                    <div class="log-message">Console de debug initialisée. En attente des logs...</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="button" class="btn btn-outline-primary action-btn" onclick="reloadModels()">
+                <i class="bx bx-refresh me-2"></i>
+                Recharger les Modèles
+            </button>
+            <button type="button" class="btn btn-outline-warning action-btn" onclick="clearCache()">
+                <i class="bx bx-trash me-2"></i>
+                Vider le Cache
+            </button>
+            <button type="button" class="btn btn-outline-success action-btn" onclick="optimizeMemory()">
+                <i class="bx bx-memory-card me-2"></i>
+                Optimiser la Mémoire
+            </button>
+            <button type="button" class="btn btn-outline-danger action-btn" onclick="restartSystem()">
+                <i class="bx bx-reset me-2"></i>
+                Redémarrer le Système
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let refreshInterval;
+
+function refreshDashboard() {
+    showNotification('Actualisation du tableau de bord...', 'info');
+    location.reload();
+}
+
+function optimizeModels() {
+    showNotification('Optimisation des modèles en cours...', 'info');
+    
+    fetch('/api/transformers/optimize', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Optimisation terminée avec succès', 'success');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showNotification('Erreur lors de l\'optimisation: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de communication', 'error');
+    });
+}
+
+function reloadModels() {
+    if (!confirm('Recharger tous les modèles ? Cette opération peut prendre du temps.')) {
+        return;
+    }
+    
+    showNotification('Rechargement des modèles...', 'info');
+    
+    fetch('/api/transformers/reload', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Modèles rechargés avec succès', 'success');
+            setTimeout(() => location.reload(), 3000);
+        } else {
+            showNotification('Erreur: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de communication', 'error');
+    });
+}
+
+function clearCache() {
+    if (!confirm('Vider le cache des modèles ? Cette action est irréversible.')) {
+        return;
+    }
+    
+    showNotification('Nettoyage du cache...', 'info');
+    
+    fetch('/api/transformers/clear-cache', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Cache vidé avec succès', 'success');
+        setTimeout(() => location.reload(), 1000);
+    })
+    .catch(error => {
+        showNotification('Erreur lors du nettoyage', 'error');
+    });
+}
+
+function optimizeMemory() {
+    showNotification('Optimisation de la mémoire...', 'info');
+    
+    fetch('/api/transformers/optimize-memory', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Mémoire optimisée', 'success');
+        setTimeout(() => location.reload(), 1500);
+    })
+    .catch(error => {
+        showNotification('Erreur d\'optimisation', 'error');
+    });
+}
+
+function restartSystem() {
+    if (!confirm('⚠️ ATTENTION: Redémarrer le système des Transformers ? Cette action interrompra temporairement le service.')) {
+        return;
+    }
+    
+    showNotification('Redémarrage du système...', 'warning');
+    
+    fetch('/api/transformers/restart', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Système redémarré', 'success');
+        setTimeout(() => location.reload(), 5000);
+    })
+    .catch(error => {
+        showNotification('Erreur de redémarrage', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    toast.innerHTML = `
+        <i class="bx bx-${type === 'success' ? 'check-circle' : type === 'warning' ? 'error' : type === 'info' ? 'info-circle' : 'x-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 4000);
+}
+
+// Auto-refresh every 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    refreshInterval = setInterval(() => {
+        fetch('/api/transformers/status')
+            .then(response => response.json())
+            .then(data => {
+                // Update status indicators without full page reload
+                if (data.needs_refresh) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.log('Status check failed:', error);
+            });
+    }, 30000);
+});
+
+// Cleanup interval on page unload
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,626 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Countries Analysis - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .country-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .country-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .country-flag-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .country-flag {
+        font-size: 4rem;
+        line-height: 1;
+    }
+    
+    .video-count-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .country-name {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .country-competitors {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .country-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .stat-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .performance-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .performance-high {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .performance-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .performance-low {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .search-filters {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .sort-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .sort-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    .stats-cards {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 160px;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #696cff;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0.25rem 0 0;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-country-name {
+        max-width: 200px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .table-country-flag {
+        font-size: 1.5rem;
+    }
+    
+    .number-format {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .country-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e7e7ff;
+    }
+    
+    .avg-performance {
+        font-size: 0.75rem;
+        color: #8592a3;
+    }
+    
+    /* Country flags mapping */
+    .flag-germany::before { content: "🇩🇪"; }
+    .flag-france::before { content: "🇫🇷"; }
+    .flag-netherlands::before { content: "🇳🇱"; }
+    .flag-united-kingdom::before { content: "🇬🇧"; }
+    .flag-switzerland::before { content: "🇨🇭"; }
+    .flag-austria::before { content: "🇦🇹"; }
+    .flag-belgium::before { content: "🇧🇪"; }
+    .flag-unknown::before { content: "🏳️"; }
+    
+    .country-flag-icon {
+        font-size: 4rem;
+        line-height: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-cards {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-country-name {
+            max-width: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Pays & Régions
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if global_stats %}
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>{{ global_stats.total_countries|default(0) }}</h3>
+                <p>Pays analysés</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(global_stats.total_videos|default(0)) }}</h3>
+                <p>Vidéos totales</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(global_stats.total_competitors|default(0)) }}</h3>
+                <p>Concurrents totaux</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(global_stats.total_views|default(0)) }}</h3>
+                <p>Vues totales</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ (global_stats.avg_engagement_rate|default(0))|round(2) }}%</h3>
+                <p>Engagement moyen</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par région</label>
+                        <select class="form-select" id="regionFilter" onchange="applyFilters()">
+                            <option value="all">Toutes les régions</option>
+                            <option value="western-europe">Europe de l'Ouest</option>
+                            <option value="northern-europe">Europe du Nord</option>
+                            <option value="central-europe">Europe Centrale</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Nombre de résultats</label>
+                        <select class="form-select" id="limitFilter" onchange="applyFilters()">
+                            <option value="10">10 pays</option>
+                            <option value="20" selected>20 pays</option>
+                            <option value="50">50 pays</option>
+                            <option value="all">Tous les pays</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-group mt-3">
+                <label class="form-label">Trier par</label>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" onclick="updateSort('total_videos')">
+                        <i class="bx bx-collection-play me-1"></i> Nombre de vidéos
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('total_views')">
+                        <i class="bx bx-show me-1"></i> Vues totales
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('avg_engagement')">
+                        <i class="bx bx-trending-up me-1"></i> Engagement
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('competitors_count')">
+                        <i class="bx bx-user-group me-1"></i> Concurrents
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="countriesGrid">
+                {% if countries %}
+                    {% for country in countries %}
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="card country-card h-100">
+                            <div class="country-flag-wrapper">
+                                <div class="country-flag-icon flag-{{ country.name|lower|replace(' ', '-')|replace('united kingdom', 'united-kingdom') }}">
+                                    {% if country.name|lower == 'germany' %}🇩🇪
+                                    {% elif country.name|lower == 'france' %}🇫🇷
+                                    {% elif country.name|lower == 'netherlands' %}🇳🇱
+                                    {% elif country.name|lower == 'united kingdom' %}🇬🇧
+                                    {% elif country.name|lower == 'switzerland' %}🇨🇭
+                                    {% elif country.name|lower == 'austria' %}🇦🇹
+                                    {% elif country.name|lower == 'belgium' %}🇧🇪
+                                    {% else %}🏳️{% endif %}
+                                </div>
+                                
+                                <div class="video-count-overlay">
+                                    <i class="bx bx-collection-play"></i>
+                                    {{ country.total_videos or 0 }} vidéos
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h5 class="country-name" title="{{ country.name }}">{{ country.name }}</h5>
+                                
+                                <div class="country-competitors">
+                                    <i class="bx bx-user-group"></i>
+                                    {{ country.competitor_count or 0 }} concurrent(s)
+                                </div>
+                                
+                                <div class="country-stats">
+                                    <div class="stat-item">
+                                        <i class="bx bx-show"></i>
+                                        <span>{{ "{:,}".format(country.total_views or 0) }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="bx bx-like"></i>
+                                        <span>{{ "{:,}".format(country.total_likes or 0) }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="bx bx-comment"></i>
+                                        <span>{{ "{:,}".format(country.total_comments or 0) }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="country-meta">
+                                    <span class="avg-performance">
+                                        <i class="bx bx-trending-up"></i>
+                                        {{ (country.avg_views_per_video or 0)|int }} vues/vidéo
+                                    </span>
+                                    {% set engagement = country.engagement_rate|default(0) %}
+                                    <span class="performance-badge 
+                                        {% if engagement > 5 %}performance-high
+                                        {% elif engagement > 2 %}performance-medium
+                                        {% else %}performance-low{% endif %}">
+                                        <i class="bx bx-trending-up"></i>
+                                        {{ engagement|round(2) }}% eng.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bx bx-world" style="font-size: 4rem; color: #8592a3;"></i>
+                        <h3 class="mt-3 mb-2">Aucune donnée de pays</h3>
+                        <p class="text-muted">Les données d'analyse par pays ne sont pas encore disponibles.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Pays</th>
+                                <th>Concurrents</th>
+                                <th>Vidéos</th>
+                                <th>Vues totales</th>
+                                <th>Likes totaux</th>
+                                <th>Commentaires</th>
+                                <th>Vues/vidéo</th>
+                                <th>Engagement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if countries_data %}
+                                {% for country in countries_data %}
+                                <tr>
+                                    <td class="number-format">{{ loop.index }}</td>
+                                    <td class="table-country-name">
+                                        <span class="table-country-flag">
+                                            {% if country.name|lower == 'germany' %}🇩🇪
+                                            {% elif country.name|lower == 'france' %}🇫🇷
+                                            {% elif country.name|lower == 'netherlands' %}🇳🇱
+                                            {% elif country.name|lower == 'united kingdom' %}🇬🇧
+                                            {% elif country.name|lower == 'switzerland' %}🇨🇭
+                                            {% elif country.name|lower == 'austria' %}🇦🇹
+                                            {% elif country.name|lower == 'belgium' %}🇧🇪
+                                            {% else %}🏳️{% endif %}
+                                        </span>
+                                        {{ country.name }}
+                                    </td>
+                                    <td class="number-format">{{ country.competitors_count or 0 }}</td>
+                                    <td class="number-format">{{ country.total_videos or 0 }}</td>
+                                    <td class="number-format">{{ "{:,}".format(country.total_views or 0) }}</td>
+                                    <td class="number-format">{{ "{:,}".format(country.total_likes or 0) }}</td>
+                                    <td class="number-format">{{ "{:,}".format(country.total_comments or 0) }}</td>
+                                    <td class="number-format">{{ (country.avg_views or 0)|int }}</td>
+                                    <td class="number-format">{{ (country.avg_engagement_rate or 0)|round(2) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentSort = 'total_videos';
+let currentOrder = 'desc';
+let currentRegion = 'all';
+let currentLimit = 20;
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        gridView.classList.add('active');
+        tableView.classList.remove('active');
+        gridBtn.classList.add('active');
+        tableBtn.classList.remove('active');
+    } else {
+        gridView.classList.remove('active');
+        tableView.classList.add('active');
+        gridBtn.classList.remove('active');
+        tableBtn.classList.add('active');
+    }
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('countriesViewPreference', view);
+}
+
+// Restaurer la préférence de vue au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('countriesViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function updateSort(sortBy) {
+    if (currentSort === sortBy) {
+        currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+    } else {
+        currentSort = sortBy;
+        currentOrder = 'desc';
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    const region = document.getElementById('regionFilter').value;
+    const limit = document.getElementById('limitFilter').value;
+    
+    const params = new URLSearchParams({
+        sort_by: currentSort,
+        order: currentOrder,
+        region: region,
+        limit: limit
+    });
+    
+    window.location.href = `/countries-analysis?${params.toString()}`;
+}
+</script>
+{% endblock %}

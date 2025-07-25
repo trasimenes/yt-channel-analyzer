@@ -1,0 +1,527 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}ML Statistics - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .stats-card {
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+    }
+    
+    .stat-icon.primary {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+    }
+    
+    .stat-icon.success {
+        background: linear-gradient(135deg, #28c76f 0%, #20a55a 100%);
+        color: white;
+    }
+    
+    .stat-icon.info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+    }
+    
+    .stat-icon.warning {
+        background: linear-gradient(135deg, #ff9f43 0%, #ff8c00 100%);
+        color: white;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0;
+    }
+    
+    .category-performance {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f5f5f9;
+    }
+    
+    .category-row:last-child {
+        border-bottom: none;
+    }
+    
+    .category-name {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .category-badge {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .category-hero {
+        background: #ff6b6b;
+    }
+    
+    .category-hub {
+        background: #4ecdc4;
+    }
+    
+    .category-help {
+        background: #45b7d1;
+    }
+    
+    .category-metrics {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+    
+    .metric-item {
+        text-align: center;
+    }
+    
+    .metric-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .metric-label {
+        font-size: 0.75rem;
+        color: #8592a3;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .progress-ring {
+        width: 60px;
+        height: 60px;
+        position: relative;
+        margin: 0 auto;
+    }
+    
+    .progress-ring svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        fill: none;
+        stroke-width: 4;
+        stroke-linecap: round;
+    }
+    
+    .progress-ring-background {
+        stroke: #e7e7ff;
+    }
+    
+    .progress-ring-progress {
+        stroke: #696cff;
+        stroke-dasharray: 141.37;
+        stroke-dashoffset: 141.37;
+        transition: stroke-dashoffset 0.8s ease;
+    }
+    
+    .recent-predictions {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 0;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .prediction-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f5f5f9;
+        transition: background-color 0.3s ease;
+    }
+    
+    .prediction-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .prediction-item:last-child {
+        border-bottom: none;
+    }
+    
+    .prediction-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+        color: white;
+    }
+    
+    .prediction-content {
+        flex: 1;
+    }
+    
+    .prediction-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.25rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .prediction-meta {
+        font-size: 0.875rem;
+        color: #8592a3;
+    }
+    
+    .prediction-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-left: 1rem;
+    }
+    
+    .accuracy-chart {
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        border: 2px dashed #e7e7ff;
+    }
+    
+    .chart-placeholder {
+        text-align: center;
+        color: #8592a3;
+    }
+    
+    .refresh-button {
+        transition: transform 0.3s ease;
+    }
+    
+    .refresh-button:hover {
+        transform: rotate(180deg);
+    }
+    
+    @media (max-width: 768px) {
+        .category-metrics {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+        }
+        
+        .prediction-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .prediction-badge {
+            margin-left: 0;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">IA /</span> Statistiques ML
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('supervised_learning_page') }}" class="btn btn-outline-primary">
+                    <i class="bx bx-arrow-left me-2"></i>
+                    Classification
+                </a>
+                <button class="btn btn-secondary refresh-button" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Performance Overview -->
+        {% if model_stats %}
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon primary">
+                            <i class="bx bx-brain" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:.1f}%".format(model_stats.accuracy * 100) }}</div>
+                        <p class="stat-label">Précision Globale</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon success">
+                            <i class="bx bx-check-circle" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(model_stats.total_predictions) }}</div>
+                        <p class="stat-label">Prédictions Totales</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon info">
+                            <i class="bx bx-user-check" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:,}".format(model_stats.human_validations) }}</div>
+                        <p class="stat-label">Validations Humaines</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon warning">
+                            <i class="bx bx-percentage" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="stat-value">{{ "{:.1f}%".format(model_stats.confidence_avg) }}</div>
+                        <p class="stat-label">Confiance Moyenne</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Category Performance -->
+            {% if category_stats %}
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-chart-pie me-2"></i>
+                            Performance par Catégorie
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for category, stats in category_stats.items() %}
+                        <div class="category-row">
+                            <div class="category-name">
+                                <div class="category-badge category-{{ category|lower }}"></div>
+                                <span>{{ category|upper }}</span>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <div class="metric-value">{{ "{:,}".format(stats.count) }}</div>
+                                    <div class="metric-label">Items</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value">{{ "{:.1f}%".format(stats.accuracy * 100) }}</div>
+                                    <div class="metric-label">Précision</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="progress-ring">
+                                        <svg>
+                                            <circle class="progress-ring-circle progress-ring-background" 
+                                                    cx="30" cy="30" r="22.5"></circle>
+                                            <circle class="progress-ring-circle progress-ring-progress" 
+                                                    cx="30" cy="30" r="22.5"
+                                                    style="stroke-dashoffset: {{ 141.37 - (141.37 * stats.confidence / 100) }};"></circle>
+                                        </svg>
+                                        <div class="position-absolute top-50 start-50 translate-middle">
+                                            <small class="fw-bold">{{ "{:.0f}%".format(stats.confidence) }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="metric-label">Confiance</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Predictions -->
+            {% if recent_predictions %}
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-history me-2"></i>
+                            Prédictions Récentes
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for prediction in recent_predictions[:8] %}
+                        <div class="prediction-item">
+                            <div class="prediction-icon category-{{ prediction.category|lower }}">
+                                {% if prediction.category|lower == 'hero' %}
+                                <i class="bx bx-star"></i>
+                                {% elif prediction.category|lower == 'hub' %}
+                                <i class="bx bx-grid-alt"></i>
+                                {% elif prediction.category|lower == 'help' %}
+                                <i class="bx bx-help-circle"></i>
+                                {% else %}
+                                <i class="bx bx-file"></i>
+                                {% endif %}
+                            </div>
+                            <div class="prediction-content">
+                                <div class="prediction-title">{{ prediction.title[:50] }}{% if prediction.title|length > 50 %}...{% endif %}</div>
+                                <div class="prediction-meta">
+                                    {{ prediction.competitor_name }} • 
+                                    {{ prediction.created_at|format_datetime }}
+                                </div>
+                            </div>
+                            <div class="prediction-badge category-{{ prediction.category|lower }}">
+                                {{ prediction.category|upper }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Accuracy Chart Placeholder -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bx bx-line-chart me-2"></i>
+                            Évolution de la Précision
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="accuracy-chart">
+                            <div class="chart-placeholder">
+                                <i class="bx bx-bar-chart-alt-2" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <h5>Graphique d'Évolution</h5>
+                                <p class="text-muted">Les données d'évolution temporelle seront affichées ici prochainement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="bx bx-info-circle text-info" style="font-size: 2rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Informations sur l'Apprentissage Supervisé</h6>
+                                <p class="mb-0 text-muted">
+                                    Les statistiques sont mises à jour en temps réel lors de chaque validation. 
+                                    {% if model_last_updated %}
+                                    Dernière mise à jour des modèles : {{ model_last_updated|format_datetime }}.
+                                    {% endif %}
+                                    Plus de validations amélioreront la précision globale du système.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Animation for progress rings
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress rings
+    const progressRings = document.querySelectorAll('.progress-ring-progress');
+    progressRings.forEach(ring => {
+        const currentOffset = ring.style.strokeDashoffset;
+        ring.style.strokeDashoffset = '141.37';
+        setTimeout(() => {
+            ring.style.strokeDashoffset = currentOffset;
+        }, 500);
+    });
+    
+    // Add smooth scroll to stats cards
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+// Refresh functionality
+function refreshStats() {
+    const refreshBtn = document.querySelector('.refresh-button i');
+    refreshBtn.style.animation = 'spin 1s linear infinite';
+    
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Add spin animation for refresh button
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
