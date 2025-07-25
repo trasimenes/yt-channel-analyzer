@@ -1,0 +1,660 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Concurrents - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .competitor-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .competitor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .competitor-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        overflow: hidden;
+        border: 3px solid #f5f5f9;
+    }
+    
+    .competitor-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .competitor-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+    }
+    
+    .competitor-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e7e7ff;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-weight: 600;
+        font-size: 1.25rem;
+        display: block;
+        color: #696cff;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #8592a3;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .country-flag {
+        display: inline-block;
+        margin-left: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .btn-action {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+    }
+    
+    .search-box {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8592a3;
+    }
+    
+    .search-input {
+        padding-left: 3rem;
+        border-radius: 0.5rem;
+        border: 2px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: #696cff;
+        box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
+    }
+    
+    .filters-section {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .add-competitor-card {
+        border: 2px dashed #696cff;
+        background: rgba(105, 108, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .add-competitor-card:hover {
+        background: rgba(105, 108, 255, 0.1);
+        border-color: #5f61e6;
+    }
+    
+    /* Hero Hub Help Chart Styles */
+    .hhh-chart {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    
+    .hhh-chart-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .hhh-bars {
+        display: flex;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #e7e7ff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hhh-bar {
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .hhh-bar.hero {
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+    }
+    
+    .hhh-bar.hub {
+        background: linear-gradient(45deg, #4ecdc4, #6fdddd);
+    }
+    
+    .hhh-bar.help {
+        background: linear-gradient(45deg, #45b7d1, #6bb8d6);
+    }
+    
+    .hhh-legend {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: #8592a3;
+    }
+    
+    .hhh-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .hhh-legend-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    
+    .hhh-legend-dot.hero {
+        background: #ff6b6b;
+    }
+    
+    .hhh-legend-dot.hub {
+        background: #4ecdc4;
+    }
+    
+    .hhh-legend-dot.help {
+        background: #45b7d1;
+    }
+    
+    .competitor-card:hover .hhh-bars {
+        transform: scaleY(1.2);
+    }
+    
+    .add-competitor-card i {
+        font-size: 3rem;
+        color: #696cff;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(105, 108, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #696cff;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Concurrents
+            </h4>
+            <div>
+                <button class="btn btn-primary" onclick="showAddCompetitorModal()">
+                    <i class="bx bx-plus me-2"></i>
+                    Ajouter un concurrent
+                </button>
+                <button class="btn btn-secondary ms-2" onclick="refreshAllData()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="search-box">
+                    <i class="bx bx-search"></i>
+                    <input type="text" class="form-control search-input" id="searchCompetitors" 
+                           placeholder="Rechercher un concurrent..." onkeyup="filterCompetitors()">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="filters-section d-flex align-items-center gap-3">
+                    <label class="form-label mb-0">Filtrer par pays:</label>
+                    <select class="form-select" id="countryFilter" onchange="filterCompetitors()" style="width: auto;">
+                        <option value="">Tous les pays</option>
+                        <option value="France">France</option>
+                        <option value="Germany">Allemagne</option>
+                        <option value="Netherlands">Pays-Bas</option>
+                        <option value="United Kingdom">Royaume-Uni</option>
+                        <option value="Belgium">Belgique</option>
+                        <option value="Switzerland">Suisse</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competitors Grid -->
+        <div class="row g-4" id="competitorsGrid">
+            {% for competitor in competitors %}
+            <div class="col-md-6 col-lg-4 competitor-item" 
+                 data-name="{{ competitor.name|lower }}"
+                 data-country="{{ competitor.country|default('', true) }}">
+                <div class="card competitor-card h-100" onclick="viewCompetitor({{ competitor.id }})">
+                    <div class="card-body text-center">
+                        <div class="competitor-avatar">
+                            <img src="{{ competitor.thumbnail_url or url_for('static', filename='sneat-pro/img/avatars/1.png') }}" 
+                                 alt="{{ competitor.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='sneat-pro/img/avatars/1.png') }}'">
+                        </div>
+                        
+                        <h5 class="competitor-name">{{ competitor.name }}</h5>
+                        
+                        {% if competitor.country %}
+                        <div class="mb-2">
+                            <span class="badge bg-label-primary">
+                                {{ competitor.country }}
+                                {% if competitor.country == 'France' %}
+                                    <span class="country-flag">🇫🇷</span>
+                                {% elif competitor.country == 'Germany' %}
+                                    <span class="country-flag">🇩🇪</span>
+                                {% elif competitor.country == 'Netherlands' %}
+                                    <span class="country-flag">🇳🇱</span>
+                                {% elif competitor.country == 'United Kingdom' %}
+                                    <span class="country-flag">🇬🇧</span>
+                                {% elif competitor.country == 'Belgium' %}
+                                    <span class="country-flag">🇧🇪</span>
+                                {% elif competitor.country == 'Switzerland' %}
+                                    <span class="country-flag">🇨🇭</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="competitor-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ competitor.video_count|default(0) }}</span>
+                                <span class="stat-label">Vidéos</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ competitor.playlist_count|default(0) }}</span>
+                                <span class="stat-label">Playlists</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Hero Hub Help Chart -->
+                        {% set total_videos = competitor.hero_count + competitor.hub_count + competitor.help_count %}
+                        {% if total_videos > 0 %}
+                        <div class="hhh-chart">
+                            <div class="hhh-chart-title">Hero • Hub • Help</div>
+                            <div class="hhh-bars">
+                                {% if competitor.hero_count > 0 %}
+                                <div class="hhh-bar hero" style="width: {{ (competitor.hero_count / total_videos * 100)|round(1) }}%"></div>
+                                {% endif %}
+                                {% if competitor.hub_count > 0 %}
+                                <div class="hhh-bar hub" style="width: {{ (competitor.hub_count / total_videos * 100)|round(1) }}%"></div>
+                                {% endif %}
+                                {% if competitor.help_count > 0 %}
+                                <div class="hhh-bar help" style="width: {{ (competitor.help_count / total_videos * 100)|round(1) }}%"></div>
+                                {% endif %}
+                            </div>
+                            <div class="hhh-legend">
+                                <div class="hhh-legend-item">
+                                    <div class="hhh-legend-dot hero"></div>
+                                    <span>{{ (competitor.hero_count / total_videos * 100)|round(1) }}%</span>
+                                </div>
+                                <div class="hhh-legend-item">
+                                    <div class="hhh-legend-dot hub"></div>
+                                    <span>{{ (competitor.hub_count / total_videos * 100)|round(1) }}%</span>
+                                </div>
+                                <div class="hhh-legend-item">
+                                    <div class="hhh-legend-dot help"></div>
+                                    <span>{{ (competitor.help_count / total_videos * 100)|round(1) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="hhh-chart">
+                            <div class="hhh-chart-title">Hero • Hub • Help</div>
+                            <div class="hhh-bars">
+                                <div style="width: 100%; height: 8px; background: #e7e7ff; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-size: 0.6rem; color: #8592a3;">Pas de données</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="action-buttons">
+                            {% if dev_mode %}
+                            <button class="btn btn-sm btn-outline-primary btn-action" 
+                                    onclick="event.stopPropagation(); refreshCompetitor({{ competitor.id }})">
+                                <i class="bx bx-refresh"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-action" 
+                                    onclick="event.stopPropagation(); deleteCompetitor({{ competitor.id }})">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Add New Competitor Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card add-competitor-card h-100" onclick="showAddCompetitorModal()">
+                    <div class="card-body text-center">
+                        <i class="bx bx-plus-circle"></i>
+                        <h5 class="text-primary">Ajouter un concurrent</h5>
+                        <p class="text-muted mb-0">Cliquez pour analyser une nouvelle chaîne YouTube</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Competitor Modal -->
+<div class="modal fade" id="addCompetitorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un concurrent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="competitorSearch" class="form-label">Rechercher une chaîne</label>
+                    <input type="text" class="form-control" id="competitorSearch" 
+                           placeholder="Nom de la chaîne..." autocomplete="off">
+                    <div class="list-group mt-2" id="searchResults" style="display: none;"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="competitorUrl" class="form-label">URL de la chaîne</label>
+                    <input type="url" class="form-control" id="competitorUrl" 
+                           placeholder="https://youtube.com/channel/...">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="videoCount" class="form-label">Nombre de vidéos à analyser</label>
+                    <select class="form-select" id="videoCount">
+                        <option value="10">10 vidéos (rapide)</option>
+                        <option value="30" selected>30 vidéos (recommandé)</option>
+                        <option value="50">50 vidéos</option>
+                        <option value="100">100 vidéos</option>
+                        <option value="500">500 vidéos</option>
+                        <option value="0">Toutes les vidéos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="addCompetitor()">
+                    <i class="bx bx-plus me-2"></i>
+                    Ajouter et analyser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Filter competitors
+function filterCompetitors() {
+    const searchTerm = document.getElementById('searchCompetitors').value.toLowerCase();
+    const countryFilter = document.getElementById('countryFilter').value;
+    const items = document.querySelectorAll('.competitor-item');
+    
+    items.forEach(item => {
+        const name = item.dataset.name;
+        const country = item.dataset.country;
+        
+        const matchesSearch = !searchTerm || name.includes(searchTerm);
+        const matchesCountry = !countryFilter || country === countryFilter;
+        
+        item.style.display = matchesSearch && matchesCountry ? 'block' : 'none';
+    });
+}
+
+// Show add competitor modal
+function showAddCompetitorModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addCompetitorModal'));
+    modal.show();
+}
+
+// View competitor details
+function viewCompetitor(id) {
+    window.location.href = `/competitor/${id}`;
+}
+
+// Refresh competitor data
+async function refreshCompetitor(id) {
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="loading-spinner"></span>';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/refresh-competitor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ competitor_id: id })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Données actualisées avec succès', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('Erreur: ' + result.error, 'danger');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Erreur lors de l\'actualisation', 'danger');
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
+
+// Delete competitor
+async function deleteCompetitor(id) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce concurrent ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/competitors/${id}/delete`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Concurrent supprimé', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Erreur: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Erreur lors de la suppression', 'danger');
+    }
+}
+
+// Add new competitor
+async function addCompetitor() {
+    const url = document.getElementById('competitorUrl').value.trim();
+    const name = document.getElementById('competitorSearch').value.trim();
+    const videoCount = document.getElementById('videoCount').value;
+    
+    if (!url) {
+        showToast('Veuillez entrer l\'URL de la chaîne', 'warning');
+        return;
+    }
+    
+    const btn = event.target;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Analyse en cours...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/background-analysis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                channel_url: url,
+                channel_name: name || 'Nouveau concurrent',
+                max_videos: videoCount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Analyse lancée avec succès', 'success');
+            setTimeout(() => {
+                window.location.href = '/tasks';
+            }, 1500);
+        } else {
+            showToast('Erreur: ' + result.error, 'danger');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Erreur lors du lancement de l\'analyse', 'danger');
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
+
+// Refresh all data
+function refreshAllData() {
+    showToast('Actualisation des données...', 'info');
+    location.reload();
+}
+
+// Autocomplete for competitor search
+const searchInput = document.getElementById('competitorSearch');
+const searchResults = document.getElementById('searchResults');
+const urlInput = document.getElementById('competitorUrl');
+
+searchInput.addEventListener('input', async function() {
+    const query = this.value.trim();
+    
+    if (!query) {
+        searchResults.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/autocomplete?q=${encodeURIComponent(query)}`);
+        const suggestions = await response.json();
+        
+        searchResults.innerHTML = '';
+        if (suggestions.length > 0) {
+            suggestions.forEach(s => {
+                const item = document.createElement('a');
+                item.className = 'list-group-item list-group-item-action';
+                item.href = '#';
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${s.name}</span>
+                        ${s.is_analyzed ? '<span class="badge bg-success">Déjà analysé</span>' : ''}
+                    </div>
+                `;
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    searchInput.value = s.name;
+                    urlInput.value = s.url;
+                    searchResults.style.display = 'none';
+                };
+                searchResults.appendChild(item);
+            });
+            searchResults.style.display = 'block';
+        } else {
+            searchResults.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Autocomplete error:', error);
+        searchResults.style.display = 'none';
+    }
+});
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="bs-toast toast toast-placement-ex m-2 fade bg-${type} top-0 end-0 show" role="alert">
+            <div class="toast-header">
+                <i class="bx bx-${type === 'success' ? 'check' : type === 'warning' ? 'error' : type === 'danger' ? 'x' : 'info'}-circle me-2"></i>
+                <div class="me-auto fw-semibold">${type === 'success' ? 'Succès' : type === 'warning' ? 'Attention' : type === 'danger' ? 'Erreur' : 'Info'}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+    
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+    
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

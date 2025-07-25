@@ -1,0 +1,821 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Brand Insights - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .insight-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .insight-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .insight-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .insight-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .priority-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .insight-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .insight-description {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .insight-metrics {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .metric-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .priority-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .priority-high {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .priority-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .priority-low {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .category-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .category-performance {
+        background: rgba(40, 199, 111, 0.9);
+        color: white;
+    }
+    
+    .category-content {
+        background: rgba(255, 159, 67, 0.9);
+        color: white;
+    }
+    
+    .category-strategy {
+        background: rgba(102, 126, 234, 0.9);
+        color: white;
+    }
+    
+    .category-engagement {
+        background: rgba(234, 84, 85, 0.9);
+        color: white;
+    }
+    
+    .search-filters {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .sort-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .sort-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    .stats-cards {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 160px;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #696cff;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0.25rem 0 0;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles - Fixed specificity */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-insight-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .table-category-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .table-category-performance {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+        border: 1px solid rgba(40, 199, 111, 0.3);
+    }
+    
+    .table-category-content {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+        border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+    
+    .table-category-strategy {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .table-category-engagement {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+        border: 1px solid rgba(234, 84, 85, 0.3);
+    }
+    
+    /* Grid View Styles - Fixed specificity */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .insight-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e7e7ff;
+    }
+    
+    .insight-country {
+        font-size: 0.75rem;
+        color: #8592a3;
+    }
+    
+    /* Country flags */
+    .country-flag {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    /* Impact score styling */
+    .impact-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-top: 0.25rem;
+        font-weight: 600;
+    }
+    
+    .impact-high {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .impact-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .impact-low {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    /* Country overview section */
+    .country-overview {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .country-overview h3 {
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .country-overview .row {
+        text-align: left;
+    }
+    
+    .overview-metric {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .overview-metric h4 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+    
+    .overview-metric p {
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-cards {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-insight-title {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Brand Insights
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Channels Overview -->
+        {% if insights and insights.channels %}
+        <div class="country-overview">
+            <h3><i class="bx bx-video me-2"></i>Chaînes Center Parcs analysées</h3>
+            <div class="row">
+                {% for channel_key, channel_data in insights.channels.items() %}
+                <div class="col-md-3">
+                    <div class="overview-metric">
+                        <h4>
+                            {% if channel_data.region|lower == 'germany' %}🇩🇪
+                            {% elif channel_data.region|lower == 'france' %}🇫🇷
+                            {% elif channel_data.region|lower == 'netherlands' %}🇳🇱
+                            {% elif channel_data.region|lower == 'united kingdom' %}🇬🇧
+                            {% elif channel_data.region|lower == 'switzerland' %}🇨🇭
+                            {% elif channel_data.region|lower == 'austria' %}🇦🇹
+                            {% elif channel_data.region|lower == 'belgium' %}🇧🇪
+                            {% else %}🏳️{% endif %}
+                            {{ channel_data.stats.video_count }}
+                        </h4>
+                        <p>{{ channel_data.region }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Statistics Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>{{ insights.channels|length if insights and insights.channels else 0 }}</h3>
+                <p>Chaînes analysées</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ insights.total_videos_analyzed|default(0) if insights else 0 }}</h3>
+                <p>Vidéos analysées</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ insights.channels|length if insights and insights.channels else 0 }}</h3>
+                <p>Pays couverts</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ insights.avg_engagement_rate|default(0)|round(1) if insights else '0.0' }}%</h3>
+                <p>Engagement moyen</p>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par priorité</label>
+                        <select class="form-select" id="priorityFilter" onchange="applyFilters()">
+                            <option value="all">Toutes les priorités</option>
+                            <option value="high">Priorité haute</option>
+                            <option value="medium">Priorité moyenne</option>
+                            <option value="low">Priorité basse</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par catégorie</label>
+                        <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                            <option value="all">Toutes les catégories</option>
+                            <option value="performance">Performance</option>
+                            <option value="content">Contenu</option>
+                            <option value="strategy">Stratégie</option>
+                            <option value="engagement">Engagement</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par pays</label>
+                        <select class="form-select" id="countryFilter" onchange="applyFilters()">
+                            <option value="all">Tous les pays</option>
+                            {% if country_insights %}
+                                {% for country in country_insights.keys() %}
+                                <option value="{{ country }}">{{ country }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-group mt-3">
+                <label class="form-label">Trier par</label>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" onclick="updateSort('priority')">
+                        <i class="bx bx-star me-1"></i> Priorité
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('impact')">
+                        <i class="bx bx-trending-up me-1"></i> Impact
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('category')">
+                        <i class="bx bx-category me-1"></i> Catégorie
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('country')">
+                        <i class="bx bx-world me-1"></i> Pays
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="insightsGrid">
+                {% if insights and insights.channels %}
+                    {% for channel_key, channel_data in insights.channels.items() %}
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="card insight-card h-100">
+                            <div class="insight-icon-wrapper">
+                                {% if channel_data.stats.video_count > 0 %}
+                                    <i class="bx bx-trending-up insight-icon"></i>
+                                    <span class="category-badge category-performance">ACTIF</span>
+                                {% else %}
+                                    <i class="bx bx-info-circle insight-icon"></i>
+                                    <span class="category-badge category-strategy">INACTIF</span>
+                                {% endif %}
+                                
+                                <div class="priority-overlay">
+                                    <i class="bx bx-video"></i>
+                                    {{ channel_data.stats.video_count }} vidéos
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h5 class="insight-title" title="{{ channel_data.name }}">{{ channel_data.name }}</h5>
+                                
+                                <div class="insight-description">
+                                    Chaîne {{ channel_data.region }} avec {{ channel_data.stats.video_count }} vidéos analysées
+                                </div>
+                                
+                                <div class="insight-metrics">
+                                    <div class="metric-item">
+                                        <i class="bx bx-show"></i>
+                                        <span>{{ "{:,}".format(channel_data.stats.total_views) }} vues</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <i class="bx bx-time"></i>
+                                        <span>{{ channel_data.stats.avg_duration_minutes|round(1) }}min moy.</span>
+                                    </div>
+                                </div>
+                                
+                                {% if channel_data.stats.video_count > 0 %}
+                                <div class="impact-score impact-high">
+                                    <i class="bx bx-trending-up"></i> Contenu disponible
+                                </div>
+                                {% else %}
+                                <div class="impact-score impact-low">
+                                    <i class="bx bx-trending-down"></i> Pas de contenu
+                                </div>
+                                {% endif %}
+                                
+                                <div class="insight-meta">
+                                    <span class="insight-country">
+                                        {% if channel_data.region|lower == 'germany' %}<span class="country-flag">🇩🇪</span>
+                                        {% elif channel_data.region|lower == 'france' %}<span class="country-flag">🇫🇷</span>
+                                        {% elif channel_data.region|lower == 'netherlands' %}<span class="country-flag">🇳🇱</span>
+                                        {% elif channel_data.region|lower == 'united kingdom' %}<span class="country-flag">🇬🇧</span>
+                                        {% elif channel_data.region|lower == 'switzerland' %}<span class="country-flag">🇨🇭</span>
+                                        {% elif channel_data.region|lower == 'austria' %}<span class="country-flag">🇦🇹</span>
+                                        {% elif channel_data.region|lower == 'belgium' %}<span class="country-flag">🇧🇪</span>
+                                        {% else %}<span class="country-flag">🏳️</span>{% endif %}
+                                        {{ channel_data.region }}
+                                    </span>
+                                    <span class="priority-badge priority-{{ 'high' if channel_data.stats.video_count > 0 else 'low' }}">
+                                        <i class="bx bx-flag"></i>
+                                        {{ 'Active' if channel_data.stats.video_count > 0 else 'Inactive' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bx bx-bulb" style="font-size: 4rem; color: #8592a3;"></i>
+                        <h3 class="mt-3 mb-2">Aucun insight disponible</h3>
+                        <p class="text-muted">Les insights de marque ne sont pas encore générés pour cette analyse.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Chaîne</th>
+                                <th>Statut</th>
+                                <th>Priorité</th>
+                                <th>Vidéos</th>
+                                <th>Durée moy.</th>
+                                <th>Pays</th>
+                                <th>Métriques</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if insights and insights.channels %}
+                                {% for channel_key, channel_data in insights.channels.items() %}
+                                <tr>
+                                    <td class="number-format">{{ loop.index }}</td>
+                                    <td class="table-insight-title">{{ channel_data.name }}</td>
+                                    <td>
+                                        <span class="table-category-badge table-category-{{ 'performance' if channel_data.stats.video_count > 0 else 'strategy' }}">
+                                            {{ 'ACTIF' if channel_data.stats.video_count > 0 else 'INACTIF' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="priority-badge priority-{{ 'high' if channel_data.stats.video_count > 0 else 'low' }}">
+                                            {{ 'Haute' if channel_data.stats.video_count > 0 else 'Basse' }}
+                                        </span>
+                                    </td>
+                                    <td class="number-format">{{ channel_data.stats.video_count }}</td>
+                                    <td>{{ channel_data.stats.avg_duration_minutes|round(1) }}min</td>
+                                    <td>
+                                        {% if channel_data.region|lower == 'germany' %}🇩🇪
+                                        {% elif channel_data.region|lower == 'france' %}🇫🇷
+                                        {% elif channel_data.region|lower == 'netherlands' %}🇳🇱
+                                        {% elif channel_data.region|lower == 'united kingdom' %}🇬🇧
+                                        {% elif channel_data.region|lower == 'switzerland' %}🇨🇭
+                                        {% elif channel_data.region|lower == 'austria' %}🇦🇹
+                                        {% elif channel_data.region|lower == 'belgium' %}🇧🇪
+                                        {% else %}🏳️{% endif %}
+                                        {{ channel_data.region }}
+                                    </td>
+                                    <td>{{ "{:,}".format(channel_data.stats.total_views) }} vues totales</td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentSort = 'priority';
+let currentOrder = 'desc';
+let currentPriority = 'all';
+let currentCategory = 'all';
+let currentCountry = 'all';
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    console.log('Switching to view:', view);
+    console.log('Grid element:', gridView);
+    console.log('Table element:', tableView);
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('insightsViewPreference', view);
+}
+
+// Restaurer la préférence de vue au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('insightsViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function updateSort(sortBy) {
+    if (currentSort === sortBy) {
+        currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+    } else {
+        currentSort = sortBy;
+        currentOrder = 'desc';
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    const priority = document.getElementById('priorityFilter').value;
+    const category = document.getElementById('categoryFilter').value;
+    const country = document.getElementById('countryFilter').value;
+    
+    const params = new URLSearchParams({
+        sort_by: currentSort,
+        order: currentOrder,
+        priority: priority,
+        category: category,
+        country: country
+    });
+    
+    window.location.href = `/insights?${params.toString()}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,489 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Dashboard - YT Channel Analyzer{% endblock %}
+
+{% block vendor_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-card h2 {
+        color: white !important;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-card p {
+        color: white !important;
+    }
+    
+    .quick-action-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    
+    .quick-action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .quick-action-card .card-body {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .quick-action-card i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    
+    .stats-card h6 {
+        color: #8592a3;
+        font-size: 0.875rem;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card h3 {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .channel-search {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    
+    .search-input-wrapper {
+        position: relative;
+    }
+    
+    .search-input-wrapper i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8592a3;
+    }
+    
+    .search-input {
+        padding-left: 3rem;
+        border-radius: 0.5rem;
+        border: 2px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: #696cff;
+        box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
+    }
+    
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        margin-top: 0.5rem;
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .autocomplete-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    
+    .autocomplete-item:hover {
+        background-color: #f5f5f9;
+    }
+    
+    .recent-analysis {
+        margin-top: 2rem;
+    }
+    
+    .recent-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .recent-item:hover {
+        background-color: #f5f5f9;
+    }
+    
+    .recent-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="welcome-card">
+            <h2>Bienvenue sur YT Channel Analyzer</h2>
+            <p class="mb-0">Analysez et comparez les chaînes YouTube de vos concurrents pour optimiser votre stratégie de contenu.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Chaînes analysées</h6>
+            <h3 class="text-primary">{{ stats.total_channels | default(0) }}</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Vidéos indexées</h6>
+            <h3 class="text-info">{{ stats.total_videos | default(0) }}</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Playlists classifiées</h6>
+            <h3 class="text-success">{{ stats.total_playlists | default(0) }}</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Analyses IA</h6>
+            <h3 class="text-warning">{{ stats.ai_classifications | default(0) }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Channel Search -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="channel-search">
+            <h4 class="mb-4">Analyser une nouvelle chaîne</h4>
+            <div class="search-input-wrapper mb-3">
+                <i class="bx bx-search"></i>
+                <input type="text" class="form-control form-control-lg search-input" 
+                       id="search-chaine" placeholder="Rechercher une chaîne YouTube..." 
+                       autocomplete="off">
+                <div class="autocomplete-list" id="autocomplete-list" style="display: none;"></div>
+            </div>
+            
+            <div class="mb-3">
+                <input type="url" class="form-control form-control-lg" id="channel-url" 
+                       placeholder="URL de la chaîne YouTube">
+            </div>
+            
+            <div class="row align-items-end">
+                <div class="col-md-6 mb-3">
+                    <label for="max-videos" class="form-label">Nombre de vidéos à analyser</label>
+                    <select class="form-select" id="max-videos">
+                        <option value="10">10 vidéos (rapide)</option>
+                        <option value="30" selected>30 vidéos (recommandé)</option>
+                        <option value="50">50 vidéos</option>
+                        <option value="100">100 vidéos</option>
+                        <option value="500">500 vidéos</option>
+                        <option value="0">Toutes les vidéos</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <button class="btn btn-primary btn-lg w-100" onclick="startBackgroundAnalysis()">
+                        <i class="bx bx-play-circle me-2"></i>
+                        Lancer l'analyse
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Recent Analyses -->
+            <div class="recent-analysis">
+                <h5 class="mb-3">Analyses récentes</h5>
+                <div id="recent-list">
+                    <!-- Recent items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <h4 class="mb-4">Actions rapides</h4>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <a href="{{ url_for('competitors.concurrents') }}" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-user-circle text-primary"></i>
+                            <h6 class="mb-0">Concurrents</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/top-videos" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-video text-info"></i>
+                            <h6 class="mb-0">Top Vidéos</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/insights" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-bulb text-warning"></i>
+                            <h6 class="mb-0">Insights</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/learn" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-brain text-success"></i>
+                            <h6 class="mb-0">IA Learning</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/api-usage" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-code-alt text-danger"></i>
+                            <h6 class="mb-0">API YouTube</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="{{ url_for('admin.settings') }}" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-cog text-secondary"></i>
+                            <h6 class="mb-0">Paramètres</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Autocomplete functionality
+const input = document.getElementById('search-chaine');
+const list = document.getElementById('autocomplete-list');
+const urlInput = document.getElementById('channel-url');
+
+input.addEventListener('input', async function() {
+    const q = input.value.trim();
+    if (!q) { 
+        list.innerHTML = ''; 
+        list.style.display = 'none';
+        return; 
+    }
+    
+    try {
+        const res = await fetch(`/autocomplete?q=${encodeURIComponent(q)}`);
+        const suggestions = await res.json();
+        list.innerHTML = '';
+        
+        if (suggestions.length > 0) {
+            suggestions.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerHTML = `
+                    <i class="bx bx-user-circle me-2"></i>
+                    ${s.name}
+                `;
+                div.onclick = () => {
+                    input.value = s.name;
+                    urlInput.value = s.url;
+                    list.innerHTML = '';
+                    list.style.display = 'none';
+                };
+                list.appendChild(div);
+            });
+            list.style.display = 'block';
+        } else {
+            list.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Autocomplete error:', error);
+        list.style.display = 'none';
+    }
+});
+
+// Handle Enter key to redirect to main page
+input.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const searchTerm = this.value.trim();
+        if (searchTerm) {
+            // Rediriger vers la page principale avec le terme de recherche
+            window.location.href = `http://127.0.0.1:8082/?search=${encodeURIComponent(searchTerm)}`;
+        }
+    }
+});
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(e) {
+    if (!input.contains(e.target) && !list.contains(e.target)) {
+        list.innerHTML = '';
+        list.style.display = 'none';
+    }
+});
+
+// Load recent analyses
+async function loadRecentAnalyses() {
+    try {
+        const response = await fetch('/api/recent-analyses');
+        const data = await response.json();
+        
+        const recentList = document.getElementById('recent-list');
+        if (data.analyses && data.analyses.length > 0) {
+            recentList.innerHTML = data.analyses.map(item => `
+                <div class="recent-item" onclick="window.location.href='/concurrent/${item.id}'">
+                    <img src="${item.thumbnail || '/static/sneat-pro/img/avatars/1.png'}" alt="${item.name}">
+                    <div>
+                        <h6 class="mb-0">${item.name}</h6>
+                        <small class="text-muted">${item.video_count} vidéos • ${item.date}</small>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            recentList.innerHTML = '<p class="text-muted">Aucune analyse récente</p>';
+        }
+    } catch (error) {
+        console.error('Error loading recent analyses:', error);
+    }
+}
+
+// Start background analysis
+async function startBackgroundAnalysis() {
+    const channelUrl = document.getElementById('channel-url').value.trim();
+    const searchChaine = document.getElementById('search-chaine').value.trim();
+    
+    if (!channelUrl) {
+        showToast('Veuillez entrer l\'URL de la chaîne YouTube', 'warning');
+        return;
+    }
+    
+    const channelName = searchChaine || 'Canal sans nom';
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Lancement...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/background-analysis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                channel_url: channelUrl,
+                channel_name: channelName,
+                max_videos: document.getElementById('max-videos').value
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            button.innerHTML = '<i class="bx bx-check me-2"></i>Analyse lancée!';
+            showToast(`Analyse en cours pour "${channelName}"`, 'success');
+            setTimeout(() => {
+                window.location.href = '/tasks';
+            }, 2000);
+        } else {
+            button.innerHTML = originalText;
+            button.disabled = false;
+            showToast('Erreur: ' + (result.error || 'Erreur inconnue'), 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        button.innerHTML = originalText;
+        button.disabled = false;
+        showToast('Erreur lors du lancement de l\'analyse', 'danger');
+    }
+}
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="bs-toast toast toast-placement-ex m-2 fade bg-${type} top-0 end-0 show" role="alert">
+            <div class="toast-header">
+                <i class="bx bx-${type === 'success' ? 'check' : type === 'warning' ? 'error' : 'x'} me-2"></i>
+                <div class="me-auto fw-semibold">${type === 'success' ? 'Succès' : type === 'warning' ? 'Attention' : 'Erreur'}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+    
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+    
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 5000);
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadRecentAnalyses();
+});
+</script>
+{% endblock %}

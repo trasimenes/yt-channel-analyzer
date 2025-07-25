@@ -1,0 +1,919 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Top Topics - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .topic-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .topic-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .topic-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .topic-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .frequency-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .topic-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .topic-details {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .topic-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .stat-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .engagement-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    /* Bannière de progression sticky */
+    .analysis-progress-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        display: none;
+    }
+    
+    .analysis-progress-banner.show {
+        display: block;
+    }
+    
+    .progress-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .progress-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .progress-bar-mini {
+        flex: 1;
+        max-width: 200px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-mini .progress-fill {
+        height: 100%;
+        background: white;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        width: 0%;
+    }
+    
+    .progress-status {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .basic-analysis-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 159, 67, 0.2);
+    }
+    
+    .upgrade-analysis-btn {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        border: none;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: 0.5rem;
+    }
+    
+    .upgrade-analysis-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(105, 108, 255, 0.3);
+    }
+
+    .engagement-high {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .engagement-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .engagement-low {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .category-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .category-hero {
+        background: rgba(255, 107, 107, 0.9);
+        color: white;
+    }
+    
+    .category-hub {
+        background: rgba(78, 205, 196, 0.9);
+        color: white;
+    }
+    
+    .category-help {
+        background: rgba(69, 183, 209, 0.9);
+        color: white;
+    }
+    
+    .search-filters {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .sort-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .sort-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    .stats-cards {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 160px;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #696cff;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0.25rem 0 0;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-topic-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .table-category-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .table-category-hero {
+        background: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+        border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+    
+    .table-category-hub {
+        background: rgba(78, 205, 196, 0.1);
+        color: #4ecdc4;
+        border: 1px solid rgba(78, 205, 196, 0.3);
+    }
+    
+    .table-category-help {
+        background: rgba(69, 183, 209, 0.1);
+        color: #45b7d1;
+        border: 1px solid rgba(69, 183, 209, 0.3);
+    }
+    
+    .number-format {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .topic-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e7e7ff;
+    }
+    
+    .topic-competitors {
+        font-size: 0.75rem;
+        color: #8592a3;
+    }
+    
+    .topic-countries {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .country-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 6px;
+        background: #f5f5f9;
+        border-radius: 4px;
+        font-size: 0.7rem;
+    }
+    
+    /* Analysis Status Styles */
+    .analysis-status {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    
+    .status-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .status-no-data .status-icon {
+        color: #8592a3;
+    }
+    
+    .status-running .status-icon {
+        color: #696cff;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-error .status-icon {
+        color: #ea5455;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .btn-start-analysis {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-start-analysis:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-cards {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-topic-title {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Bannière de progression pour analyse avancée -->
+<div id="analysis-progress-banner" class="analysis-progress-banner">
+    <div class="progress-container">
+        <div class="progress-spinner"></div>
+        <div class="progress-status" id="progress-status">Analyse sémantique en cours...</div>
+        <div class="progress-bar-mini">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span id="progress-percentage">0%</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Top Topics
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if summary %}
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(summary.get('total_topics', 0)) }}</h3>
+                <p>Topics analysés</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(summary.get('analyzed_videos', 0)) }}</h3>
+                <p>Vidéos analysées</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(summary.get('analyzed_playlists', 0)) }}</h3>
+                <p>Playlists analysées</p>
+            </div>
+            {% if topics %}
+            <div class="stat-card">
+                <h3>{{ topics|length }}</h3>
+                <p>Topics affichés</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if analysis_status == 'no_data' %}
+        <!-- No Data Status -->
+        <div class="analysis-status status-no-data">
+            <div class="status-icon">
+                <i class="bx bx-data"></i>
+            </div>
+            <h3>Aucune analyse de topics disponible</h3>
+            <p class="text-muted mb-3">Lancez une analyse pour découvrir les sujets les plus populaires dans vos vidéos.</p>
+            <button class="btn btn-start-analysis" onclick="startTopicsAnalysis()">
+                <i class="bx bx-play-circle me-2"></i>
+                Démarrer l'analyse
+            </button>
+        </div>
+        
+        {% elif analysis_status == 'running' %}
+        <!-- Running Status -->
+        <div class="analysis-status status-running">
+            <div class="status-icon">
+                <i class="bx bx-loader-alt bx-spin"></i>
+            </div>
+            <h3>Analyse en cours...</h3>
+            <p class="text-muted">L'analyse des topics est en cours d'exécution en arrière-plan.</p>
+            <div class="progress mt-3" style="height: 8px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        
+        {% elif analysis_status == 'error' %}
+        <!-- Error Status -->
+        <div class="analysis-status status-error">
+            <div class="status-icon">
+                <i class="bx bx-error-circle"></i>
+            </div>
+            <h3>Erreur lors de l'analyse</h3>
+            <p class="text-muted mb-3">{{ error or 'Une erreur est survenue pendant l\'analyse des topics.' }}</p>
+            <button class="btn btn-start-analysis" onclick="startTopicsAnalysis()">
+                <i class="bx bx-refresh me-2"></i>
+                Relancer l'analyse
+            </button>
+        </div>
+        
+        {% else %}
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par catégorie</label>
+                        <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                            <option value="all" {% if category_filter == 'all' %}selected{% endif %}>Toutes les catégories</option>
+                            <option value="hero" {% if category_filter == 'hero' %}selected{% endif %}>Hero</option>
+                            <option value="hub" {% if category_filter == 'hub' %}selected{% endif %}>Hub</option>
+                            <option value="help" {% if category_filter == 'help' %}selected{% endif %}>Help</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Nombre de résultats</label>
+                        <select class="form-select" id="limitFilter" onchange="applyFilters()">
+                            <option value="25" {% if limit == 25 %}selected{% endif %}>25 topics</option>
+                            <option value="50" {% if limit == 50 %}selected{% endif %}>50 topics</option>
+                            <option value="100" {% if limit == 100 %}selected{% endif %}>100 topics</option>
+                            <option value="200" {% if limit == 200 %}selected{% endif %}>200 topics</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-group mt-3">
+                <label class="form-label">Trier par</label>
+                <div class="sort-buttons">
+                    <button class="sort-btn {% if sort_by == 'frequency' %}active{% endif %}" 
+                            onclick="updateSort('frequency')">
+                        <i class="bx bx-hash me-1"></i> Fréquence
+                    </button>
+                    <button class="sort-btn {% if sort_by == 'views' %}active{% endif %}" 
+                            onclick="updateSort('views')">
+                        <i class="bx bx-show me-1"></i> Vues moyennes
+                    </button>
+                    <button class="sort-btn {% if sort_by == 'engagement' %}active{% endif %}" 
+                            onclick="updateSort('engagement')">
+                        <i class="bx bx-trending-up me-1"></i> Engagement
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="topicsGrid">
+                {% if topics %}
+                    {% for topic in topics %}
+                    <div class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="card topic-card h-100">
+                            <div class="topic-icon-wrapper">
+                                <i class="bx bx-hash topic-icon"></i>
+                                
+                                {% if topic.top_category and topic.top_category != 'uncategorized' %}
+                                <span class="category-badge category-{{ topic.top_category|lower }}">
+                                    {{ topic.top_category|upper }}
+                                </span>
+                                {% endif %}
+                                
+                                <div class="frequency-overlay">
+                                    <i class="bx bx-trending-up"></i>
+                                    {{ topic.frequency or 0 }}x
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h5 class="topic-title" title="{{ topic.topic or 'Topic inconnu' }}">{{ topic.topic or 'Topic inconnu' }}</h5>
+                                
+                                <div class="topic-details">
+                                    <i class="bx bx-building"></i>
+                                    {{ topic.top_competitor or 'Concurrent inconnu' }}
+                                </div>
+                                
+                                <div class="topic-stats">
+                                    <div class="stat-item">
+                                        <i class="bx bx-show"></i>
+                                        <span>{{ "{:,}".format(topic.avg_views|default(0)|int) }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="bx bx-like"></i>
+                                        <span>{{ "{:,}".format(topic.total_likes|default(0)|int) }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="bx bx-comment"></i>
+                                        <span>{{ "{:,}".format(topic.total_comments|default(0)|int) }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="topic-meta">
+                                    <span class="topic-competitors">
+                                        <i class="bx bx-hash"></i>
+                                        {{ topic.frequency or 0 }} occurrences
+                                    </span>
+                                </div>
+                                
+                                {% if topic.countries %}
+                                <div class="topic-countries">
+                                    {% for country, count in topic.countries.items() %}
+                                    <div class="country-item">
+                                        <span>{{ country[:2] }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bx bx-hash" style="font-size: 4rem; color: #8592a3;"></i>
+                        <h3 class="mt-3 mb-2">Aucun topic trouvé</h3>
+                        <p class="text-muted">Essayez de modifier les filtres ou de relancer une analyse.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Topic</th>
+                                <th>Fréquence</th>
+                                <th>Catégorie</th>
+                                <th>Vues moyennes</th>
+                                <th>Likes totaux</th>
+                                <th>Commentaires</th>
+                                <th>Principal concurrent</th>
+                                <th>Pays</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if topics %}
+                                {% for topic in topics %}
+                                <tr>
+                                    <td class="number-format">{{ loop.index }}</td>
+                                    <td class="table-topic-title">
+                                        <strong>{{ topic.topic or 'Topic inconnu' }}</strong>
+                                    </td>
+                                    <td class="number-format">{{ topic.frequency or 0 }}</td>
+                                    <td>
+                                        {% if topic.top_category and topic.top_category != 'uncategorized' %}
+                                        <span class="table-category-badge table-category-{{ topic.top_category|lower }}">
+                                            {{ topic.top_category|upper }}
+                                        </span>
+                                        {% else %}
+                                        <small class="text-muted">N/A</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="number-format">{{ "{:,}".format(topic.avg_views|default(0)|int) }}</td>
+                                    <td class="number-format">{{ "{:,}".format(topic.total_likes|default(0)|int) }}</td>
+                                    <td class="number-format">{{ "{:,}".format(topic.total_comments|default(0)|int) }}</td>
+                                    <td>{{ topic.top_competitor or 'Inconnu' }}</td>
+                                    <td>
+                                        {% if topic.countries %}
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            {% for country, count in topic.countries.items() %}
+                                            <small class="text-muted">{{ country[:2] }}</small>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <small class="text-muted">N/A</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentSort = '{{ sort_by }}';
+let currentOrder = '{{ order }}';
+let currentCategory = '{{ category_filter }}';
+let currentLimit = {{ limit }};
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        gridView.classList.add('active');
+        tableView.classList.remove('active');
+        gridBtn.classList.add('active');
+        tableBtn.classList.remove('active');
+    } else {
+        gridView.classList.remove('active');
+        tableView.classList.add('active');
+        gridBtn.classList.remove('active');
+        tableBtn.classList.add('active');
+    }
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('topicsViewPreference', view);
+}
+
+// Restaurer la préférence de vue au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('topicsViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function updateSort(sortBy) {
+    if (currentSort === sortBy) {
+        currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+    } else {
+        currentSort = sortBy;
+        currentOrder = 'desc';
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    const category = document.getElementById('categoryFilter').value;
+    const limit = document.getElementById('limitFilter').value;
+    
+    const params = new URLSearchParams({
+        sort_by: currentSort,
+        order: currentOrder,
+        category: category,
+        limit: limit
+    });
+    
+    window.location.href = `/top-topics?${params.toString()}`;
+}
+
+async function startTopicsAnalysis() {
+    try {
+        const response = await fetch('/api/start-topics-analysis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Actualiser la page pour voir le statut "running"
+            location.reload();
+        } else {
+            alert('Erreur: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Erreur lors du démarrage de l\'analyse:', error);
+        alert('Erreur lors du démarrage de l\'analyse');
+    }
+}
+
+// Vérifier périodiquement le statut si une analyse est en cours
+{% if analysis_status == 'running' %}
+setInterval(async function() {
+    try {
+        const response = await fetch('/api/topics-analysis-status');
+        const status = await response.json();
+        
+        if (status.status === 'completed') {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification du statut:', error);
+    }
+}, 5000); // Vérifier toutes les 5 secondes
+{% endif %}
+</script>
+{% endblock %}

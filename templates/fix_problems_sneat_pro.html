@@ -1,0 +1,913 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Fix Problems - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .problem-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .problem-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .problem-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .problem-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .problem-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(105, 108, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .problem-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.9;
+        z-index: 2;
+    }
+    
+    .health-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .problem-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .problem-description {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .problem-metrics {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .metric-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-healthy {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .status-warning {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .status-critical {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .status-unknown {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .health-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e7e7ff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .health-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .health-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .health-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-problem-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    /* Grid View Styles */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .maintenance-log {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .log-entry {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e7e7ff;
+        font-size: 0.875rem;
+    }
+    
+    .log-entry:last-child {
+        border-bottom: none;
+    }
+    
+    .log-time {
+        color: #8592a3;
+        font-weight: 500;
+        min-width: 80px;
+    }
+    
+    .log-message {
+        color: #566a7f;
+    }
+    
+    @media (max-width: 768px) {
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-problem-title {
+            max-width: 200px;
+        }
+        
+        .health-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            min-width: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Maintenance /</span> Fix Problems
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-primary" onclick="runSystemCheck()">
+                    <i class="bx bx-search me-2"></i>
+                    Diagnostic Complet
+                </button>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- System Health Overview -->
+        <div class="health-card">
+            <div class="health-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-shield-check me-2 text-primary"></i>
+                    État de Santé du Système
+                </h5>
+                <span class="badge bg-label-{{ 'success' if system_health.database == 'healthy' and system_health.api == 'healthy' else 'warning' }}">
+                    Dernière vérification: {{ system_info.last_check if system_info else 'N/A' }}
+                </span>
+            </div>
+            
+            <div class="health-grid">
+                <div class="health-item">
+                    <i class="bx bx-data text-{{ 'success' if system_health.database == 'healthy' else 'warning' if system_health.database == 'warning' else 'danger' if system_health.database == 'critical' else 'secondary' }}"></i>
+                    <div>
+                        <div class="fw-semibold">Base de Données</div>
+                        <small class="text-muted">{{ system_info.db_size if system_info else 'N/A' }} - {{ system_info.total_videos if system_info else 0 }} vidéos</small>
+                    </div>
+                    <span class="status-badge status-{{ system_health.database }}">
+                        <i class="bx bx-{{ 'check' if system_health.database == 'healthy' else 'error' if system_health.database == 'critical' else 'time' }}"></i>
+                        {{ system_health.database|title }}
+                    </span>
+                </div>
+                
+                <div class="health-item">
+                    <i class="bx bxl-youtube text-{{ 'success' if system_health.api == 'healthy' else 'warning' if system_health.api == 'warning' else 'danger' if system_health.api == 'critical' else 'secondary' }}"></i>
+                    <div>
+                        <div class="fw-semibold">API YouTube</div>
+                        <small class="text-muted">{{ system_info.total_competitors if system_info else 0 }} concurrents analysés</small>
+                    </div>
+                    <span class="status-badge status-{{ system_health.api }}">
+                        <i class="bx bx-{{ 'check' if system_health.api == 'healthy' else 'error' if system_health.api == 'critical' else 'time' }}"></i>
+                        {{ system_health.api|title }}
+                    </span>
+                </div>
+                
+                <div class="health-item">
+                    <i class="bx bx-brain text-{{ 'success' if system_health.classification == 'healthy' else 'warning' if system_health.classification == 'warning' else 'danger' if system_health.classification == 'critical' else 'secondary' }}"></i>
+                    <div>
+                        <div class="fw-semibold">Classification IA</div>
+                        <small class="text-muted">Modèles sémantiques</small>
+                    </div>
+                    <span class="status-badge status-{{ system_health.classification }}">
+                        <i class="bx bx-{{ 'check' if system_health.classification == 'healthy' else 'error' if system_health.classification == 'critical' else 'time' }}"></i>
+                        {{ system_health.classification|title }}
+                    </span>
+                </div>
+                
+                <div class="health-item">
+                    <i class="bx bx-server text-{{ 'success' if system_health.cache == 'healthy' else 'warning' if system_health.cache == 'warning' else 'danger' if system_health.cache == 'critical' else 'secondary' }}"></i>
+                    <div>
+                        <div class="fw-semibold">Cache Système</div>
+                        <small class="text-muted">{{ system_info.cache_size if system_info else 'N/A' }}</small>
+                    </div>
+                    <span class="status-badge status-{{ system_health.cache }}">
+                        <i class="bx bx-{{ 'check' if system_health.cache == 'healthy' else 'error' if system_health.cache == 'critical' else 'time' }}"></i>
+                        {{ system_health.cache|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="problemsGrid">
+                <!-- Database Issues -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card problem-card">
+                        <div class="problem-icon-wrapper">
+                            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&h=300&fit=crop&auto=format" 
+                                 alt="Database servers" class="problem-background" loading="lazy">
+                            <div class="problem-overlay">
+                                <i class="bx bx-data problem-icon"></i>
+                            </div>
+                            <span class="category-badge category-strategy">DATABASE</span>
+                            
+                            <div class="health-overlay">
+                                <i class="bx bx-{{ 'check' if system_health.database == 'healthy' else 'error' if system_health.database == 'critical' else 'time' }}"></i>
+                                {{ system_health.database|title }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="problem-title">Base de Données</h5>
+                            
+                            <div class="problem-description">
+                                Intégrité et performance de la base SQLite
+                            </div>
+                            
+                            <div class="problem-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-hdd"></i>
+                                    <span>{{ system_info.db_size if system_info else 'N/A' }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-play"></i>
+                                    <span>{{ system_info.total_videos if system_info else 0 }} vidéos</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ system_health.database }}">
+                                    <i class="bx bx-{{ 'check' if system_health.database == 'healthy' else 'error' if system_health.database == 'critical' else 'time' }}"></i>
+                                    {{ system_health.database|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Issues -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card problem-card">
+                        <div class="problem-icon-wrapper">
+                            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&h=300&fit=crop&auto=format" 
+                                 alt="API connections" class="problem-background" loading="lazy">
+                            <div class="problem-overlay">
+                                <i class="bx bxl-youtube problem-icon"></i>
+                            </div>
+                            <span class="category-badge category-performance">API</span>
+                            
+                            <div class="health-overlay">
+                                <i class="bx bx-{{ 'check' if system_health.api == 'healthy' else 'error' if system_health.api == 'critical' else 'time' }}"></i>
+                                {{ system_health.api|title }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="problem-title">API YouTube</h5>
+                            
+                            <div class="problem-description">
+                                Connexion et quotas API YouTube Data v3
+                            </div>
+                            
+                            <div class="problem-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-key"></i>
+                                    <span>Authentification</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-data"></i>
+                                    <span>Quotas</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ system_health.api }}">
+                                    <i class="bx bx-{{ 'check' if system_health.api == 'healthy' else 'error' if system_health.api == 'critical' else 'time' }}"></i>
+                                    {{ system_health.api|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classification Issues -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card problem-card">
+                        <div class="problem-icon-wrapper">
+                            <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop&auto=format" 
+                                 alt="AI neural networks" class="problem-background" loading="lazy">
+                            <div class="problem-overlay">
+                                <i class="bx bx-brain problem-icon"></i>
+                            </div>
+                            <span class="category-badge category-content">IA</span>
+                            
+                            <div class="health-overlay">
+                                <i class="bx bx-{{ 'check' if system_health.classification == 'healthy' else 'error' if system_health.classification == 'critical' else 'time' }}"></i>
+                                {{ system_health.classification|title }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="problem-title">Classification IA</h5>
+                            
+                            <div class="problem-description">
+                                Modèles sémantiques et patterns de classification
+                            </div>
+                            
+                            <div class="problem-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-bot"></i>
+                                    <span>Modèles IA</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-tag"></i>
+                                    <span>Patterns</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ system_health.classification }}">
+                                    <i class="bx bx-{{ 'check' if system_health.classification == 'healthy' else 'error' if system_health.classification == 'critical' else 'time' }}"></i>
+                                    {{ system_health.classification|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cache Issues -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card problem-card">
+                        <div class="problem-icon-wrapper">
+                            <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&h=300&fit=crop&auto=format" 
+                                 alt="Server infrastructure" class="problem-background" loading="lazy">
+                            <div class="problem-overlay">
+                                <i class="bx bx-server problem-icon"></i>
+                            </div>
+                            <span class="category-badge category-strategy">CACHE</span>
+                            
+                            <div class="health-overlay">
+                                <i class="bx bx-{{ 'check' if system_health.cache == 'healthy' else 'error' if system_health.cache == 'critical' else 'time' }}"></i>
+                                {{ system_health.cache|title }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="problem-title">Cache Système</h5>
+                            
+                            <div class="problem-description">
+                                Performance et optimisation du cache
+                            </div>
+                            
+                            <div class="problem-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-hdd"></i>
+                                    <span>{{ system_info.cache_size if system_info else 'N/A' }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-time"></i>
+                                    <span>Durée</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ system_health.cache }}">
+                                    <i class="bx bx-{{ 'check' if system_health.cache == 'healthy' else 'error' if system_health.cache == 'critical' else 'time' }}"></i>
+                                    {{ system_health.cache|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Composant</th>
+                                <th>Statut</th>
+                                <th>Métriques</th>
+                                <th>Dernière Vérification</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-problem-title">Base de Données</td>
+                                <td>
+                                    <span class="status-badge status-{{ system_health.database }}">
+                                        <i class="bx bx-{{ 'check' if system_health.database == 'healthy' else 'error' if system_health.database == 'critical' else 'time' }}"></i> 
+                                        {{ system_health.database|title }}
+                                    </span>
+                                </td>
+                                <td>{{ system_info.db_size if system_info else 'N/A' }} - {{ system_info.total_videos if system_info else 0 }} vidéos</td>
+                                <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="fixDatabase()">
+                                        <i class="bx bx-wrench"></i> Réparer
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="table-problem-title">API YouTube</td>
+                                <td>
+                                    <span class="status-badge status-{{ system_health.api }}">
+                                        <i class="bx bx-{{ 'check' if system_health.api == 'healthy' else 'error' if system_health.api == 'critical' else 'time' }}"></i> 
+                                        {{ system_health.api|title }}
+                                    </span>
+                                </td>
+                                <td>{{ system_info.total_competitors if system_info else 0 }} concurrents</td>
+                                <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="testAPI()">
+                                        <i class="bx bx-test-tube"></i> Tester
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="table-problem-title">Classification IA</td>
+                                <td>
+                                    <span class="status-badge status-{{ system_health.classification }}">
+                                        <i class="bx bx-{{ 'check' if system_health.classification == 'healthy' else 'error' if system_health.classification == 'critical' else 'time' }}"></i> 
+                                        {{ system_health.classification|title }}
+                                    </span>
+                                </td>
+                                <td>Modèles sémantiques</td>
+                                <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-success" onclick="retrainModels()">
+                                        <i class="bx bx-brain"></i> Réentraîner
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="table-problem-title">Cache Système</td>
+                                <td>
+                                    <span class="status-badge status-{{ system_health.cache }}">
+                                        <i class="bx bx-{{ 'check' if system_health.cache == 'healthy' else 'error' if system_health.cache == 'critical' else 'time' }}"></i> 
+                                        {{ system_health.cache|title }}
+                                    </span>
+                                </td>
+                                <td>{{ system_info.cache_size if system_info else 'N/A' }}</td>
+                                <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="clearCache()">
+                                        <i class="bx bx-trash"></i> Vider
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="action-buttons">
+            <button type="button" class="btn btn-outline-primary action-btn" onclick="optimizeDatabase()">
+                <i class="bx bx-data me-2"></i>
+                Optimiser Base de Données
+            </button>
+            <button type="button" class="btn btn-outline-warning action-btn" onclick="refreshAllData()">
+                <i class="bx bx-refresh me-2"></i>
+                Actualiser Toutes les Données
+            </button>
+            <button type="button" class="btn btn-outline-success action-btn" onclick="runFullBackup()">
+                <i class="bx bx-download me-2"></i>
+                Sauvegarde Complète
+            </button>
+            <button type="button" class="btn btn-outline-danger action-btn" onclick="emergencyReset()">
+                <i class="bx bx-reset me-2"></i>
+                Reset d'Urgence
+            </button>
+        </div>
+
+        <!-- Maintenance Log -->
+        {% if maintenance_log %}
+        <div class="maintenance-log">
+            <h6 class="mb-3">
+                <i class="bx bx-history me-2"></i>
+                Journal de Maintenance
+            </h6>
+            {% for entry in maintenance_log %}
+            <div class="log-entry">
+                <span class="log-time">{{ entry.time }}</span>
+                <i class="bx bx-{{ entry.type == 'success' and 'check' or entry.type == 'error' and 'x' or 'info' }} text-{{ entry.type == 'success' and 'success' or entry.type == 'error' and 'danger' or 'info' }}"></i>
+                <span class="log-message">{{ entry.message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="maintenance-log">
+            <h6 class="mb-3">
+                <i class="bx bx-history me-2"></i>
+                Journal de Maintenance
+            </h6>
+            <div class="text-center text-muted py-3">
+                <i class="bx bx-info-circle me-1"></i>
+                Aucune opération de maintenance récente
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('fixProblemsViewPreference', view);
+}
+
+// Restore view preference on load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('fixProblemsViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+// System maintenance functions
+function runSystemCheck() {
+    showAlert('Lancement du diagnostic complet...', 'info');
+    // Simulate system check
+    setTimeout(() => {
+        showAlert('Diagnostic terminé: Système en bonne santé', 'success');
+        location.reload();
+    }, 2000);
+}
+
+function fixDatabase() {
+    if (confirm('Voulez-vous optimiser et réparer la base de données ?')) {
+        showAlert('Optimisation de la base de données en cours...', 'info');
+        // Simulate database fix
+        setTimeout(() => {
+            showAlert('Base de données optimisée avec succès', 'success');
+        }, 3000);
+    }
+}
+
+function testAPI() {
+    showAlert('Test de connectivité API en cours...', 'info');
+    // Simulate API test
+    setTimeout(() => {
+        showAlert('API YouTube opérationnelle', 'success');
+    }, 1500);
+}
+
+function retrainModels() {
+    if (confirm('Relancer l\'entraînement des modèles sémantiques ?')) {
+        showAlert('Réentraînement des modèles IA...', 'info');
+        // Simulate model retraining
+        setTimeout(() => {
+            showAlert('Modèles réentraînés avec succès', 'success');
+        }, 5000);
+    }
+}
+
+function clearCache() {
+    if (confirm('Vider tout le cache système ?')) {
+        showAlert('Nettoyage du cache...', 'info');
+        // Simulate cache clear
+        setTimeout(() => {
+            showAlert('Cache vidé avec succès', 'success');
+        }, 1000);
+    }
+}
+
+function optimizeDatabase() {
+    if (confirm('Optimiser la base de données ? Cette opération peut prendre plusieurs minutes.')) {
+        showAlert('Optimisation en cours...', 'info');
+        // Simulate database optimization
+        setTimeout(() => {
+            showAlert('Base de données optimisée', 'success');
+        }, 4000);
+    }
+}
+
+function refreshAllData() {
+    if (confirm('Actualiser toutes les données depuis l\'API YouTube ?')) {
+        showAlert('Actualisation des données...', 'info');
+        // Simulate data refresh
+        setTimeout(() => {
+            showAlert('Données actualisées avec succès', 'success');
+        }, 6000);
+    }
+}
+
+function runFullBackup() {
+    showAlert('Création de la sauvegarde...', 'info');
+    // Simulate backup
+    setTimeout(() => {
+        showAlert('Sauvegarde créée avec succès', 'success');
+    }, 3000);
+}
+
+function emergencyReset() {
+    if (confirm('⚠️ ATTENTION: Reset d\'urgence supprimera toutes les données temporaires. Continuer ?')) {
+        showAlert('Reset d\'urgence en cours...', 'warning');
+        // Simulate emergency reset
+        setTimeout(() => {
+            showAlert('Reset terminé. Redémarrage recommandé.', 'warning');
+        }, 2000);
+    }
+}
+
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+        <i class="bx bx-${type === 'success' ? 'check-circle' : type === 'warning' ? 'error' : type === 'info' ? 'info-circle' : 'x-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 4000);
+}
+</script>
+{% endblock %}

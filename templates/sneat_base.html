@@ -303,7 +303,7 @@
                     </li>
 
                     <!-- Competitors -->
-                    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'competitors.concurrents' %}active{% endif %}">
                         <a href="/concurrents" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-group"></i>
                             <div data-i18n="Competitors">Competitors</div>
@@ -318,25 +318,25 @@
                             <i class="bx bx-chevron-down menu-arrow"></i>
                         </a>
                         <ul class="menu-sub collapse" id="analytics-menu">
-                            <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'competitors.top-videos' %}active{% endif %}">
                                 <a href="/top-videos" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-trophy"></i>
                                     <div data-i18n="Top Videos">Top Videos</div>
                                 </a>
                             </li>
-                            <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'insights.insights' %}active{% endif %}">
                                 <a href="/insights" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-bulb"></i>
                                     <div data-i18n="Insights">Insights</div>
                                 </a>
                             </li>
-                            <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'insights.top-topics' %}active{% endif %}">
                                 <a href="/top-topics" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-trending-up"></i>
                                     <div data-i18n="Top Topics">Top Topics</div>
                                 </a>
                             </li>
-                            <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'competitors.top-playlists' %}active{% endif %}">
                                 <a href="/top-playlists" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-list-ul"></i>
                                     <div data-i18n="Top Playlists">Top Playlists</div>
@@ -383,13 +383,13 @@
                             <i class="bx bx-chevron-down menu-arrow"></i>
                         </a>
                         <ul class="menu-sub collapse" id="dev-menu">
-                            <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
                                 <a href="/settings" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-cog"></i>
                                     <div data-i18n="Settings">Settings & Patterns</div>
                                 </a>
                             </li>
-                            <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+                            <li class="menu-item {% if request.endpoint == 'admin.fix-problems' %}active{% endif %}">
                                 <a href="/fix-problems" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-wrench"></i>
                                     <div data-i18n="Fix Problems">Fix Problems</div>

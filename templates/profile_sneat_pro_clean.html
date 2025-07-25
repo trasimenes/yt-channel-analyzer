@@ -1,0 +1,307 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Mon Profil - YT Channel Analyzer{% endblock %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/css/pages/page-user-view.css') }}" />
+{% endblock %}
+
+{% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Compte /</span> Profil</h4>
+    <div class="row">
+      <!-- User Sidebar -->
+      <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+        <!-- User Card -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="user-avatar-section">
+              <div class="d-flex align-items-center flex-column">
+                <img
+                  class="img-fluid rounded my-4"
+                  src="{{ user.avatar }}"
+                  height="110"
+                  width="110"
+                  alt="User avatar"
+                />
+                <div class="user-info text-center">
+                  <h4 class="mb-2">{{ user.name }}</h4>
+                  <span class="badge bg-label-secondary">{{ user.role }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-around flex-wrap my-4 py-3">
+              <div class="d-flex align-items-start me-4 mt-3 gap-3">
+                <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-check bx-sm"></i></span>
+                <div>
+                  <h5 class="mb-0">{{ user.total_analyses }}</h5>
+                  <span>Analyses terminées</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-start mt-3 gap-3">
+                <span class="badge bg-label-primary p-2 rounded"><i class="bx bx-customize bx-sm"></i></span>
+                <div>
+                  <h5 class="mb-0">{{ user.total_competitors }}</h5>
+                  <span>Concurrents analysés</span>
+                </div>
+              </div>
+            </div>
+            <h5 class="pb-2 border-bottom mb-4">Détails</h5>
+            <div class="info-container">
+              <ul class="list-unstyled">
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Nom d'utilisateur:</span>
+                  <span>{{ user.name }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Email:</span>
+                  <span>{{ user.email }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Statut:</span>
+                  <span class="badge bg-label-success">Actif</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Rôle:</span>
+                  <span>{{ user.role }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Entreprise:</span>
+                  <span>{{ user.company }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Fuseau horaire:</span>
+                  <span>{{ user.timezone }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Langue:</span>
+                  <span>{{ user.language }}</span>
+                </li>
+                <li class="mb-3">
+                  <span class="fw-bold me-2">Pays:</span>
+                  <span>{{ user.country }}</span>
+                </li>
+              </ul>
+              <div class="d-flex justify-content-center pt-3">
+                <a
+                  href="{{ url_for('admin.settings') }}"
+                  class="btn btn-primary me-3"
+                  >Modifier</a
+                >
+                <a href="javascript:;" class="btn btn-label-danger">Paramètres</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /User Card -->
+        <!-- Plan Card -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <span class="badge bg-label-primary">Pro</span>
+              <div class="d-flex justify-content-center">
+                <sup class="h5 pricing-currency mt-3 mb-0 me-1 text-primary">€</sup>
+                <h1 class="display-5 mb-0 text-primary">0</h1>
+                <sub class="fs-6 pricing-duration mt-auto mb-3">/mois</sub>
+              </div>
+            </div>
+            <ul class="ps-3 g-2 my-4">
+              <li class="mb-2">Analyses illimitées</li>
+              <li class="mb-2">Stockage illimité</li>
+              <li>Support premium</li>
+            </ul>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span>Utilisation API</span>
+              <span>{{ ((10000 - 9750) / 10000 * 100)|round(0) }}% utilisé</span>
+            </div>
+            <div class="progress mb-1" style="height: 8px">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                style="width: {{ ((10000 - 9750) / 10000 * 100)|round(0) }}%"
+                aria-valuenow="{{ ((10000 - 9750) / 10000 * 100)|round(0) }}"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
+            <span>9750 quotas restants</span>
+            <div class="d-grid w-100 mt-4 pt-2">
+              <a href="{{ url_for('api_usage_page') }}" class="btn btn-primary">
+                Voir l'utilisation API
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- /Plan Card -->
+      </div>
+      <!--/ User Sidebar -->
+      <!-- User Content -->
+      <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
+        <!-- User Pills -->
+        <ul class="nav nav-pills flex-column flex-md-row mb-3">
+          <li class="nav-item">
+            <a class="nav-link active" href="javascript:void(0);"><i class="bx bx-user me-1"></i>Account</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.profile_security') }}"
+              ><i class="bx bx-lock-alt me-1"></i>Security</a
+            >
+          </li>
+        </ul>
+        <!--/ User Pills -->
+        <!-- Project table -->
+        <div class="card mb-4">
+          <h5 class="card-header">Concurrents récemment analysés</h5>
+          <div class="table-responsive mb-3">
+            <table class="table border-top">
+              <thead>
+                <tr>
+                  <th>Concurrent</th>
+                  <th class="text-nowrap">Vidéos</th>
+                  <th>Statut</th>
+                  <th>Dernière mise à jour</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-3">
+                        <img src="{{ url_for('static', filename='competitors/images/122.jpg') }}" alt="Avatar" class="rounded-circle">
+                      </div>
+                      <div>
+                        <h6 class="mb-0">Center Parcs Ferienparks</h6>
+                        <small class="text-muted">Allemagne</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>355</td>
+                  <td><span class="badge bg-label-success">Analysé</span></td>
+                  <td>Aujourd'hui</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-3">
+                        <span class="avatar-initial rounded-circle bg-label-info">EP</span>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">Europa-Park</h6>
+                        <small class="text-muted">Allemagne</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>1.2k</td>
+                  <td><span class="badge bg-label-success">Analysé</span></td>
+                  <td>Il y a 2 jours</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-3">
+                        <span class="avatar-initial rounded-circle bg-label-warning">DP</span>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">Disneyland Paris</h6>
+                        <small class="text-muted">France</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>890</td>
+                  <td><span class="badge bg-label-primary">En cours</span></td>
+                  <td>Il y a 1 semaine</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- /Project table -->
+        <!-- Activity Timeline -->
+        <div class="card mb-4">
+          <h5 class="card-header">Activité récente</h5>
+          <div class="card-body">
+            <ul class="timeline">
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-primary"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-1">
+                    <h6 class="mb-0">Analyse terminée</h6>
+                    <small class="text-muted">Aujourd'hui</small>
+                  </div>
+                  <p class="mb-2">Classification sémantique de 355 vidéos Center Parcs</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-label-success">Hero: 45</span>
+                    <span class="badge bg-label-info">Hub: 78</span>
+                    <span class="badge bg-label-warning">Help: 27</span>
+                  </div>
+                </div>
+              </li>
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-info"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-1">
+                    <h6 class="mb-0">Nouvelle tâche créée</h6>
+                    <small class="text-muted">Il y a 2 jours</small>
+                  </div>
+                  <p class="mb-0">Mise à jour automatique des données pour 10 concurrents</p>
+                </div>
+              </li>
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-warning"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-1">
+                    <h6 class="mb-0">Optimisation modèle</h6>
+                    <small class="text-muted">Il y a 1 semaine</small>
+                  </div>
+                  <p class="mb-0">Modèle de classification sémantique mis à jour avec +40% de précision</p>
+                </div>
+              </li>
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-success"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-1">
+                    <h6 class="mb-0">Connexion au système</h6>
+                    <small class="text-muted">{{ user.last_login }}</small>
+                  </div>
+                  <p class="mb-0">Première connexion au nouveau système d'analyse</p>
+                </div>
+              </li>
+              <li class="timeline-end-indicator">
+                <i class="bx bx-check-circle"></i>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /Activity Timeline -->
+        <!-- Invoice table -->
+        <div class="card mb-4">
+          <div class="table-responsive mb-3">
+            <table class="table datatable-invoice border-top">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>ID</th>
+                  <th><i class="bx bx-trending-up"></i></th>
+                  <th>Client</th>
+                  <th>Total</th>
+                  <th class="text-truncate">Issued Date</th>
+                  <th>Balance</th>
+                  <th>Invoice Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+        <!-- /Invoice table -->
+      </div>
+      <!--/ User Content -->
+    </div>
+  </div>
+  <!-- / Content -->
+</div>
+<!-- Content wrapper -->
+{% endblock %}

@@ -1,0 +1,888 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Business Settings - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .setting-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .setting-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .setting-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .setting-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .value-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .setting-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .setting-description {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .setting-metrics {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .metric-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .status-inactive {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .status-warning {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .stats-cards {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 160px;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #696cff;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0.25rem 0 0;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-setting-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    /* Grid View Styles */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .config-form {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .form-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .form-section h5 {
+        color: #566a7f;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-cards {
+            flex-direction: column;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-setting-title {
+            max-width: 200px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            min-width: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Configuration /</span> Business Settings
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        {% if message %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bx bx-check-circle me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- Statistics Cards -->
+        {% if business_stats %}
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(business_stats.organic.count) }}</h3>
+                <p>Vidéos Organiques</p>
+                <small class="text-success">{{ business_stats.organic.engagement }}% engagement</small>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(business_stats.paid.count) }}</h3>
+                <p>Vidéos Payantes</p>
+                <small class="text-warning">{{ business_stats.paid.engagement }}% engagement</small>
+            </div>
+            <div class="stat-card">
+                <h3>{{ "{:,}".format(business_stats.threshold) }}</h3>
+                <p>Seuil Actuel</p>
+                <small class="text-primary">vues</small>
+            </div>
+            <div class="stat-card">
+                <h3>{{ current_settings.max_videos if current_settings else 1000 }}</h3>
+                <p>Limite Vidéos</p>
+                <small class="text-info">par concurrent</small>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="settingsGrid">
+                <!-- Paid Threshold Setting -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card setting-card">
+                        <div class="setting-icon-wrapper">
+                            <i class="bx bx-target-lock setting-icon"></i>
+                            <span class="category-badge category-performance">SEUIL</span>
+                            
+                            <div class="value-overlay">
+                                <i class="bx bx-show"></i>
+                                {{ "{:,}".format(current_settings.paid_threshold if current_settings else 10000) }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="setting-title">Seuil Paid/Organic</h5>
+                            
+                            <div class="setting-description">
+                                Définit la limite entre contenu organique et payant
+                            </div>
+                            
+                            <div class="setting-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-leaf"></i>
+                                    <span>Organique < seuil</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-dollar"></i>
+                                    <span>Payant ≥ seuil</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-active">
+                                    <i class="bx bx-check"></i>
+                                    {{ "{:,}".format(current_settings.paid_threshold if current_settings else 10000) }} vues
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Industry Setting -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card setting-card">
+                        <div class="setting-icon-wrapper">
+                            <i class="bx bx-buildings setting-icon"></i>
+                            <span class="category-badge category-strategy">SECTEUR</span>
+                            
+                            <div class="value-overlay">
+                                <i class="bx bx-briefcase"></i>
+                                {{ current_settings.industry|title if current_settings else 'Tourism' }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="setting-title">Secteur d'Activité</h5>
+                            
+                            <div class="setting-description">
+                                Adapte les seuils selon votre industrie
+                            </div>
+                            
+                            <div class="setting-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-trending-up"></i>
+                                    <span>Seuils adaptés</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-chart"></i>
+                                    <span>Métriques secteur</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-active">
+                                    <i class="bx bx-check"></i>
+                                    {{ current_settings.industry|title if current_settings else 'Tourism' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto Classification -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card setting-card">
+                        <div class="setting-icon-wrapper">
+                            <i class="bx bx-bot setting-icon"></i>
+                            <span class="category-badge category-content">IA</span>
+                            
+                            <div class="value-overlay">
+                                <i class="bx bx-{{ 'check' if current_settings.auto_classify else 'x' }}"></i>
+                                {{ 'ON' if current_settings.auto_classify else 'OFF' }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="setting-title">Classification Automatique</h5>
+                            
+                            <div class="setting-description">
+                                IA pour classifier automatiquement les nouvelles vidéos
+                            </div>
+                            
+                            <div class="setting-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-brain"></i>
+                                    <span>IA intégrée</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-time"></i>
+                                    <span>Temps réel</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ 'active' if current_settings.auto_classify else 'inactive' }}">
+                                    <i class="bx bx-{{ 'check' if current_settings.auto_classify else 'x' }}"></i>
+                                    {{ 'Activé' if current_settings.auto_classify else 'Désactivé' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Max Videos -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card setting-card">
+                        <div class="setting-icon-wrapper">
+                            <i class="bx bx-video setting-icon"></i>
+                            <span class="category-badge category-performance">LIMITE</span>
+                            
+                            <div class="value-overlay">
+                                <i class="bx bx-collection"></i>
+                                {{ current_settings.max_videos if current_settings else 1000 }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="setting-title">Limite Vidéos</h5>
+                            
+                            <div class="setting-description">
+                                Nombre maximum de vidéos analysées par concurrent
+                            </div>
+                            
+                            <div class="setting-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-play"></i>
+                                    <span>Par concurrent</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-shield"></i>
+                                    <span>Performance</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-active">
+                                    <i class="bx bx-check"></i>
+                                    {{ current_settings.max_videos if current_settings else 1000 }} vidéos
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cache Duration -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card setting-card">
+                        <div class="setting-icon-wrapper">
+                            <i class="bx bx-time setting-icon"></i>
+                            <span class="category-badge category-strategy">CACHE</span>
+                            
+                            <div class="value-overlay">
+                                <i class="bx bx-data"></i>
+                                {{ current_settings.cache_duration if current_settings else 24 }}h
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="setting-title">Durée de Cache</h5>
+                            
+                            <div class="setting-description">
+                                Fréquence d'actualisation automatique des données
+                            </div>
+                            
+                            <div class="setting-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-refresh"></i>
+                                    <span>Auto-refresh</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-rocket"></i>
+                                    <span>Performance</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-active">
+                                    <i class="bx bx-check"></i>
+                                    {{ current_settings.cache_duration if current_settings else 24 }} heures
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Paramètre</th>
+                                <th>Valeur Actuelle</th>
+                                <th>Statut</th>
+                                <th>Secteur</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-setting-title">Seuil Paid/Organic</td>
+                                <td>{{ "{:,}".format(current_settings.paid_threshold if current_settings else 10000) }} vues</td>
+                                <td>
+                                    <span class="status-badge status-active">
+                                        <i class="bx bx-check"></i> Actif
+                                    </span>
+                                </td>
+                                <td>{{ current_settings.industry|title if current_settings else 'Tourism' }}</td>
+                                <td>Seuil entre contenu organique et payant</td>
+                            </tr>
+                            <tr>
+                                <td class="table-setting-title">Classification IA</td>
+                                <td>{{ 'Activée' if current_settings.auto_classify else 'Désactivée' }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ 'active' if current_settings.auto_classify else 'inactive' }}">
+                                        <i class="bx bx-{{ 'check' if current_settings.auto_classify else 'x' }}"></i> 
+                                        {{ 'ON' if current_settings.auto_classify else 'OFF' }}
+                                    </span>
+                                </td>
+                                <td>{{ current_settings.industry|title if current_settings else 'Tourism' }}</td>
+                                <td>Classification automatique par IA</td>
+                            </tr>
+                            <tr>
+                                <td class="table-setting-title">Limite Vidéos</td>
+                                <td>{{ current_settings.max_videos if current_settings else 1000 }} vidéos</td>
+                                <td>
+                                    <span class="status-badge status-active">
+                                        <i class="bx bx-check"></i> Actif
+                                    </span>
+                                </td>
+                                <td>Global</td>
+                                <td>Maximum de vidéos par concurrent</td>
+                            </tr>
+                            <tr>
+                                <td class="table-setting-title">Cache</td>
+                                <td>{{ current_settings.cache_duration if current_settings else 24 }} heures</td>
+                                <td>
+                                    <span class="status-badge status-active">
+                                        <i class="bx bx-check"></i> Actif
+                                    </span>
+                                </td>
+                                <td>Global</td>
+                                <td>Durée de cache des données</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="config-form">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-section">
+                            <h5>
+                                <i class="bx bx-sliders"></i>
+                                Configuration Principale
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="paid_threshold" class="form-label">
+                                        <i class="bx bx-target-lock me-1"></i>
+                                        Seuil Paid/Organic (vues)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bx bx-show"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="paid_threshold" name="paid_threshold" 
+                                               value="{{ current_settings.paid_threshold if current_settings else 10000 }}" 
+                                               min="1000" max="1000000" step="1000">
+                                        <span class="input-group-text">vues</span>
+                                    </div>
+                                    <div class="form-text">Vidéos au-dessus de ce seuil = contenu promotionnel</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="industry" class="form-label">
+                                        <i class="bx bx-buildings me-1"></i>
+                                        Secteur d'activité
+                                    </label>
+                                    <select class="form-select" id="industry" name="industry">
+                                        <option value="tourism" {{ 'selected' if current_settings.industry == 'tourism' else '' }}>
+                                            Tourisme & Loisirs
+                                        </option>
+                                        <option value="hospitality" {{ 'selected' if current_settings.industry == 'hospitality' else '' }}>
+                                            Hôtellerie
+                                        </option>
+                                        <option value="entertainment" {{ 'selected' if current_settings.industry == 'entertainment' else '' }}>
+                                            Divertissement
+                                        </option>
+                                        <option value="retail" {{ 'selected' if current_settings.industry == 'retail' else '' }}>
+                                            Commerce de détail
+                                        </option>
+                                        <option value="technology" {{ 'selected' if current_settings.industry == 'technology' else '' }}>
+                                            Technologie
+                                        </option>
+                                    </select>
+                                    <div class="form-text">Adapte les seuils selon le secteur</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h5>
+                                <i class="bx bx-cog"></i>
+                                Options Avancées
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="auto_classify" name="auto_classify" 
+                                               {{ 'checked' if current_settings.auto_classify else '' }}>
+                                        <label class="form-check-label" for="auto_classify">
+                                            <i class="bx bx-bot me-1"></i>
+                                            Classification automatique
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Active la classification IA lors de l'import de nouvelles vidéos</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="max_videos" class="form-label">
+                                        <i class="bx bx-video me-1"></i>
+                                        Limite vidéos par concurrent
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bx bx-collection"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="max_videos" name="max_videos" 
+                                               value="{{ current_settings.max_videos if current_settings else 1000 }}" 
+                                               min="50" max="5000" step="50">
+                                        <span class="input-group-text">vidéos</span>
+                                    </div>
+                                    <div class="form-text">Nombre max de vidéos à analyser par concurrent</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h5>
+                                <i class="bx bx-time"></i>
+                                Performance
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="cache_duration" class="form-label">
+                                        <i class="bx bx-data me-1"></i>
+                                        Durée de cache
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bx bx-time"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="cache_duration" name="cache_duration" 
+                                               value="{{ current_settings.cache_duration if current_settings else 24 }}" 
+                                               min="1" max="168" step="1">
+                                        <span class="input-group-text">heures</span>
+                                    </div>
+                                    <div class="form-text">Durée avant actualisation automatique des données</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                <i class="bx bx-info-circle me-1"></i>
+                                Ces paramètres affectent l'analyse de tous les concurrents
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-save me-2"></i>
+                                Sauvegarder les paramètres
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="action-buttons">
+            <button type="button" class="btn btn-outline-primary action-btn" onclick="recalculateOrganicStatus()">
+                <i class="bx bx-refresh me-2"></i>
+                Recalculer Statuts Organic/Paid
+            </button>
+            <a href="/top-videos?sort_by=view_count&order=desc&organic=paid" class="btn btn-outline-warning action-btn">
+                <i class="bx bx-trending-up me-2"></i>
+                Voir Contenu Payant
+            </a>
+            <a href="/top-videos?sort_by=view_count&order=desc&organic=organic" class="btn btn-outline-success action-btn">
+                <i class="bx bx-leaf me-2"></i>
+                Voir Contenu Organique
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('businessViewPreference', view);
+}
+
+// Restore view preference on load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('businessViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function recalculateOrganicStatus() {
+    if (confirm('Voulez-vous recalculer les statuts organic/paid pour toutes les vidéos selon le nouveau seuil ?')) {
+        const threshold = document.getElementById('paid_threshold').value;
+        
+        fetch('/api/recalculate-organic-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ threshold: parseInt(threshold) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(`Statuts recalculés avec succès ! ${data.updated_count} vidéos mises à jour.`, 'success');
+                location.reload();
+            } else {
+                showAlert('Erreur lors du recalcul : ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Erreur de connexion : ' + error, 'danger');
+        });
+    }
+}
+
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+        <i class="bx bx-${type === 'success' ? 'check-circle' : type === 'warning' ? 'error' : 'x-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 4000);
+}
+</script>
+{% endblock %}

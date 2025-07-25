@@ -1,0 +1,1030 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}{{ competitor.name }} - Analyse Détaillée{% endblock %}
+
+{% block page_css %}
+<style>
+    .competitor-header-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    .competitor-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+    }
+    
+    .metric-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e7e7ff;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        border-color: #696cff;
+    }
+    
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+        color: #8592a3;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .country-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .chart-card {
+        border-radius: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .chart-card:hover {
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .strategy-progress {
+        height: 12px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #f1f1f1;
+        margin-top: 0.75rem;
+        position: relative;
+    }
+    
+    .strategy-bar {
+        height: 100%;
+        transition: width 0.8s ease;
+        border-radius: 6px;
+        min-width: 2px;
+    }
+    
+    .hero-bar { 
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e); 
+    }
+    .hub-bar { 
+        background: linear-gradient(45deg, #4ecdc4, #6fdddd); 
+    }
+    .help-bar { 
+        background: linear-gradient(45deg, #45b7d1, #6bb8d6); 
+    }
+    
+    .video-thumbnail {
+        width: 60px;
+        height: 45px;
+        border-radius: 0.5rem;
+        object-fit: cover;
+        border: 2px solid #f5f5f9;
+    }
+    
+    .performance-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-action {
+        transition: all 0.3s ease;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .upload-area {
+        border: 2px dashed #696cff;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        background: rgba(105, 108, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        background: rgba(105, 108, 255, 0.1);
+        border-color: #5f61e6;
+    }
+    
+    .filter-tabs-container {
+        background: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-tab {
+        cursor: pointer;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #8592a3;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: transparent;
+        border: none;
+    }
+    
+    .filter-tab:hover {
+        background: rgba(105, 108, 255, 0.1);
+        color: #696cff;
+    }
+    
+    .filter-tab.active {
+        background: #696cff;
+        color: white;
+        box-shadow: 0 4px 15px rgba(105, 108, 255, 0.3);
+    }
+    
+    .tab-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        min-width: 24px;
+        text-align: center;
+    }
+    
+    .filter-tab.active .tab-count {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Custom ApexCharts styling */
+    .apexcharts-canvas {
+        border-radius: 0.5rem;
+    }
+    
+    .growth-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Competitor Header -->
+    <div class="col-12 mb-4">
+        <div class="card competitor-header-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ competitor.thumbnail_url or url_for('static', filename='sneat-pro/img/avatars/1.png') }}" 
+                                 alt="{{ competitor.name }}" 
+                                 class="competitor-avatar-large me-4"
+                                 onerror="this.src='{{ url_for('static', filename='sneat-pro/img/avatars/1.png') }}'">
+                            <div>
+                                <h2 class="mb-2 text-white">{{ competitor.name }}</h2>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    {% if competitor.country %}
+                                    <div class="country-badge">
+                                        <i class="bx bx-world"></i>
+                                        <span>{{ competitor.country }}</span>
+                                        {% if competitor.country == 'France' %}🇫🇷
+                                        {% elif competitor.country == 'Germany' %}🇩🇪
+                                        {% elif competitor.country == 'Netherlands' %}🇳🇱
+                                        {% elif competitor.country == 'United Kingdom' %}🇬🇧
+                                        {% elif competitor.country == 'Belgium' %}🇧🇪
+                                        {% elif competitor.country == 'Switzerland' %}🇨🇭
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% if competitor.language %}
+                                    <div class="country-badge">
+                                        <i class="bx bx-message"></i>
+                                        <span>{{ competitor.language }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-0 text-white-50">Chaîne YouTube analysée • Dernière mise à jour: Aujourd'hui</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{{ competitor.channel_url }}" target="_blank" class="btn btn-light btn-action">
+                                <i class="bx bx-link-external me-2"></i>
+                                Voir la chaîne
+                            </a>
+                            <a href="/analyze-channel?url={{ competitor.channel_url }}" class="btn btn-outline-light btn-action">
+                                <i class="bx bx-refresh me-2"></i>
+                                Actualiser
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card h-100">
+            <div class="card-body text-center">
+                <div class="metric-icon bg-label-primary">
+                    <i class="bx bx-group text-primary"></i>
+                </div>
+                <div class="metric-value">{{ "{:,}".format(competitor.subscriber_count) if competitor.subscriber_count else 'N/A' }}</div>
+                <div class="metric-label">Abonnés</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card h-100">
+            <div class="card-body text-center">
+                <div class="metric-icon bg-label-success">
+                    <i class="bx bx-video text-success"></i>
+                </div>
+                <div class="metric-value">{{ videos|length }}</div>
+                <div class="metric-label">Vidéos Totales</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card h-100">
+            <div class="card-body text-center">
+                <div class="metric-icon bg-label-info">
+                    <i class="bx bx-show text-info"></i>
+                </div>
+                <div class="metric-value">{{ "{:.1f}M".format(stats.total_views / 1000000) if stats.total_views > 1000000 else "{:,}".format(stats.total_views) if stats.total_views else 'N/A' }}</div>
+                <div class="metric-label">Vues Totales</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card h-100">
+            <div class="card-body text-center">
+                <div class="metric-icon bg-label-warning">
+                    <i class="bx bx-trending-up text-warning"></i>
+                </div>
+                <div class="metric-value">{{ "{:,}".format(stats.avg_views|int) if stats.avg_views else 'N/A' }}</div>
+                <div class="metric-label">Vues Moy/Vidéo</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subscriber Growth Section -->
+{% if subscriber_data.has_data %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card chart-card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-trending-up me-2 text-primary"></i>
+                    Croissance des Abonnés
+                </h5>
+                <div class="dropdown">
+                    <button class="btn p-0" type="button" id="subscriberGrowthDropdown" data-bs-toggle="dropdown">
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="javascript:void(0);">Exporter PNG</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Exporter SVG</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Voir en plein écran</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body pb-0">
+                <div class="growth-stats-grid">
+                    <div class="text-center">
+                        <h4 class="text-success mb-1">+{{ "{:,}".format(subscriber_data.stats.total_growth) }}</h4>
+                        <small class="text-muted">Croissance Totale</small>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="text-info mb-1">{{ "%.1f"|format(subscriber_data.stats.growth_percentage) }}%</h4>
+                        <small class="text-muted">Taux de Croissance</small>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="text-primary mb-1">{{ subscriber_data.stats.total_entries }}</h4>
+                        <small class="text-muted">Points de Données</small>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="text-warning mb-1">{{ subscriber_data.stats.first_date }}</h4>
+                        <small class="text-muted">Suivi Depuis</small>
+                    </div>
+                </div>
+            </div>
+            <div id="subscriberGrowthChart" style="height: 300px;"></div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Upload Subscriber Data -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-upload me-2 text-primary"></i>
+                    Données de Croissance des Abonnés
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="upload-area" onclick="document.getElementById('csvFile').click()">
+                            <i class="bx bx-cloud-upload display-4 text-primary mb-3"></i>
+                            <h5 class="text-primary">Glissez votre fichier CSV ici</h5>
+                            <p class="text-muted mb-3">ou cliquez pour parcourir</p>
+                            <input type="file" class="d-none" id="csvFile" accept=".csv" />
+                            <button class="btn btn-primary" onclick="uploadSubscriberData()">
+                                <i class="bx bx-upload me-2"></i>Télécharger CSV
+                            </button>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                <i class="bx bx-info-circle me-1"></i>
+                                Format attendu: Date (YYYY-MM-DD), Abonnés (nombre)
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="uploadStatus" class="d-none">
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>
+                                    Traitement du fichier CSV...
+                                </div>
+                            </div>
+                        </div>
+                        <div id="uploadResult" class="d-none"></div>
+                        
+                        <!-- Placeholder chart -->
+                        <div class="text-center py-5">
+                            <i class="bx bx-line-chart display-1 text-muted mb-3"></i>
+                            <h6 class="text-muted">Aucune donnée de croissance disponible</h6>
+                            <p class="text-muted">Téléchargez des données CSV pour voir le graphique de croissance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Content Strategy Analysis -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card chart-card h-100">
+            <div class="card-header">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-bar-chart me-2 text-primary"></i>
+                    Analyse de la Stratégie de Contenu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="metric-icon bg-label-danger me-3" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                                <i class="bx bx-star text-danger"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0">{{ videos_by_category.hero|length }}</h4>
+                                <small class="text-muted">Vidéos Hero</small>
+                            </div>
+                        </div>
+                        <div class="strategy-progress">
+                            <div class="strategy-bar hero-bar" style="width: {{ (videos_by_category.hero|length / videos|length * 100) if videos else 0 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ "%.1f"|format((videos_by_category.hero|length / videos|length * 100) if videos else 0) }}% du contenu</small>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="metric-icon bg-label-primary me-3" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                                <i class="bx bx-grid text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0">{{ videos_by_category.hub|length }}</h4>
+                                <small class="text-muted">Vidéos Hub</small>
+                            </div>
+                        </div>
+                        <div class="strategy-progress">
+                            <div class="strategy-bar hub-bar" style="width: {{ (videos_by_category.hub|length / videos|length * 100) if videos else 0 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ "%.1f"|format((videos_by_category.hub|length / videos|length * 100) if videos else 0) }}% du contenu</small>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="metric-icon bg-label-success me-3" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                                <i class="bx bx-help-circle text-success"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0">{{ videos_by_category.help|length }}</h4>
+                                <small class="text-muted">Vidéos Help</small>
+                            </div>
+                        </div>
+                        <div class="strategy-progress">
+                            <div class="strategy-bar help-bar" style="width: {{ (videos_by_category.help|length / videos|length * 100) if videos else 0 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ "%.1f"|format((videos_by_category.help|length / videos|length * 100) if videos else 0) }}% du contenu</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card chart-card h-100">
+            <div class="card-header">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-pie-chart me-2 text-primary"></i>
+                    Types de Contenu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Shorts:</span>
+                        <span class="fw-medium">{{ shorts_data.shorts_count or 0 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ shorts_data.shorts_percentage or 0 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ "%.1f"|format(shorts_data.shorts_percentage or 0) }}% du contenu</small>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Contenu Organique:</span>
+                        <span class="fw-medium">{{ stats.organic_count or 0 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ (stats.organic_count / videos|length * 100) if videos else 0 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ "%.1f"|format((stats.organic_count / videos|length * 100) if videos else 0) }}% du contenu</small>
+                </div>
+                
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Contenu Payé:</span>
+                        <span class="fw-medium">{{ stats.paid_count or 0 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: {{ (stats.paid_count / videos|length * 100) if videos else 0 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ "%.1f"|format((stats.paid_count / videos|length * 100) if videos else 0) }}% du contenu</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Performing Videos -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card chart-card h-100">
+            <div class="card-header">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-trending-up me-2 text-primary"></i>
+                    Top Vidéos par Vues
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for video in top_videos_views[:5] %}
+                <div class="d-flex align-items-center mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+                    <img src="{{ video.thumbnail_url or url_for('static', filename='sneat-pro/img/avatars/1.png') }}" 
+                         alt="{{ video.title }}" 
+                         class="video-thumbnail me-3"
+                         onerror="this.src='{{ url_for('static', filename='sneat-pro/img/avatars/1.png') }}'">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <small class="text-muted">{{ "{:,}".format(video.view_count) }} vues</small>
+                            {% if video.category %}
+                            <span class="performance-badge bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">
+                                {{ video.category|upper }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-link-external"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card chart-card h-100">
+            <div class="card-header">
+                <h5 class="card-title m-0">
+                    <i class="bx bx-heart me-2 text-primary"></i>
+                    Top Vidéos par Engagement
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for video in top_videos_likes[:5] %}
+                <div class="d-flex align-items-center mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+                    <img src="{{ video.thumbnail_url or url_for('static', filename='sneat-pro/img/avatars/1.png') }}" 
+                         alt="{{ video.title }}" 
+                         class="video-thumbnail me-3"
+                         onerror="this.src='{{ url_for('static', filename='sneat-pro/img/avatars/1.png') }}'">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ video.title }}</h6>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <small class="text-muted">{{ "{:,}".format(video.like_count or 0) }} likes</small>
+                            {% if video.category %}
+                            <span class="performance-badge bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">
+                                {{ video.category|upper }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-link-external"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Videos -->
+<div class="row">
+    <div class="col-12">
+        <div class="card chart-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="card-title m-0">
+                        <i class="bx bx-time me-2 text-primary"></i>
+                        Vidéos Récentes
+                    </h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <small class="text-muted">
+                            <span class="badge bg-label-success"><i class="bx bx-user-check"></i></span> Humain
+                        </small>
+                        <small class="text-muted">
+                            <span class="badge bg-label-info"><i class="bx bx-brain"></i></span> IA
+                        </small>
+                        <small class="text-muted">
+                            <span class="badge bg-label-secondary"><i class="bx bx-tag"></i></span> Mots-clés
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="filter-tabs-container">
+                    <ul class="filter-tabs">
+                        <li class="filter-tab active" data-filter="all">
+                            <span>Toutes</span>
+                            <span class="tab-count">{{ videos|length }}</span>
+                        </li>
+                        <li class="filter-tab" data-filter="hero">
+                            <span>Hero</span>
+                            <span class="tab-count">{{ videos_by_category.hero|length }}</span>
+                        </li>
+                        <li class="filter-tab" data-filter="hub">
+                            <span>Hub</span>
+                            <span class="tab-count">{{ videos_by_category.hub|length }}</span>
+                        </li>
+                        <li class="filter-tab" data-filter="help">
+                            <span>Help</span>
+                            <span class="tab-count">{{ videos_by_category.help|length }}</span>
+                        </li>
+                        <li class="filter-tab" data-filter="uncategorized">
+                            <span>Non catégorisées</span>
+                            <span class="tab-count">{{ videos_by_category.uncategorized|length }}</span>
+                        </li>
+                        <li class="filter-tab" data-filter="shorts">
+                            <span>Shorts</span>
+                            <span class="tab-count">{{ videos|selectattr('is_short', 'equalto', 1)|list|length }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Vidéo</th>
+                                <th>Catégorie</th>
+                                <th>Vues</th>
+                                <th>Likes</th>
+                                <th>Durée</th>
+                                <th>Publié</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody">
+                            {% for video in videos[:20] %}
+                            <tr class="video-row" data-category="{{ video.category or 'uncategorized' }}" data-is-short="{{ video.is_short or 0 }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ video.thumbnail_url or url_for('static', filename='sneat-pro/img/avatars/1.png') }}" 
+                                             alt="{{ video.title }}" 
+                                             class="video-thumbnail me-3"
+                                             onerror="this.src='{{ url_for('static', filename='sneat-pro/img/avatars/1.png') }}'">
+                                        <div>
+                                            <h6 class="mb-0 text-truncate" style="max-width: 300px;">{{ video.title }}</h6>
+                                            <small class="text-muted">{{ video.video_id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if video.category %}
+                                    <span class="performance-badge bg-label-{{ 'danger' if video.category == 'hero' else ('primary' if video.category == 'hub' else 'success') }}">
+                                        {{ video.category|upper }}
+                                    </span>
+                                    {% else %}
+                                    <span class="performance-badge bg-label-secondary">UNCAT</span>
+                                    {% endif %}
+                                    {% if video.is_short %}
+                                    <span class="performance-badge bg-label-warning ms-1">SHORT</span>
+                                    {% endif %}
+                                    {% if video.classification_source %}
+                                        {% if video.classification_source == 'human' or video.is_human_validated == 1 %}
+                                        <span class="badge bg-label-success ms-1" title="Classifié par un humain">
+                                            <i class="bx bx-user-check"></i>
+                                        </span>
+                                        {% elif video.classification_source in ['semantic', 'ai'] %}
+                                        <span class="badge bg-label-info ms-1" title="Classifié par IA">
+                                            <i class="bx bx-brain"></i>
+                                        </span>
+                                        {% elif video.classification_source == 'keyword' %}
+                                        <span class="badge bg-label-secondary ms-1" title="Classifié par mots-clés">
+                                            <i class="bx bx-tag"></i>
+                                        </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{ "{:,}".format(video.view_count) if video.view_count else 'N/A' }}</td>
+                                <td>{{ "{:,}".format(video.like_count) if video.like_count else 'N/A' }}</td>
+                                <td>{{ video.duration_text or 'N/A' }}</td>
+                                <td>
+                                    {% if video.published_at %}
+                                    <small>{{ video.published_at.strftime('%Y-%m-%d') if video.published_at.strftime else video.published_at }}</small>
+                                    {% else %}
+                                    <small class="text-muted">Inconnu</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ video.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bx bx-link-external"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if videos|length > 20 %}
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-primary btn-action" onclick="loadMoreVideos()">
+                        <i class="bx bx-down-arrow me-2"></i>Charger Plus de Vidéos
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Back to List Button -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="/concurrents" class="btn btn-secondary btn-action">
+            <i class="bx bx-arrow-back me-2"></i>
+            Retour à la Liste
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<!-- ApexCharts for Subscriber Growth -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+// Subscriber Growth Chart with ApexCharts (inspired by Customer Ratings)
+{% if subscriber_data.has_data %}
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ subscriber_data.chart_data | tojson }};
+    console.log('Chart data:', chartData);
+    
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+        const dataset = chartData.datasets[0];
+        
+        const subscriberGrowthOptions = {
+            chart: {
+                height: 300,
+                toolbar: { show: false },
+                zoom: { enabled: false },
+                type: 'line',
+                dropShadow: {
+                    enabled: true,
+                    enabledOnSeries: [0],
+                    top: 13,
+                    left: 4,
+                    blur: 3,
+                    color: '#696cff',
+                    opacity: 0.09
+                }
+            },
+            series: [
+                {
+                    name: 'Abonnés',
+                    data: dataset.data
+                }
+            ],
+            stroke: {
+                curve: 'smooth',
+                width: 4
+            },
+            legend: {
+                show: false
+            },
+            colors: ['#696cff'],
+            grid: {
+                show: true,
+                borderColor: '#e7e7ff',
+                padding: {
+                    top: -20,
+                    bottom: -10,
+                    left: 20,
+                    right: 20
+                }
+            },
+            markers: {
+                size: 6,
+                colors: 'transparent',
+                strokeColors: '#696cff',
+                strokeWidth: 3,
+                hover: {
+                    size: 8
+                },
+                discrete: [
+                    {
+                        fillColor: '#ffffff',
+                        seriesIndex: 0,
+                        dataPointIndex: dataset.data.length - 1,
+                        strokeColor: '#696cff',
+                        size: 8
+                    }
+                ]
+            },
+            xaxis: {
+                categories: chartData.labels,
+                labels: {
+                    style: {
+                        colors: '#8592a3',
+                        fontSize: '13px'
+                    },
+                    rotate: -45
+                },
+                axisTicks: {
+                    show: false
+                },
+                axisBorder: {
+                    show: false
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#8592a3',
+                        fontSize: '13px'
+                    },
+                    formatter: function(val) {
+                        return val.toLocaleString();
+                    }
+                }
+            },
+            tooltip: {
+                custom: function({series, seriesIndex, dataPointIndex, w}) {
+                    const value = series[seriesIndex][dataPointIndex];
+                    const date = w.globals.categoryLabels[dataPointIndex];
+                    return '<div class="px-3 py-2">' +
+                           '<strong>' + value.toLocaleString() + '</strong> abonnés<br>' +
+                           '<span class="text-muted">' + date + '</span>' +
+                           '</div>';
+                }
+            }
+        };
+        
+        const subscriberGrowthChart = new ApexCharts(document.querySelector("#subscriberGrowthChart"), subscriberGrowthOptions);
+        subscriberGrowthChart.render();
+    }
+});
+{% endif %}
+
+// Filter Videos functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            filterTabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            filterVideos(filterValue);
+        });
+    });
+});
+
+function filterVideos(filter) {
+    const videoRows = document.querySelectorAll('.video-row');
+    
+    videoRows.forEach(row => {
+        if (filter === 'all') {
+            row.style.display = '';
+        } else if (filter === 'shorts') {
+            const isShort = row.getAttribute('data-is-short');
+            row.style.display = isShort === '1' ? '' : 'none';
+        } else {
+            const category = row.getAttribute('data-category') || '';
+            if (filter === 'uncategorized' && (category === '' || category === 'null' || category === 'uncategorized')) {
+                row.style.display = '';
+            } else if (category === filter) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
+
+function loadMoreVideos() {
+    // This would typically load more videos via AJAX
+    showToast('Fonctionnalité de chargement supplémentaire à implémenter', 'info');
+}
+
+function uploadSubscriberData() {
+    const fileInput = document.getElementById('csvFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showToast('Veuillez sélectionner un fichier CSV', 'warning');
+        return;
+    }
+    
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        showToast('Veuillez sélectionner un fichier CSV valide', 'warning');
+        return;
+    }
+    
+    // Show loading status
+    document.getElementById('uploadStatus').classList.remove('d-none');
+    document.getElementById('uploadResult').classList.add('d-none');
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('csvFile', file);
+    
+    // Upload to the existing route
+    fetch(`/api/upload-csv/{{ competitor.id }}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide loading status
+        document.getElementById('uploadStatus').classList.add('d-none');
+        document.getElementById('uploadResult').classList.remove('d-none');
+        
+        if (data.success) {
+            document.getElementById('uploadResult').innerHTML = `
+                <div class="alert alert-success" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-check-circle me-2"></i>
+                        <div>
+                            <strong>Téléchargement réussi!</strong><br>
+                            <small class="text-muted">${data.message}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Clear the file input
+            fileInput.value = '';
+            
+            // Optionally reload the page to show new data
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            document.getElementById('uploadResult').innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-error-circle me-2"></i>
+                        <div>
+                            <strong>Échec du téléchargement!</strong><br>
+                            <small class="text-muted">${data.error}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Upload error:', error);
+        document.getElementById('uploadStatus').classList.add('d-none');
+        document.getElementById('uploadResult').classList.remove('d-none');
+        document.getElementById('uploadResult').innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bx bx-error-circle me-2"></i>
+                    <div>
+                        <strong>Erreur réseau!</strong><br>
+                        <small class="text-muted">Veuillez réessayer plus tard.</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="bs-toast toast toast-placement-ex m-2 fade bg-${type} top-0 end-0 show" role="alert">
+            <div class="toast-header">
+                <i class="bx bx-${type === 'success' ? 'check' : type === 'warning' ? 'error' : type === 'danger' ? 'x' : 'info'}-circle me-2"></i>
+                <div class="me-auto fw-semibold">${type === 'success' ? 'Succès' : type === 'warning' ? 'Attention' : type === 'danger' ? 'Erreur' : 'Info'}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+    
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+    
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,487 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Learn - YT Channel Analyzer{% endblock %}
+
+{% block vendor_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-card h2 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .quick-action-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    
+    .quick-action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .quick-action-card .card-body {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .quick-action-card i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    
+    .stats-card h6 {
+        color: #8592a3;
+        font-size: 0.875rem;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card h3 {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .learning-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        margin-bottom: 1.5rem;
+    }
+    
+    .guide-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    
+    .guide-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .guide-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        text-align: center;
+    }
+    
+    .guide-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .guide-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #8592a3;
+    }
+    
+    .progress-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e7e7ff;
+    }
+    
+    .progress-item {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .progress-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .progress-bar-custom {
+        background: #e9ecef;
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-fill {
+        background: #696cff;
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="welcome-card">
+            <h2>🎓 Centre d'Apprentissage YT Analyzer</h2>
+            <p class="mb-0">Maîtrisez l'analyse YouTube avec nos guides pratiques et exemples concrets.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Learning Stats -->
+<div class="row mb-4">
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Guides disponibles</h6>
+            <h3 class="text-primary">{{ guides|length if guides else 12 }}</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Temps de lecture</h6>
+            <h3 class="text-info">~45 min</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Niveau</h6>
+            <h3 class="text-success">Débutant à Expert</h3>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="stats-card">
+            <h6>Langue</h6>
+            <h3 class="text-warning">🇫🇷 Français</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Learning Progress -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="progress-section">
+            <h4 class="mb-4">📊 Votre progression d'apprentissage</h4>
+            
+            <div class="progress-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>Bases de l'analyse YouTube</strong></span>
+                    <span>85%</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: 85%"></div>
+                </div>
+            </div>
+            
+            <div class="progress-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>Classification sémantique</strong></span>
+                    <span>60%</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: 60%"></div>
+                </div>
+            </div>
+            
+            <div class="progress-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>Analyse concurrentielle</strong></span>
+                    <span>45%</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: 45%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Learning Guides -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="learning-section">
+            <h4 class="mb-4">📚 Guides d'apprentissage</h4>
+            
+            <div class="row g-3">
+                {% if guides %}
+                    {% for guide in guides %}
+                    <div class="col-md-6">
+                        <a href="{{ url_for('learn_guide', guide_name=guide.file.replace('.md', '')) }}" class="text-decoration-none">
+                            <div class="guide-card">
+                                <div class="guide-icon">{{ guide.icon }}</div>
+                                <h6 class="guide-title">{{ guide.title }}</h6>
+                                <p class="guide-description">{{ guide.description }}</p>
+                                <div class="guide-stats">
+                                    <span>⏱️ {{ guide.duration }}</span>
+                                    <span>📈 {{ guide.level }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Guide par défaut: Hero Hub Help -->
+                    <div class="col-md-6">
+                        <a href="{{ url_for('learn_guide', guide_name='hero_hub_help_matrix') }}" class="text-decoration-none">
+                            <div class="guide-card">
+                                <div class="guide-icon">🎯</div>
+                                <h6 class="guide-title">Hero Hub Help Matrix</h6>
+                                <p class="guide-description">Découvrez la stratégie Google de classification des contenus : Hero (viral), Hub (engagement), Help (éducatif).</p>
+                                <div class="guide-stats">
+                                    <span>⏱️ 15 min</span>
+                                    <span>📈 Fondamental</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Guide 2: Classification IA -->
+                    <div class="col-md-6">
+                        <div class="guide-card">
+                            <div class="guide-icon">🧠</div>
+                            <h6 class="guide-title">Classification sémantique IA</h6>
+                            <p class="guide-description">Comprenez comment notre IA classe automatiquement vos contenus en Hero/Hub/Help.</p>
+                            <div class="guide-stats">
+                                <span>⏱️ 12 min</span>
+                                <span>📈 Intermédiaire</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Guide 3: Analyse concurrentielle -->
+                    <div class="col-md-6">
+                        <div class="guide-card">
+                            <div class="guide-icon">⚔️</div>
+                            <h6 class="guide-title">Analyse concurrentielle</h6>
+                            <p class="guide-description">Analysez vos concurrents, identifiez leurs stratégies et trouvez des opportunités.</p>
+                            <div class="guide-stats">
+                                <span>⏱️ 18 min</span>
+                                <span>📈 Avancé</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Guide 4: Optimisation -->
+                    <div class="col-md-6">
+                        <div class="guide-card">
+                            <div class="guide-icon">🚀</div>
+                            <h6 class="guide-title">Métriques et optimisation</h6>
+                            <p class="guide-description">Utilisez les insights pour optimiser votre stratégie de contenu YouTube et maximiser l'engagement.</p>
+                            <div class="guide-stats">
+                                <span>⏱️ 22 min</span>
+                                <span>📈 Expert</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Additional Learning Resources -->
+            <div class="mt-4">
+                <h5 class="mb-3">📖 Ressources complémentaires</h5>
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">🎬 Tutoriels vidéo</h6>
+                            <small>Nouveau</small>
+                        </div>
+                        <p class="mb-1">Regardez nos tutoriels pas à pas pour maîtriser l'outil.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">📊 Exemples d'analyses</h6>
+                            <small>Populaire</small>
+                        </div>
+                        <p class="mb-1">Découvrez des cas d'usage concrets et leurs résultats.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">🤖 IA et Machine Learning</h6>
+                            <small>Technique</small>
+                        </div>
+                        <p class="mb-1">Plongez dans les détails techniques de notre système d'IA.</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <h4 class="mb-4">🎯 Actions rapides</h4>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <a href="{{ url_for('competitors.concurrents') }}" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-group text-primary"></i>
+                            <h6 class="mb-0">Ajouter un concurrent</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/top-videos" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-trophy text-info"></i>
+                            <h6 class="mb-0">Top Vidéos</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/insights" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-bulb text-warning"></i>
+                            <h6 class="mb-0">Insights</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/sentiment-analysis" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-smile text-success"></i>
+                            <h6 class="mb-0">Sentiment</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/settings" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-cog text-secondary"></i>
+                            <h6 class="mb-0">Paramètres</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="/api-usage" class="text-decoration-none">
+                    <div class="card quick-action-card">
+                        <div class="card-body">
+                            <i class="bx bx-data text-danger"></i>
+                            <h6 class="mb-0">API Usage</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Learning Tips -->
+        <div class="learning-section mt-4">
+            <h5 class="mb-3">💡 Conseils d'apprentissage</h5>
+            <div class="alert alert-info">
+                <h6>🚀 Commencez par les bases !</h6>
+                <p class="mb-0">Nous recommandons de suivre les guides dans l'ordre pour une meilleure compréhension.</p>
+            </div>
+            <div class="alert alert-success">
+                <h6>🎯 Pratiquez avec vos données</h6>
+                <p class="mb-0">Appliquez directement les concepts avec vos propres chaînes YouTube.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Guide cards click handlers (pour les guides sans lien)
+document.addEventListener('DOMContentLoaded', function() {
+    const guideCards = document.querySelectorAll('.guide-card');
+    
+    guideCards.forEach(card => {
+        // Seulement pour les guides sans lien parent
+        if (!card.closest('a')) {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('.guide-title').textContent;
+                showToast(`Guide "${title}" sera bientôt disponible !`, 'info');
+            });
+        }
+    });
+    
+    // Learning resources click handlers
+    const resourceLinks = document.querySelectorAll('.list-group-item-action');
+    
+    resourceLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const title = this.querySelector('h6').textContent;
+            showToast(`Ressource "${title}" en cours de développement !`, 'info');
+        });
+    });
+});
+
+// Toast notifications (same as dashboard)
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="bs-toast toast toast-placement-ex m-2 fade bg-${type} top-0 end-0 show" role="alert">
+            <div class="toast-header">
+                <i class="bx bx-${type === 'success' ? 'check' : type === 'warning' ? 'error' : 'info-circle'} me-2"></i>
+                <div class="me-auto fw-semibold">${type === 'success' ? 'Succès' : type === 'warning' ? 'Attention' : 'Information'}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+    
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+    
+    setTimeout(() => {
+        toastContainer.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

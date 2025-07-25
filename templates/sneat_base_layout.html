@@ -148,7 +148,7 @@
                     </li>
 
                     <!-- Competitors -->
-                    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'competitors.concurrents' %}active{% endif %}">
                         <a href="/concurrents" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-group"></i>
                             <div class="text-truncate" data-i18n="Competitors">Competitors</div>
@@ -156,7 +156,7 @@
                     </li>
 
                     <!-- Learn -->
-                    <li class="menu-item {% if request.endpoint == 'learn' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.insights' %}active{% endif %}">
                         <a href="/learn" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-book-open"></i>
                             <div class="text-truncate" data-i18n="Learn">Learn</div>
@@ -169,7 +169,7 @@
                     </li>
 
                     <!-- Top Videos -->
-                    <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'competitors.top-videos' %}active{% endif %}">
                         <a href="/top-videos" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-trophy"></i>
                             <div class="text-truncate" data-i18n="Top Videos">Top Videos</div>
@@ -177,7 +177,7 @@
                     </li>
 
                     <!-- Top Playlists -->
-                    <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'competitors.top-playlists' %}active{% endif %}">
                         <a href="/top-playlists" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-list-ul"></i>
                             <div class="text-truncate" data-i18n="Top Playlists">Top Playlists</div>
@@ -185,7 +185,7 @@
                     </li>
 
                     <!-- Sentiment Analysis -->
-                    <li class="menu-item {% if request.endpoint == 'sentiment_analysis' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.sentiment-analysis' %}active{% endif %}">
                         <a href="/sentiment-analysis" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-smile"></i>
                             <div class="text-truncate" data-i18n="Sentiment Analysis">Sentiment Analysis</div>
@@ -193,7 +193,7 @@
                     </li>
 
                     <!-- Top Topics -->
-                    <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.top-topics' %}active{% endif %}">
                         <a href="/top-topics" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-hash"></i>
                             <div class="text-truncate" data-i18n="Top Topics">Top Topics</div>
@@ -201,7 +201,7 @@
                     </li>
 
                     <!-- By Country -->
-                    <li class="menu-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.countries-analysis' %}active{% endif %}">
                         <a href="/countries-analysis" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-world"></i>
                             <div class="text-truncate" data-i18n="By Country">By Country</div>
@@ -209,7 +209,7 @@
                     </li>
 
                     <!-- Publishing Frequency -->
-                    <li class="menu-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'main.performance-dashboard' %}active{% endif %}">
                         <a href="/frequency-dashboard" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-time"></i>
                             <div class="text-truncate" data-i18n="Publishing Frequency">Publishing Frequency</div>
@@ -222,7 +222,7 @@
                     </li>
 
                     <!-- Brand Insights -->
-                    <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.insights' %}active{% endif %}">
                         <a href="/insights" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-bulb"></i>
                             <div class="text-truncate" data-i18n="Brand Insights">Brand Insights</div>
@@ -230,7 +230,7 @@
                     </li>
 
                     <!-- Country Insights -->
-                    <li class="menu-item {% if request.endpoint == 'country_insights' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'insights.country-insights' %}active{% endif %}">
                         <a href="/country-insights" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-globe"></i>
                             <div class="text-truncate" data-i18n="Country Insights">Country Insights</div>
@@ -251,7 +251,7 @@
                     </li>
 
                     <!-- Business Settings -->
-                    <li class="menu-item {% if request.endpoint == 'business' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
                         <a href="/business" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-briefcase"></i>
                             <div class="text-truncate" data-i18n="Business Settings">Business Settings</div>
@@ -259,7 +259,7 @@
                     </li>
 
                     <!-- API Usage -->
-                    <li class="menu-item {% if request.endpoint == 'api_usage_page' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'admin.api-usage' %}active{% endif %}">
                         <a href="/api-usage" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-data"></i>
                             <div class="text-truncate" data-i18n="API Usage">API Usage</div>
@@ -281,7 +281,7 @@
                     </li>
 
                     <!-- Settings & Patterns -->
-                    <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
                         <a href="/settings" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-cog"></i>
                             <div class="text-truncate" data-i18n="Settings">Settings & Patterns</div>
@@ -289,7 +289,7 @@
                     </li>
 
                     <!-- Fix Problems -->
-                    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+                    <li class="menu-item {% if request.endpoint == 'admin.fix-problems' %}active{% endif %}">
                         <a href="/fix-problems" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-wrench"></i>
                             <div class="text-truncate" data-i18n="Fix Problems">Fix Problems</div>

@@ -123,7 +123,7 @@
                                 <tr>
                                     <td>
                                         {% if c_stats.id %}
-                                            <a href="{{ url_for('competitor_detail', competitor_id=c_stats.id) }}" class="text-decoration-none text-dark fw-bold">
+                                            <a href="{{ url_for('competitors.competitor_detail', competitor_id=c_stats.id) }}" class="text-decoration-none text-dark fw-bold">
                                                 {{ c_stats.name }}
                                             </a>
                                         {% else %}
@@ -215,7 +215,7 @@
                                                 <img src="{{ item.thumbnail_url }}" alt="{{ item.name }}" class="rounded" style="width: 60px; height: auto;">
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <a href="{{ url_for('competitor_detail', competitor_id=item.competitor_id) }}#{{ 'video' if item.type == 'video' else 'playlist' }}-{{ item.id }}" class="text-decoration-none text-dark fw-bold">
+                                                <a href="{{ url_for('competitors.competitor_detail', competitor_id=item.competitor_id) }}#{{ 'video' if item.type == 'video' else 'playlist' }}-{{ item.id }}" class="text-decoration-none text-dark fw-bold">
                                                     {{ item.name|truncate(60) }}
                                                 </a>
                                                 <div class="text-muted small">
@@ -229,7 +229,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <a href="{{ url_for('competitor_detail', competitor_id=item.competitor_id) }}" class="text-decoration-none text-muted">{{ item.competitor_name }}</a>
+                                        <a href="{{ url_for('competitors.competitor_detail', competitor_id=item.competitor_id) }}" class="text-decoration-none text-muted">{{ item.competitor_name }}</a>
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary">{{ item.ia_classification|upper|default('N/A') }}</span>

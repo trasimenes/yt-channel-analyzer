@@ -1,0 +1,651 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Data Manager - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .data-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .data-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .data-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .data-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .function-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .data-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .data-description {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .data-metrics {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .metric-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-implemented {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .status-partial {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .status-missing {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .level-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .level-critical {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .level-important {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .level-nice {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-data-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    /* Grid View Styles */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .data-form {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .form-section h5 {
+        color: #566a7f;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .notes-field {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    @media (max-width: 768px) {
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-data-title {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Configuration /</span> Business Data Manager
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-primary" onclick="showAddForm()">
+                    <i class="bx bx-plus me-2"></i>
+                    Nouveau Besoin
+                </button>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="dataGrid">
+                {% for need in business_needs %}
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card data-card">
+                        <div class="data-icon-wrapper">
+                            <i class="bx {{ 'bx-code-alt' if need.fonctionnel == 'technique' else 'bx-briefcase' if need.fonctionnel == 'admin.settings' else 'bx-cog' }} data-icon"></i>
+                            <span class="category-badge category-{{ 'performance' if need.level == 'critical' else 'strategy' if need.level == 'important' else 'content' }}">{{ need.level|upper }}</span>
+                            
+                            <div class="function-overlay">
+                                <i class="bx bx-{{ 'check' if need.fonction_presente else 'x' }}"></i>
+                                {{ 'Implémenté' if need.fonction_presente else 'Manquant' }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="data-title">{{ need.besoin_metier }}</h5>
+                            
+                            <div class="data-description">
+                                {{ need.nom_fonction if need.nom_fonction else 'Fonction non définie' }}
+                            </div>
+                            
+                            <div class="data-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-{{ 'code-alt' if need.fonctionnel == 'technique' else 'briefcase' if need.fonctionnel == 'admin.settings' else 'cog' }}"></i>
+                                    <span>{{ need.fonctionnel|title }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-{{ 'error' if need.level == 'critical' else 'time' if need.level == 'important' else 'check' }}"></i>
+                                    <span>{{ need.level|title }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ 'implemented' if need.fonction_presente else 'missing' }}">
+                                    <i class="bx bx-{{ 'check' if need.fonction_presente else 'x' }}"></i>
+                                    {{ 'Implémenté' if need.fonction_presente else 'Manquant' }}
+                                </span>
+                            </div>
+                            
+                            {% if need.notes %}
+                            <div class="mt-2">
+                                <small class="text-muted">{{ need.notes[:80] }}{% if need.notes|length > 80 %}...{% endif %}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not business_needs %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="bx bx-data text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">Aucun besoin métier enregistré</h4>
+                        <p class="text-muted">Cliquez sur "Nouveau Besoin" pour commencer</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Besoin Métier</th>
+                                <th>Fonction</th>
+                                <th>Niveau</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for need in business_needs %}
+                            <tr>
+                                <td class="table-data-title">{{ need.besoin_metier }}</td>
+                                <td>{{ need.nom_fonction if need.nom_fonction else 'N/A' }}</td>
+                                <td>
+                                    <span class="level-badge level-{{ need.level }}">
+                                        <i class="bx bx-{{ 'error' if need.level == 'critical' else 'time' if need.level == 'important' else 'check' }}"></i>
+                                        {{ need.level|title }}
+                                    </span>
+                                </td>
+                                <td>{{ need.fonctionnel|title }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ 'implemented' if need.fonction_presente else 'missing' }}">
+                                        <i class="bx bx-{{ 'check' if need.fonction_presente else 'x' }}"></i> 
+                                        {{ 'Implémenté' if need.fonction_presente else 'Manquant' }}
+                                    </span>
+                                </td>
+                                <td>{{ need.notes[:50] if need.notes else 'N/A' }}{% if need.notes and need.notes|length > 50 %}...{% endif %}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editNeed({{ loop.index0 }})">
+                                        <i class="bx bx-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Form Modal -->
+        <div class="modal fade" id="needModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="needModalTitle">
+                            <i class="bx bx-plus me-2"></i>
+                            Nouveau Besoin Métier
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="needForm">
+                            <div class="form-section">
+                                <h6>
+                                    <i class="bx bx-briefcase"></i>
+                                    Informations Générales
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="besoin_metier" class="form-label">Besoin Métier</label>
+                                        <input type="text" class="form-control" id="besoin_metier" name="besoin_metier" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nom_fonction" class="form-label">Nom de la Fonction</label>
+                                        <input type="text" class="form-control" id="nom_fonction" name="nom_fonction">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="level" class="form-label">Niveau de Priorité</label>
+                                        <select class="form-select" id="level" name="level" required>
+                                            <option value="critical">Critical</option>
+                                            <option value="important" selected>Important</option>
+                                            <option value="nice">Nice to have</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h6>
+                                    <i class="bx bx-cog"></i>
+                                    Configuration Technique
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="fonctionnel" class="form-label">Type</label>
+                                        <select class="form-select" id="fonctionnel" name="fonctionnel" required>
+                                            <option value="business">Business</option>
+                                            <option value="technique">Technique</option>
+                                            <option value="mixte">Mixte</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mt-4">
+                                            <input class="form-check-input" type="checkbox" id="fonction_presente" name="fonction_presente">
+                                            <label class="form-check-label" for="fonction_presente">
+                                                Fonction déjà implémentée
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h6>
+                                    <i class="bx bx-note"></i>
+                                    Notes
+                                </h6>
+                                <textarea class="form-control notes-field" id="notes" name="notes" placeholder="Détails, spécifications, contraintes..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="saveNeed()">
+                            <i class="bx bx-save me-2"></i>
+                            Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'grid';
+let editingIndex = -1;
+let businessNeeds = {{ business_needs|tojson }};
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('dataViewPreference', view);
+}
+
+// Restore view preference on load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('dataViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function showAddForm() {
+    editingIndex = -1;
+    document.getElementById('needModalTitle').innerHTML = '<i class="bx bx-plus me-2"></i>Nouveau Besoin Métier';
+    document.getElementById('needForm').reset();
+    const modal = new bootstrap.Modal(document.getElementById('needModal'));
+    modal.show();
+}
+
+function editNeed(index) {
+    editingIndex = index;
+    const need = businessNeeds[index];
+    
+    document.getElementById('needModalTitle').innerHTML = '<i class="bx bx-edit me-2"></i>Modifier Besoin Métier';
+    
+    // Fill form with existing data
+    document.getElementById('besoin_metier').value = need.besoin_metier || '';
+    document.getElementById('nom_fonction').value = need.nom_fonction || '';
+    document.getElementById('level').value = need.level || 'important';
+    document.getElementById('fonctionnel').value = need.fonctionnel || 'business';
+    document.getElementById('fonction_presente').checked = need.fonction_presente || false;
+    document.getElementById('notes').value = need.notes || '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('needModal'));
+    modal.show();
+}
+
+function saveNeed() {
+    const form = document.getElementById('needForm');
+    const formData = new FormData(form);
+    
+    const needData = {
+        besoin_metier: formData.get('besoin_metier'),
+        nom_fonction: formData.get('nom_fonction'),
+        level: formData.get('level'),
+        fonctionnel: formData.get('fonctionnel'),
+        fonction_presente: formData.has('fonction_presente'),
+        notes: formData.get('notes')
+    };
+    
+    if (editingIndex >= 0) {
+        businessNeeds[editingIndex] = needData;
+    } else {
+        businessNeeds.push(needData);
+    }
+    
+    // Save to server
+    fetch('/api/save-business-needs', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ business_needs: businessNeeds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Besoin métier sauvegardé avec succès!', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('needModal'));
+            modal.hide();
+            // Reload page to show updated data
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('Erreur lors de la sauvegarde: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Erreur de connexion: ' + error, 'danger');
+    });
+}
+
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);';
+    alert.innerHTML = `
+        <i class="bx bx-${type === 'success' ? 'check-circle' : type === 'warning' ? 'error' : 'x-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 4000);
+}
+</script>
+{% endblock %}

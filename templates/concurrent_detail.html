@@ -1,8 +1,12 @@
-{% extends "sneat_base.html" %}
+{% extends "base_sneat.html" %}
 
 {% block title %}Dashboard {{ competitor.name or 'Concurrent' }} - YT Analyzer{% endblock %}
 
-{% block extra_css %}
+{% block vendor_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block page_css %}
 <style>
     .metric-card {
         border-radius: 15px;
@@ -59,8 +63,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="main-content">
-<div class="container-fluid">
     <!-- Header avec titre et informations de base -->
     <div class="row mb-4">
         <div class="col-12">
@@ -757,12 +759,9 @@
             </div>
         </div>
     </div>
-</div>
-</div>
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block page_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // FROM FIRST BLOCK

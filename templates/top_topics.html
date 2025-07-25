@@ -1,8 +1,8 @@
-{% extends "sneat_base.html" %}
+{% extends "base_sneat.html" %}
 
 {% block title %}Top Topics - Sujets les plus populaires{% endblock %}
 
-{% block extra_css %}
+{% block page_css %}
 <style>
     .top-topics-header {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -271,7 +271,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
     <!-- Header -->
     <div class="top-topics-header">
         <h1>🏷️ Top Topics Globaux</h1>
@@ -488,5 +487,4 @@
         <p>{{ error }}</p>
     </div>
     {% endif %}
-</div>
 {% endblock %}

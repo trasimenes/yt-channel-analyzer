@@ -1,4 +1,4 @@
-{% extends "sneat_base.html" %}
+{% extends "base_sneat.html" %}
 
 {% block title %}Fréquence de Publication - Dashboard{% endblock %}
 
@@ -10,7 +10,7 @@
                 <h1><i class="bi bi-calendar-week"></i> Fréquence de Publication</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Accueil</a></li>
                         <li class="breadcrumb-item active">Fréquence</li>
                     </ol>
                 </nav>

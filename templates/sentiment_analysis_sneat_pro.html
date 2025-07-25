@@ -1,0 +1,810 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Analyse de Sentiment - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .sentiment-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .sentiment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .video-thumbnail-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: #f5f5f9;
+    }
+    
+    .video-thumbnail {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .sentiment-card:hover .video-thumbnail {
+        transform: scale(1.05);
+    }
+    
+    .sentiment-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .sentiment-positive {
+        background: rgba(40, 199, 111, 0.9);
+        color: white;
+    }
+    
+    .sentiment-negative {
+        background: rgba(234, 84, 85, 0.9);
+        color: white;
+    }
+    
+    .sentiment-neutral {
+        background: rgba(108, 117, 125, 0.9);
+        color: white;
+    }
+    
+    .video-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .video-channel {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .video-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .stat-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .sentiment-score-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .score-positive {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .score-negative {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .score-neutral {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .search-filters {
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .sort-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sort-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .sort-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    .stats-cards {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 160px;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin: 0.25rem 0 0;
+    }
+    
+    .stat-card.positive h3 {
+        color: #28c76f;
+    }
+    
+    .stat-card.negative h3 {
+        color: #ea5455;
+    }
+    
+    .stat-card.neutral h3 {
+        color: #6c757d;
+    }
+    
+    .stat-card.total h3 {
+        color: #696cff;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles - Fixed specificity */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-thumbnail {
+        width: 120px;
+        height: 68px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-video-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .table-video-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .table-video-title a:hover {
+        color: #696cff;
+    }
+    
+    .table-competitor {
+        font-weight: 600;
+        color: #8592a3;
+    }
+    
+    .table-sentiment-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .table-sentiment-positive {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+        border: 1px solid rgba(40, 199, 111, 0.3);
+    }
+    
+    .table-sentiment-negative {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+        border: 1px solid rgba(234, 84, 85, 0.3);
+    }
+    
+    .table-sentiment-neutral {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+    
+    .number-format {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+    
+    /* Grid View Styles - Fixed specificity */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .video-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e7e7ff;
+    }
+    
+    .video-date {
+        font-size: 0.75rem;
+        color: #8592a3;
+    }
+    
+    /* Sentiment distribution bars */
+    .sentiment-distribution {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .sentiment-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .sentiment-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .sentiment-label {
+        min-width: 100px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .bar-container {
+        flex: 1;
+        height: 20px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .bar-fill.positive {
+        background: linear-gradient(90deg, #28c76f, #1db561);
+    }
+    
+    .bar-fill.negative {
+        background: linear-gradient(90deg, #ea5455, #e63946);
+    }
+    
+    .bar-fill.neutral {
+        background: linear-gradient(90deg, #6c757d, #495057);
+    }
+    
+    .sentiment-percentage {
+        min-width: 60px;
+        font-weight: 600;
+        color: #566a7f;
+        text-align: right;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-cards {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-video-title {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Sentiment des Vidéos
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if stats %}
+        <div class="stats-cards">
+            <div class="stat-card total">
+                <h3>{{ "{:,}".format(stats.get('total_videos_analyzed', 0)) }}</h3>
+                <p>Vidéos analysées</p>
+            </div>
+            <div class="stat-card positive">
+                <h3>{{ "{:,}".format(stats.get('positive_count', 0)) }}</h3>
+                <p>Positives ({{ (stats.get('positive_percentage', 0) or 0)|round(1) }}%)</p>
+            </div>
+            <div class="stat-card negative">
+                <h3>{{ "{:,}".format(stats.get('negative_count', 0)) }}</h3>
+                <p>Négatives ({{ (stats.get('negative_percentage', 0) or 0)|round(1) }}%)</p>
+            </div>
+            <div class="stat-card neutral">
+                <h3>{{ "{:,}".format(stats.get('neutral_count', 0)) }}</h3>
+                <p>Neutres ({{ (stats.get('neutral_percentage', 0) or 0)|round(1) }}%)</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sentiment Distribution -->
+        {% if sentiment_breakdown %}
+        <div class="sentiment-distribution">
+            <h5 class="mb-0">
+                <i class="bx bx-bar-chart me-2"></i>
+                Distribution des Sentiments
+            </h5>
+            <div class="sentiment-bars">
+                <div class="sentiment-bar">
+                    <div class="sentiment-label">
+                        <i class="bx bx-happy text-success"></i>
+                        Positif
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill positive" style="width: {{ sentiment_breakdown.positive_percent }}%"></div>
+                    </div>
+                    <div class="sentiment-percentage">{{ sentiment_breakdown.positive_percent|round(1) }}%</div>
+                </div>
+                <div class="sentiment-bar">
+                    <div class="sentiment-label">
+                        <i class="bx bx-meh text-secondary"></i>
+                        Neutre
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill neutral" style="width: {{ sentiment_breakdown.neutral_percent }}%"></div>
+                    </div>
+                    <div class="sentiment-percentage">{{ sentiment_breakdown.neutral_percent|round(1) }}%</div>
+                </div>
+                <div class="sentiment-bar">
+                    <div class="sentiment-label">
+                        <i class="bx bx-sad text-danger"></i>
+                        Négatif
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill negative" style="width: {{ sentiment_breakdown.negative_percent }}%"></div>
+                    </div>
+                    <div class="sentiment-percentage">{{ sentiment_breakdown.negative_percent|round(1) }}%</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Filtrer par sentiment</label>
+                        <select class="form-select" id="sentimentFilter" onchange="applyFilters()">
+                            <option value="all">Tous les sentiments</option>
+                            <option value="positive">Positif</option>
+                            <option value="neutral">Neutre</option>
+                            <option value="negative">Négatif</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="filter-group">
+                        <label class="form-label">Nombre de résultats</label>
+                        <select class="form-select" id="limitFilter" onchange="applyFilters()">
+                            <option value="25">25 vidéos</option>
+                            <option value="50" selected>50 vidéos</option>
+                            <option value="100">100 vidéos</option>
+                            <option value="200">200 vidéos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-group mt-3">
+                <label class="form-label">Trier par</label>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" onclick="updateSort('sentiment_score')">
+                        <i class="bx bx-heart me-1"></i> Score sentiment
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('view_count')">
+                        <i class="bx bx-show me-1"></i> Vues
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('like_count')">
+                        <i class="bx bx-like me-1"></i> Likes
+                    </button>
+                    <button class="sort-btn" onclick="updateSort('published_at')">
+                        <i class="bx bx-calendar me-1"></i> Date
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="videosGrid">
+                {% if sentiment_videos %}
+                    {% for category, videos in sentiment_videos.items() %}
+                        {% for video in videos %}
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="card sentiment-card h-100" onclick="window.open('{{ video.url or '#' }}', '_blank')">
+                                <div class="video-thumbnail-wrapper">
+                                    <img src="{{ video.thumbnail_url }}" 
+                                         alt="{{ video.title or 'Video' }}"
+                                         class="video-thumbnail"
+                                         onerror="this.src='https://via.placeholder.com/320x180/f5f5f9/566a7f?text=No+Image'">
+                                    
+                                    <span class="sentiment-badge sentiment-{{ category }}">
+                                        {{ category|upper }}
+                                    </span>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h5 class="video-title" title="{{ video.title or 'Sans titre' }}">{{ video.title or 'Sans titre' }}</h5>
+                                    
+                                    <div class="video-channel">
+                                        <i class="bx bx-user-circle"></i>
+                                        {{ video.competitor_name or 'Concurrent inconnu' }}
+                                    </div>
+                                    
+                                    <div class="video-stats">
+                                        <div class="stat-item">
+                                            <i class="bx bx-show"></i>
+                                            <span>{{ "{:,}".format(video.view_count or 0) }}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="bx bx-like"></i>
+                                            <span>{{ "{:,}".format(video.like_count or 0) }}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="bx bx-comment"></i>
+                                            <span>{{ "{:,}".format(video.comment_count or 0) }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="video-meta">
+                                        <span class="video-date">
+                                            <i class="bx bx-calendar"></i>
+                                            {{ video.published_at_formatted or 'N/A' }}
+                                        </span>
+                                        <span class="sentiment-score-badge score-{{ category }}">
+                                            <i class="bx bx-heart"></i>
+                                            {{ video.sentiment_score|default(0)|round(2) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bx bx-heart" style="font-size: 4rem; color: #8592a3;"></i>
+                        <h3 class="mt-3 mb-2">Aucune donnée de sentiment</h3>
+                        <p class="text-muted">Les vidéos doivent être analysées pour afficher les sentiments.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Miniature</th>
+                                <th>Titre</th>
+                                <th>Concurrent</th>
+                                <th>Sentiment</th>
+                                <th>Score</th>
+                                <th>Vues</th>
+                                <th>Likes</th>
+                                <th>Commentaires</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if sentiment_videos %}
+                                {% set counter = [0] %}
+                                {% for category, videos in sentiment_videos.items() %}
+                                    {% for video in videos %}
+                                    {% set _ = counter.append(counter.pop() + 1) %}
+                                    <tr onclick="window.open('{{ video.url or '#' }}', '_blank')" style="cursor: pointer;">
+                                        <td class="number-format">{{ counter[0] }}</td>
+                                        <td>
+                                            <img src="{{ video.thumbnail_url }}" 
+                                                 alt="{{ video.title or 'Video' }}"
+                                                 class="table-thumbnail"
+                                                 onerror="this.src='https://via.placeholder.com/120x68/f5f5f9/566a7f?text=No+Image'">
+                                        </td>
+                                        <td class="table-video-title">
+                                            <a href="{{ video.url or '#' }}" target="_blank" title="{{ video.title or 'Sans titre' }}">
+                                                {{ (video.title or 'Sans titre')|truncate(50) }}
+                                            </a>
+                                        </td>
+                                        <td class="table-competitor">{{ video.competitor_name or 'Inconnu' }}</td>
+                                        <td>
+                                            <span class="table-sentiment-badge table-sentiment-{{ category }}">
+                                                {{ category|upper }}
+                                            </span>
+                                        </td>
+                                        <td class="number-format">{{ video.sentiment_score|default(0)|round(2) }}</td>
+                                        <td class="number-format">{{ "{:,}".format(video.view_count or 0) }}</td>
+                                        <td class="number-format">{{ "{:,}".format(video.like_count or 0) }}</td>
+                                        <td class="number-format">{{ "{:,}".format(video.comment_count or 0) }}</td>
+                                        <td>{{ video.published_at_formatted or 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    console.log('Switching to view:', view);
+    console.log('Grid element:', gridView);
+    console.log('Table element:', tableView);
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('sentimentViewPreference', view);
+}
+
+// Restaurer la préférence de vue au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('sentimentViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+
+function updateSort(sortBy) {
+    // TODO: Implémenter le tri
+    const sortButtons = document.querySelectorAll('.sort-btn');
+    sortButtons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function applyFilters() {
+    // TODO: Implémenter les filtres
+    const sentiment = document.getElementById('sentimentFilter').value;
+    const limit = document.getElementById('limitFilter').value;
+    
+    console.log('Filtering by sentiment:', sentiment, 'limit:', limit);
+}
+</script>
+{% endblock %}

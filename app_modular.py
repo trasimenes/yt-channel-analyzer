@@ -4,24 +4,13 @@ Architecture Blueprint pour remplacer le monolithe app.py de 10,122 lignes
 """
 import os
 from datetime import datetime
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    print("[WARNING] python-dotenv non installé, utilisation des variables d'environnement système")
-
+from dotenv import load_dotenv
 from flask import Flask, render_template
-try:
-    from flask_session import Session
-except ImportError:
-    print("[WARNING] flask-session non installé, sessions en mémoire")
-    Session = None
+from flask_session import Session
+from flask_caching import Cache
 
-try:
-    from flask_caching import Cache
-except ImportError:
-    print("[WARNING] flask-caching non installé, pas de cache")
-    Cache = None
+# Charger les variables d'environnement
+load_dotenv()
 
 # Création de l'application Flask
 app = Flask(__name__)
@@ -34,13 +23,9 @@ app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 app.config['DEV_MODE'] = os.getenv('DEV_MODE', 'true').lower() == 'true'
 app.config['DEMO_MODE'] = os.getenv('DEMO_MODE', 'false').lower() == 'true'
 
-# Initialiser les extensions conditionnellement
-if Session:
-    Session(app)
-if Cache:
-    cache = Cache(app)
-else:
-    cache = None
+# Initialiser les extensions
+Session(app)
+cache = Cache(app)
 
 # Variable globale pour le suivi de progression
 semantic_analysis_progress = {'status': 'idle'}
@@ -221,36 +206,6 @@ def supervised_learning_legacy():
     
     return redirect_to_admin()
 
-@app.route('/frequency-dashboard')
-def frequency_dashboard_legacy():
-    """Route de compatibilité pour frequency dashboard"""
-    from flask import redirect, url_for
-    return redirect(url_for('main.performance-dashboard'))
-
-@app.route('/api-usage-page')
-def api_usage_page_legacy():
-    """Route de compatibilité pour api usage"""
-    from flask import redirect, url_for
-    return redirect(url_for('admin.api-usage'))
-
-@app.route('/business')
-def business_legacy():
-    """Route de compatibilité pour business settings"""
-    from flask import redirect, url_for
-    return redirect(url_for('admin.settings'))
-
-@app.route('/data')
-def data_legacy():
-    """Route de compatibilité pour data export"""
-    from flask import redirect, url_for
-    return redirect(url_for('admin.data-export'))
-
-@app.route('/learn')
-def learn_legacy():
-    """Route de compatibilité pour learn"""
-    from flask import redirect, url_for
-    return redirect(url_for('insights.insights'))
-
 # --- INITIALISATION ---
 def create_app():
     """Factory function pour créer l'application"""
@@ -274,7 +229,7 @@ def create_app():
     except Exception as e:
         print(f"[WARNING] Erreur d'initialisation DB: {e}")
     
-    print(f"[STARTUP] 🎉 Application prête avec {len(list(app.url_map.iter_rules()))} routes")
+    print(f"[STARTUP] 🎉 Application prête avec {len(app.url_map.iter_rules())} routes")
     return app
 
 # --- POINT D'ENTREE ---

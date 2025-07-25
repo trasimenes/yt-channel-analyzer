@@ -1,0 +1,652 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}API Usage - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .api-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .api-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .api-icon-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .api-icon {
+        font-size: 3rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .usage-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .api-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 2.5rem;
+    }
+    
+    .api-description {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .api-metrics {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .metric-item i {
+        color: #8592a3;
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-healthy {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .status-warning {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .status-critical {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    /* Table View Styles */
+    #tableView {
+        display: none !important;
+    }
+    
+    #tableView.active {
+        display: block !important;
+    }
+    
+    .table-view {
+        display: none !important;
+    }
+    
+    .table-view.active {
+        display: block !important;
+    }
+    
+    .table-view .table th {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .table-view .table th:hover {
+        background: linear-gradient(135deg, #5f61e6 0%, #696cff 100%);
+    }
+    
+    .table-view .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .table-api-title {
+        max-width: 300px;
+        text-align: left;
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    /* Grid View Styles */
+    #gridView {
+        display: block !important;
+    }
+    
+    #gridView.active {
+        display: block !important;
+    }
+    
+    #gridView:not(.active) {
+        display: none !important;
+    }
+    
+    .grid-view {
+        display: block !important;
+    }
+    
+    .grid-view.active {
+        display: block !important;
+    }
+    
+    .grid-view:not(.active) {
+        display: none !important;
+    }
+    
+    .quota-progress {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .daily-usage {
+        background: #fff;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    @media (max-width: 768px) {
+        .view-toggle {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+        
+        .table-view .table {
+            font-size: 0.85rem;
+        }
+        
+        .table-api-title {
+            max-width: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analytics /</span> API Usage
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
+                        <i class="bx bx-grid-alt"></i>
+                        Grille
+                    </button>
+                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
+                        <i class="bx bx-list-ul"></i>
+                        Tableau
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Daily Quota Usage -->
+        <div class="daily-usage">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bx bx-calendar-day me-2 text-primary"></i>
+                    Quota Quotidien
+                </h5>
+                <span class="badge bg-label-{{ 'success' if quota_data.percentage <= 50 else 'warning' if quota_data.percentage <= 80 else 'danger' }}">
+                    {{ quota_data.percentage }}% utilisé
+                </span>
+            </div>
+            
+            <div class="progress mb-2" style="height: 8px;">
+                <div class="progress-bar bg-{{ 'success' if quota_data.percentage <= 50 else 'warning' if quota_data.percentage <= 80 else 'danger' }}" 
+                     role="progressbar" 
+                     style="width: {{ quota_data.percentage }}%" 
+                     aria-valuenow="{{ quota_data.percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between text-muted small">
+                <span>{{ "{:,}".format(quota_data.daily_usage if quota_data else 0) }} / {{ "{:,}".format(quota_data.quota_limit if quota_data else 10000) }} requêtes</span>
+                <span>Reset: {{ quota_data.reset_time if quota_data else 'N/A' }}</span>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="grid-view active" id="gridView">
+            <div class="row g-4" id="apiGrid">
+                <!-- YouTube API -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card api-card">
+                        <div class="api-icon-wrapper">
+                            <i class="bx bxl-youtube api-icon"></i>
+                            <span class="category-badge category-strategy">API</span>
+                            
+                            <div class="usage-overlay">
+                                <i class="bx bx-trending-up"></i>
+                                {{ "{:,}".format(quota_data.daily_usage if quota_data else 0) }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="api-title">YouTube Data API v3</h5>
+                            
+                            <div class="api-description">
+                                API principale pour récupérer les données vidéos et chaînes
+                            </div>
+                            
+                            <div class="api-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-play"></i>
+                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} vidéos</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bxl-youtube"></i>
+                                    <span>{{ "{:,}".format(api_stats.channels_analyzed if api_stats else 0) }} chaînes</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-{{ 'healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'critical' }}">
+                                    <i class="bx bx-{{ 'check' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'error' if (quota_data.daily_usage if usage_data else 0) >= 8000 else 'time' }}"></i>
+                                    {{ 'Healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'Warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'Critical' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search API -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card api-card">
+                        <div class="api-icon-wrapper">
+                            <i class="bx bx-search api-icon"></i>
+                            <span class="category-badge category-content">SEARCH</span>
+                            
+                            <div class="usage-overlay">
+                                <i class="bx bx-search-alt"></i>
+                                {{ "{:,}".format(api_stats.search_requests if api_stats else 0) }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="api-title">YouTube Search API</h5>
+                            
+                            <div class="api-description">
+                                Recherche de chaînes et vidéos par mots-clés
+                            </div>
+                            
+                            <div class="api-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-search"></i>
+                                    <span>{{ "{:,}".format(api_stats.search_requests if api_stats else 0) }} recherches</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-list-ul"></i>
+                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} résultats</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-healthy">
+                                    <i class="bx bx-check"></i>
+                                    Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Playlists API -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card api-card">
+                        <div class="api-icon-wrapper">
+                            <i class="bx bx-collection api-icon"></i>
+                            <span class="category-badge category-performance">PLAYLISTS</span>
+                            
+                            <div class="usage-overlay">
+                                <i class="bx bx-collection"></i>
+                                {{ "{:,}".format(api_stats.search_requests if api_stats else 0) }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="api-title">Playlists API</h5>
+                            
+                            <div class="api-description">
+                                Récupération des playlists et de leurs vidéos
+                            </div>
+                            
+                            <div class="api-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-list-ul"></i>
+                                    <span>355 playlists</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-play"></i>
+                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} vidéos</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-healthy">
+                                    <i class="bx bx-check"></i>
+                                    Opérationnelle
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments API -->
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card api-card">
+                        <div class="api-icon-wrapper">
+                            <i class="bx bx-comment api-icon"></i>
+                            <span class="category-badge category-content">COMMENTS</span>
+                            
+                            <div class="usage-overlay">
+                                <i class="bx bx-comment"></i>
+                                {{ "{:,}".format(api_stats.errors if api_stats else 0) }}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="api-title">Comments API</h5>
+                            
+                            <div class="api-description">
+                                Analyse des commentaires pour le sentiment
+                            </div>
+                            
+                            <div class="api-metrics">
+                                <div class="metric-item">
+                                    <i class="bx bx-message-detail"></i>
+                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} commentaires</span>
+                                </div>
+                                <div class="metric-item">
+                                    <i class="bx bx-happy"></i>
+                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} analyses</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="status-badge status-warning">
+                                    <i class="bx bx-time"></i>
+                                    Optionnelle
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table View -->
+        <div class="table-view" id="tableView">
+            <div class="card">
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>API</th>
+                                <th>Requêtes</th>
+                                <th>Données Récupérées</th>
+                                <th>Statut</th>
+                                <th>Dernière Utilisation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="table-api-title">YouTube Data API v3</td>
+                                <td>{{ "{:,}".format(quota_data.daily_usage if usage_data else 0) }}</td>
+                                <td>{{ "{:,}".format(usage_data.videos_fetched if usage_data else 0) }} vidéos, {{ "{:,}".format(usage_data.channels_fetched if usage_data else 0) }} chaînes</td>
+                                <td>
+                                    <span class="status-badge status-{{ 'healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'critical' }}">
+                                        <i class="bx bx-{{ 'check' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'error' if (quota_data.daily_usage if usage_data else 0) >= 8000 else 'time' }}"></i> 
+                                        {{ 'Healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'Warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'Critical' }}
+                                    </span>
+                                </td>
+                                <td>{{ recent_calls[0].timestamp if usage_data else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-api-title">YouTube Search API</td>
+                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }}</td>
+                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }} recherches</td>
+                                <td>
+                                    <span class="status-badge status-healthy">
+                                        <i class="bx bx-check"></i> Active
+                                    </span>
+                                </td>
+                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-api-title">Playlists API</td>
+                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }}</td>
+                                <td>{{ "{:,}".format(355 if usage_data else 0) }} playlists</td>
+                                <td>
+                                    <span class="status-badge status-healthy">
+                                        <i class="bx bx-check"></i> Opérationnelle
+                                    </span>
+                                </td>
+                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-api-title">Comments API</td>
+                                <td>{{ "{:,}".format(api_stats.errors if usage_data else 0) }}</td>
+                                <td>{{ "{:,}".format(api_stats.videos_fetched if usage_data else 0) }} commentaires</td>
+                                <td>
+                                    <span class="status-badge status-warning">
+                                        <i class="bx bx-time"></i> Optionnelle
+                                    </span>
+                                </td>
+                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Configuration -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bx bx-cog me-2"></i>
+                    Configuration API
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bx bx-key me-1"></i>
+                                Clé API YouTube
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" value="AIza...{{ api_config.key_suffix if api_config.key_suffix else 'Non configurée' }}" readonly>
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="bx bx-show"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bx bx-time me-1"></i>
+                                Limite Quotidienne
+                            </label>
+                            <input type="number" class="form-control" value="{{ quota_data.quota_limit if usage_data else 10000 }}" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bx bx-server me-1"></i>
+                                Statut du Service
+                            </label>
+                            <div class="form-control d-flex align-items-center justify-content-between">
+                                <span>YouTube API v3</span>
+                                <span class="status-badge status-healthy">
+                                    <i class="bx bx-check"></i> Opérationnel
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bx bx-refresh me-1"></i>
+                                Dernier Reset
+                            </label>
+                            <input type="text" class="form-control" value="{{ quota_data.reset_time if usage_data else 'N/A' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+let currentView = 'grid';
+
+function toggleView(view) {
+    currentView = view;
+    
+    const gridView = document.getElementById('gridView');
+    const tableView = document.getElementById('tableView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const tableBtn = document.getElementById('tableViewBtn');
+    
+    if (view === 'grid') {
+        if (gridView) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+        }
+        if (tableView) {
+            tableView.classList.remove('active');
+            tableView.style.display = 'none';
+        }
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+    } else {
+        if (gridView) {
+            gridView.classList.remove('active');
+            gridView.style.display = 'none';
+        }
+        if (tableView) {
+            tableView.classList.add('active');
+            tableView.style.display = 'block';
+        }
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.add('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('apiUsageViewPreference', view);
+}
+
+// Restore view preference on load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('apiUsageViewPreference');
+    if (savedView && savedView !== 'grid') {
+        toggleView(savedView);
+    }
+});
+</script>
+{% endblock %}
