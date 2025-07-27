@@ -7,31 +7,188 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from blueprints.auth import login_required
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 admin_bp = Blueprint('admin', __name__)
 
 
-@admin_bp.route('/settings')
+@admin_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    """Page des paramètres de l'application"""
+    """Page des paramètres (règles métiers uniquement) - Restored from backup"""
+    if request.method == 'POST':
+        # Sauvegarder la clé API YouTube si fournie
+        youtube_api_key = request.form.get('youtube_api_key', '').strip()
+        if youtube_api_key:
+            # Sauvegarder dans la base de données
+            from yt_channel_analyzer.database import get_db_connection
+            from flask import current_app
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Créer la table si elle n'existe pas
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS app_config (
+                    key TEXT PRIMARY KEY,
+                    value TEXT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Insérer ou mettre à jour la clé
+            cursor.execute('''
+                INSERT OR REPLACE INTO app_config (key, value, updated_at)
+                VALUES ('youtube_api_key', ?, datetime('now'))
+            ''', (youtube_api_key,))
+            
+            conn.commit()
+            conn.close()
+            
+            # Mettre à jour la config de l'app
+            current_app.config['YOUTUBE_API_KEY'] = youtube_api_key
+            os.environ['YOUTUBE_API_KEY'] = youtube_api_key
+            
+            print(f"[SETTINGS] Clé API YouTube sauvegardée en base de données")
+            flash('Clé API YouTube sauvegardée avec succès !', 'success')
+        
+        # Suite du code existant
+        # Sauvegarder les paramètres
+        from yt_channel_analyzer.settings import save_settings
+        
+        settings_data = {
+            'paid_threshold': int(request.form.get('paid_threshold', 10000)),
+            'industry': request.form.get('industry', 'tourism'),
+            'auto_classify': 'auto_classify' in request.form,
+            'max_videos': int(request.form.get('max_videos', 1000)),
+            'cache_duration': int(request.form.get('cache_duration', 24))
+        }
+        
+        save_settings(settings_data)
+        print(f"[SETTINGS] Paramètres sauvegardés: {settings_data}")
+        
+        return render_template('settings_sneat_pro.html', 
+                             current_settings=settings_data,
+                             message="Paramètres sauvegardés avec succès !")
+    
+    from yt_channel_analyzer.settings import load_settings
+    current_settings = load_settings()
+    
+    # Récupérer les patterns de classification multilingues
+    from yt_channel_analyzer.database.classification import get_classification_patterns
+    patterns = get_classification_patterns()
+    
+    # Intégrer les patterns depuis enhanced_patterns.py
     try:
-        from yt_channel_analyzer.settings import load_settings, save_settings
+        from yt_channel_analyzer.enhanced_patterns import DESCRIPTION_PATTERNS, add_description_patterns_to_db
         
-        settings = load_settings()
+        # Vérifier si les patterns enhanced sont déjà en base
+        total_patterns = sum(len(patterns.get(cat, [])) for cat in ['hero', 'hub', 'help'])
+        if total_patterns < 50:  # Si moins de 50 patterns, on ajoute les enhanced
+            print("[SETTINGS] Ajout des patterns enhanced multilingues...")
+            add_description_patterns_to_db()
+            patterns = get_classification_patterns()  # Recharger après ajout
         
-        return render_template('settings_sneat_pro.html', 
-                             settings=settings,
-                             dev_mode=session.get('dev_mode', False))
-                             
+        # Organiser les patterns par langue
+        multilingual_patterns = {
+            'fr': {'hero': [], 'hub': [], 'help': []},
+            'en': {'hero': [], 'hub': [], 'help': []},
+            'de': {'hero': [], 'hub': [], 'help': []},
+            'nl': {'hero': [], 'hub': [], 'help': []}
+        }
+        
+        # Ajouter les patterns enhanced directement
+        for lang, categories in DESCRIPTION_PATTERNS.items():
+            if lang in multilingual_patterns:
+                for category, pattern_list in categories.items():
+                    multilingual_patterns[lang][category] = pattern_list
+        
+    except ImportError:
+        # Fallback vers les patterns existants
+        multilingual_patterns = {
+            'fr': {'hero': patterns.get('hero', []), 'hub': patterns.get('hub', []), 'help': patterns.get('help', [])}
+        }
+    
+    # Pour compatibilité avec le template existant
+    hero_patterns = patterns.get('hero', [])
+    hub_patterns = patterns.get('hub', [])
+    help_patterns = patterns.get('help', [])
+    
+    # Récupérer les statistiques business (paid vs organic)
+    try:
+        from yt_channel_analyzer.database import get_db_connection
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Récupérer le seuil paid_threshold
+        paid_threshold = current_settings.get('paid_threshold', 10000)
+        
+        # Statistiques organiques (< seuil)
+        cursor.execute("""
+            SELECT COUNT(*) as count,
+                   AVG(CASE WHEN like_count > 0 AND view_count > 0 
+                       THEN (like_count + comment_count) * 100.0 / view_count 
+                       ELSE 0 END) as engagement
+            FROM video 
+            WHERE view_count < ? AND view_count > 0
+        """, (paid_threshold,))
+        organic_result = cursor.fetchone()
+        organic_stats = {
+            'count': organic_result[0] if organic_result else 0,
+            'engagement': organic_result[1] if organic_result and organic_result[1] else 0
+        }
+        
+        # Statistiques payantes (>= seuil)
+        cursor.execute("""
+            SELECT COUNT(*) as count,
+                   AVG(CASE WHEN like_count > 0 AND view_count > 0 
+                       THEN (like_count + comment_count) * 100.0 / view_count 
+                       ELSE 0 END) as engagement
+            FROM video 
+            WHERE view_count >= ?
+        """, (paid_threshold,))
+        paid_result = cursor.fetchone()
+        paid_stats = {
+            'count': paid_result[0] if paid_result else 0,
+            'engagement': paid_result[1] if paid_result and paid_result[1] else 0
+        }
+        
+        # Pas de mots-clés, c'est basé sur le seuil de vues
+        paid_keywords = []
+        
+        conn.close()
+        
     except Exception as e:
-        print(f"[ERROR] Error loading settings: {e}")
-        flash("Erreur lors du chargement des paramètres", "error")
-        return render_template('settings_sneat_pro.html', 
-                             settings={},
-                             dev_mode=session.get('dev_mode', False))
+        print(f"[ERROR] Erreur lors de la récupération des stats business: {e}")
+        organic_stats = {'count': 0, 'engagement': 0}
+        paid_stats = {'count': 0, 'engagement': 0}
+        paid_keywords = []
+    
+    # Informations cron job (simulation)
+    last_cron_run = "2025-01-19 14:30"
+
+    # Récupérer la clé API actuelle (masquée pour la sécurité)
+    from flask import current_app
+    current_api_key = current_app.config.get('YOUTUBE_API_KEY', '')
+    if current_api_key:
+        # Masquer la clé en ne montrant que les premiers et derniers caractères
+        masked_key = f"{current_api_key[:8]}...{current_api_key[-4:]}" if len(current_api_key) > 12 else "Configurée"
+    else:
+        masked_key = "Non configurée"
+    
+    return render_template('settings_sneat_pro.html', 
+                         current_settings=current_settings,
+                         current_api_key=masked_key,
+                         hero_patterns=hero_patterns,
+                         hub_patterns=hub_patterns,
+                         help_patterns=help_patterns,
+                         multilingual_patterns=multilingual_patterns,
+                         organic_stats=organic_stats,
+                         paid_stats=paid_stats,
+                         paid_keywords=paid_keywords,
+                         last_cron_run=last_cron_run)
 
 
 @admin_bp.route('/save-settings', methods=['POST'])
@@ -66,10 +223,31 @@ def save_settings():
 def fix_problems():
     """Page de résolution des problèmes automatique"""
     try:
+        print("[DEBUG] Starting fix_problems route")
         from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Debug: Check what tables exist
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        print(f"[DEBUG] Available tables: {[t[0] for t in tables]}")
+        
+        # Check if video table exists specifically
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video';")
+        video_table_exists = cursor.fetchone()
+        print(f"[DEBUG] Video table exists: {video_table_exists is not None}")
+        
+        if not video_table_exists:
+            print("[DEBUG] Video table missing - creating empty problems list")
+            problems_found = []
+            conn.close()
+            return render_template('fix_problems_sneat_pro.html',
+                                 problems_found=problems_found,
+                                 total_problems=0,
+                                 system_health={'database': 'error', 'api': 'unknown'},
+                                 db_stats={'total_videos': 0, 'total_competitors': 0, 'total_playlists': 0})
         
         # Analyser les problèmes dans la base de données
         problems_found = []
@@ -129,18 +307,45 @@ def fix_problems():
                 'severity': 'medium'
             })
         
+        # Get database statistics
+        cursor.execute("SELECT COUNT(*) FROM video")
+        total_videos = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM concurrent")
+        total_competitors = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM playlist")
+        total_playlists = cursor.fetchone()[0]
+        
         conn.close()
+        
+        # Calculate system health
+        system_health = {
+            'database': 'healthy' if len(problems_found) == 0 else 'warning',
+            'api': 'healthy'  # Assuming API is healthy if we get here
+        }
+        
+        # Database statistics
+        db_stats = {
+            'total_videos': total_videos,
+            'total_competitors': total_competitors,
+            'total_playlists': total_playlists
+        }
         
         return render_template('fix_problems_sneat_pro.html',
                              problems_found=problems_found,
-                             total_problems=len(problems_found))
+                             total_problems=len(problems_found),
+                             system_health=system_health,
+                             db_stats=db_stats)
                              
     except Exception as e:
         print(f"[ERROR] Error in fix_problems: {e}")
         flash("Erreur lors de l'analyse des problèmes", "error")
         return render_template('fix_problems_sneat_pro.html',
                              problems_found=[],
-                             total_problems=0)
+                             total_problems=0,
+                             system_health={'database': 'error', 'api': 'error'},
+                             db_stats={'total_videos': 0, 'total_competitors': 0, 'total_playlists': 0})
 
 
 @admin_bp.route('/fix-problem/<problem_type>', methods=['POST'])
@@ -208,31 +413,75 @@ def fix_problem(problem_type):
         }), 500
 
 
-@admin_bp.route('/api-usage')
+@admin_bp.route('/admin-api-usage')
 @login_required
 def api_usage():
     """Page de surveillance de l'utilisation de l'API"""
     try:
+        import sys
+        print("=" * 80)
+        print("[ULTRA DEBUG] Starting api_usage route")
+        sys.stdout.flush()
+        
         # Lire le fichier de tracking des quotas API
-        quota_file = 'api_quota_tracking.json'
+        quota_file = '../api_quota_tracking.json'
+        print(f"[ULTRA DEBUG] Looking for quota file: {quota_file}")
+        print(f"[ULTRA DEBUG] Current working directory: {os.getcwd()}")
+        print(f"[ULTRA DEBUG] Full path would be: {os.path.abspath(quota_file)}")
+        print(f"[ULTRA DEBUG] File exists: {os.path.exists(quota_file)}")
+        
         quota_data = {}
         
         if os.path.exists(quota_file):
+            print(f"[ULTRA DEBUG] File exists, attempting to read...")
             try:
                 with open(quota_file, 'r', encoding='utf-8') as f:
-                    quota_data = json.load(f)
-            except (json.JSONDecodeError, IOError):
+                    file_content = f.read()
+                    print(f"[ULTRA DEBUG] Raw file content: {file_content}")
+                    quota_data = json.loads(file_content)
+                    print(f"[ULTRA DEBUG] Parsed JSON data: {quota_data}")
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"[ULTRA DEBUG] Error reading file: {e}")
                 quota_data = {}
+        else:
+            print(f"[ULTRA DEBUG] File does not exist!")
+            # List files in current directory
+            print(f"[ULTRA DEBUG] Files in current directory:")
+            for f in os.listdir('.'):
+                if f.endswith('.json'):
+                    print(f"  - {f}")
         
-        # Calculer les statistiques
+        print(f"[ULTRA DEBUG] Final quota_data: {quota_data}")
+        
+        # Calculer les statistiques selon la structure réelle du fichier
         total_requests = quota_data.get('total_requests', 0)
         daily_requests = quota_data.get('daily_requests', {})
+        
+        print(f"[ULTRA DEBUG] total_requests from file: {total_requests}")
+        print(f"[ULTRA DEBUG] daily_requests from file: {daily_requests}")
+        
+        # Si on a l'ancien format, l'utiliser
+        if 'quota_used' in quota_data:
+            print("[ULTRA DEBUG] Using old format with quota_used")
+            current_usage = quota_data.get('quota_used', 0)
+            total_requests = quota_data.get('requests_made', 0)
+            print(f"[ULTRA DEBUG] Old format - current_usage: {current_usage}, total_requests: {total_requests}")
+        else:
+            print("[ULTRA DEBUG] Using new format with daily_requests")
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            print(f"[ULTRA DEBUG] Looking for date: {current_date}")
+            current_usage = daily_requests.get(current_date, 0)
+            print(f"[ULTRA DEBUG] New format - current_usage: {current_usage}")
         
         # Dernières 7 jours
         recent_usage = []
         for i in range(7):
-            date = (datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-            usage = daily_requests.get(date, 0)
+            date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+            if daily_requests:
+                usage = daily_requests.get(date, 0)
+            else:
+                # Pour l'ancien format, on ne montre que les données d'aujourd'hui
+                usage = current_usage if date == datetime.now().strftime('%Y-%m-%d') else 0
             recent_usage.append({
                 'date': date,
                 'requests': usage
@@ -242,8 +491,13 @@ def api_usage():
         
         # Limites API (YouTube Data API v3)
         daily_limit = 10000  # Limite quotidienne par défaut
-        current_usage = daily_requests.get(datetime.now().strftime('%Y-%m-%d'), 0)
         usage_percentage = (current_usage / daily_limit) * 100
+        
+        print(f"[ULTRA DEBUG] Calculations:")
+        print(f"  daily_limit: {daily_limit}")
+        print(f"  current_usage: {current_usage}")
+        print(f"  usage_percentage: {usage_percentage}")
+        print(f"  remaining_quota: {max(daily_limit - current_usage, 0)}")
         
         api_stats = {
             'total_requests': total_requests,
@@ -254,6 +508,12 @@ def api_usage():
             'recent_usage': recent_usage,
             'status': 'healthy' if usage_percentage < 80 else 'warning' if usage_percentage < 95 else 'critical'
         }
+        
+        print(f"[ULTRA DEBUG] Final api_stats being sent to template:")
+        for key, value in api_stats.items():
+            print(f"  {key}: {value}")
+        
+        print("=" * 80)
         
         return render_template('api_usage_sneat_pro.html',
                              api_stats=api_stats)

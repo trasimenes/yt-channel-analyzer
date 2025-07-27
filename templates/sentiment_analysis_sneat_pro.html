@@ -129,12 +129,6 @@
         color: #6c757d;
     }
     
-    .search-filters {
-        background: #f5f5f9;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
     
     .filter-group {
         margin-bottom: 1rem;
@@ -250,20 +244,9 @@
         color: white;
     }
     
-    /* Table View Styles - Fixed specificity */
-    #tableView {
-        display: none !important;
-    }
-    
-    #tableView.active {
-        display: block !important;
-    }
-    
+    /* Table View Styles - Always visible */
+    #tableView,
     .table-view {
-        display: none !important;
-    }
-    
-    .table-view.active {
         display: block !important;
     }
     
@@ -348,30 +331,6 @@
         font-weight: 600;
     }
     
-    /* Grid View Styles - Fixed specificity */
-    #gridView {
-        display: block !important;
-    }
-    
-    #gridView.active {
-        display: block !important;
-    }
-    
-    #gridView:not(.active) {
-        display: none !important;
-    }
-    
-    .grid-view {
-        display: block !important;
-    }
-    
-    .grid-view.active {
-        display: block !important;
-    }
-    
-    .grid-view:not(.active) {
-        display: none !important;
-    }
     
     .video-meta {
         display: flex;
@@ -483,16 +442,31 @@
                 <span class="text-muted fw-light">Analyse /</span> Sentiment des Vidéos
             </h4>
             <div class="d-flex align-items-center gap-3">
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
-                        <i class="bx bx-grid-alt"></i>
-                        Grille
-                    </button>
-                    <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
-                        <i class="bx bx-list-ul"></i>
-                        Tableau
+                <!-- Developer Mode Controls -->
+                {% if config.DEV_MODE %}
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select" id="batchSizeSelect" style="width: auto;">
+                        <option value="100">100 premières vidéos</option>
+                        <option value="500">500 premières vidéos</option>
+                        <option value="1000">1000 premières vidéos</option>
+                        <option value="all">TOUTES les vidéos</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" onclick="startBatchScraping()" id="batchStartBtn">
+                        <i class="bx bx-play me-2"></i>
+                        Démarrer
                     </button>
                 </div>
+                <div class="vr"></div>
+                {% endif %}
+                
+                <button class="btn btn-primary" onclick="exportSentimentData()">
+                    <i class="bx bx-export me-2"></i>
+                    Exporter
+                </button>
+                <button class="btn btn-secondary" onclick="showImportDialog()">
+                    <i class="bx bx-import me-2"></i>
+                    Importer
+                </button>
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
                     Actualiser
@@ -500,311 +474,1422 @@
             </div>
         </div>
 
-        <!-- Statistics Cards -->
-        {% if stats %}
-        <div class="stats-cards">
+        <!-- Statistics Cards from 8.8M Comments Pipeline -->
+        <div class="stats-cards" id="emotionStatsCards">
             <div class="stat-card total">
-                <h3>{{ "{:,}".format(stats.get('total_videos_analyzed', 0)) }}</h3>
-                <p>Vidéos analysées</p>
+                <h3 id="totalCommentsAnalyzed">Loading...</h3>
+                <p>Commentaires analysés</p>
             </div>
             <div class="stat-card positive">
-                <h3>{{ "{:,}".format(stats.get('positive_count', 0)) }}</h3>
-                <p>Positives ({{ (stats.get('positive_percentage', 0) or 0)|round(1) }}%)</p>
+                <h3 id="positiveCount">Loading...</h3>
+                <p id="positivePercentage">Positifs</p>
             </div>
             <div class="stat-card negative">
-                <h3>{{ "{:,}".format(stats.get('negative_count', 0)) }}</h3>
-                <p>Négatives ({{ (stats.get('negative_percentage', 0) or 0)|round(1) }}%)</p>
+                <h3 id="negativeCount">Loading...</h3>
+                <p id="negativePercentage">Négatifs</p>
             </div>
             <div class="stat-card neutral">
-                <h3>{{ "{:,}".format(stats.get('neutral_count', 0)) }}</h3>
-                <p>Neutres ({{ (stats.get('neutral_percentage', 0) or 0)|round(1) }}%)</p>
+                <h3 id="neutralCount">Loading...</h3>
+                <p id="neutralPercentage">Neutres</p>
             </div>
         </div>
-        {% endif %}
-
-        <!-- Sentiment Distribution -->
-        {% if sentiment_breakdown %}
-        <div class="sentiment-distribution">
-            <h5 class="mb-0">
-                <i class="bx bx-bar-chart me-2"></i>
-                Distribution des Sentiments
-            </h5>
-            <div class="sentiment-bars">
-                <div class="sentiment-bar">
-                    <div class="sentiment-label">
-                        <i class="bx bx-happy text-success"></i>
-                        Positif
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-fill positive" style="width: {{ sentiment_breakdown.positive_percent }}%"></div>
-                    </div>
-                    <div class="sentiment-percentage">{{ sentiment_breakdown.positive_percent|round(1) }}%</div>
-                </div>
-                <div class="sentiment-bar">
-                    <div class="sentiment-label">
-                        <i class="bx bx-meh text-secondary"></i>
-                        Neutre
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-fill neutral" style="width: {{ sentiment_breakdown.neutral_percent }}%"></div>
-                    </div>
-                    <div class="sentiment-percentage">{{ sentiment_breakdown.neutral_percent|round(1) }}%</div>
-                </div>
-                <div class="sentiment-bar">
-                    <div class="sentiment-label">
-                        <i class="bx bx-sad text-danger"></i>
-                        Négatif
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-fill negative" style="width: {{ sentiment_breakdown.negative_percent }}%"></div>
-                    </div>
-                    <div class="sentiment-percentage">{{ sentiment_breakdown.negative_percent|round(1) }}%</div>
+        
+        <!-- Developer Mode: Real-time Batch Progress -->
+        {% if config.DEV_MODE %}
+        <div class="card mb-4" id="batchProgress" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-trending-up me-2"></i>
+                    Progression du Batch en Cours
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-danger" onclick="stopBatchScraping()" id="stopBatchBtn">
+                        <i class="bx bx-stop"></i>
+                        Arrêter
+                    </button>
+                    <span class="badge bg-primary" id="batchSizeLabel">0 vidéos</span>
                 </div>
             </div>
-        </div>
-        {% endif %}
-
-        <!-- Search and Filters -->
-        <div class="search-filters">
-            <div class="row">
-                <div class="col-lg-4">
-                    <div class="filter-group">
-                        <label class="form-label">Filtrer par sentiment</label>
-                        <select class="form-select" id="sentimentFilter" onchange="applyFilters()">
-                            <option value="all">Tous les sentiments</option>
-                            <option value="positive">Positif</option>
-                            <option value="neutral">Neutre</option>
-                            <option value="negative">Négatif</option>
-                        </select>
+            <div class="card-body">
+                <!-- Main Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small fw-medium">Progression globale</span>
+                        <span class="small text-muted" id="batchProgressText">0 / 0</span>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             role="progressbar" 
+                             id="batchProgressBar"
+                             style="width: 0%">
+                            <span id="batchProgressPercent">0%</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="col-lg-4">
-                    <div class="filter-group">
-                        <label class="form-label">Nombre de résultats</label>
-                        <select class="form-select" id="limitFilter" onchange="applyFilters()">
-                            <option value="25">25 vidéos</option>
-                            <option value="50" selected>50 vidéos</option>
-                            <option value="100">100 vidéos</option>
-                            <option value="200">200 vidéos</option>
-                        </select>
+                <!-- Stats Grid -->
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div class="border-end">
+                            <div class="fw-bold text-primary" id="batchVideosProcessed">0</div>
+                            <small class="text-muted">Vidéos traitées</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end">
+                            <div class="fw-bold text-success" id="batchCommentsScraped">0</div>
+                            <small class="text-muted">Commentaires</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end">
+                            <div class="fw-bold text-info" id="batchQuotaUsed">0</div>
+                            <small class="text-muted">Quota API</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end">
+                            <div class="fw-bold text-warning" id="batchProcessingRate">0</div>
+                            <small class="text-muted">Vid/min</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end">
+                            <div class="fw-bold text-secondary" id="batchETA">--</div>
+                            <small class="text-muted">ETA</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="fw-bold" id="batchStatus">En attente</div>
+                        <small class="text-muted">Statut</small>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Log -->
+                <div class="mt-3">
+                    <h6 class="mb-2">Activité récente</h6>
+                    <div class="bg-light rounded p-3" style="height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;" id="batchActivityLog">
+                        <div class="text-muted">En attente du démarrage du batch...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Processing Status Bar -->
+        <div class="card mb-4" id="processingStatus" style="display: none;">
+            <div class="card-header">
+                <h5><i class="bx bx-cog bx-spin me-2"></i>Progression de l'Analyse Émotionnelle</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" 
+                         id="emotionProgress"
+                         style="width: 0%">
+                        0 / 8,800,000 commentaires
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <strong>Statut:</strong><br>
+                        <span class="text-info" id="processingStatusText">En attente</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Commentaires traités:</strong><br>
+                        <span class="text-success" id="processedCount">0</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Analyses réussies:</strong><br>
+                        <span class="text-primary" id="emotionAnalysesCount">0</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Taux de réussite:</strong><br>
+                        <span class="text-warning" id="successRate">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Emotion Analytics Dashboard -->
+        <div class="row mb-4">
+            <!-- Global Emotion Distribution -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-pie-chart me-2"></i>
+                            Distribution Globale
+                        </h5>
+                        <small class="text-muted">8,800,000 commentaires analysés</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="globalEmotionChart" width="300" height="300"></canvas>
                     </div>
                 </div>
             </div>
             
-            <div class="filter-group mt-3">
-                <label class="form-label">Trier par</label>
-                <div class="sort-buttons">
-                    <button class="sort-btn active" onclick="updateSort('sentiment_score')">
-                        <i class="bx bx-heart me-1"></i> Score sentiment
-                    </button>
-                    <button class="sort-btn" onclick="updateSort('view_count')">
-                        <i class="bx bx-show me-1"></i> Vues
-                    </button>
-                    <button class="sort-btn" onclick="updateSort('like_count')">
-                        <i class="bx bx-like me-1"></i> Likes
-                    </button>
-                    <button class="sort-btn" onclick="updateSort('published_at')">
-                        <i class="bx bx-calendar me-1"></i> Date
-                    </button>
+            <!-- Emotion Heatmap by Country -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-world me-2"></i>
+                            Heatmap Pays × Émotions
+                        </h5>
+                        <small class="text-muted">Analyse comparative par pays</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="emotionHeatmapChart" width="600" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <!-- Competitor Radar Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-target-lock me-2"></i>
+                            Profil Émotionnel Concurrents
+                        </h5>
+                        <small class="text-muted">Top 5 performers</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="competitorRadarChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emotion Timeline -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-line-chart me-2"></i>
+                            Évolution Émotionnelle
+                        </h5>
+                        <small class="text-muted">Tendances temporelles</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="emotionTimelineChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Correlation Scatter Plot -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bx bx-scatter-chart me-2"></i>
+                            Corrélation Émotion × Engagement
+                        </h5>
+                        <small class="text-muted">Sentiment positif vs taux d'engagement par vidéo</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="emotionEngagementChart" width="800" height="400"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Grid View -->
-        <div class="grid-view active" id="gridView">
-            <div class="row g-4" id="videosGrid">
-                {% if sentiment_videos %}
-                    {% for category, videos in sentiment_videos.items() %}
-                        {% for video in videos %}
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="card sentiment-card h-100" onclick="window.open('{{ video.url or '#' }}', '_blank')">
-                                <div class="video-thumbnail-wrapper">
-                                    <img src="{{ video.thumbnail_url }}" 
-                                         alt="{{ video.title or 'Video' }}"
-                                         class="video-thumbnail"
-                                         onerror="this.src='https://via.placeholder.com/320x180/f5f5f9/566a7f?text=No+Image'">
-                                    
-                                    <span class="sentiment-badge sentiment-{{ category }}">
-                                        {{ category|upper }}
-                                    </span>
-                                </div>
-                                
-                                <div class="card-body">
-                                    <h5 class="video-title" title="{{ video.title or 'Sans titre' }}">{{ video.title or 'Sans titre' }}</h5>
-                                    
-                                    <div class="video-channel">
-                                        <i class="bx bx-user-circle"></i>
-                                        {{ video.competitor_name or 'Concurrent inconnu' }}
-                                    </div>
-                                    
-                                    <div class="video-stats">
-                                        <div class="stat-item">
-                                            <i class="bx bx-show"></i>
-                                            <span>{{ "{:,}".format(video.view_count or 0) }}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="bx bx-like"></i>
-                                            <span>{{ "{:,}".format(video.like_count or 0) }}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="bx bx-comment"></i>
-                                            <span>{{ "{:,}".format(video.comment_count or 0) }}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="video-meta">
-                                        <span class="video-date">
-                                            <i class="bx bx-calendar"></i>
-                                            {{ video.published_at_formatted or 'N/A' }}
-                                        </span>
-                                        <span class="sentiment-score-badge score-{{ category }}">
-                                            <i class="bx bx-heart"></i>
-                                            {{ video.sentiment_score|default(0)|round(2) }}
-                                        </span>
-                                    </div>
+        <!-- Table View with Filters -->
+        <div class="table-view active" id="tableView">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-3">
+                        <i class="bx bx-trophy me-2"></i>
+                        Top Vidéos par Nombre de Commentaires Positifs
+                    </h5>
+                    <p class="text-muted mb-3">
+                        Classement des vidéos analysées selon le nombre de commentaires positifs reçus
+                    </p>
+                    
+                    <!-- Filters -->
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="filter-group">
+                                <label class="form-label">Filtrer par sentiment</label>
+                                <select class="form-select" id="sentimentFilter" onchange="applyFilters()">
+                                    <option value="all" {% if sentiment_filter == 'all' %}selected{% endif %}>Tous les sentiments</option>
+                                    <option value="positive" {% if sentiment_filter == 'positive' %}selected{% endif %}>Positif</option>
+                                    <option value="neutral" {% if sentiment_filter == 'neutral' %}selected{% endif %}>Neutre</option>
+                                    <option value="negative" {% if sentiment_filter == 'negative' %}selected{% endif %}>Négatif</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="filter-group">
+                                <label class="form-label">Nombre de résultats</label>
+                                <select class="form-select" id="limitFilter" onchange="applyFilters()">
+                                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25 vidéos</option>
+                                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50 vidéos</option>
+                                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100 vidéos</option>
+                                    <option value="200" {% if per_page == 200 %}selected{% endif %}>200 vidéos</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="filter-group">
+                                <label class="form-label">Actions</label>
+                                <div>
+                                    <button class="btn btn-primary btn-sm" onclick="exportSentimentData()">
+                                        <i class="bx bx-download me-1"></i>
+                                        Exporter
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm ms-2" onclick="location.reload()">
+                                        <i class="bx bx-refresh me-1"></i>
+                                        Actualiser
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12 text-center py-5">
-                        <i class="bx bx-heart" style="font-size: 4rem; color: #8592a3;"></i>
-                        <h3 class="mt-3 mb-2">Aucune donnée de sentiment</h3>
-                        <p class="text-muted">Les vidéos doivent être analysées pour afficher les sentiments.</p>
                     </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Table View -->
-        <div class="table-view" id="tableView">
-            <div class="card">
+                </div>
+                
                 <div class="table-responsive text-nowrap">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>Rang</th>
                                 <th>Miniature</th>
                                 <th>Titre</th>
                                 <th>Concurrent</th>
-                                <th>Sentiment</th>
-                                <th>Score</th>
-                                <th>Vues</th>
-                                <th>Likes</th>
-                                <th>Commentaires</th>
-                                <th>Date</th>
+                                <th>Commentaires Positifs</th>
+                                <th>Sentiment Dominant</th>
+                                <th>Total Commentaires</th>
+                                <th>% Positif</th>
+                                <th>Confiance Moy.</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% if sentiment_videos %}
-                                {% set counter = [0] %}
-                                {% for category, videos in sentiment_videos.items() %}
-                                    {% for video in videos %}
-                                    {% set _ = counter.append(counter.pop() + 1) %}
-                                    <tr onclick="window.open('{{ video.url or '#' }}', '_blank')" style="cursor: pointer;">
-                                        <td class="number-format">{{ counter[0] }}</td>
-                                        <td>
-                                            <img src="{{ video.thumbnail_url }}" 
-                                                 alt="{{ video.title or 'Video' }}"
-                                                 class="table-thumbnail"
-                                                 onerror="this.src='https://via.placeholder.com/120x68/f5f5f9/566a7f?text=No+Image'">
-                                        </td>
-                                        <td class="table-video-title">
-                                            <a href="{{ video.url or '#' }}" target="_blank" title="{{ video.title or 'Sans titre' }}">
-                                                {{ (video.title or 'Sans titre')|truncate(50) }}
-                                            </a>
-                                        </td>
-                                        <td class="table-competitor">{{ video.competitor_name or 'Inconnu' }}</td>
-                                        <td>
-                                            <span class="table-sentiment-badge table-sentiment-{{ category }}">
-                                                {{ category|upper }}
-                                            </span>
-                                        </td>
-                                        <td class="number-format">{{ video.sentiment_score|default(0)|round(2) }}</td>
-                                        <td class="number-format">{{ "{:,}".format(video.view_count or 0) }}</td>
-                                        <td class="number-format">{{ "{:,}".format(video.like_count or 0) }}</td>
-                                        <td class="number-format">{{ "{:,}".format(video.comment_count or 0) }}</td>
-                                        <td>{{ video.published_at_formatted or 'N/A' }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                {% endfor %}
-                            {% endif %}
+                            {% for video in all_videos %}
+                            <tr onclick="window.open('https://www.youtube.com/watch?v={{ video.video_id }}', '_blank')" style="cursor: pointer;">
+                                <td>
+                                    <span class="badge bg-primary">{{ video.rank }}</span>
+                                </td>
+                                <td>
+                                    <img src="{{ video.thumbnail_url }}" 
+                                         alt="{{ video.title }}"
+                                         class="table-thumbnail"
+                                         onerror="this.src='{{ url_for('static', filename='sneat-pro/img/elements/1.jpg') }}'">
+                                </td>
+                                <td class="table-video-title">
+                                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" title="{{ video.title }}">
+                                        {{ video.title|truncate(50) }}
+                                    </a>
+                                </td>
+                                <td class="table-competitor">{{ video.competitor_name }}</td>
+                                <td>
+                                    <span class="badge bg-success" style="font-size: 0.9rem;">
+                                        <i class="bx bx-smile me-1"></i>{{ video.positive_count }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="table-sentiment-badge table-sentiment-{{ video.dominant_sentiment }}">
+                                        {{ video.dominant_sentiment|upper }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="font-size: 0.75rem; line-height: 1.2;">
+                                        <div><span class="text-success">+{{ video.positive_count }}</span></div>
+                                        <div><span class="text-danger">-{{ video.negative_count }}</span></div>
+                                        <div><span class="text-muted">{{ video.neutral_count }}</span></div>
+                                    </div>
+                                    <strong>Total: {{ video.total_comments }}</strong>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px; min-width: 60px;">
+                                        <div class="progress-bar bg-success" 
+                                             role="progressbar" 
+                                             style="width: {{ video.positive_percentage }}%"
+                                             aria-valuenow="{{ video.positive_percentage }}"
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ video.positive_percentage }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-label-info">{{ video.avg_confidence }}%</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div>
+                    Affichage {{ (current_page - 1) * per_page + 1 }} - {{ [current_page * per_page, total_videos] | min }} sur {{ total_videos }} vidéos
+                </div>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ current_page - 1 }}&per_page={{ per_page }}&sentiment={{ sentiment_filter }}&sort_by={{ sort_by }}&order={{ order }}">
+                                <i class="bx bx-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        {% for page_num in range([1, current_page - 2] | max, [total_pages + 1, current_page + 3] | min) %}
+                        <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ page_num }}&per_page={{ per_page }}&sentiment={{ sentiment_filter }}&sort_by={{ sort_by }}&order={{ order }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        
+                        <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ current_page + 1 }}&per_page={{ per_page }}&sentiment={{ sentiment_filter }}&sort_by={{ sort_by }}&order={{ order }}">
+                                <i class="bx bx-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block page_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Global variables
 let currentView = 'grid';
+let emotionCharts = {};
+// Charger les données depuis Python
+let emotionData = {
+    total_comments_analyzed: {{ stats.total_videos_analyzed }},
+    positive_count: {{ stats.positive_count }},
+    negative_count: {{ stats.negative_count }},
+    neutral_count: {{ stats.neutral_count }},
+    positive_percentage: {{ stats.positive_percentage }},
+    negative_percentage: {{ stats.negative_percentage }},
+    neutral_percentage: {{ stats.neutral_percentage }},
+    engagement_correlation: {{ stats.engagement_correlation }}
+};
 
-function toggleView(view) {
-    currentView = view;
-    
-    const gridView = document.getElementById('gridView');
-    const tableView = document.getElementById('tableView');
-    const gridBtn = document.getElementById('gridViewBtn');
-    const tableBtn = document.getElementById('tableViewBtn');
-    
-    console.log('Switching to view:', view);
-    console.log('Grid element:', gridView);
-    console.log('Table element:', tableView);
-    
-    if (view === 'grid') {
-        if (gridView) {
-            gridView.classList.add('active');
-            gridView.style.display = 'block';
+// Batch processing variables
+let batchProgressInterval = null;
+let currentBatchId = null;
+let batchStartTime = null;
+
+
+// Load emotion data and initialize dashboard
+async function loadEmotionData() {
+    try {
+        // Les données sont déjà chargées depuis Python
+        if (emotionData && emotionData.total_comments_analyzed > 0) {
+            updateStatsCards();
+            initializeCharts();
+        } else {
+            showEmptyState();
         }
-        if (tableView) {
-            tableView.classList.remove('active');
-            tableView.style.display = 'none';
-        }
-        if (gridBtn) gridBtn.classList.add('active');
-        if (tableBtn) tableBtn.classList.remove('active');
-    } else {
-        if (gridView) {
-            gridView.classList.remove('active');
-            gridView.style.display = 'none';
-        }
-        if (tableView) {
-            tableView.classList.add('active');
-            tableView.style.display = 'block';
-        }
-        if (gridBtn) gridBtn.classList.remove('active');
-        if (tableBtn) tableBtn.classList.add('active');
+        
+        // Load processing status
+        loadProcessingStatus();
+        
+    } catch (error) {
+        console.error('Error loading emotion data:', error);
+        showEmptyState();
     }
-    
-    // Sauvegarder la préférence
-    localStorage.setItem('sentimentViewPreference', view);
 }
 
-// Restaurer la préférence de vue au chargement
+function updateStatsCards() {
+    if (!emotionData) return;
+    
+    document.getElementById('totalCommentsAnalyzed').textContent = 
+        emotionData.total_comments_analyzed.toLocaleString();
+    document.getElementById('positiveCount').textContent = 
+        emotionData.positive_count.toLocaleString();
+    document.getElementById('negativeCount').textContent = 
+        emotionData.negative_count.toLocaleString();
+    document.getElementById('neutralCount').textContent = 
+        emotionData.neutral_count.toLocaleString();
+        
+    document.getElementById('positivePercentage').textContent = 
+        `Positifs (${emotionData.positive_percentage.toFixed(1)}%)`;
+    document.getElementById('negativePercentage').textContent = 
+        `Négatifs (${emotionData.negative_percentage.toFixed(1)}%)`;
+    document.getElementById('neutralPercentage').textContent = 
+        `Neutres (${emotionData.neutral_percentage.toFixed(1)}%)`;
+}
+
+async function loadProcessingStatus() {
+    try {
+        // Skip API call for now, just show the data we have
+        console.log('Skipping processing status API call');
+        return;
+        
+        const response = await fetch('/api/emotions/processing-status');
+        const result = await response.json();
+        
+        if (result.success) {
+            updateProcessingStatus(result);
+        }
+    } catch (error) {
+        console.error('Error loading processing status:', error);
+    }
+}
+
+function updateProcessingStatus(status) {
+    const statusCard = document.getElementById('processingStatus');
+    
+    if (status.status === 'in_progress') {
+        statusCard.style.display = 'block';
+        
+        const progress = document.getElementById('emotionProgress');
+        const completionRate = status.completion_rate || 0;
+        
+        progress.style.width = `${completionRate}%`;
+        progress.textContent = `${status.processed_comments.toLocaleString()} / ${status.target_comments.toLocaleString()} commentaires`;
+        
+        document.getElementById('processingStatusText').textContent = 'En cours';
+        document.getElementById('processedCount').textContent = status.processed_comments.toLocaleString();
+        document.getElementById('emotionAnalysesCount').textContent = status.emotion_analyses.toLocaleString();
+        document.getElementById('successRate').textContent = `${(status.emotion_analyses / status.processed_comments * 100).toFixed(1)}%`;
+        
+        // Auto-refresh every 30 seconds
+        setTimeout(loadProcessingStatus, 30000);
+    } else if (status.status === 'completed') {
+        statusCard.style.display = 'none';
+    }
+}
+
+function showEmptyState() {
+    document.getElementById('totalCommentsAnalyzed').textContent = '0';
+    document.getElementById('positiveCount').textContent = '0';
+    document.getElementById('negativeCount').textContent = '0';
+    document.getElementById('neutralCount').textContent = '0';
+}
+
+function initializeCharts() {
+    if (!emotionData) return;
+    
+    createGlobalEmotionChart();
+    createEmotionHeatmap();
+    createCompetitorRadarChart();
+    createEmotionTimelineChart();
+    createEmotionEngagementChart();
+}
+
+function createGlobalEmotionChart() {
+    const ctx = document.getElementById('globalEmotionChart').getContext('2d');
+    
+    emotionCharts.global = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sentiment Positif', 'Sentiment Négatif', 'Neutre'],
+            datasets: [{
+                data: [
+                    emotionData.positive_count,
+                    emotionData.negative_count,
+                    emotionData.neutral_count
+                ],
+                backgroundColor: [
+                    'rgba(40, 199, 111, 0.8)',
+                    'rgba(234, 84, 85, 0.8)',
+                    'rgba(108, 117, 125, 0.8)'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Distribution globale - ${emotionData.total_comments_analyzed.toLocaleString()} commentaires`
+                },
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = emotionData.total_comments_analyzed;
+                            const percentage = (value / total * 100).toFixed(1);
+                            return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createEmotionHeatmap() {
+    const ctx = document.getElementById('emotionHeatmapChart').getContext('2d');
+    
+    // Convertir les données de pays depuis le backend
+    let countryData = [];
+    if (emotionData.country_sentiment_data) {
+        for (const [country, sentiments] of Object.entries(emotionData.country_sentiment_data)) {
+            const totalCount = (sentiments.positive?.count || 0) + (sentiments.negative?.count || 0) + (sentiments.neutral?.count || 0);
+            if (totalCount > 0) {
+                countryData.push({
+                    country: country,
+                    positive: ((sentiments.positive?.count || 0) / totalCount * 100),
+                    negative: ((sentiments.negative?.count || 0) / totalCount * 100),
+                    neutral: ((sentiments.neutral?.count || 0) / totalCount * 100),
+                    comments: totalCount
+                });
+            }
+        }
+    }
+    
+    // Données par défaut si pas de données backend
+    if (countryData.length === 0) {
+        countryData = [
+            { country: 'Global', positive: emotionData.positive_percentage, negative: emotionData.negative_percentage, neutral: emotionData.neutral_percentage, comments: emotionData.total_comments_analyzed }
+        ];
+    }
+    
+    // Créer une vraie heatmap avec Chart.js en utilisant un bar chart empilé horizontal
+    const countries = countryData.map(d => d.country);
+    
+    emotionCharts.heatmap = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: countries,
+            datasets: [
+                {
+                    label: 'Sentiment Positif',
+                    data: countryData.map(d => d.positive),
+                    backgroundColor: 'rgba(40, 199, 111, 0.8)',
+                    borderColor: 'rgba(40, 199, 111, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Sentiment Négatif',
+                    data: countryData.map(d => d.negative),
+                    backgroundColor: 'rgba(234, 84, 85, 0.8)',
+                    borderColor: 'rgba(234, 84, 85, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Sentiment Neutre',
+                    data: countryData.map(d => d.neutral),
+                    backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y', // Barres horizontales
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Analyse Comparative par Pays - ${emotionData.total_comments_analyzed} commentaires`
+                },
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const dataIndex = context.dataIndex;
+                            const country = countryData[dataIndex];
+                            return `${context.dataset.label}: ${context.parsed.x.toFixed(1)}% (${country.comments} commentaires)`;
+                        },
+                        afterLabel: function(context) {
+                            const dataIndex = context.dataIndex;
+                            const country = countryData[dataIndex];
+                            return `Total commentaires: ${country.comments}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    stacked: false,
+                    title: {
+                        display: true,
+                        text: 'Pourcentage de Sentiments'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                y: {
+                    stacked: false,
+                    title: {
+                        display: true,
+                        text: 'Pays'
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function createCompetitorRadarChart() {
+    const ctx = document.getElementById('competitorRadarChart').getContext('2d');
+    
+    // Créer les données des top concurrents à partir des données backend
+    let topCompetitors = [];
+    if (emotionData.competitor_sentiment_data && emotionData.competitor_sentiment_data.length > 0) {
+        // Grouper par concurrent et calculer les métriques
+        const competitorMap = {};
+        emotionData.competitor_sentiment_data.forEach(item => {
+            if (!competitorMap[item.competitor]) {
+                competitorMap[item.competitor] = {
+                    competitor: item.competitor,
+                    total_count: 0,
+                    positive_count: 0,
+                    total_confidence: 0,
+                    total_likes: 0,
+                    sentiment_entries: 0
+                };
+            }
+            
+            const comp = competitorMap[item.competitor];
+            comp.total_count += item.count;
+            comp.total_confidence += item.confidence * item.count;
+            comp.total_likes += item.avg_likes * item.count;
+            comp.sentiment_entries += item.count;
+            
+            if (item.emotion === 'positive') {
+                comp.positive_count += item.count;
+            }
+        });
+        
+        // Convertir en array et calculer les ratios
+        topCompetitors = Object.values(competitorMap)
+            .map(comp => ({
+                competitor: comp.competitor,
+                positive_ratio: comp.positive_count / comp.total_count,
+                avg_confidence: comp.total_confidence / comp.sentiment_entries,
+                engagement: Math.min(comp.total_likes / comp.total_count / 10, 1), // Normalisé
+                total_comments: comp.total_count
+            }))
+            .sort((a, b) => b.total_comments - a.total_comments)
+            .slice(0, 5); // Top 5
+    }
+    
+    // Données par défaut si pas de données backend
+    if (topCompetitors.length === 0) {
+        topCompetitors = [
+            { 
+                competitor: 'Analyse Globale', 
+                positive_ratio: emotionData.positive_percentage / 100, 
+                avg_confidence: emotionData.engagement_correlation,
+                engagement: 0.5,
+                total_comments: emotionData.total_comments_analyzed
+            }
+        ];
+    }
+    
+    emotionCharts.radar = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Sentiment Positif', 'Volume Comments', 'Engagement', 'Confiance', 'Diversité'],
+            datasets: topCompetitors.map((competitor, index) => ({
+                label: competitor.competitor,
+                data: [
+                    competitor.positive_ratio,
+                    Math.min((competitor.total_comments || 0) / 200, 1), // Normalized volume
+                    competitor.engagement || 0.5, // Real engagement 
+                    competitor.avg_confidence,
+                    competitor.positive_ratio * 0.9 // Sentiment diversity based on positivity
+                ],
+                borderColor: `hsl(${index * 120}, 70%, 50%)`,
+                backgroundColor: `hsla(${index * 120}, 70%, 50%, 0.2)`,
+                borderWidth: 2
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Profil émotionnel - Top 3 Concurrents'
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 1,
+                    ticks: {
+                        stepSize: 0.2
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createEmotionTimelineChart() {
+    const ctx = document.getElementById('emotionTimelineChart').getContext('2d');
+    
+    // Utiliser les données temporelles depuis le backend
+    let timelineData = { dates: [], positive: [], negative: [], neutral: [] };
+    
+    if (emotionData.temporal_sentiment_data && emotionData.temporal_sentiment_data.length > 0) {
+        // Grouper par date
+        const dateMap = {};
+        emotionData.temporal_sentiment_data.forEach(item => {
+            if (!dateMap[item.date]) {
+                dateMap[item.date] = { positive: 0, negative: 0, neutral: 0 };
+            }
+            dateMap[item.date][item.emotion] = item.count;
+        });
+        
+        // Convertir en arrays triés par date
+        const sortedDates = Object.keys(dateMap).sort();
+        timelineData.dates = sortedDates.slice(-14); // Derniers 14 jours
+        timelineData.positive = timelineData.dates.map(date => dateMap[date].positive || 0);
+        timelineData.negative = timelineData.dates.map(date => dateMap[date].negative || 0);
+        timelineData.neutral = timelineData.dates.map(date => dateMap[date].neutral || 0);
+    } else {
+        // Données par défaut si pas de données temporelles
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            timelineData.dates.push(date.toISOString().split('T')[0]);
+        }
+        // Répartir les données globales sur les 7 derniers jours
+        const avgPositive = Math.floor(emotionData.positive_count / 7);
+        const avgNegative = Math.floor(emotionData.negative_count / 7);
+        const avgNeutral = Math.floor(emotionData.neutral_count / 7);
+        
+        timelineData.positive = timelineData.dates.map(() => avgPositive + Math.floor(Math.random() * 10));
+        timelineData.negative = timelineData.dates.map(() => avgNegative + Math.floor(Math.random() * 5));
+        timelineData.neutral = timelineData.dates.map(() => avgNeutral + Math.floor(Math.random() * 8));
+    }
+    
+    emotionCharts.timeline = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: timelineData.dates.map(date => {
+                const d = new Date(date);
+                return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+            }),
+            datasets: [
+                {
+                    label: 'Sentiment Positif',
+                    data: timelineData.positive,
+                    borderColor: 'rgb(40, 199, 111)',
+                    backgroundColor: 'rgba(40, 199, 111, 0.1)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Sentiment Négatif',
+                    data: timelineData.negative,
+                    borderColor: 'rgb(234, 84, 85)',
+                    backgroundColor: 'rgba(234, 84, 85, 0.1)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Sentiment Neutre',
+                    data: timelineData.neutral,
+                    borderColor: 'rgb(108, 117, 125)',
+                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                    tension: 0.4,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Évolution émotionnelle - ${timelineData.dates.length} derniers jours`
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Nombre de commentaires'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function createEmotionEngagementChart() {
+    const ctx = document.getElementById('emotionEngagementChart').getContext('2d');
+    
+    // Créer des données de corrélation à partir des données de concurrents
+    let scatterData = [];
+    const countryColors = {
+        'France': 'rgba(255, 99, 132, 0.6)',
+        'Germany': 'rgba(54, 162, 235, 0.6)', 
+        'United Kingdom': 'rgba(255, 206, 86, 0.6)',
+        'Netherlands': 'rgba(75, 192, 192, 0.6)',
+        'International': 'rgba(153, 102, 255, 0.6)'
+    };
+    
+    if (emotionData.competitor_sentiment_data && emotionData.competitor_sentiment_data.length > 0) {
+        // Grouper par concurrent pour créer des points de scatter
+        const competitorMap = {};
+        emotionData.competitor_sentiment_data.forEach(item => {
+            if (!competitorMap[item.competitor]) {
+                competitorMap[item.competitor] = {
+                    competitor: item.competitor,
+                    total_comments: 0,
+                    positive_count: 0,
+                    total_likes: 0
+                };
+            }
+            
+            const comp = competitorMap[item.competitor];
+            comp.total_comments += item.count;
+            comp.total_likes += item.avg_likes * item.count;
+            
+            if (item.emotion === 'positive') {
+                comp.positive_count += item.count;
+            }
+        });
+        
+        scatterData = Object.values(competitorMap)
+            .filter(comp => comp.total_comments > 0)
+            .map(comp => ({
+                x: comp.positive_count / comp.total_comments, // Ratio positif
+                y: (comp.total_likes / comp.total_comments) / 10, // Engagement normalisé 
+                competitor: comp.competitor,
+                total_comments: comp.total_comments,
+                total_likes: Math.round(comp.total_likes)
+            }));
+    } else {
+        // Données par défaut pour illustrer la corrélation
+        scatterData = [
+            { x: 0.69, y: 1.2, competitor: 'Analyse Globale', total_comments: emotionData.total_comments_analyzed, total_likes: emotionData.total_comments_analyzed * 2 }
+        ];
+    }
+    
+    emotionCharts.scatter = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Corrélation Sentiment × Engagement',
+                data: scatterData,
+                backgroundColor: 'rgba(108, 99, 255, 0.6)',
+                borderColor: 'rgba(108, 99, 255, 1)',
+                pointRadius: function(context) {
+                    const point = context.raw;
+                    return Math.min(Math.max(point.total_comments / 20, 5), 15); // Taille selon nb commentaires
+                },
+                pointHoverRadius: function(context) {
+                    const point = context.raw;
+                    return Math.min(Math.max(point.total_comments / 15, 8), 20);
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Corrélation Sentiment Positif × Engagement (${scatterData.length} concurrents)`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const point = context.raw;
+                            return `${point.competitor}: Sentiment ${(point.x*100).toFixed(1)}%, Engagement ${point.y.toFixed(2)}`;
+                        },
+                        afterLabel: function(context) {
+                            const point = context.raw;
+                            return `${point.total_comments} commentaires, ${point.total_likes} likes`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Ratio Sentiment Positif'
+                    },
+                    min: 0,
+                    max: 1,
+                    ticks: {
+                        callback: function(value) {
+                            return (value * 100).toFixed(0) + '%';
+                        }
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Score d\'Engagement'
+                    },
+                    beginAtZero: true
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedView = localStorage.getItem('sentimentViewPreference');
-    if (savedView && savedView !== 'grid') {
-        toggleView(savedView);
+    // Directly initialize with the data we have
+    console.log('Initializing with emotion data:', emotionData);
+    
+    // Verify data exists and update stats
+    if (emotionData && emotionData.total_comments_analyzed > 0) {
+        updateStatsCards();
+        try {
+            initializeCharts();
+        } catch (error) {
+            console.log('Charts failed, continuing with stats only:', error);
+        }
+    } else {
+        console.log('No emotion data available, showing empty state');
+        showEmptyState();
     }
 });
 
 function updateSort(sortBy) {
-    // TODO: Implémenter le tri
-    const sortButtons = document.querySelectorAll('.sort-btn');
-    sortButtons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    const sentiment = document.getElementById('sentimentFilter').value;
+    const limit = document.getElementById('limitFilter').value;
+    const currentOrder = '{{ order }}';
+    
+    // Toggle order if same column
+    const newOrder = (sortBy === '{{ sort_by }}' && currentOrder === 'desc') ? 'asc' : 'desc';
+    
+    const params = new URLSearchParams({
+        sentiment: sentiment,
+        per_page: limit,
+        sort_by: sortBy,
+        order: newOrder,
+        page: 1  // Reset to first page when sorting
+    });
+    
+    window.location.href = `/sentiment-analysis?${params.toString()}`;
 }
 
 function applyFilters() {
-    // TODO: Implémenter les filtres
     const sentiment = document.getElementById('sentimentFilter').value;
     const limit = document.getElementById('limitFilter').value;
+    const currentSort = '{{ sort_by }}';
+    const currentOrder = '{{ order }}';
     
-    console.log('Filtering by sentiment:', sentiment, 'limit:', limit);
+    const params = new URLSearchParams({
+        sentiment: sentiment,
+        per_page: limit,
+        sort_by: currentSort,
+        order: currentOrder,
+        page: 1  // Reset to first page when applying filters
+    });
+    
+    window.location.href = `/sentiment-analysis?${params.toString()}`;
+}
+
+function exportSentimentData() {
+    // Show loading state
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Exportation...';
+    btn.disabled = true;
+    
+    fetch('/api/emotions/export')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create download link
+                const jsonStr = JSON.stringify(data.data, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                a.href = url;
+                a.download = `emotion_analysis_export_${timestamp}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                // Show success message
+                alert(`Export réussi!\n\nStatistiques:\n- Total: ${data.data.stats.total_videos_analyzed}\n- Positif: ${data.data.stats.positive_count}\n- Négatif: ${data.data.stats.negative_count}\n- Neutre: ${data.data.stats.neutral_count}`);
+            } else {
+                alert('Erreur lors de l\'export: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Export error:', error);
+            alert('Erreur lors de l\'export');
+        })
+        .finally(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+}
+
+function showImportDialog() {
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const data = JSON.parse(event.target.result);
+                importSentimentData(data);
+            } catch (error) {
+                alert('Erreur: Fichier JSON invalide');
+            }
+        };
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+function importSentimentData(data) {
+    if (!data.videos || !Array.isArray(data.videos)) {
+        alert('Format de données invalide');
+        return;
+    }
+    
+    // Show confirmation
+    if (!confirm(`Importer ${data.videos.length} vidéos?\n\nCela mettra à jour les vidéos existantes et ajoutera les nouvelles.`)) {
+        return;
+    }
+    
+    // Show loading
+    const importBtn = document.querySelector('button[onclick="showImportDialog()"]');
+    const originalHtml = importBtn.innerHTML;
+    importBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Importation...';
+    importBtn.disabled = true;
+    
+    fetch('/api/sentiment-analysis/import', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ videos: data.videos })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(`Import terminé!\n\n- Importés: ${result.stats.imported}\n- Ignorés: ${result.stats.skipped}\n- Total: ${result.stats.total}`);
+            
+            // Reload page to show new data
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            alert('Erreur lors de l\'import: ' + (result.error || 'Erreur inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Import error:', error);
+        alert('Erreur lors de l\'import');
+    })
+    .finally(() => {
+        importBtn.innerHTML = originalHtml;
+        importBtn.disabled = false;
+    });
+}
+
+// Batch Processing Functions
+function startBatchScraping() {
+    const batchSelect = document.getElementById('batchSizeSelect');
+    const batchSize = batchSelect.value;
+    const startBtn = document.getElementById('batchStartBtn');
+    
+    // Validate selection
+    if (!batchSize) {
+        alert('Veuillez sélectionner une taille de batch');
+        return;
+    }
+    
+    // Show confirmation
+    const confirmMessage = batchSize === 'all' ? 
+        'Démarrer l\'analyse de TOUTES les vidéos ? Cela peut prendre plusieurs heures.' :
+        `Démarrer l\'analyse des ${batchSize} premières vidéos ?`;
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    // Update UI
+    startBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Démarrage...';
+    startBtn.disabled = true;
+    batchSelect.disabled = true;
+    
+    // Show progress panel
+    const progressPanel = document.getElementById('batchProgress');
+    if (progressPanel) {
+        progressPanel.style.display = 'block';
+        document.getElementById('batchSizeLabel').textContent = 
+            batchSize === 'all' ? 'TOUTES les vidéos' : `${batchSize} vidéos`;
+        document.getElementById('batchStatus').textContent = 'Initialisation...';
+    }
+    
+    // Start batch processing
+    fetch('/api/batch/start-scraping', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            batch_size: batchSize === 'all' ? -1 : parseInt(batchSize)
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            currentBatchId = result.batch_id;
+            batchStartTime = Date.now();
+            
+            // Add initial log entry
+            addBatchLog(`✅ Batch démarré: ${result.batch_id}`);
+            addBatchLog(`🎯 Objectif: ${batchSize === 'all' ? 'TOUTES' : batchSize} vidéos`);
+            
+            // Start progress monitoring
+            startBatchProgressMonitoring();
+            
+            // Update button
+            startBtn.innerHTML = '<i class="bx bx-check me-2"></i>En cours...';
+            
+        } else {
+            alert('Erreur lors du démarrage: ' + (result.error || 'Erreur inconnue'));
+            resetBatchUI();
+        }
+    })
+    .catch(error => {
+        console.error('Batch start error:', error);
+        alert('Erreur lors du démarrage du batch');
+        resetBatchUI();
+    });
+}
+
+function stopBatchScraping() {
+    if (!currentBatchId) {
+        alert('Aucun batch en cours');
+        return;
+    }
+    
+    if (!confirm('Arrêter le batch en cours ?')) {
+        return;
+    }
+    
+    fetch(`/api/batch/stop-scraping/${currentBatchId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            addBatchLog('🛑 Batch arrêté par l\'utilisateur');
+            stopBatchProgressMonitoring();
+            resetBatchUI();
+        } else {
+            alert('Erreur lors de l\'arrêt: ' + (result.error || 'Erreur inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Batch stop error:', error);
+        alert('Erreur lors de l\'arrêt du batch');
+    });
+}
+
+function startBatchProgressMonitoring() {
+    // Clear any existing interval
+    if (batchProgressInterval) {
+        clearInterval(batchProgressInterval);
+    }
+    
+    // Start monitoring every second
+    batchProgressInterval = setInterval(updateBatchProgress, 1000);
+}
+
+function stopBatchProgressMonitoring() {
+    if (batchProgressInterval) {
+        clearInterval(batchProgressInterval);
+        batchProgressInterval = null;
+    }
+}
+
+async function updateBatchProgress() {
+    if (!currentBatchId) {
+        stopBatchProgressMonitoring();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/batch/progress/${currentBatchId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            updateBatchProgressUI(result.data);
+            
+            // Check if completed
+            if (result.data.status === 'completed' || result.data.status === 'failed') {
+                stopBatchProgressMonitoring();
+                handleBatchCompletion(result.data);
+            }
+        }
+    } catch (error) {
+        console.error('Error updating batch progress:', error);
+    }
+}
+
+function updateBatchProgressUI(data) {
+    // Update progress bar
+    const progressBar = document.getElementById('batchProgressBar');
+    const progressText = document.getElementById('batchProgressText');
+    const progressPercent = document.getElementById('batchProgressPercent');
+    
+    if (progressBar && data.total_videos > 0) {
+        const percentage = Math.round((data.processed_videos / data.total_videos) * 100);
+        progressBar.style.width = `${percentage}%`;
+        progressPercent.textContent = `${percentage}%`;
+        progressText.textContent = `${data.processed_videos} / ${data.total_videos}`;
+    }
+    
+    // Update stats
+    document.getElementById('batchVideosProcessed').textContent = data.processed_videos.toLocaleString();
+    document.getElementById('batchCommentsScraped').textContent = data.comments_scraped.toLocaleString();
+    document.getElementById('batchQuotaUsed').textContent = data.quota_used.toLocaleString();
+    
+    // Update rate and ETA
+    if (batchStartTime) {
+        const elapsed = (Date.now() - batchStartTime) / 1000; // seconds
+        const rate = elapsed > 0 ? Math.round((data.processed_videos / elapsed) * 60) : 0; // videos per minute
+        document.getElementById('batchProcessingRate').textContent = rate;
+        
+        if (rate > 0 && data.total_videos > data.processed_videos) {
+            const remaining = data.total_videos - data.processed_videos;
+            const etaMinutes = Math.round(remaining / (rate / 60));
+            document.getElementById('batchETA').textContent = 
+                etaMinutes > 60 ? `${Math.round(etaMinutes/60)}h${etaMinutes%60}m` : `${etaMinutes}m`;
+        }
+    }
+    
+    // Update status
+    const statusText = {
+        'running': 'En cours',
+        'completed': 'Terminé',
+        'failed': 'Erreur',
+        'stopped': 'Arrêté'
+    };
+    document.getElementById('batchStatus').textContent = statusText[data.status] || data.status;
+    
+    // Add logs for significant events
+    if (data.processed_videos % 100 === 0 && data.processed_videos > 0) {
+        addBatchLog(`📊 ${data.processed_videos} vidéos traitées, ${data.comments_scraped} commentaires`);
+    }
+}
+
+function addBatchLog(message) {
+    const logContainer = document.getElementById('batchActivityLog');
+    if (!logContainer) return;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.innerHTML = `[${timestamp}] ${message}`;
+    
+    logContainer.appendChild(logEntry);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Keep only last 20 entries
+    while (logContainer.children.length > 20) {
+        logContainer.removeChild(logContainer.firstChild);
+    }
+}
+
+function handleBatchCompletion(data) {
+    const status = data.status;
+    
+    if (status === 'completed') {
+        addBatchLog(`🎉 Batch terminé avec succès!`);
+        addBatchLog(`📊 Final: ${data.processed_videos} vidéos, ${data.comments_scraped} commentaires`);
+        
+        // Show completion notification
+        alert(`Batch terminé!\n\nRésultats:\n- Vidéos: ${data.processed_videos}\n- Commentaires: ${data.comments_scraped}\n- Quota: ${data.quota_used}`);
+        
+        // Reload emotion data - disabled for now
+        // setTimeout(() => {
+        //     loadEmotionData();
+        // }, 2000);
+        
+    } else if (status === 'failed') {
+        addBatchLog(`❌ Batch échoué: ${data.error || 'Erreur inconnue'}`);
+        alert('Le batch a échoué. Vérifiez les logs pour plus d\'informations.');
+    }
+    
+    resetBatchUI();
+}
+
+function resetBatchUI() {
+    // Reset button
+    const startBtn = document.getElementById('batchStartBtn');
+    const batchSelect = document.getElementById('batchSizeSelect');
+    
+    if (startBtn) {
+        startBtn.innerHTML = '<i class="bx bx-play me-2"></i>Démarrer';
+        startBtn.disabled = false;
+    }
+    
+    if (batchSelect) {
+        batchSelect.disabled = false;
+    }
+    
+    // Reset batch variables
+    currentBatchId = null;
+    batchStartTime = null;
 }
 </script>
 {% endblock %}

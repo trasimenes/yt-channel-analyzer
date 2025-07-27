@@ -391,7 +391,7 @@
                     <i class="bx bx-data text-{{ 'success' if system_health.database == 'healthy' else 'warning' if system_health.database == 'warning' else 'danger' if system_health.database == 'critical' else 'secondary' }}"></i>
                     <div>
                         <div class="fw-semibold">Base de Données</div>
-                        <small class="text-muted">{{ system_info.db_size if system_info else 'N/A' }} - {{ system_info.total_videos if system_info else 0 }} vidéos</small>
+                        <small class="text-muted">{{ db_stats.total_competitors if db_stats else 0 }} concurrents - {{ db_stats.total_videos if db_stats else 0 }} vidéos</small>
                     </div>
                     <span class="status-badge status-{{ system_health.database }}">
                         <i class="bx bx-{{ 'check' if system_health.database == 'healthy' else 'error' if system_health.database == 'critical' else 'time' }}"></i>
@@ -403,7 +403,7 @@
                     <i class="bx bxl-youtube text-{{ 'success' if system_health.api == 'healthy' else 'warning' if system_health.api == 'warning' else 'danger' if system_health.api == 'critical' else 'secondary' }}"></i>
                     <div>
                         <div class="fw-semibold">API YouTube</div>
-                        <small class="text-muted">{{ system_info.total_competitors if system_info else 0 }} concurrents analysés</small>
+                        <small class="text-muted">{{ db_stats.total_competitors if db_stats else 0 }} concurrents analysés</small>
                     </div>
                     <span class="status-badge status-{{ system_health.api }}">
                         <i class="bx bx-{{ 'check' if system_health.api == 'healthy' else 'error' if system_health.api == 'critical' else 'time' }}"></i>
@@ -471,7 +471,7 @@
                                 </div>
                                 <div class="metric-item">
                                     <i class="bx bx-play"></i>
-                                    <span>{{ system_info.total_videos if system_info else 0 }} vidéos</span>
+                                    <span>{{ db_stats.total_videos if db_stats else 0 }} vidéos</span>
                                 </div>
                             </div>
                             
@@ -645,7 +645,7 @@
                                         {{ system_health.database|title }}
                                     </span>
                                 </td>
-                                <td>{{ system_info.db_size if system_info else 'N/A' }} - {{ system_info.total_videos if system_info else 0 }} vidéos</td>
+                                <td>{{ db_stats.total_competitors if db_stats else 0 }} concurrents - {{ db_stats.total_videos if db_stats else 0 }} vidéos</td>
                                 <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary" onclick="fixDatabase()">
@@ -661,7 +661,7 @@
                                         {{ system_health.api|title }}
                                     </span>
                                 </td>
-                                <td>{{ system_info.total_competitors if system_info else 0 }} concurrents</td>
+                                <td>{{ db_stats.total_competitors if db_stats else 0 }} concurrents</td>
                                 <td>{{ system_info.last_check if system_info else 'N/A' }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-warning" onclick="testAPI()">

@@ -1,0 +1,1301 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Countries Analysis - YT Channel Analyzer{% endblock %}
+
+{% block vendor_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Insights Cards */
+    .insight-card {
+        border-left: 4px solid;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .insight-card.success {
+        border-color: #28c76f;
+        background: rgba(40, 199, 111, 0.08);
+    }
+    
+    .insight-card.warning {
+        border-color: #ff9f43;
+        background: rgba(255, 159, 67, 0.08);
+    }
+    
+    .insight-card.info {
+        border-color: #00cfe8;
+        background: rgba(0, 207, 232, 0.08);
+    }
+    
+    .insight-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+    }
+    
+    .insight-icon {
+        font-size: 2.5rem;
+        width: 65px;
+        height: 65px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+    }
+    
+    .insight-icon.success {
+        background: rgba(40, 199, 111, 0.15);
+        color: #28c76f;
+    }
+    
+    .insight-icon.warning {
+        background: rgba(255, 159, 67, 0.15);
+        color: #ff9f43;
+    }
+    
+    .insight-icon.info {
+        background: rgba(0, 207, 232, 0.15);
+        color: #00cfe8;
+    }
+    
+    /* Opportunity Score Badge */
+    .opportunity-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+    
+    .opportunity-high {
+        background: rgba(40, 199, 111, 0.12);
+        color: #28c76f;
+    }
+    
+    .opportunity-medium {
+        background: rgba(255, 159, 67, 0.12);
+        color: #ff9f43;
+    }
+    
+    .opportunity-low {
+        background: rgba(234, 84, 85, 0.12);
+        color: #ea5455;
+    }
+    
+    /* Country flag in table */
+    .country-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .country-flag-sm {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    /* Performance bars */
+    .performance-bar {
+        height: 6px;
+        background: #e7e7ff;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 0.25rem;
+    }
+    
+    .performance-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+    
+    /* Stats cards */
+    .stats-card {
+        border: 0;
+        box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px 0 rgba(67, 89, 113, 0.15);
+    }
+    
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        font-size: 1.5rem;
+    }
+    
+    /* Content distribution mini chart */
+    .content-distribution {
+        display: flex;
+        gap: 0.125rem;
+        height: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #f5f5f9;
+    }
+    
+    .content-bar {
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.625rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .content-bar.hero {
+        background: #ff6b6b;
+    }
+    
+    .content-bar.hub {
+        background: #4ecdc4;
+    }
+    
+    .content-bar.help {
+        background: #45b7d1;
+    }
+    
+    /* DataTable customization for Sneat */
+    .dt-buttons {
+        margin-bottom: 0.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: left;
+        margin-bottom: 1rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        width: 300px;
+        margin-left: 0.5rem;
+    }
+    
+    table.dataTable tbody tr:hover {
+        background-color: rgba(67, 89, 113, 0.04);
+    }
+    
+    /* Expandable row details */
+    .child-row-content {
+        padding: 1.5rem;
+        background: #f8f8fb;
+        border-radius: 0.5rem;
+    }
+    
+    /* Loading animation */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold mb-1">Countries Analysis</h4>
+                    <p class="text-muted mb-0">Analyse comparative des performances par pays avec insights exploitables</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-label-primary" onclick="refreshData()">
+                        <i class="bx bx-refresh me-1"></i>
+                        Actualiser
+                    </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bx bx-download me-1"></i>
+                            Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="exportTableToCSV()">Export CSV</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="exportTableToExcel()">Export Excel</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="exportTableToPDF()">Export PDF</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Insights Section -->
+    <!-- DEBUG: insights = {{ insights|length if insights else 'None' }} -->
+    {% if insights and insights|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5 class="mb-3">
+                <i class="bx bx-bulb text-warning me-2"></i>
+                Insights Clés
+            </h5>
+            <div class="row g-3">
+                {% for insight in insights[:3] %}
+                <div class="col-md-4">
+                    <div class="card insight-card {{ insight.type }} h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <div class="insight-icon {{ insight.type }} me-3">
+                                    <i class="bx {{ insight.icon }}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-semibold">{{ insight.title }}</h6>
+                                    <p class="mb-0 text-body">{{ insight.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- DEBUG: Pas d'insights trouvés -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bx bx-info-circle me-2"></i>
+                Génération des insights en cours... (Debug: {{ insights|length if insights else 'insights variable not found' }})
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- KPIs Row -->
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-label-primary me-3">
+                            <i class="bx bx-globe"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Total Countries</small>
+                            <h4 class="mb-0">{{ total_countries }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-label-info me-3">
+                            <i class="bx bx-group"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Total Competitors</small>
+                            <h4 class="mb-0">{{ total_competitors_real if total_competitors_real else countries_data|sum(attribute='competitor_count') }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-label-success me-3">
+                            <i class="bx bx-video"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Total Videos</small>
+                            <h4 class="mb-0">{{ "{:,}".format(total_videos_real if total_videos_real else countries_data|sum(attribute='video_count')) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon bg-label-warning me-3">
+                            <i class="bx bx-trending-up"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Avg Engagement</small>
+                            <h4 class="mb-0">{{ "%.2f"|format(countries_data|map(attribute='engagement_rate')|list|sum / (countries_data|length if countries_data else 1)) }}%</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Performance Comparison Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header header-elements">
+                    <h5 class="card-title mb-0">Performance par Pays</h5>
+                    <div class="card-action-element ms-auto py-0">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-label-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('views')">Vues/Vidéo</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('engagement')">Engagement</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('volume')">Volume</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" class="chartjs" data-height="350"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Distribution Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Distribution Hero • Hub • Help</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="contentDistributionChart" class="chartjs" data-height="350"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opportunity Heatmap -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Matrice Opportunités × Performance</h5>
+                    <p class="card-subtitle text-muted mb-0">Positionnement stratégique par pays</p>
+                </div>
+                <div class="card-body">
+                    <canvas id="opportunityChart" class="chartjs" data-height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Data Table -->
+    <div class="card">
+        <div class="card-header border-bottom">
+            <h5 class="card-title mb-0">Analyse Comparative par Pays</h5>
+        </div>
+        <div class="card-datatable table-responsive">
+            <table id="countriesTable" class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Pays</th>
+                        <th>Concurrents</th>
+                        <th>Vidéos</th>
+                        <th>Vues/vidéo</th>
+                        <th>Trend</th>
+                        <th>Engagement</th>
+                        <th>Intensité</th>
+                        <th>Content Gaps</th>
+                        <th>Distribution</th>
+                        <th>Action Recommandée</th>
+                        <th>Opportunity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for country in countries_data %}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="country-cell">
+                                <span class="country-flag-sm">
+                                    {% if country.country == 'France' %}🇫🇷
+                                    {% elif country.country == 'Germany' %}🇩🇪
+                                    {% elif country.country == 'Netherlands' %}🇳🇱
+                                    {% elif country.country == 'United Kingdom' %}🇬🇧
+                                    {% elif country.country == 'Belgium' %}🇧🇪
+                                    {% elif country.country == 'Switzerland' %}🇨🇭
+                                    {% elif country.country == 'International' %}🌍
+                                    {% else %}🏳️
+                                    {% endif %}
+                                </span>
+                                <strong>{{ country.country }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-label-secondary">{{ country.competitor_count }}</span>
+                            <small class="d-block text-muted">{{ country.videos_per_competitor|int }}/concurrent</small>
+                        </td>
+                        <td>{{ "{:,}".format(country.video_count) }}</td>
+                        <td>
+                            <div>
+                                <strong>{{ "{:,}".format(country.avg_views_per_video) }}</strong>
+                                <div class="performance-bar">
+                                    <div class="performance-fill bg-primary" style="width: {{ (country.avg_views_per_video / (countries_data|map(attribute='avg_views_per_video')|max)) * 100 }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fs-4" title="Tendance de croissance">{{ country.growth_trend }}</span>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill bg-label-{{ 'success' if country.engagement_rate > 5 else 'warning' if country.engagement_rate > 2 else 'danger' }}">
+                                {{ country.engagement_rate }}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-label-{{ country.competitive_intensity_class }}">
+                                {{ country.competitive_intensity }}
+                            </span>
+                        </td>
+                        <td>
+                            <small class="text-muted" title="Écarts vs marché de référence">
+                                {{ country.content_gaps }}
+                            </small>
+                        </td>
+                        <td>
+                            {% set total_content = country.hero_count + country.hub_count + country.help_count %}
+                            {% if total_content > 0 %}
+                            <div class="content-distribution" title="Hero: {{ country.hero_percentage }}%, Hub: {{ country.hub_percentage }}%, Help: {{ country.help_percentage }}%">
+                                {% if country.hero_count > 0 %}
+                                <div class="content-bar hero" style="width: {{ country.hero_percentage }}%">
+                                    {% if country.hero_percentage > 15 %}{{ country.hero_percentage|round|int }}%{% endif %}
+                                </div>
+                                {% endif %}
+                                {% if country.hub_count > 0 %}
+                                <div class="content-bar hub" style="width: {{ country.hub_percentage }}%">
+                                    {% if country.hub_percentage > 15 %}{{ country.hub_percentage|round|int }}%{% endif %}
+                                </div>
+                                {% endif %}
+                                {% if country.help_count > 0 %}
+                                <div class="content-bar help" style="width: {{ country.help_percentage }}%">
+                                    {% if country.help_percentage > 15 %}{{ country.help_percentage|round|int }}%{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <small class="text-muted">Pas de données</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-label-info" title="Recommandation stratégique">
+                                {{ country.recommended_action }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="opportunity-score 
+                                {% if country.opportunity_score >= 70 %}opportunity-high
+                                {% elif country.opportunity_score >= 40 %}opportunity-medium
+                                {% else %}opportunity-low{% endif %}">
+                                <i class="bx bx-target-lock me-1"></i>
+                                {{ country.opportunity_score }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Next Actions Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border border-primary">
+                <div class="card-header bg-label-primary">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-rocket me-2"></i>
+                        🎯 Next Actions - Recommandations Stratégiques
+                    </h5>
+                    <p class="card-subtitle mb-0">Basées sur l'analyse de vos 30 compétiteurs et 8,489 vidéos</p>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="nextActionsContainer">
+                        <!-- Actions will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal Template -->
+<div class="modal fade" id="countryDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="countryDetailTitle">Détails du pays</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="countryDetailContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor_js %}
+<!-- DataTables JS -->
+<script src="{{ url_for('static', filename='sneat-pro/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+<!-- Chart.js -->
+<script src="{{ url_for('static', filename='sneat-pro/assets/vendor/libs/chartjs/chartjs.js') }}"></script>
+<!-- Export libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Global data
+const countriesData = {{ countries_data|tojson }};
+let dt;
+
+// Initialize DataTable
+$(document).ready(function() {
+    dt = $('#countriesTable').DataTable({
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.modal({
+                    header: function(row) {
+                        const data = row.data();
+                        return 'Détails pour ' + data[1];
+                    }
+                }),
+                renderer: function(api, rowIdx, columns) {
+                    const country = countriesData[rowIdx];
+                    let html = '<div class="child-row-content">';
+                    
+                    // Top videos section
+                    {% if top_videos_by_country %}
+                    if (country.country in {{ top_videos_by_country|tojson }}) {
+                        html += '<h6 class="mb-3">Top Performing Videos</h6>';
+                        const videos = {{ top_videos_by_country|tojson }}[country.country];
+                        videos.slice(0, 3).forEach(video => {
+                            html += `
+                                <div class="alert alert-info mb-2">
+                                    <h6 class="alert-heading mb-1">${video.title}</h6>
+                                    <small>
+                                        <strong>${video.competitor}</strong> • 
+                                        ${new Intl.NumberFormat('fr-FR').format(video.views)} vues • 
+                                        <span class="badge bg-label-primary">${video.category}</span>
+                                    </small>
+                                </div>
+                            `;
+                        });
+                    }
+                    {% endif %}
+                    
+                    // Additional stats
+                    html += '<h6 class="mb-3 mt-4">Statistiques détaillées</h6>';
+                    html += '<div class="row">';
+                    html += `
+                        <div class="col-md-4">
+                            <small class="text-muted">Total des vues</small>
+                            <p class="mb-0"><strong>${new Intl.NumberFormat('fr-FR').format(country.total_views)}</strong></p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Durée moyenne</small>
+                            <p class="mb-0"><strong>${Math.floor(country.avg_duration / 60)}m ${country.avg_duration % 60}s</strong></p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Vidéo la plus vue</small>
+                            <p class="mb-0"><strong>${new Intl.NumberFormat('fr-FR').format(country.max_views)} vues</strong></p>
+                        </div>
+                    `;
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    return html;
+                }
+            }
+        },
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+              '<"row"<"col-sm-12"tr>>' +
+              '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        pageLength: 10,
+        order: [[4, 'desc']], // Sort by views/video by default
+        language: {
+            search: "Rechercher :",
+            lengthMenu: "Afficher _MENU_ pays",
+            info: "Affichage de _START_ à _END_ sur _TOTAL_ pays",
+            paginate: {
+                first: "Premier",
+                last: "Dernier",
+                next: "Suivant",
+                previous: "Précédent"
+            },
+            emptyTable: "Aucune donnée disponible",
+            zeroRecords: "Aucun pays trouvé"
+        },
+        columnDefs: [
+            {
+                className: 'control',
+                orderable: false,
+                targets: 0
+            },
+            {
+                targets: 6, // Distribution column
+                orderable: false
+            }
+        ]
+    });
+});
+
+// Chart.js Configuration following Sneat Pro theme patterns
+const chartColors = {
+    primary: '#696cff',
+    secondary: '#8592a3', 
+    success: '#71dd37',
+    danger: '#ff3e1d',
+    warning: '#ffab00',
+    info: '#03c3ec',
+    light: '#fcfdfd',
+    dark: '#233446'
+};
+
+// Color variables from Sneat theme
+const purpleColor = '#836AF9',
+      yellowColor = '#ffe800',
+      cyanColor = '#28dac6',
+      orangeColor = '#FF8132',
+      orangeLightColor = '#FDAC34',
+      oceanBlueColor = '#299AFF',
+      greyColor = '#4F5D70',
+      greyLightColor = '#EDF1F4',
+      blueColor = '#2B9AFF',
+      blueLightColor = '#84D0FF';
+
+// Theme color detection
+let cardColor, headingColor, labelColor, borderColor, legendColor;
+
+if (typeof config !== 'undefined') {
+    if (config.colors_dark && (document.documentElement.classList.contains('dark-style') || document.body.classList.contains('dark-style'))) {
+        cardColor = config.colors_dark.cardColor;
+        headingColor = config.colors_dark.headingColor;
+        labelColor = config.colors_dark.textMuted;
+        legendColor = config.colors_dark.bodyColor;
+        borderColor = config.colors_dark.borderColor;
+    } else {
+        cardColor = config.colors.cardColor;
+        headingColor = config.colors.headingColor;
+        labelColor = config.colors.textMuted;
+        legendColor = config.colors.bodyColor;
+        borderColor = config.colors.borderColor;
+    }
+} else {
+    // Fallback colors
+    cardColor = '#fff';
+    headingColor = '#566a7f';
+    labelColor = '#a1acb8';
+    legendColor = '#566a7f';
+    borderColor = '#eceef1';
+}
+
+// Performance Chart (Bar Chart)
+function initializePerformanceChart() {
+    const performanceChart = document.getElementById('performanceChart');
+    if (performanceChart) {
+        const topCountries = countriesData.slice(0, 5);
+        
+        const performanceChartVar = new Chart(performanceChart, {
+            type: 'bar',
+            data: {
+                labels: topCountries.map(c => c.country),
+                datasets: [{
+                    data: topCountries.map(c => c.avg_views_per_video),
+                    backgroundColor: cyanColor,
+                    borderColor: 'transparent',
+                    maxBarThickness: 25,
+                    borderRadius: {
+                        topRight: 8,
+                        topLeft: 8
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 500
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: cardColor,
+                        titleColor: headingColor,
+                        bodyColor: legendColor,
+                        borderWidth: 1,
+                        borderColor: borderColor,
+                        callbacks: {
+                            label: function(context) {
+                                return ' Vues/vidéo: ' + new Intl.NumberFormat('fr-FR').format(context.parsed.y);
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: borderColor,
+                            drawBorder: false,
+                            borderColor: borderColor
+                        },
+                        ticks: {
+                            color: labelColor
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        grid: {
+                            color: borderColor,
+                            drawBorder: false,
+                            borderColor: borderColor
+                        },
+                        ticks: {
+                            color: labelColor,
+                            callback: function(value) {
+                                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Content Distribution Chart (Doughnut Chart)
+function initializeContentDistributionChart() {
+    const contentChart = document.getElementById('contentDistributionChart');
+    if (contentChart) {
+        // Calculate total content distribution across all countries
+        const totalHero = countriesData.reduce((sum, country) => sum + (country.hero_count || 0), 0);
+        const totalHub = countriesData.reduce((sum, country) => sum + (country.hub_count || 0), 0);
+        const totalHelp = countriesData.reduce((sum, country) => sum + (country.help_count || 0), 0);
+        const total = totalHero + totalHub + totalHelp;
+        
+        const contentChartVar = new Chart(contentChart, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hero Content', 'Hub Content', 'Help Content'],
+                datasets: [{
+                    data: [totalHero, totalHub, totalHelp],
+                    backgroundColor: [chartColors.danger, cyanColor, chartColors.success],
+                    borderWidth: 0,
+                    pointStyle: 'rectRounded'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 500
+                },
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 25,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            color: legendColor
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0';
+                                return ' ' + context.label + ': ' + percentage + '%';
+                            }
+                        },
+                        backgroundColor: cardColor,
+                        titleColor: headingColor,
+                        bodyColor: legendColor,
+                        borderWidth: 1,
+                        borderColor: borderColor
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Opportunity Matrix Chart (Scatter Chart) with Strategic Quadrants
+function initializeOpportunityChart() {
+    const opportunityChart = document.getElementById('opportunityChart');
+    if (opportunityChart) {
+        // Calculate medians for quadrant division
+        const sortedViews = countriesData.map(c => c.avg_views_per_video).sort((a, b) => a - b);
+        const sortedOpportunity = countriesData.map(c => c.opportunity_score).sort((a, b) => a - b);
+        const medianViews = sortedViews[Math.floor(sortedViews.length / 2)];
+        const medianOpportunity = 60; // Fixed threshold for strategy
+        
+        // Define strategic quadrants
+        function getQuadrantInfo(views, opportunity) {
+            const highPerf = views >= medianViews;
+            const highOpp = opportunity >= medianOpportunity;
+            
+            if (highOpp && highPerf) return { 
+                color: chartColors.success, 
+                strategy: 'DOMINER', 
+                icon: '👑',
+                description: 'High opportunity + High performance'
+            };
+            if (highOpp && !highPerf) return { 
+                color: chartColors.warning, 
+                strategy: 'INVESTIR', 
+                icon: '🚀',
+                description: 'High opportunity + Low performance'
+            };
+            if (!highOpp && highPerf) return { 
+                color: chartColors.info, 
+                strategy: 'MAINTENIR', 
+                icon: '🛡️',
+                description: 'Low opportunity + High performance'
+            };
+            return { 
+                color: chartColors.danger, 
+                strategy: 'ÉVITER', 
+                icon: '⚠️',
+                description: 'Low opportunity + Low performance'
+            };
+        }
+        
+        const opportunityChartVar = new Chart(opportunityChart, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Pays',
+                    data: countriesData.map(country => {
+                        const quadrant = getQuadrantInfo(country.avg_views_per_video, country.opportunity_score);
+                        return {
+                            x: country.avg_views_per_video,
+                            y: country.opportunity_score,
+                            country: country.country,
+                            strategy: quadrant.strategy,
+                            icon: quadrant.icon,
+                            description: quadrant.description
+                        };
+                    }),
+                    backgroundColor: function(context) {
+                        const point = context.raw;
+                        const quadrant = getQuadrantInfo(point.x, point.y);
+                        return quadrant.color;
+                    },
+                    borderColor: function(context) {
+                        const point = context.raw;
+                        const quadrant = getQuadrantInfo(point.x, point.y);
+                        return quadrant.color;
+                    },
+                    borderWidth: 2,
+                    pointRadius: 10,
+                    pointHoverRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const point = context[0].raw;
+                                return `${point.icon} ${point.country}`;
+                            },
+                            label: function(context) {
+                                const point = context.raw;
+                                return [
+                                    `Stratégie: ${point.strategy}`,
+                                    `Performance: ${new Intl.NumberFormat('fr-FR').format(context.parsed.x)} vues/vidéo`,
+                                    `Opportunité: ${context.parsed.y}/100`,
+                                    `→ ${point.description}`
+                                ];
+                            }
+                        },
+                        backgroundColor: cardColor,
+                        titleColor: headingColor,
+                        bodyColor: legendColor,
+                        borderWidth: 1,
+                        borderColor: borderColor,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 12
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Performance (Vues par vidéo) →',
+                            color: headingColor,
+                            font: { weight: 'bold' }
+                        },
+                        grid: {
+                            color: borderColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: labelColor,
+                            callback: function(value) {
+                                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(value);
+                            }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '↑ Opportunité de marché',
+                            color: headingColor,
+                            font: { weight: 'bold' }
+                        },
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: borderColor,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: labelColor,
+                            stepSize: 20,
+                            callback: function(value) {
+                                if (value === 60) return value + ' (Seuil)';
+                                return value;
+                            }
+                        }
+                    }
+                },
+                onHover: function(event, elements) {
+                    event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                }
+            },
+            plugins: [{
+                id: 'quadrantLines',
+                beforeDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const chartArea = chart.chartArea;
+                    
+                    // Draw quadrant lines
+                    ctx.save();
+                    ctx.strokeStyle = '#e0e0e0';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([5, 5]);
+                    
+                    // Vertical line at median performance
+                    const xPos = chart.scales.x.getPixelForValue(medianViews);
+                    ctx.beginPath();
+                    ctx.moveTo(xPos, chartArea.top);
+                    ctx.lineTo(xPos, chartArea.bottom);
+                    ctx.stroke();
+                    
+                    // Horizontal line at opportunity threshold
+                    const yPos = chart.scales.y.getPixelForValue(medianOpportunity);
+                    ctx.beginPath();
+                    ctx.moveTo(chartArea.left, yPos);
+                    ctx.lineTo(chartArea.right, yPos);
+                    ctx.stroke();
+                    
+                    // Add quadrant labels
+                    ctx.fillStyle = '#666';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    const labelOffset = 15;
+                    
+                    // Top-right: DOMINER
+                    ctx.fillStyle = chartColors.success;
+                    ctx.fillText('👑 DOMINER', 
+                        chartArea.right - labelOffset, 
+                        chartArea.top + labelOffset);
+                    
+                    // Top-left: INVESTIR  
+                    ctx.fillStyle = chartColors.warning;
+                    ctx.fillText('🚀 INVESTIR', 
+                        chartArea.left + labelOffset, 
+                        chartArea.top + labelOffset);
+                    
+                    // Bottom-right: MAINTENIR
+                    ctx.fillStyle = chartColors.info;
+                    ctx.fillText('🛡️ MAINTENIR', 
+                        chartArea.right - labelOffset, 
+                        chartArea.bottom - labelOffset);
+                    
+                    // Bottom-left: ÉVITER
+                    ctx.fillStyle = chartColors.danger;
+                    ctx.fillText('⚠️ ÉVITER', 
+                        chartArea.left + labelOffset, 
+                        chartArea.bottom - labelOffset);
+                    
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+}
+
+// Chart update function
+function updateChart(metric) {
+    // This function can be used to update charts based on dropdown selection
+    console.log('Updating chart for metric:', metric);
+}
+
+// Generate Next Actions based on data analysis
+function generateNextActions() {
+    const actions = [];
+    
+    // Analyze the data for strategic recommendations
+    const sortedByViews = [...countriesData].sort((a, b) => b.avg_views_per_video - a.avg_views_per_video);
+    const topPerformer = sortedByViews[0];
+    const underperformers = countriesData.filter(c => c.avg_views_per_video < 50000 && c.video_count > 100);
+    const highEngagement = countriesData.filter(c => c.engagement_rate > 1.0 && c.video_count < 100);
+    const oversaturatedHero = countriesData.filter(c => c.hero_percentage > 65);
+    
+    // Action 1: Expansion Opportunity
+    if (highEngagement.length > 0) {
+        const best = highEngagement[0];
+        actions.push({
+            priority: 'high',
+            icon: '🚀',
+            title: 'Opportunité d\'Expansion Immédiate',
+            description: `${best.country} montre un engagement exceptionnel (${best.engagement_rate}%) avec seulement ${best.video_count} vidéos.`,
+            action: `Doubler la production de contenu en 6 mois pour atteindre 200+ vidéos`,
+            impact: 'ROI estimé: +300% de reach organique',
+            timeline: '6 mois',
+            difficulty: 'Moyen',
+            color: 'success'
+        });
+    }
+    
+    // Action 2: Content Strategy Rebalancing
+    if (oversaturatedHero.length > 0) {
+        const country = oversaturatedHero[0];
+        actions.push({
+            priority: 'high',
+            icon: '⚖️',
+            title: 'Rééquilibrage Stratégique du Contenu',
+            description: `${country.country} sur-concentre sur Hero (${country.hero_percentage}%) au détriment de Hub/Help.`,
+            action: `Créer 40% de contenu Hub et 25% Help dans les 3 prochains mois`,
+            impact: 'Amélioration SEO et acquisition client +45%',
+            timeline: '3 mois',
+            difficulty: 'Facile',
+            color: 'warning'
+        });
+    }
+    
+    // Action 3: Competitive Response
+    if (underperformers.length > 0) {
+        const market = underperformers.find(c => c.competitive_intensity === 'Élevé');
+        if (market) {
+            actions.push({
+                priority: 'medium',
+                icon: '🎯',
+                title: 'Réponse Concurrentielle Ciblée',
+                description: `${market.country} : marché concurrentiel mais performances faibles (${new Intl.NumberFormat('fr-FR').format(market.avg_views_per_video)} vues/vidéo).`,
+                action: `Analyser les top 3 concurrents et créer du contenu différenciant`,
+                impact: 'Capture de 15-20% de parts de marché',
+                timeline: '4 mois',
+                difficulty: 'Difficile',
+                color: 'info'
+            });
+        }
+    }
+    
+    // Render actions
+    const container = document.getElementById('nextActionsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    actions.forEach((action, index) => {
+        const actionHtml = `
+            <div class="col-lg-4 mb-3">
+                <div class="card h-100 border border-${action.color}">
+                    <div class="card-header bg-label-${action.color} d-flex align-items-center">
+                        <span class="fs-3 me-2">${action.icon}</span>
+                        <div>
+                            <h6 class="mb-0">${action.title}</h6>
+                            <small class="badge bg-${action.color}">Priorité ${action.priority}</small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">${action.description}</p>
+                        <div class="alert alert-${action.color} alert-dismissible mb-3" role="alert">
+                            <strong>Action:</strong> ${action.action}
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Impact</small>
+                                <strong class="text-${action.color}">${action.impact}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Délai</small>
+                                <strong>${action.timeline}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Difficulté</small>
+                                <strong>${action.difficulty}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-${action.color} btn-sm w-100">
+                            <i class="bx bx-check me-1"></i>
+                            Planifier cette action
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += actionHtml;
+    });
+    
+    // Add summary if no specific actions
+    if (actions.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bx bx-info-circle fs-2 mb-2"></i>
+                    <h6>Stratégie Optimale Détectée</h6>
+                    <p class="mb-0">Vos marchés sont bien équilibrés. Continuez à monitorer les performances et ajustez selon les tendances émergentes.</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Initialize all charts and actions
+function initializeAllCharts() {
+    initializePerformanceChart();
+    initializeContentDistributionChart();
+    initializeOpportunityChart();
+    generateNextActions();
+}
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initializeAllCharts, 100); // Small delay to ensure DOM is ready
+});
+
+// Export functions
+function exportTableToCSV() {
+    const data = countriesData.map(country => ({
+        'Pays': country.country,
+        'Concurrents': country.competitor_count,
+        'Vidéos': country.video_count,
+        'Vues/vidéo': country.avg_views_per_video,
+        'Engagement (%)': country.engagement_rate,
+        'Top Performer': country.top_performer || '-',
+        'Opportunity Score': country.opportunity_score,
+        'Hero (%)': country.hero_percentage || 0,
+        'Hub (%)': country.hub_percentage || 0,
+        'Help (%)': country.help_percentage || 0
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Countries Analysis");
+    XLSX.writeFile(wb, "countries_analysis.csv");
+}
+
+function exportTableToExcel() {
+    const data = countriesData.map(country => ({
+        'Pays': country.country,
+        'Concurrents': country.competitor_count,
+        'Vidéos': country.video_count,
+        'Vues/vidéo': country.avg_views_per_video,
+        'Engagement (%)': country.engagement_rate,
+        'Top Performer': country.top_performer || '-',
+        'Opportunity Score': country.opportunity_score,
+        'Hero (%)': country.hero_percentage || 0,
+        'Hub (%)': country.hub_percentage || 0,
+        'Help (%)': country.help_percentage || 0
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Countries Analysis");
+    XLSX.writeFile(wb, "countries_analysis.xlsx");
+}
+
+function exportTableToPDF() {
+    const docDefinition = {
+        content: [
+            { text: 'Countries Analysis Report', style: 'header' },
+            { text: new Date().toLocaleDateString('fr-FR'), style: 'subheader' },
+            {
+                style: 'tableExample',
+                table: {
+                    headerRows: 1,
+                    body: [
+                        ['Pays', 'Concurrents', 'Vidéos', 'Vues/vidéo', 'Engagement', 'Opportunity'],
+                        ...countriesData.map(country => [
+                            country.country,
+                            country.competitor_count.toString(),
+                            country.video_count.toString(),
+                            country.avg_views_per_video.toString(),
+                            country.engagement_rate + '%',
+                            country.opportunity_score.toString()
+                        ])
+                    ]
+                }
+            }
+        ],
+        styles: {
+            header: {
+                fontSize: 18,
+                bold: true,
+                margin: [0, 0, 0, 10]
+            },
+            subheader: {
+                fontSize: 14,
+                margin: [0, 0, 0, 10]
+            },
+            tableExample: {
+                margin: [0, 5, 0, 15]
+            }
+        }
+    };
+    
+    pdfMake.createPdf(docDefinition).download('countries_analysis.pdf');
+}
+
+function refreshData() {
+    window.location.reload();
+}
+</script>
+{% endblock %}

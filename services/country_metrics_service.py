@@ -142,7 +142,7 @@ class TopicAnalysisService:
 class ContentDistributionService:
     """Handles organic vs paid content distribution analysis."""
     
-    def __init__(self, db_connection: sqlite3.Connection, paid_threshold: int = 100000):
+    def __init__(self, db_connection: sqlite3.Connection, paid_threshold: int = 10000):
         self.conn = db_connection
         self.cursor = db_connection.cursor()
         self.paid_threshold = paid_threshold
@@ -357,7 +357,7 @@ class ToneOfVoiceService:
 class CountryMetricsService:
     """Main service orchestrating country-level 7 key metrics analysis."""
     
-    def __init__(self, db_connection: sqlite3.Connection, paid_threshold: int = 100000):
+    def __init__(self, db_connection: sqlite3.Connection, paid_threshold: int = 10000):
         self.conn = db_connection
         self.video_length_service = VideoLengthAnalysisService(db_connection)
         self.frequency_service = VideoFrequencyAnalysisService(db_connection)
@@ -366,6 +366,32 @@ class CountryMetricsService:
         self.category_service = CategoryDistributionService(db_connection)
         self.thumbnail_service = ThumbnailConsistencyService(db_connection)
         self.tone_service = ToneOfVoiceService(db_connection)
+    
+    def calculate_shorts_distribution(self, video_length_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate shorts vs regular video distribution from video length metrics."""
+        total_videos = video_length_metrics.get('total_videos', 0)
+        shorts_count = video_length_metrics.get('shorts_count', 0)
+        
+        if total_videos == 0:
+            return {
+                'total_videos': 0,
+                'shorts_count': 0,
+                'regular_count': 0,
+                'shorts_percentage': 0.0,
+                'regular_percentage': 0.0
+            }
+        
+        regular_count = total_videos - shorts_count
+        shorts_percentage = round((shorts_count / total_videos) * 100, 1)
+        regular_percentage = round((regular_count / total_videos) * 100, 1)
+        
+        return {
+            'total_videos': total_videos,
+            'shorts_count': shorts_count,
+            'regular_count': regular_count,
+            'shorts_percentage': shorts_percentage,
+            'regular_percentage': regular_percentage
+        }
     
     def calculate_country_7_metrics(self, country: str) -> Dict[str, Any]:
         """Calculate all 7 key metrics for a country."""
@@ -391,6 +417,9 @@ class CountryMetricsService:
             # 7. Tone of Voice Analysis
             tone_of_voice = self.tone_service.analyze_tone_of_voice(country)
             
+            # 8. Shorts vs Regular Distribution (derived from video_length metrics)
+            shorts_distribution = self.calculate_shorts_distribution(video_length)
+            
             return {
                 'video_length': video_length,
                 'video_frequency': video_frequency,
@@ -399,6 +428,7 @@ class CountryMetricsService:
                 'hub_help_hero': hub_help_hero,
                 'thumbnail_consistency': thumbnail_consistency,
                 'tone_of_voice': tone_of_voice,
+                'shorts_distribution': shorts_distribution,
                 'generated_at': datetime.now().isoformat(),
                 'competitors_count': 0,  # Will be filled in main function
                 'total_videos': video_length['total_videos']
@@ -418,6 +448,13 @@ class CountryMetricsService:
             'hub_help_hero': self.category_service._empty_category_metrics(),
             'thumbnail_consistency': self.thumbnail_service._empty_thumbnail_metrics(),
             'tone_of_voice': self.tone_service._empty_tone_metrics(),
+            'shorts_distribution': {
+                'total_videos': 0,
+                'shorts_count': 0,
+                'regular_count': 0,
+                'shorts_percentage': 0.0,
+                'regular_percentage': 0.0
+            },
             'generated_at': datetime.now().isoformat(),
             'competitors_count': 0,
             'total_videos': 0

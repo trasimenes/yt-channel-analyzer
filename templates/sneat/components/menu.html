@@ -24,7 +24,7 @@
     </li>
 
     <!-- Competitors -->
-    <li class="menu-item {% if request.endpoint == 'concurrents' %}active{% endif %}">
+    <li class="menu-item {% if request.endpoint == 'competitors.concurrents' %}active{% endif %}">
       <a href="/concurrents" class="menu-link">
         <i class="menu-icon tf-icons bx bx-group"></i>
         <div data-i18n="Competitors">Competitors</div>
@@ -52,32 +52,32 @@
       </a>
 
       <ul class="menu-sub">
-        <li class="menu-item {% if request.endpoint == 'top_videos' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'competitors.top-videos' %}active{% endif %}">
           <a href="/top-videos" class="menu-link">
             <div data-i18n="Top Videos">Top Videos</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'top_playlists' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'competitors.top-playlists' %}active{% endif %}">
           <a href="/top-playlists" class="menu-link">
             <div data-i18n="Top Playlists">Top Playlists</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'sentiment_analysis' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'insights.sentiment-analysis' %}active{% endif %}">
           <a href="/sentiment-analysis" class="menu-link">
             <div data-i18n="Sentiment Analysis">Sentiment Analysis</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'top_topics' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'insights.top-topics' %}active{% endif %}">
           <a href="/top-topics" class="menu-link">
             <div data-i18n="Top Topics">Top Topics</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'insights.countries-analysis' %}active{% endif %}">
           <a href="/countries-analysis" class="menu-link">
             <div data-i18n="By Country">By Country</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'main.performance-dashboard' %}active{% endif %}">
           <a href="/frequency-dashboard" class="menu-link">
             <div data-i18n="Publishing Frequency">Publishing Frequency</div>
           </a>
@@ -94,12 +94,12 @@
       </a>
 
       <ul class="menu-sub">
-        <li class="menu-item {% if request.endpoint == 'insights' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'insights.insights' %}active{% endif %}">
           <a href="/insights" class="menu-link">
             <div data-i18n="Brand Insights">Brand Insights</div>
           </a>
         </li>
-        <li class="menu-item {% if request.endpoint == 'country_insights' %}active{% endif %}">
+        <li class="menu-item {% if request.endpoint == 'insights.country-insights' %}active{% endif %}">
           <a href="/country-insights" class="menu-link">
             <div data-i18n="Country Insights">Country Insights</div>
           </a>
@@ -146,7 +146,7 @@
 
     <!-- Tools -->
 
-    <li class="menu-item {% if request.endpoint == 'tasks' %}active{% endif %}">
+    <li class="menu-item {% if request.endpoint == 'main.tasks_page' %}active{% endif %}">
       <a href="/tasks" class="menu-link">
         <i class="menu-icon tf-icons bx bx-task"></i>
         <div data-i18n="Tasks">Tasks</div>
@@ -165,14 +165,14 @@
       <span class="menu-header-text">DEV</span>
     </li>
 
-    <li class="menu-item {% if request.endpoint == 'settings' %}active{% endif %}">
+    <li class="menu-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
       <a href="/settings" class="menu-link">
         <i class="menu-icon tf-icons bx bx-cog"></i>
         <div data-i18n="Settings">Settings & Patterns</div>
       </a>
     </li>
 
-    <li class="menu-item {% if request.endpoint == 'fix_problems' %}active{% endif %}">
+    <li class="menu-item {% if request.endpoint == 'admin.fix-problems' %}active{% endif %}">
       <a href="/fix-problems" class="menu-link">
         <i class="menu-icon tf-icons bx bx-wrench"></i>
         <div data-i18n="Fix Problems">Fix Problems</div>

@@ -53,11 +53,11 @@ def login():
         else:
             from flask import current_app
             demo_mode = current_app.config.get('DEMO_MODE', False)
-            return render_template('sneat/auth/login.html', error='Identifiants incorrects', demo_mode=demo_mode)
+            return render_template('login_sneat_pro.html', error='Identifiants incorrects', demo_mode=demo_mode)
     
     from flask import current_app
     demo_mode = current_app.config.get('DEMO_MODE', False)
-    return render_template('sneat/auth/login.html', demo_mode=demo_mode)
+    return render_template('login_sneat_pro.html', demo_mode=demo_mode)
 
 
 @auth_bp.route('/logout')
@@ -124,14 +124,27 @@ def toggle_dev_mode():
         current_state = session.get('dev_mode', False)
         new_state = not current_state
         session['dev_mode'] = new_state
+        session.permanent = True  # Forcer la persistence
+        session.modified = True   # Marquer la session comme modifiée
         
-        return {
-            'success': True,
-            'dev_mode': new_state,
-            'message': f"Mode développeur {'activé' if new_state else 'désactivé'}"
-        }
+        print(f"[TOGGLE-DEV-MODE] Mode développeur: {current_state} -> {new_state}")
+        
+        status = "activé" if new_state else "désactivé"
+        flash(f'Mode développeur {status}', 'success')
+        
+        # Détecter si la requête est AJAX
+        if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+            # Requête AJAX - retourner status 200 pour recharger la page côté client
+            return '', 200
+        else:
+            # Requête form classique - rediriger (compatibility)
+            return redirect(request.referrer or url_for('main.home'))
     except Exception as e:
-        return {'success': False, 'error': str(e)}, 500
+        flash(f'Erreur lors du basculement du mode développeur: {str(e)}', 'error')
+        if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+            return '', 500
+        else:
+            return redirect(request.referrer or url_for('main.home'))
 
 
 @auth_bp.route('/toggle-performance-mode', methods=['POST'])

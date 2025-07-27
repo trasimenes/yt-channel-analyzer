@@ -239,7 +239,7 @@
                 {% if guides %}
                     {% for guide in guides %}
                     <div class="col-md-6">
-                        <a href="{{ url_for('learn_guide', guide_name=guide.file.replace('.md', '')) }}" class="text-decoration-none">
+                        <a href="{{ url_for('insights.learn_guide', guide_name=guide.file.replace('.md', '')) }}" class="text-decoration-none">
                             <div class="guide-card">
                                 <div class="guide-icon">{{ guide.icon }}</div>
                                 <h6 class="guide-title">{{ guide.title }}</h6>
@@ -255,7 +255,7 @@
                 {% else %}
                     <!-- Guide par défaut: Hero Hub Help -->
                     <div class="col-md-6">
-                        <a href="{{ url_for('learn_guide', guide_name='hero_hub_help_matrix') }}" class="text-decoration-none">
+                        <a href="{{ url_for('insights.learn_guide', guide_name='hero_hub_help_matrix') }}" class="text-decoration-none">
                             <div class="guide-card">
                                 <div class="guide-icon">🎯</div>
                                 <h6 class="guide-title">Hero Hub Help Matrix</h6>

@@ -35,12 +35,18 @@ def home():
         cursor.execute("SELECT COUNT(*) FROM playlist")
         total_playlists = cursor.fetchone()[0]
         
+        # Compter les classifications IA (vidéos avec catégorie non vide)
+        cursor.execute("SELECT COUNT(*) FROM video WHERE category IS NOT NULL AND category != '' AND category != 'uncategorized'")
+        ai_classifications = cursor.fetchone()[0]
+        
         conn.close()
         
         stats = {
-            'total_competitors': total_competitors,
+            'total_channels': total_competitors,  # Template expects 'total_channels'
+            'total_competitors': total_competitors,  # Keep for backward compatibility
             'total_videos': total_videos,
-            'total_playlists': total_playlists
+            'total_playlists': total_playlists,
+            'ai_classifications': ai_classifications
         }
         
         return render_template('home_sneat_pro.html', 
@@ -50,7 +56,7 @@ def home():
     except sqlite3.Error as e:
         print(f"[ERROR] Database error in home: {e}")
         return render_template('home_sneat_pro.html', 
-                             stats={'total_competitors': 0, 'total_videos': 0, 'total_playlists': 0},
+                             stats={'total_channels': 0, 'total_competitors': 0, 'total_videos': 0, 'total_playlists': 0, 'ai_classifications': 0},
                              dev_mode=session.get('dev_mode', False))
 
 
@@ -93,42 +99,84 @@ def sneat_test():
 @login_required
 def sneat_clean():
     """Redirection vers la page des tâches"""
-    return redirect(url_for('tasks.tasks_page'))
+    return redirect(url_for('main.tasks_page'))
 
 
 @main_bp.route('/tasks')
 @login_required
 def tasks_page():
-    """Page de gestion des tâches"""
+    """Page des tâches en cours avec organisation par pays - Restored from backup"""
     try:
         from yt_channel_analyzer.background_tasks import task_manager
+        from yt_channel_analyzer.database import get_db_connection
         
-        # Obtenir toutes les tâches
-        all_tasks = task_manager.get_all_tasks()
-        running_tasks = task_manager.get_running_tasks()
-        completed_tasks = task_manager.get_completed_tasks()
+        tasks = task_manager.get_all_tasks_with_warnings()
         
-        # Statistiques
-        stats = {
-            'total_tasks': len(all_tasks),
-            'running_tasks': len(running_tasks),
-            'completed_tasks': len(completed_tasks),
-            'pending_tasks': len(all_tasks) - len(running_tasks) - len(completed_tasks)
+        # Éliminer les doublons basés sur l'ID de la tâche
+        seen_ids = set()
+        unique_tasks = []
+        for task in tasks:
+            if task.id not in seen_ids:
+                seen_ids.add(task.id)
+                unique_tasks.append(task)
+        
+        tasks = unique_tasks
+        print(f"[TASKS] {len(tasks)} tâches uniques trouvées")
+        
+        # Organiser les tâches par pays
+        tasks_by_country = {
+            'FR': [],
+            'DE': [],
+            'BE': [],
+            'NL': [],
+            'International': [],
+            'Unknown': []
         }
         
-        return render_template('tasks_sneat_pro.html',
-                             all_tasks=all_tasks,
-                             running_tasks=running_tasks,
-                             completed_tasks=completed_tasks,
-                             stats=stats)
-                             
+        crashed_tasks = []
+        
+        # Récupérer les pays et IDs des concurrents pour associer aux tâches
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, channel_url, country FROM concurrent")
+        url_data = {}
+        for row in cursor.fetchall():
+            url_data[row[1]] = {'id': row[0], 'country': row[2]}
+        conn.close()
+        
+        # Importer la fonction pour obtenir les miniatures
+        from yt_channel_analyzer.utils.thumbnails import get_competitor_thumbnail
+        
+        for task in tasks:
+            # Déterminer le pays de la tâche et ajouter la miniature locale
+            country = 'Unknown'
+            if hasattr(task, 'channel_url') and task.channel_url:
+                data = url_data.get(task.channel_url, {})
+                country = data.get('country', 'Unknown')
+                
+                # Utiliser la miniature locale stockée sur le serveur
+                if data.get('id'):
+                    task.channel_thumbnail = get_competitor_thumbnail(data['id'])
+            
+            # Séparer les tâches en erreur
+            if task.status == 'error':
+                crashed_tasks.append(task)
+            else:
+                if country in tasks_by_country:
+                    tasks_by_country[country].append(task)
+                else:
+                    tasks_by_country['Unknown'].append(task)
+        
+        return render_template('tasks_sneat_pro.html', 
+                             tasks=tasks, 
+                             tasks_by_country=tasks_by_country,
+                             crashed_tasks=crashed_tasks)
     except Exception as e:
-        print(f"[ERROR] Error in tasks page: {e}")
-        return render_template('tasks_sneat_pro.html',
-                             all_tasks=[],
-                             running_tasks=[],
-                             completed_tasks=[],
-                             stats={'total_tasks': 0, 'running_tasks': 0, 'completed_tasks': 0, 'pending_tasks': 0})
+        return render_template('tasks_sneat_pro.html', 
+                             tasks=[], 
+                             tasks_by_country={},
+                             crashed_tasks=[],
+                             error=str(e))
 
 
 @main_bp.route('/performance-dashboard')

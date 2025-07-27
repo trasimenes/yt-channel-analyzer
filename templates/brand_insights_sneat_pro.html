@@ -1,0 +1,861 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Brand Insights - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .brand-nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e7e7ff;
+        overflow-x: auto;
+        padding-bottom: 0;
+    }
+    
+    .brand-tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: #8592a3;
+        font-weight: 500;
+        position: relative;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .brand-tab:hover {
+        color: #696cff;
+    }
+    
+    .brand-tab.active {
+        color: #696cff;
+    }
+    
+    .brand-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #696cff;
+    }
+    
+    .brand-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .brand-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+    }
+    
+    .metric-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .metric-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin: 0;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #696cff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-description {
+        color: #8592a3;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    
+    .metric-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f1f1f4;
+    }
+    
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+    }
+    
+    .trend-up {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .trend-down {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .trend-stable {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .insights-section {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        border: 1px solid #e7e7ff;
+        margin-bottom: 2rem;
+    }
+    
+    .insights-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .insights-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #ff9f43 0%, #ff6b35 100%);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .insights-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin: 0;
+        font-size: 1.25rem;
+    }
+    
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .insight-category {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border-left: 4px solid transparent;
+    }
+    
+    .insight-category.what-works {
+        border-left-color: #28c76f;
+    }
+    
+    .insight-category.what-doesnt-work {
+        border-left-color: #ea5455;
+    }
+    
+    .insight-category.regional-advice {
+        border-left-color: #696cff;
+    }
+    
+    .insight-category.general-advice {
+        border-left-color: #ff9f43;
+    }
+    
+    .insight-category-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .insight-category.what-works .insight-category-title {
+        color: #28c76f;
+    }
+    
+    .insight-category.what-doesnt-work .insight-category-title {
+        color: #ea5455;
+    }
+    
+    .insight-category.regional-advice .insight-category-title {
+        color: #696cff;
+    }
+    
+    .insight-category.general-advice .insight-category-title {
+        color: #ff9f43;
+    }
+    
+    .insight-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .insight-item {
+        padding: 0.5rem 0;
+        color: #566a7f;
+        border-bottom: 1px solid #e7e7ff;
+        line-height: 1.5;
+    }
+    
+    .insight-item:last-child {
+        border-bottom: none;
+    }
+    
+    .top-videos-section {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        border: 1px solid #e7e7ff;
+        margin-bottom: 2rem;
+    }
+    
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    .video-card {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .video-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .video-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .video-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: #8592a3;
+    }
+    
+    .video-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .brand-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        border-radius: 0.5rem;
+    }
+    
+    .brand-flag {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .brand-name {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .brand-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e7e7ff;
+        background: white;
+        border-radius: 0.375rem;
+        color: #566a7f;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-btn:hover {
+        border-color: #696cff;
+        color: #696cff;
+    }
+    
+    .view-btn.active {
+        background: #696cff;
+        border-color: #696cff;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .video-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .brand-nav {
+            gap: 0.5rem;
+        }
+        
+        .brand-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Analyse /</span> Brand Insights 
+                <span class="badge bg-success ms-2">NOUVEAU TEMPLATE</span>
+            </h4>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="bx bx-refresh me-2"></i>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="bx bx-error-circle me-2"></i>
+            {{ error }}
+        </div>
+        {% elif insights %}
+        
+        <!-- Brand Navigation -->
+        <div class="brand-nav">
+            {% for brand_key, brand_data in insights.items() %}
+                <button class="brand-tab {% if loop.first %}active{% endif %}" 
+                        onclick="showBrand('{{ brand_key }}')" 
+                        id="tab-{{ brand_key }}">
+                    {% if 'allemagne' in brand_key|lower or 'germany' in brand_key|lower %}🇩🇪
+                    {% elif 'france' in brand_key|lower %}🇫🇷
+                    {% elif 'nl-be' in brand_key|lower or 'netherlands' in brand_key|lower %}🇳🇱
+                    {% elif 'uk' in brand_key|lower or 'united kingdom' in brand_key|lower %}🇬🇧
+                    {% else %}🏕️{% endif %}
+                    {{ brand_key }}
+                </button>
+            {% endfor %}
+        </div>
+
+        <!-- Brand Content -->
+        {% for brand_key, brand_data in insights.items() %}
+            <div class="brand-content {% if loop.first %}active{% endif %}" id="content-{{ brand_key }}">
+                
+                <!-- Brand Header -->
+                <div class="brand-header">
+                    <div class="brand-flag">
+                        {% if 'allemagne' in brand_key|lower or 'germany' in brand_key|lower %}🇩🇪
+                        {% elif 'france' in brand_key|lower %}🇫🇷
+                        {% elif 'nl-be' in brand_key|lower or 'netherlands' in brand_key|lower %}🇳🇱
+                        {% elif 'uk' in brand_key|lower or 'united kingdom' in brand_key|lower %}🇬🇧
+                        {% else %}🏕️{% endif %}
+                    </div>
+                    <h2 class="brand-name">{{ brand_key }}</h2>
+                    <p class="brand-subtitle">Analyse détaillée des performances YouTube</p>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <!-- Video Length -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-time"></i>
+                            </div>
+                            <h3 class="metric-title">Durée des Vidéos</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ brand_data.video_length.avg_duration_minutes|default(0)|round(1) }} min
+                        </div>
+                        <div class="metric-description">
+                            Durée moyenne des vidéos : {{ brand_data.video_length.total_videos|default(0) }} vidéos analysées
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if brand_data.video_length.avg_duration_minutes > 5 else 'stable' if brand_data.video_length.avg_duration_minutes > 2 else 'down' }}">
+                                {% if brand_data.video_length.avg_duration_minutes > 5 %}
+                                    <i class="bx bx-trending-up"></i> Contenu long
+                                {% elif brand_data.video_length.avg_duration_minutes > 2 %}
+                                    <i class="bx bx-minus"></i> Durée moyenne
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> Contenu court
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Video Frequency -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-calendar"></i>
+                            </div>
+                            <h3 class="metric-title">Fréquence de Publication</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ brand_data.video_frequency.videos_per_week|default(0)|round(1) }}/sem
+                        </div>
+                        <div class="metric-description">
+                            Publication moyenne de {{ brand_data.video_frequency.videos_per_week|default(0)|round(1) }} vidéos par semaine
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if brand_data.video_frequency.videos_per_week > 2 else 'stable' if brand_data.video_frequency.videos_per_week > 0.5 else 'down' }}">
+                                {% if brand_data.video_frequency.videos_per_week > 2 %}
+                                    <i class="bx bx-trending-up"></i> Très actif
+                                {% elif brand_data.video_frequency.videos_per_week > 0.5 %}
+                                    <i class="bx bx-minus"></i> Modérément actif
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> Peu actif
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Most Liked Topic -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-heart"></i>
+                            </div>
+                            <h3 class="metric-title">Sujet le Plus Apprécié</h3>
+                        </div>
+                        <div class="metric-value" style="font-size: 1.5rem;">
+                            {% if brand_data.most_liked_topics and brand_data.most_liked_topics[0] %}
+                                {{ brand_data.most_liked_topics[0].topic|default('N/A')|title }}
+                            {% else %}N/A{% endif %}
+                        </div>
+                        <div class="metric-description">
+                            {% if brand_data.most_liked_topics and brand_data.most_liked_topics[0] %}
+                                {{ brand_data.most_liked_topics[0].avg_likes|default(0)|round(0) }} likes en moyenne sur ce sujet
+                            {% else %}Aucun sujet populaire identifié{% endif %}
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-up">
+                                <i class="bx bx-like"></i> Top sujet
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Hub Hero Help Distribution -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-pie-chart"></i>
+                            </div>
+                            <h3 class="metric-title">Distribution HHH</h3>
+                        </div>
+                        <div class="metric-value" style="font-size: 1.2rem;">
+                            H{{ brand_data.hub_help_hero.hero_percentage|default(0)|round(0) }}% 
+                            H{{ brand_data.hub_help_hero.hub_percentage|default(0)|round(0) }}% 
+                            H{{ brand_data.hub_help_hero.help_percentage|default(0)|round(0) }}%
+                        </div>
+                        <div class="metric-description">
+                            {% if brand_data.hub_help_hero.categorized_videos|default(0) > 0 %}
+                                Hero-Hub-Help distribution sur {{ brand_data.hub_help_hero.categorized_videos }} vidéos catégorisées
+                            {% else %}
+                                {% set total_videos = brand_data.hub_help_hero.total_videos|default(0) %}
+                                {% if total_videos > 0 %}
+                                    ⚠️ {{ total_videos }} vidéos non catégorisées - Playlists manquantes, import requis
+                                {% else %}
+                                    ⚠️ Aucune vidéo trouvée pour cette chaîne
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-stable">
+                                <i class="bx bx-pie-chart-alt"></i> Équilibrage HHH
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Organic vs Paid -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-target-lock"></i>
+                            </div>
+                            <h3 class="metric-title">Organique vs Payé</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ brand_data.organic_vs_paid.organic_percentage|default(0)|round(1) }}%
+                        </div>
+                        <div class="metric-description">
+                            {{ brand_data.organic_vs_paid.organic_count|default(0) }} vidéos organiques analysées
+                        </div>
+                        
+                        <!-- Barre de répartition Organic vs Paid -->
+                        <div class="my-3">
+                            <div id="organic-paid-bar-{{ brand_key }}" style="width:100%; height:40px;"></div>
+                        </div>
+                        
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if brand_data.organic_vs_paid.organic_percentage > 80 else 'stable' if brand_data.organic_vs_paid.organic_percentage > 60 else 'down' }}">
+                                {% if brand_data.organic_vs_paid.organic_percentage > 80 %}
+                                    <i class="bx bx-trending-up"></i> Très organique
+                                {% elif brand_data.organic_vs_paid.organic_percentage > 60 %}
+                                    <i class="bx bx-minus"></i> Équilibré
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> Plus de payé
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Shorts vs Regular Videos -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-video"></i>
+                            </div>
+                            <h3 class="metric-title">Shorts vs Vidéos 16:9</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ brand_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%
+                        </div>
+                        <div class="metric-description">
+                            {{ brand_data.shorts_distribution.shorts_count|default(0) }} Shorts sur {{ brand_data.shorts_distribution.total_videos|default(0) }} vidéos
+                        </div>
+                        
+                        <!-- Barre de répartition Shorts vs Regular -->
+                        <div class="my-3">
+                            <div id="shorts-regular-bar-{{ brand_key }}" style="width:100%; height:40px;"></div>
+                        </div>
+                        
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if brand_data.shorts_distribution.shorts_percentage > 40 else 'stable' if brand_data.shorts_distribution.shorts_percentage > 20 else 'down' }}">
+                                {% if brand_data.shorts_distribution.shorts_percentage > 40 %}
+                                    <i class="bx bx-trending-up"></i> Fort usage Shorts
+                                {% elif brand_data.shorts_distribution.shorts_percentage > 20 %}
+                                    <i class="bx bx-minus"></i> Usage modéré
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> Peu de Shorts
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail Consistency -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-image"></i>
+                            </div>
+                            <h3 class="metric-title">Cohérence des Miniatures</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ brand_data.thumbnail_consistency.consistency_score|default(0)|round(1) }}/10
+                        </div>
+                        <div class="metric-description">
+                            Score de cohérence des miniatures sur {{ brand_data.thumbnail_consistency.with_thumbnails|default(0) }} miniatures
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if brand_data.thumbnail_consistency.consistency_score > 7 else 'stable' if brand_data.thumbnail_consistency.consistency_score > 5 else 'down' }}">
+                                {% if brand_data.thumbnail_consistency.consistency_score > 7 %}
+                                    <i class="bx bx-trending-up"></i> Excellente cohérence
+                                {% elif brand_data.thumbnail_consistency.consistency_score > 5 %}
+                                    <i class="bx bx-minus"></i> Cohérence correcte
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> À améliorer
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Lexical Field -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-text"></i>
+                            </div>
+                            <h3 class="metric-title">Champ Lexical</h3>
+                        </div>
+                        <div class="metric-value" style="font-size: 1.2rem;">
+                            {{ brand_data.tone_of_voice.dominant_tone|default('N/A')|title }}
+                        </div>
+                        <div class="metric-description">
+                            Tonalité dominante avec {{ brand_data.tone_of_voice.emotional_words|default(0) }} mots émotionnels
+                        </div>
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-stable">
+                                <i class="bx bx-book"></i> Analyse lexicale
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Videos Section -->
+                <div class="top-videos-section">
+                    <div class="insights-header">
+                        <div class="insights-icon">
+                            <i class="bx bx-star"></i>
+                        </div>
+                        <h3 class="insights-title">Top Vidéos</h3>
+                    </div>
+                    <div class="video-grid">
+                        {% for video in brand_data.top_videos %}
+                        <div class="video-card" onclick="window.open('{{ video.url }}', '_blank')">
+                            <div class="video-title">{{ video.title|truncate(60) }}</div>
+                            <div class="video-stats">
+                                <div class="video-stat">
+                                    <i class="bx bx-show"></i>
+                                    {{ "{:,}".format(video.view_count|default(0)) }}
+                                </div>
+                                <div class="video-stat">
+                                    <i class="bx bx-like"></i>
+                                    {{ "{:,}".format(video.like_count|default(0)) }}
+                                </div>
+                                <div class="video-stat">
+                                    <i class="bx bx-comment"></i>
+                                    {{ "{:,}".format(video.comment_count|default(0)) }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bx bx-world" style="font-size: 4rem; color: #8592a3;"></i>
+            <h3 class="mt-3 mb-2">Aucune donnée d'insights par pays</h3>
+            <p class="text-muted">Les insights par pays ne sont pas encore disponibles.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<!-- Segment JS for distribution bars -->
+<script src="{{ url_for('static', filename='js/segment.js') }}"></script>
+<link href="{{ url_for('static', filename='css/segment.css') }}" rel="stylesheet">
+
+<script>
+function showBrand(brandKey) {
+    // Hide all brand contents
+    document.querySelectorAll('.brand-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.brand-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected brand content
+    const contentElement = document.getElementById('content-' + brandKey);
+    if (contentElement) {
+        contentElement.classList.add('active');
+    }
+    
+    // Add active class to selected tab
+    const tabElement = document.getElementById('tab-' + brandKey);
+    if (tabElement) {
+        tabElement.classList.add('active');
+    }
+    
+    // Refresh the organic/paid bars for the selected brand
+    setTimeout(() => {
+        initializeOrganicPaidBarsForBrand(brandKey);
+        initializeShortsRegularBarsForBrand(brandKey);
+    }, 100);
+}
+
+// Initialize Organic vs Paid bars
+function initializeOrganicPaidBarsForBrand(brand) {
+    const organicPaidData = {
+        {% for brand_key, brand_data in insights.items() %}
+        "{{ brand_key }}": {
+            organic_count: {{ brand_data.organic_vs_paid.organic_count|default(0) }},
+            paid_count: {{ brand_data.organic_vs_paid.paid_count|default(0) }},
+            organic_percentage: {{ brand_data.organic_vs_paid.organic_percentage|default(0)|round(1) }},
+            paid_percentage: {{ brand_data.organic_vs_paid.paid_percentage|default(0)|round(1) }}
+        }{{ ',' if not loop.last }}
+        {% endfor %}
+    };
+    
+    const brandData = organicPaidData[brand];
+    if (!brandData) return;
+    
+    const el = document.getElementById(`organic-paid-bar-${brand}`);
+    if (!el) return;
+    
+    // Clear existing content
+    el.innerHTML = '';
+    
+    // Use absolute values for segment calculation, but display percentages
+    buildSegmentBar(el, {
+        data: [
+            {
+                label: "Organique",
+                value: Math.max(brandData.organic_count, 1), // Use count for calculation
+                color: "#28c76f", // Green for organic
+                title: `${brandData.organic_percentage}% Organique (${brandData.organic_count} vidéos)`
+            },
+            {
+                label: "Payé", 
+                value: Math.max(brandData.paid_count, 1), // Use count for calculation
+                color: "#ff9f43", // Orange for paid
+                title: `${brandData.paid_percentage}% Payé (${brandData.paid_count} vidéos)`
+            }
+        ],
+        width: "100%",
+        height: "40px"
+    });
+}
+
+// Initialize Shorts vs Regular bars
+function initializeShortsRegularBarsForBrand(brand) {
+    const shortsRegularData = {
+        {% for brand_key, brand_data in insights.items() %}
+        "{{ brand_key }}": {
+            shorts_count: {{ brand_data.shorts_distribution.shorts_count|default(0) }},
+            regular_count: {{ brand_data.shorts_distribution.regular_count|default(0) }},
+            shorts_percentage: {{ brand_data.shorts_distribution.shorts_percentage|default(0)|round(1) }},
+            regular_percentage: {{ brand_data.shorts_distribution.regular_percentage|default(0)|round(1) }}
+        }{{ ',' if not loop.last }}
+        {% endfor %}
+    };
+    
+    const brandData = shortsRegularData[brand];
+    if (!brandData) return;
+    
+    const el = document.getElementById(`shorts-regular-bar-${brand}`);
+    if (!el) return;
+    
+    // Clear existing content
+    el.innerHTML = '';
+    
+    // Use absolute values for segment calculation, but display percentages
+    buildSegmentBar(el, {
+        data: [
+            {
+                label: "Shorts",
+                value: Math.max(brandData.shorts_count, 1), // Use count for calculation
+                color: "#ff6384", // Pink for shorts
+                title: `${brandData.shorts_percentage}% Shorts (${brandData.shorts_count} vidéos)`
+            },
+            {
+                label: "Vidéos 16:9", 
+                value: Math.max(brandData.regular_count, 1), // Use count for calculation
+                color: "#36a2eb", // Blue for regular videos
+                title: `${brandData.regular_percentage}% Vidéos 16:9 (${brandData.regular_count} vidéos)`
+            }
+        ],
+        width: "100%",
+        height: "40px"
+    });
+}
+
+// Auto-show first brand on load
+document.addEventListener('DOMContentLoaded', function() {
+    const firstTab = document.querySelector('.brand-tab');
+    if (firstTab) {
+        firstTab.classList.add('active');
+    }
+    
+    const firstContent = document.querySelector('.brand-content');
+    if (firstContent) {
+        firstContent.classList.add('active');
+    }
+    
+    // Initialize all organic/paid bars and shorts/regular bars
+    {% for brand in insights.keys() %}
+    initializeOrganicPaidBarsForBrand("{{ brand }}");
+    initializeShortsRegularBarsForBrand("{{ brand }}");
+    {% endfor %}
+});
+</script>
+{% endblock %}

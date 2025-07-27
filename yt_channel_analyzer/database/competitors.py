@@ -603,7 +603,8 @@ def get_all_competitors_with_videos() -> List[Dict]:
                 COALESCE(cs.help_views, 0) as help_views,
                 COALESCE(cs.engagement_rate, 0) as engagement_rate,
                 COALESCE(cfs.avg_videos_per_week, 0) as frequency_total,
-                (SELECT MAX(published_at) FROM video WHERE concurrent_id = c.id) as last_video_date
+                (SELECT MAX(published_at) FROM video WHERE concurrent_id = c.id) as last_video_date,
+                (SELECT COUNT(*) FROM playlist WHERE concurrent_id = c.id) as playlist_count
             FROM concurrent c
             LEFT JOIN competitor_stats cs ON c.id = cs.competitor_id
             LEFT JOIN competitor_frequency_stats cfs ON c.id = cfs.competitor_id
@@ -637,6 +638,7 @@ def get_all_competitors_with_videos() -> List[Dict]:
             engagement_rate = row[21]
             frequency_total = row[22]
             last_video_date = row[23]
+            playlist_count = row[24]
             
             # Calculer les pourcentages
             hero_percentage = (hero_count / total_videos * 100) if total_videos > 0 else 0
@@ -653,6 +655,7 @@ def get_all_competitors_with_videos() -> List[Dict]:
                 'language': language,
                 'video_count': total_videos,
                 'total_videos': total_videos,  # Compatibilité avec le template
+                'playlist_count': playlist_count,
                 'total_views': total_views,
                 'avg_views': avg_views,
                 'last_video_date': last_video_date,

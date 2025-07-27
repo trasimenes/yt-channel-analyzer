@@ -567,6 +567,12 @@
                         <div class="metric-description">
                             {{ country_data.organic_vs_paid.organic_count|default(0) }} vidéos organiques analysées
                         </div>
+                        
+                        <!-- Barre de répartition Organic vs Paid -->
+                        <div class="my-3">
+                            <div id="organic-paid-bar-{{ country_key }}" style="width:100%; height:40px;"></div>
+                        </div>
+                        
                         <div class="metric-trend">
                             <span class="trend-indicator trend-{{ 'up' if country_data.organic_vs_paid.organic_percentage > 80 else 'stable' if country_data.organic_vs_paid.organic_percentage > 60 else 'down' }}">
                                 {% if country_data.organic_vs_paid.organic_percentage > 80 %}
@@ -575,6 +581,39 @@
                                     <i class="bx bx-minus"></i> Équilibré
                                 {% else %}
                                     <i class="bx bx-trending-down"></i> Plus de payé
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Shorts vs Regular Videos -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="bx bx-video"></i>
+                            </div>
+                            <h3 class="metric-title">Shorts vs Vidéos 16:9</h3>
+                        </div>
+                        <div class="metric-value">
+                            {{ country_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%
+                        </div>
+                        <div class="metric-description">
+                            {{ country_data.shorts_distribution.shorts_count|default(0) }} Shorts sur {{ country_data.shorts_distribution.total_videos|default(0) }} vidéos
+                        </div>
+                        
+                        <!-- Barre de répartition Shorts vs Regular -->
+                        <div class="my-3">
+                            <div id="shorts-regular-bar-{{ country_key }}" style="width:100%; height:40px;"></div>
+                        </div>
+                        
+                        <div class="metric-trend">
+                            <span class="trend-indicator trend-{{ 'up' if country_data.shorts_distribution.shorts_percentage > 40 else 'stable' if country_data.shorts_distribution.shorts_percentage > 20 else 'down' }}">
+                                {% if country_data.shorts_distribution.shorts_percentage > 40 %}
+                                    <i class="bx bx-trending-up"></i> Fort usage Shorts
+                                {% elif country_data.shorts_distribution.shorts_percentage > 20 %}
+                                    <i class="bx bx-minus"></i> Usage modéré
+                                {% else %}
+                                    <i class="bx bx-trending-down"></i> Peu de Shorts
                                 {% endif %}
                             </span>
                         </div>
@@ -675,6 +714,10 @@
 {% endblock %}
 
 {% block page_js %}
+<!-- Segment JS for distribution bars -->
+<script src="{{ url_for('static', filename='js/segment.js') }}"></script>
+<link href="{{ url_for('static', filename='css/segment.css') }}" rel="stylesheet">
+
 <script>
 function showCountry(countryKey) {
     // Hide all country contents
@@ -698,6 +741,98 @@ function showCountry(countryKey) {
     if (tabElement) {
         tabElement.classList.add('active');
     }
+    
+    // Refresh the organic/paid bars for the selected country
+    setTimeout(() => {
+        initializeOrganicPaidBarsForCountry(countryKey);
+        initializeShortsRegularBarsForCountry(countryKey);
+    }, 100);
+}
+
+// Initialize Organic vs Paid bars
+function initializeOrganicPaidBarsForCountry(country) {
+    const organicPaidData = {
+        {% for country_key, country_data in insights.items() %}
+        "{{ country_key }}": {
+            organic_count: {{ country_data.organic_vs_paid.organic_count|default(0) }},
+            paid_count: {{ country_data.organic_vs_paid.paid_count|default(0) }},
+            organic_percentage: {{ country_data.organic_vs_paid.organic_percentage|default(0)|round(1) }},
+            paid_percentage: {{ country_data.organic_vs_paid.paid_percentage|default(0)|round(1) }}
+        }{{ ',' if not loop.last }}
+        {% endfor %}
+    };
+    
+    const countryData = organicPaidData[country];
+    if (!countryData) return;
+    
+    const el = document.getElementById(`organic-paid-bar-${country}`);
+    if (!el) return;
+    
+    // Clear existing content
+    el.innerHTML = '';
+    
+    // Use absolute values for segment calculation, but display percentages
+    buildSegmentBar(el, {
+        data: [
+            {
+                label: "Organique",
+                value: Math.max(countryData.organic_count, 1), // Use count for calculation
+                color: "#28c76f", // Green for organic
+                title: `${countryData.organic_percentage}% Organique (${countryData.organic_count} vidéos)`
+            },
+            {
+                label: "Payé", 
+                value: Math.max(countryData.paid_count, 1), // Use count for calculation
+                color: "#ff9f43", // Orange for paid
+                title: `${countryData.paid_percentage}% Payé (${countryData.paid_count} vidéos)`
+            }
+        ],
+        width: "100%",
+        height: "40px"
+    });
+}
+
+// Initialize Shorts vs Regular bars
+function initializeShortsRegularBarsForCountry(country) {
+    const shortsRegularData = {
+        {% for country_key, country_data in insights.items() %}
+        "{{ country_key }}": {
+            shorts_count: {{ country_data.shorts_distribution.shorts_count|default(0) }},
+            regular_count: {{ country_data.shorts_distribution.regular_count|default(0) }},
+            shorts_percentage: {{ country_data.shorts_distribution.shorts_percentage|default(0)|round(1) }},
+            regular_percentage: {{ country_data.shorts_distribution.regular_percentage|default(0)|round(1) }}
+        }{{ ',' if not loop.last }}
+        {% endfor %}
+    };
+    
+    const countryData = shortsRegularData[country];
+    if (!countryData) return;
+    
+    const el = document.getElementById(`shorts-regular-bar-${country}`);
+    if (!el) return;
+    
+    // Clear existing content
+    el.innerHTML = '';
+    
+    // Use absolute values for segment calculation, but display percentages
+    buildSegmentBar(el, {
+        data: [
+            {
+                label: "Shorts",
+                value: Math.max(countryData.shorts_count, 1), // Use count for calculation
+                color: "#ff6384", // Pink for shorts
+                title: `${countryData.shorts_percentage}% Shorts (${countryData.shorts_count} vidéos)`
+            },
+            {
+                label: "Vidéos 16:9", 
+                value: Math.max(countryData.regular_count, 1), // Use count for calculation
+                color: "#36a2eb", // Blue for regular videos
+                title: `${countryData.regular_percentage}% Vidéos 16:9 (${countryData.regular_count} vidéos)`
+            }
+        ],
+        width: "100%",
+        height: "40px"
+    });
 }
 
 // Auto-show first country on load
@@ -711,6 +846,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (firstContent) {
         firstContent.classList.add('active');
     }
+    
+    // Initialize all organic/paid bars and shorts/regular bars
+    {% for country in insights.keys() %}
+    initializeOrganicPaidBarsForCountry("{{ country }}");
+    initializeShortsRegularBarsForCountry("{{ country }}");
+    {% endfor %}
 });
 </script>
 {% endblock %}

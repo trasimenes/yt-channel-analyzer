@@ -1,0 +1,36 @@
+# Sentiment Analysis Pipeline Dependencies
+# Based on youtube_emotion_analysis_pipeline.md
+
+# Core ML Libraries
+transformers>=4.30.0
+torch>=2.0.0
+langdetect>=1.0.9
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# YouTube API & Scraping
+google-api-python-client>=2.88.0
+yt-dlp>=2023.7.6
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# Web Scraping (optional for advanced scraping)
+selenium>=4.10.0
+webdriver-manager>=3.8.6
+
+# Caching & Performance
+redis>=4.5.0
+
+# Already have: flask, sqlite3 (built-in), flask-cors
+
+# Text Processing
+nltk>=3.8.1
+spacy>=3.6.0
+
+# Progress Tracking
+tqdm>=4.65.0
+
+# Visualization (already have Chart.js via CDN)
+# plotly>=5.15.0 (optional for server-side charts)

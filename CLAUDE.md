@@ -29,25 +29,131 @@ Cette hiérarchie est **FONDAMENTALE** et doit être respectée dans **TOUS** le
 
 ### 🔒 Protection des Classifications Humaines
 
+#### ⭐ **CLASSIFICATION SUPERVISÉE MANUELLE - 49 PLAYLISTS VALIDÉES**
+
+**TRAVAIL HUMAIN PRÉSERVÉ** : 49 playlists classifiées manuellement et propagées aux vidéos :
+- **9 HERO** playlists → vidéos de marque/inspiration  
+- **28 HUB** playlists → contenu éducatif/engageant
+- **12 HELP** playlists → contenu d'aide/support
+
+**Propagation automatique** : Les catégories des playlists sont propagées aux 1291 vidéos associées
+```sql
+-- Vérification du travail humain préservé
+SELECT COUNT(*) FROM playlist WHERE classification_source = 'human';  -- 49 playlists
+SELECT COUNT(*) FROM video WHERE classification_source = 'human' OR classification_source LIKE '%propagat%';  -- 1291 vidéos
+```
+
 #### Dans le code :
 ```python
-# ✅ CORRECT : Vérifier la protection humaine
+# ✅ CORRECT : Vérifier la protection humaine (OBLIGATOIRE)
 if is_human_validated != 1 and classification_source != 'human':
     # Seulement alors on peut reclassifier
     
-# ❌ INCORRECT : Écraser sans vérifier
-UPDATE video SET category = ? WHERE id = ?
+# ⭐ PRÉSERVER : Récupération des classifications humaines
+def get_hhh_distribution(competitor_id):
+    # Les vidéos ont déjà les catégories propagées depuis les playlists manuelles
+    cursor.execute("""
+        SELECT 
+            COUNT(CASE WHEN v.category = 'hero' THEN 1 END) as hero_count,
+            COUNT(CASE WHEN v.category = 'hub' THEN 1 END) as hub_count,
+            COUNT(CASE WHEN v.category = 'help' THEN 1 END) as help_count,
+            COUNT(CASE WHEN v.category IS NOT NULL THEN 1 END) as categorized_videos
+        FROM video v WHERE v.concurrent_id = ?
+    """, (competitor_id,))
+    
+# ❌ INTERDIT : Écraser les classifications humaines
+UPDATE video SET category = ? WHERE classification_source = 'human'  -- JAMAIS !
 ```
 
 #### Dans les requêtes SQL :
 ```sql
--- ✅ CORRECT : Exclure les validations humaines
+-- ✅ CORRECT : Exclure les validations humaines des re-classifications
 WHERE (is_human_validated = 0 OR is_human_validated IS NULL)
 AND (classification_source != 'human' OR classification_source IS NULL)
 
--- ❌ INCORRECT : Ignorer la protection
-WHERE category IS NULL OR category = 'uncategorized'
+-- ⭐ RÉCUPÉRATION : Utiliser les classifications propagées
+SELECT v.category FROM video v WHERE v.concurrent_id = ?  -- Categories déjà propagées
+
+-- ❌ INTERDIT : Ignorer la protection humaine
+WHERE category IS NULL OR category = 'uncategorized'  -- Peut écraser le travail humain !
 ```
+
+#### 📊 **État Actuel de la Classification par Chaîne Center Parcs** :
+- **🇫🇷 France** : 235/235 vidéos catégorisées (57 hero, 164 hub, 14 help) ✅
+- **🇳🇱 Netherlands** : 433/433 vidéos catégorisées (213 hero, 175 hub, 45 help) ✅  
+- **🇬🇧 UK** : 42/42 vidéos catégorisées (13 hero, 29 hub, 0 help) ✅
+- **🇩🇪 Germany** : 0/224 vidéos catégorisées ⚠️ **CLASSIFICATION MANUELLE REQUISE**
+
+## 📅 PROBLÈME CRITIQUE DE DATES - IMPORTED_AT vs YOUTUBE_PUBLISHED_AT
+
+### ⚠️ **BUG SYSTÉMIQUE : DATES D'IMPORT UTILISÉES AU LIEU DES VRAIES DATES YOUTUBE**
+
+**PROBLÈME MAJEUR** : Les scripts d'import ont tendance à utiliser `imported_at` (date d'import) au lieu de `youtube_published_at` (vraie date de publication YouTube), causant des calculs de fréquence complètement erronés.
+
+#### 🚨 **Symptômes Observés** :
+- **Fréquences absurdes** : 1645 vidéos/semaine, 3031 vidéos/semaine (impossible !)
+- **Toutes les vidéos** avec la même date : `2025-07-05` (date d'import)
+- **Calculs de tendances** faussés car basés sur la date d'import
+- **Analyses temporelles** invalides
+
+#### 📊 **État des Dates par Chaîne Center Parcs** :
+```sql
+-- Vérification des dates problématiques
+SELECT c.name, 
+       MIN(DATE(v.published_at)) as first_date, 
+       MAX(DATE(v.published_at)) as last_date,
+       COUNT(DISTINCT DATE(v.published_at)) as distinct_dates,
+       COUNT(*) as total_videos
+FROM video v 
+JOIN concurrent c ON v.concurrent_id = c.id 
+WHERE c.name LIKE '%Center Parcs%' 
+GROUP BY c.id, c.name;
+```
+
+- **🇫🇷 France** : 235 vidéos TOUTES avec `2025-07-05` → **DATES CORROMPUES**
+- **🇳🇱 Netherlands** : 433 vidéos TOUTES avec `2025-07-05` → **DATES CORROMPUES**  
+- **🇬🇧 UK** : 42 vidéos TOUTES avec `2025-07-05` → **DATES CORROMPUES**
+- **🇩🇪 Germany** : 224 vidéos avec dates réalistes `2012-09-27` à `2025-07-21` → **DATES CORRECTES**
+
+#### 🔧 **Fonctions à Auditer et Corriger** :
+1. **Scripts d'import YouTube** : Vérifier usage de `published_at` vs vraie date API
+2. **Calculs de fréquence** : `video_frequency_metrics()`, `calculate_publishing_frequency()`
+3. **Analyses temporelles** : `trend_analysis()`, `seasonal_patterns()`
+4. **Services de métriques** : `brand_metrics_service.py`, `country_metrics_service.py`
+
+#### 🤖 **AGENT DÉDIÉ À CRÉER** :
+```python
+# Agent de Correction de Dates YouTube
+class YouTubeDateCorrectionAgent:
+    """
+    Agent dédié pour corriger toutes les dates d'import erronées
+    et restaurer les vraies dates de publication YouTube
+    """
+    
+    def audit_date_integrity(self):
+        # Identifier toutes les vidéos avec dates suspectes
+        
+    def fetch_real_youtube_dates(self):
+        # Récupérer les vraies dates via YouTube API
+        
+    def batch_correct_dates(self):
+        # Corriger en lot les dates corrompues
+        
+    def validate_frequency_calculations(self):
+        # Re-calculer toutes les fréquences après correction
+```
+
+#### ⚙️ **Colonnes de Tracking des Dates** :
+- `published_at` : Date actuelle (souvent = date d'import ❌)
+- `youtube_published_at` : Vraie date YouTube API (parfois vide)
+- `imported_at` : Date d'import dans le système
+- `last_updated` : Dernière modification
+
+#### 🎯 **Action Immédiate Requise** :
+1. **Créer l'agent de correction** pour auditer toutes les dates
+2. **Identifier les fonctions** qui utilisent mal `published_at`
+3. **Re-fetch les vraies dates** YouTube pour les chaînes importantes
+4. **Recalculer les métriques** temporelles après correction
 
 ### 🎯 Implémentation dans le Système
 
@@ -61,6 +167,60 @@ WHERE category IS NULL OR category = 'uncategorized'
 - `is_human_validated` : Flag de protection absolue
 - `classification_source` : Source de la classification
 - `human_verified` : Alias pour compatibilité
+
+## 🗄️ CONFIGURATION BASE DE DONNÉES - RÈGLE CRITIQUE
+
+### ⚠️ CHEMIN CORRECT DE LA BASE DE DONNÉES
+
+**ABSOLUMENT CRUCIAL** : Le refactoring a causé une confusion sur l'emplacement de la vraie base de données.
+
+#### 📍 Localisation des bases de données :
+- **❌ FAUSSE BASE** : `./instance/youtube_data.db` (20 compétiteurs, 5922 vidéos)
+- **✅ VRAIE BASE** : `./instance/database.db` (30 compétiteurs, 8489 vidéos)
+
+#### 🔧 Configuration dans le code :
+**Fichier** : `yt_channel_analyzer/database/base.py`
+```python
+# ✅ CORRECT
+DB_PATH = DB_DIR / 'database.db'
+
+# ❌ INCORRECT (après refactoring)  
+DB_PATH = DB_DIR / 'youtube_data.db'
+```
+
+#### 🚨 Vérification automatique des données :
+```python
+# Script de vérification rapide
+from yt_channel_analyzer.database import get_db_connection
+conn = get_db_connection()
+cursor = conn.cursor()
+
+cursor.execute('SELECT COUNT(*) FROM concurrent')
+competitors = cursor.fetchone()[0]
+
+cursor.execute('SELECT COUNT(*) FROM video')
+videos = cursor.fetchone()[0]
+
+print(f'Compétiteurs: {competitors}, Vidéos: {videos}')
+
+# ✅ Résultat attendu : 30 compétiteurs, 8489 vidéos
+# ❌ Si tu vois 20 compétiteurs, tu es sur la mauvaise base !
+```
+
+#### 📊 Données attendues par pays :
+- **International** : 9 compétiteurs, ~3547 vidéos
+- **France** : 8 compétiteurs, ~1671 vidéos  
+- **Germany** : 7 compétiteurs, ~1731 vidéos
+- **Netherlands** : 4 compétiteurs, ~1170 vidéos
+- **United Kingdom** : 1 compétiteur, ~42 vidéos
+- **1 pays vide** : 1 compétiteur, ~328 vidéos (à nettoyer)
+
+#### 🔄 Action à faire en cas d'erreur :
+Si tu constates que l'application n'affiche que 20 compétiteurs au lieu de 30 :
+1. Vérifier `yt_channel_analyzer/database/base.py` ligne 15
+2. S'assurer que `DB_PATH = DB_DIR / 'database.db'`
+3. Redémarrer l'application
+4. Tester avec `/countries-analysis`
 
 ## Structure de la base de données
 
@@ -173,6 +333,25 @@ Par exemple :
 - **Performance** : +40% de précision vs modèle par défaut
 - **Optimisation** : ONNX Runtime + quantization INT8
 - **Gain de performance** : 75% réduction taille, +300% vitesse
+
+### 🌍 Modèles d'Analyse Émotionnelle Multilingue
+
+#### ✅ MODÈLE CONFIRMÉ FONCTIONNEL
+- **cardiffnlp/twitter-xlm-roberta-base-sentiment** : 3 sentiments (positive, negative, neutral)
+- **Support multilingue** : FR, EN, DE, NL, ES
+- **URL** : https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment
+- **Usage confirmé** : Fonctionne parfaitement pour analyse multilingue
+
+#### ❌ MODÈLES NON FONCTIONNELS
+- **cardiffnlp/twitter-xlm-roberta-base-emotion** : N'existe pas sur HuggingFace
+- **j-hartmann/emotion-english-distilroberta-base** : Anglais uniquement, pas multilingue
+- **SamLowe/roberta-base-go_emotions** : Anglais uniquement
+
+#### 🎯 Stratégie Recommandée
+Pour l'analyse des 450 commentaires multilingues :
+- Utiliser `cardiffnlp/twitter-xlm-roberta-base-sentiment` (3 sentiments)
+- Base de données : `emotion_type IN ('positive', 'negative', 'neutral')`
+- Langues supportées : `language IN ('fr', 'en', 'de', 'nl', 'es')`
 
 ### Classes de Classification
 1. **OptimizedSemanticClassifier** (`yt_channel_analyzer/semantic_classifier.py`)

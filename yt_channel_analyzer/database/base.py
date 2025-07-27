@@ -7,9 +7,12 @@ import re
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 import os
+from pathlib import Path
 
-DB_PATH = 'instance/database.db'
-DB_DIR = 'instance'
+# Obtenir le chemin absolu du projet
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+DB_DIR = PROJECT_ROOT / 'instance'
+DB_PATH = DB_DIR / 'database.db'
 
 
 class DatabaseConnection:
@@ -36,10 +39,10 @@ class DatabaseConnection:
 def get_db_connection(update_schema=True):
     """Crée une connexion à la base de données SQLite."""
     # S'assurer que le répertoire 'instance' existe
-    if not os.path.exists(DB_DIR):
-        os.makedirs(DB_DIR)
+    if not DB_DIR.exists():
+        DB_DIR.mkdir(parents=True, exist_ok=True)
         
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     
     # Mettre à jour le schéma si nécessaire

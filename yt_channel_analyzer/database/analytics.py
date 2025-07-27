@@ -205,9 +205,11 @@ class CountryInsightsAnalyzer:
         hour_performance = defaultdict(list)
         
         for video in top_videos:
-            if video['published_at']:
+            # Use youtube_published_at if available, fallback to published_at
+            actual_date = video.get('youtube_published_at') or video.get('published_at')
+            if actual_date:
                 try:
-                    pub_date = datetime.fromisoformat(video['published_at'].replace('Z', '+00:00'))
+                    pub_date = datetime.fromisoformat(actual_date.replace('Z', '+00:00'))
                     weekday = pub_date.strftime('%A')
                     hour = pub_date.hour
                     
@@ -380,7 +382,7 @@ class FrequencyAnalyzer:
                     v.like_count, v.comment_count, v.duration_seconds, v.youtube_published_at
                 FROM video v
                 JOIN concurrent c ON v.concurrent_id = c.id
-                WHERE v.published_at IS NOT NULL
+                WHERE (v.youtube_published_at IS NOT NULL OR v.published_at IS NOT NULL)
             '''
             
             params = []
@@ -445,9 +447,17 @@ class FrequencyAnalyzer:
                 # Utiliser la vraie date de publication YouTube si disponible
                 # Sinon se rabattre sur la date de scraping
                 if len(row) > 8 and row[8]:  # youtube_published_at existe à l'index 8
-                    pub_date = datetime.fromisoformat(row[8].replace('Z', '+00:00'))
+                    try:
+                        pub_date = datetime.fromisoformat(row[8].replace('Z', '+00:00'))
+                    except ValueError:
+                        # Try parsing as date only
+                        pub_date = datetime.strptime(row[8], '%Y-%m-%d')
                 else:
-                    pub_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                    try:
+                        pub_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                    except ValueError:
+                        # Try parsing as date only
+                        pub_date = datetime.strptime(published_at, '%Y-%m-%d')
                 
                 # Calculer la clé de semaine de manière plus robuste
                 # Utiliser le lundi comme début de semaine

@@ -1,0 +1,641 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Performance Dashboard - YT Analyzer{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .metric-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #495057;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
+    .status-good { background-color: #28a745; }
+    .status-warning { background-color: #ffc107; }
+    .status-danger { background-color: #dc3545; }
+    
+    .progress-thin {
+        height: 8px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 1rem 0;
+    }
+    
+    .optimization-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .badge-redis {
+        background: #ff6b6b;
+        color: white;
+    }
+    
+    .badge-threads {
+        background: #4ecdc4;
+        color: white;
+    }
+    
+    .badge-cache {
+        background: #45b7d1;
+        color: white;
+    }
+    
+    .system-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .refresh-indicator {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- System Info Header -->
+<div class="system-info">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h3 class="mb-2">
+                <i class="bx bx-tachometer me-2"></i>
+                Performance Dashboard
+            </h3>
+            <p class="mb-0">
+                Real-time monitoring of your 24-thread, 64GB infrastructure
+            </p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="d-flex gap-2 justify-content-end flex-wrap">
+                <span class="optimization-badge badge-redis">
+                    <i class="bx bx-data me-1"></i>Redis
+                </span>
+                <span class="optimization-badge badge-threads">
+                    <i class="bx bx-cog me-1"></i>24 Threads
+                </span>
+                <span class="optimization-badge badge-cache">
+                    <i class="bx bx-rocket me-1"></i>64GB RAM
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Metrics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <span class="status-indicator" id="cpuStatusIndicator"></span>
+                    <i class="bx bx-microchip fs-1 text-primary"></i>
+                </div>
+                <div class="metric-value" id="cpuUsage">--%</div>
+                <div class="metric-label">CPU Usage</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-primary" id="cpuProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <span class="status-indicator" id="memoryStatusIndicator"></span>
+                    <i class="bx bx-memory-card fs-1 text-success"></i>
+                </div>
+                <div class="metric-value" id="memoryUsage">--%</div>
+                <div class="metric-label">Memory Usage</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-success" id="memoryProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <span class="status-indicator" id="threadsStatusIndicator"></span>
+                    <i class="bx bx-cog fs-1 text-info"></i>
+                </div>
+                <div class="metric-value" id="activeThreads">--</div>
+                <div class="metric-label">Active Threads</div>
+                <small class="text-muted">/ 24 available</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <span class="status-indicator" id="cacheStatusIndicator"></span>
+                    <i class="bx bx-data fs-1 text-warning"></i>
+                </div>
+                <div class="metric-value" id="cacheHitRate">--%</div>
+                <div class="metric-label">Cache Hit Rate</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-warning" id="cacheProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">CPU & Memory Usage</h5>
+                <small class="text-muted">Last 10 minutes</small>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="systemChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thread Pool Activity</h5>
+                <small class="text-muted">Real-time</small>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="threadsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Stats -->
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-server me-2"></i>
+                    System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">CPU Cores</small>
+                    <div class="fw-semibold" id="cpuCores">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Total Memory</small>
+                    <div class="fw-semibold" id="totalMemory">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Available Memory</small>
+                    <div class="fw-semibold" id="availableMemory">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Python Version</small>
+                    <div class="fw-semibold">{{ python_version }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-data me-2"></i>
+                    Redis Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Status</small>
+                    <div class="fw-semibold" id="redisStatus">
+                        <span class="status-indicator" id="redisStatusIndicator"></span>
+                        <span id="redisStatusText">Checking...</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Used Memory</small>
+                    <div class="fw-semibold" id="redisMemory">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Connected Clients</small>
+                    <div class="fw-semibold" id="redisClients">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Commands Processed</small>
+                    <div class="fw-semibold" id="redisCommands">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-cog me-2"></i>
+                    Thread Pool Stats
+                </h5>
+                <button class="btn btn-outline-primary btn-sm" onclick="refreshStats()">
+                    <i class="bx bx-refresh" id="refreshIcon"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Max Workers</small>
+                    <div class="fw-semibold" id="maxWorkers">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Active Tasks</small>
+                    <div class="fw-semibold" id="activeTasks">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Completed Tasks</small>
+                    <div class="fw-semibold" id="completedTasks">Loading...</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Success Rate</small>
+                    <div class="fw-semibold" id="successRate">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions Row -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Performance Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <button class="btn btn-outline-primary w-100" onclick="clearCache()">
+                            <i class="bx bx-trash me-2"></i>
+                            Clear All Cache
+                        </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="optimizeDatabase()">
+                            <i class="bx bx-data me-2"></i>
+                            Optimize Database
+                        </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <button class="btn btn-outline-warning w-100" onclick="preloadCaches()">
+                            <i class="bx bx-rocket me-2"></i>
+                            Preload Caches
+                        </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="exportMetrics()">
+                            <i class="bx bx-download me-2"></i>
+                            Export Metrics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales pour les graphiques
+let systemChart, threadsChart;
+let performanceData = {
+    timestamps: [],
+    cpuData: [],
+    memoryData: [],
+    threadsData: []
+};
+
+// Initialiser les graphiques
+function initCharts() {
+    // Graphique système
+    const systemCtx = document.getElementById('systemChart').getContext('2d');
+    systemChart = new Chart(systemCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: [],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Memory Usage (%)',
+                data: [],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Graphique threads
+    const threadsCtx = document.getElementById('threadsChart').getContext('2d');
+    threadsChart = new Chart(threadsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active Threads', 'Available Threads'],
+            datasets: [{
+                data: [0, 24],
+                backgroundColor: ['#4ecdc4', '#f1f3f4'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Récupérer les métriques
+function fetchMetrics() {
+    fetch('/api/performance-metrics')
+        .then(response => response.json())
+        .then(data => {
+            updateMetrics(data);
+        })
+        .catch(error => {
+            console.error('Erreur récupération métriques:', error);
+        });
+}
+
+// Mettre à jour les métriques
+function updateMetrics(data) {
+    const current = data.current;
+    const averages = data.averages;
+    const systemInfo = data.system_info;
+    const threadPool = data.thread_pool;
+    const redis = data.redis_stats;
+    
+    // Métriques principales
+    updateMainMetrics(current);
+    
+    // Informations système
+    updateSystemInfo(systemInfo);
+    
+    // Stats Redis
+    updateRedisStats(redis);
+    
+    // Stats thread pool
+    updateThreadPoolStats(threadPool);
+    
+    // Mettre à jour les graphiques
+    updateCharts(current);
+}
+
+function updateMainMetrics(current) {
+    // CPU
+    document.getElementById('cpuUsage').textContent = `${current.cpu_usage.toFixed(1)}%`;
+    document.getElementById('cpuProgressBar').style.width = `${current.cpu_usage}%`;
+    document.getElementById('cpuStatusIndicator').className = 
+        `status-indicator ${current.cpu_usage > 80 ? 'status-danger' : current.cpu_usage > 60 ? 'status-warning' : 'status-good'}`;
+    
+    // Memory
+    document.getElementById('memoryUsage').textContent = `${current.memory_usage.toFixed(1)}%`;
+    document.getElementById('memoryProgressBar').style.width = `${current.memory_usage}%`;
+    document.getElementById('memoryStatusIndicator').className = 
+        `status-indicator ${current.memory_usage > 85 ? 'status-danger' : current.memory_usage > 70 ? 'status-warning' : 'status-good'}`;
+    
+    // Threads
+    document.getElementById('activeThreads').textContent = current.active_threads;
+    document.getElementById('threadsStatusIndicator').className = 
+        `status-indicator ${current.active_threads > 20 ? 'status-warning' : 'status-good'}`;
+    
+    // Cache
+    document.getElementById('cacheHitRate').textContent = `${current.cache_hit_rate.toFixed(1)}%`;
+    document.getElementById('cacheProgressBar').style.width = `${current.cache_hit_rate}%`;
+    document.getElementById('cacheStatusIndicator').className = 
+        `status-indicator ${current.cache_hit_rate > 80 ? 'status-good' : current.cache_hit_rate > 60 ? 'status-warning' : 'status-danger'}`;
+}
+
+function updateSystemInfo(systemInfo) {
+    document.getElementById('cpuCores').textContent = `${systemInfo.cpu_count} cores`;
+    document.getElementById('totalMemory').textContent = `${systemInfo.total_memory_gb} GB`;
+    document.getElementById('availableMemory').textContent = `${systemInfo.available_memory_gb} GB`;
+}
+
+function updateRedisStats(redis) {
+    if (redis.status === 'connected') {
+        document.getElementById('redisStatusText').textContent = 'Connected';
+        document.getElementById('redisStatusIndicator').className = 'status-indicator status-good';
+        document.getElementById('redisMemory').textContent = redis.used_memory || 'N/A';
+        document.getElementById('redisClients').textContent = redis.connected_clients || '0';
+        document.getElementById('redisCommands').textContent = (redis.total_commands_processed || 0).toLocaleString();
+    } else {
+        document.getElementById('redisStatusText').textContent = 'Disconnected';
+        document.getElementById('redisStatusIndicator').className = 'status-indicator status-danger';
+        document.getElementById('redisMemory').textContent = 'N/A';
+        document.getElementById('redisClients').textContent = 'N/A';
+        document.getElementById('redisCommands').textContent = 'N/A';
+    }
+}
+
+function updateThreadPoolStats(threadPool) {
+    document.getElementById('maxWorkers').textContent = threadPool.max_workers || 'N/A';
+    document.getElementById('activeTasks').textContent = threadPool.active_tasks || '0';
+    document.getElementById('completedTasks').textContent = threadPool.completed_tasks || '0';
+    document.getElementById('successRate').textContent = `${threadPool.success_rate || 0}%`;
+}
+
+function updateCharts(current) {
+    const now = new Date().toLocaleTimeString();
+    
+    // Ajouter nouveaux points
+    performanceData.timestamps.push(now);
+    performanceData.cpuData.push(current.cpu_usage);
+    performanceData.memoryData.push(current.memory_usage);
+    performanceData.threadsData.push(current.active_threads);
+    
+    // Garder seulement les 20 derniers points
+    if (performanceData.timestamps.length > 20) {
+        performanceData.timestamps.shift();
+        performanceData.cpuData.shift();
+        performanceData.memoryData.shift();
+        performanceData.threadsData.shift();
+    }
+    
+    // Mettre à jour graphique système
+    systemChart.data.labels = performanceData.timestamps;
+    systemChart.data.datasets[0].data = performanceData.cpuData;
+    systemChart.data.datasets[1].data = performanceData.memoryData;
+    systemChart.update('none');
+    
+    // Mettre à jour graphique threads
+    threadsChart.data.datasets[0].data = [current.active_threads, 24 - current.active_threads];
+    threadsChart.update('none');
+}
+
+// Actions
+function refreshStats() {
+    const refreshIcon = document.getElementById('refreshIcon');
+    refreshIcon.classList.add('refresh-indicator');
+    
+    fetchMetrics();
+    
+    setTimeout(() => {
+        refreshIcon.classList.remove('refresh-indicator');
+    }, 1000);
+}
+
+function clearCache() {
+    if (confirm('Clear all cache? This will temporarily slow down the application.')) {
+        fetch('/api/performance-actions/clear-cache', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', `Cache cleared: ${data.cleared_keys} keys removed`);
+                } else {
+                    showToast('error', data.error || 'Failed to clear cache');
+                }
+            });
+    }
+}
+
+function optimizeDatabase() {
+    if (confirm('Optimize database? This may take a few minutes.')) {
+        fetch('/api/performance-actions/optimize-database', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', 'Database optimized successfully');
+                } else {
+                    showToast('error', data.error || 'Failed to optimize database');
+                }
+            });
+    }
+}
+
+function preloadCaches() {
+    fetch('/api/performance-actions/preload-caches', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'Cache preloading started');
+            } else {
+                showToast('error', data.error || 'Failed to preload caches');
+            }
+        });
+}
+
+function exportMetrics() {
+    window.open('/api/performance-metrics/export', '_blank');
+}
+
+// Toast notifications
+function showToast(type, message) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1055';
+        document.body.appendChild(container);
+    }
+    
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = container.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    fetchMetrics();
+    
+    // Refresh automatique toutes les 5 secondes
+    setInterval(fetchMetrics, 5000);
+});
+</script>
+{% endblock %}

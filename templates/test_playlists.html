@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Playlists</title>
+</head>
+<body>
+    <h1>Test Playlists Debug</h1>
+    
+    <p>Stats:</p>
+    <ul>
+        <li>Total playlists: {{ stats.total_playlists }}</li>
+        <li>Total competitors: {{ stats.total_competitors }}</li>
+        <li>Hero playlists: {{ stats.hero_playlists }}</li>
+        <li>Hub playlists: {{ stats.hub_playlists }}</li>
+        <li>Help playlists: {{ stats.help_playlists }}</li>
+    </ul>
+    
+    <p>Playlists count: {{ playlists|length }}</p>
+    
+    {% if playlists %}
+        <p>First playlist test:</p>
+        <ul>
+            <li>Name: {{ playlists[0].name }}</li>
+            <li>Views: {{ playlists[0].total_views }}</li>
+            <li>Engagement rate type: {{ playlists[0].engagement_rate.__class__.__name__ }}</li>
+            <li>Engagement rate value: {{ playlists[0].engagement_rate }}</li>
+            <li>Engagement rate rounded: {{ playlists[0].engagement_rate|round(2) }}</li>
+        </ul>
+        
+        <h2>All playlists:</h2>
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Views</th>
+                <th>Engagement Rate</th>
+            </tr>
+            {% for playlist in playlists %}
+            <tr>
+                <td>{{ playlist.name }}</td>
+                <td>{{ playlist.total_views }}</td>
+                <td>{{ playlist.engagement_rate|round(2) }}%</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No playlists found!</p>
+    {% endif %}
+</body>
+</html>

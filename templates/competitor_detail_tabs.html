@@ -1,0 +1,3100 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}{{ competitor.name }} - Analyse Détaillée{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Header Section */
+    .competitor-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .competitor-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+    }
+    
+    .competitor-info h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .competitor-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 1rem;
+    }
+    
+    .country-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Tab Navigation */
+    .competitor-nav {
+        display: flex;
+        gap: 0;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e7e7ff;
+        overflow-x: auto;
+        background: white;
+        border-radius: 0.5rem 0.5rem 0 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .competitor-tab {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: #8592a3;
+        font-weight: 500;
+        position: relative;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .competitor-tab:hover {
+        color: #696cff;
+        background: rgba(105, 108, 255, 0.05);
+    }
+    
+    .competitor-tab.active {
+        color: #696cff;
+        background: rgba(105, 108, 255, 0.05);
+        border-bottom-color: #696cff;
+    }
+    
+    .tab-icon {
+        font-size: 1.1rem;
+    }
+    
+    /* Tab Content */
+    .competitor-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+        background: white;
+        border-radius: 0 0 0.5rem 0.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        min-height: 600px;
+    }
+    
+    .competitor-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Key Metrics Styles */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        border-color: #696cff;
+    }
+    
+    .metric-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .metric-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #696cff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-description {
+        color: #8592a3;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    
+    .metric-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f1f1f4;
+    }
+    
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+    }
+    
+    .trend-up {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .trend-down {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .trend-stable {
+        background: rgba(133, 146, 163, 0.1);
+        color: #8592a3;
+    }
+    
+    /* Strategy Analysis */
+    .strategy-section {
+        margin-top: 2rem;
+    }
+    
+    .strategy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .strategy-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .strategy-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .strategy-progress {
+        margin-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #f1f1f4;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        transition: width 0.8s ease;
+        border-radius: 4px;
+    }
+    
+    .hero-progress { background: linear-gradient(45deg, #ff6b6b, #ff8e8e); }
+    .hub-progress { background: linear-gradient(45deg, #4ecdc4, #44b3ab); }
+    .help-progress { background: linear-gradient(45deg, #45b7d1, #3a9bc1); }
+    
+    .strategy-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .strategy-stat {
+        text-align: center;
+        padding: 0.75rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .strategy-stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #566a7f;
+    }
+    
+    .strategy-stat-label {
+        font-size: 0.75rem;
+        color: #8592a3;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.25rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .competitor-nav {
+            flex-direction: column;
+        }
+        
+        .competitor-tab {
+            border-bottom: 1px solid #e7e7ff;
+            border-radius: 0;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .strategy-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* TAB 2: Follower Growth Styles */
+    .upload-zone {
+        border: 2px dashed #e7e7ff;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .upload-zone:hover {
+        border-color: #696cff;
+        background: rgba(105, 108, 255, 0.05);
+    }
+    
+    .upload-zone i {
+        font-size: 3rem;
+        color: #696cff;
+        margin-bottom: 1rem;
+    }
+    
+    .growth-stat-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f1f4;
+    }
+    
+    .growth-stat-item:last-child {
+        border-bottom: none;
+    }
+    
+    .velocity-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .velocity-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+    
+    .velocity-label {
+        color: #8592a3;
+        font-size: 0.875rem;
+        flex: 1;
+    }
+    
+    .velocity-value {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .seasonality-insights,
+    .correlation-insights {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .insight-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .insight-item i {
+        font-size: 1.25rem;
+        margin-top: 0.25rem;
+    }
+    
+    .insight-content {
+        flex: 1;
+    }
+    
+    .insight-content strong {
+        color: #566a7f;
+        font-size: 0.875rem;
+    }
+    
+    .insight-content p {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* TAB 3: Top Videos Styles */
+    .performance-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .performance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        border-color: #696cff;
+    }
+    
+    .performance-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .performance-icon.views {
+        background: linear-gradient(135deg, #28c76f 0%, #1f9e5a 100%);
+    }
+    
+    .performance-icon.engagement {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    }
+    
+    .performance-icon.duration {
+        background: linear-gradient(135deg, #4ecdc4 0%, #3db8b0 100%);
+    }
+    
+    .performance-icon.ratio {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+    }
+    
+    .performance-content {
+        flex: 1;
+    }
+    
+    .performance-content h6 {
+        margin: 0 0 0.5rem 0;
+        color: #566a7f;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    .performance-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #696cff;
+        margin: 0 0 0.25rem 0;
+    }
+    
+    .video-title-cell {
+        max-width: 200px;
+    }
+    
+    .pattern-insights {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .pattern-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+        border-left: 4px solid #696cff;
+    }
+    
+    .pattern-item i {
+        font-size: 1.25rem;
+        margin-top: 0.25rem;
+    }
+    
+    .pattern-content {
+        flex: 1;
+    }
+    
+    .pattern-content strong {
+        color: #566a7f;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .pattern-content p {
+        font-size: 0.8rem;
+        color: #8592a3;
+        margin: 0;
+    }
+    
+    .trending-insights {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .trend-category {
+        padding: 1rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .trend-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.75rem;
+    }
+    
+    .trend-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .trend-tag {
+        background: #696cff;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .title-patterns {
+        font-style: italic;
+    }
+    
+    .filter-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .filter-controls .form-select {
+        width: auto;
+        min-width: 150px;
+    }
+    
+    /* TAB 4: Content Strategy Styles */
+    .strategy-distribution {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .strategy-item {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .strategy-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .strategy-header i {
+        font-size: 1.5rem;
+    }
+    
+    .strategy-type {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #566a7f;
+    }
+    
+    .strategy-count {
+        margin-left: auto;
+        font-weight: 600;
+        color: #8592a3;
+    }
+    
+    .strategy-bar {
+        height: 8px;
+        background: #f1f1f4;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+    
+    .strategy-fill {
+        height: 100%;
+        transition: width 0.8s ease;
+    }
+    
+    .hero-fill {
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+    }
+    
+    .hub-fill {
+        background: linear-gradient(45deg, #4ecdc4, #44b3ab);
+    }
+    
+    .help-fill {
+        background: linear-gradient(45deg, #45b7d1, #3a9bc1);
+    }
+    
+    .strategy-description {
+        color: #8592a3;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .strategy-score {
+        padding: 1.5rem;
+    }
+    
+    .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#696cff 85%, #f1f1f4 85%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        position: relative;
+    }
+    
+    .score-circle::before {
+        content: '';
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #696cff;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .score-label {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 1rem;
+    }
+    
+    .calendar-insights {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .calendar-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .calendar-item i {
+        font-size: 1.25rem;
+    }
+    
+    .calendar-content strong {
+        color: #566a7f;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .calendar-content p {
+        color: #8592a3;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+    
+    .publishing-pattern {
+        padding: 1rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .pattern-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 1rem;
+    }
+    
+    .pattern-week {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+    }
+    
+    .pattern-day {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .day-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-activity {
+        height: 30px;
+        background: #e7e7ff;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .pattern-day.active .day-activity {
+        background: #696cff;
+        height: 40px;
+    }
+    
+    .format-analysis {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .format-item {
+        padding: 1rem;
+        background: #f8f8fc;
+        border-radius: 0.5rem;
+    }
+    
+    .format-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .format-type {
+        font-weight: 600;
+        color: #566a7f;
+        margin-left: 0.5rem;
+    }
+    
+    .format-percentage {
+        font-weight: 700;
+        color: #696cff;
+    }
+    
+    .format-bar {
+        height: 6px;
+        background: #e7e7ff;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    
+    .format-fill {
+        height: 100%;
+        transition: width 0.8s ease;
+    }
+    
+    .shorts-fill {
+        background: linear-gradient(45deg, #696cff, #5f61e6);
+    }
+    
+    .long-fill {
+        background: linear-gradient(45deg, #28c76f, #1f9e5a);
+    }
+    
+    .insight-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .insight-tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .insight-tag.primary {
+        background: rgba(105, 108, 255, 0.1);
+        color: #696cff;
+    }
+    
+    .insight-tag.success {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .insight-tag.warning {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .category-performance {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .performance-category {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .category-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #566a7f;
+    }
+    
+    .category-roi {
+        font-weight: 600;
+        color: #28c76f;
+        font-size: 0.875rem;
+    }
+    
+    .category-metrics {
+        display: flex;
+        gap: 2rem;
+    }
+    
+    .metric-item {
+        text-align: center;
+    }
+    
+    .metric-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #8592a3;
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-value {
+        font-weight: 700;
+        color: #696cff;
+        font-size: 1.1rem;
+    }
+    
+    .strategic-recommendations {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .recommendation-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid;
+    }
+    
+    .recommendation-item.priority-high {
+        background: rgba(234, 84, 85, 0.05);
+        border-color: #ea5455;
+    }
+    
+    .recommendation-item.priority-medium {
+        background: rgba(255, 159, 67, 0.05);
+        border-color: #ff9f43;
+    }
+    
+    .recommendation-item.priority-low {
+        background: rgba(3, 195, 236, 0.05);
+        border-color: #03c3ec;
+    }
+    
+    .recommendation-content strong {
+        color: #566a7f;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .recommendation-content p {
+        color: #8592a3;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+    
+    .gap-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .gap-tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: #e7e7ff;
+        color: #696cff;
+    }
+    
+    .competitor-comparison {
+        padding: 1.5rem;
+    }
+    
+    .comparison-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .competitor-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #566a7f;
+    }
+    
+    .comparison-metrics {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .metric-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .metric-badge.hero {
+        background: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+    
+    .metric-badge.hub {
+        background: rgba(78, 205, 196, 0.1);
+        color: #4ecdc4;
+    }
+    
+    .metric-badge.help {
+        background: rgba(69, 183, 209, 0.1);
+        color: #45b7d1;
+    }
+    
+    .benchmark-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .benchmark-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .benchmark-label {
+        min-width: 120px;
+        font-size: 0.875rem;
+        color: #8592a3;
+    }
+    
+    .benchmark-bar {
+        flex: 1;
+        height: 20px;
+        background: #f1f1f4;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .benchmark-fill {
+        height: 100%;
+        background: linear-gradient(45deg, #696cff, #5f61e6);
+        border-radius: 10px;
+        transition: width 0.8s ease;
+    }
+    
+    .benchmark-value {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.75rem;
+        color: #566a7f;
+        font-weight: 600;
+    }
+    
+    /* TAB 5: Sentiment Analysis Styles */
+    .sentiment-health-card {
+        border: 1px solid #e7e7ff;
+        position: relative;
+    }
+    
+    .sentiment-score-circle {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .score-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    
+    .score-number {
+        display: block;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #28c76f;
+    }
+    
+    .score-label {
+        font-size: 0.75rem;
+        color: #8592a3;
+        font-weight: 500;
+    }
+    
+    .sentiment-distribution {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .sentiment-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .sentiment-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .sentiment-item.positive .sentiment-icon {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .sentiment-item.neutral .sentiment-icon {
+        background: rgba(133, 146, 163, 0.1);
+        color: #8592a3;
+    }
+    
+    .sentiment-item.negative .sentiment-icon {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .sentiment-content {
+        flex: 1;
+    }
+    
+    .sentiment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    
+    .sentiment-type {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .sentiment-percentage {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #696cff;
+    }
+    
+    .sentiment-bar {
+        height: 8px;
+        background: #f1f1f4;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sentiment-fill {
+        height: 100%;
+        transition: width 0.8s ease;
+    }
+    
+    .positive-fill {
+        background: linear-gradient(45deg, #28c76f, #20bf6b);
+    }
+    
+    .neutral-fill {
+        background: linear-gradient(45deg, #8592a3, #6c757d);
+    }
+    
+    .negative-fill {
+        background: linear-gradient(45deg, #ea5455, #e74c3c);
+    }
+    
+    .emotion-legend {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .legend-color.positive {
+        background: #28c76f;
+    }
+    
+    .legend-color.neutral {
+        background: #8592a3;
+    }
+    
+    .legend-color.negative {
+        background: #ea5455;
+    }
+    
+    .legend-label {
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .geo-sentiment {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .geo-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .geo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .geo-country {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .geo-score {
+        font-weight: 700;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .geo-score.positive {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .geo-score.neutral {
+        background: rgba(133, 146, 163, 0.1);
+        color: #8592a3;
+    }
+    
+    .content-sentiment {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .content-type-sentiment {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .content-label {
+        font-weight: 700;
+        color: #566a7f;
+        font-size: 1.1rem;
+    }
+    
+    .sentiment-metrics {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .positive-rate {
+        color: #28c76f;
+    }
+    
+    .neutral-rate {
+        color: #8592a3;
+    }
+    
+    .negative-rate {
+        color: #ea5455;
+    }
+    
+    .sentiment-breakdown {
+        margin-bottom: 1rem;
+    }
+    
+    .breakdown-bar {
+        height: 12px;
+        background: #f1f1f4;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+    }
+    
+    .positive-segment {
+        background: #28c76f;
+    }
+    
+    .neutral-segment {
+        background: #8592a3;
+    }
+    
+    .negative-segment {
+        background: #ea5455;
+    }
+    
+    .content-insight {
+        color: #8592a3;
+        font-size: 0.875rem;
+        margin: 0;
+        font-style: italic;
+    }
+    
+    .sentiment-alerts {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .alert-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    .alert-item.success {
+        background: rgba(40, 199, 111, 0.05);
+        color: #28c76f;
+    }
+    
+    .alert-item.warning {
+        background: rgba(255, 159, 67, 0.05);
+        color: #ff9f43;
+    }
+    
+    .alert-item.info {
+        background: rgba(3, 195, 236, 0.05);
+        color: #03c3ec;
+    }
+    
+    .alert-content strong {
+        color: #566a7f;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .alert-content p {
+        color: #8592a3;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+    
+    .recommendation-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .recommendation-tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .recommendation-tag.positive {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .recommendation-tag.neutral {
+        background: rgba(133, 146, 163, 0.1);
+        color: #8592a3;
+    }
+    
+    .recommendation-tag.opportunity {
+        background: rgba(3, 195, 236, 0.1);
+        color: #03c3ec;
+    }
+    
+    .word-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        min-height: 200px;
+    }
+    
+    .word-item {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .word-item:hover {
+        transform: scale(1.1);
+    }
+    
+    .word-item.size-xl {
+        font-size: 1.5rem;
+    }
+    
+    .word-item.size-lg {
+        font-size: 1.25rem;
+    }
+    
+    .word-item.size-md {
+        font-size: 1rem;
+    }
+    
+    .word-item.size-sm {
+        font-size: 0.875rem;
+    }
+    
+    .word-item.positive {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .word-item.neutral {
+        background: rgba(133, 146, 163, 0.1);
+        color: #8592a3;
+    }
+    
+    .word-item.negative {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    .top-comments {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .comment-item {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border-left: 4px solid;
+    }
+    
+    .comment-item.positive {
+        background: rgba(40, 199, 111, 0.05);
+        border-color: #28c76f;
+    }
+    
+    .comment-item.neutral {
+        background: rgba(133, 146, 163, 0.05);
+        border-color: #8592a3;
+    }
+    
+    .comment-item.negative {
+        background: rgba(234, 84, 85, 0.05);
+        border-color: #ea5455;
+    }
+    
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .comment-sentiment {
+        font-size: 1.25rem;
+    }
+    
+    .comment-type {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .comment-text {
+        color: #8592a3;
+        font-size: 0.875rem;
+        font-style: italic;
+        margin: 0;
+        line-height: 1.4;
+    }
+    
+    /* Placeholder styles for future tabs */
+    .tab-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+        color: #8592a3;
+        text-align: center;
+    }
+    
+    .tab-placeholder i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .tab-placeholder h3 {
+        margin-bottom: 0.5rem;
+        color: #566a7f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Competitor Header -->
+    <div class="competitor-header">
+        <div class="d-flex align-items-center">
+            <img src="/static/competitors/images/{{ competitor.id }}.jpg" 
+                 alt="{{ competitor.name }}" 
+                 class="competitor-avatar me-3"
+                 onerror="this.src='/static/competitors/images/default.svg'">
+            <div class="competitor-info flex-grow-1">
+                <h1>{{ competitor.name }}</h1>
+                <div class="competitor-meta">
+                    {% if competitor.country %}
+                    <span class="country-badge">
+                        <i class="bx bx-globe"></i>
+                        {{ competitor.country }}
+                    </span>
+                    {% endif %}
+                    <span class="country-badge">
+                        <i class="bx bx-user"></i>
+                        {{ "{:,}".format(competitor.subscriber_count or 0) }} abonnés
+                    </span>
+                    <span class="country-badge">
+                        <i class="bx bx-video"></i>
+                        {{ total_videos }} vidéos
+                    </span>
+                </div>
+                {% if dev_mode %}
+                <a href="{{ url_for('competitors.classify_competitor', competitor_id=competitor.id) }}" 
+                   class="btn btn-warning btn-sm mt-3">
+                    <i class="bx bx-tag-alt me-1"></i>
+                    Classifier les playlists
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="competitor-nav">
+        <button class="competitor-tab active" onclick="showTab('key-metrics')">
+            <i class="bx bx-chart tab-icon"></i>
+            Key Metrics
+        </button>
+        <button class="competitor-tab" onclick="showTab('follower-growth')">
+            <i class="bx bx-trending-up tab-icon"></i>
+            Follower Growth
+        </button>
+        <button class="competitor-tab" onclick="showTab('top-videos')">
+            <i class="bx bx-video-recording tab-icon"></i>
+            Top Videos
+        </button>
+        <button class="competitor-tab" onclick="showTab('content-strategy')">
+            <i class="bx bx-target-lock tab-icon"></i>
+            Content Strategy
+        </button>
+        <button class="competitor-tab" onclick="showTab('sentiment-analysis')">
+            <i class="bx bx-heart tab-icon"></i>
+            Sentiment Analysis
+        </button>
+    </div>
+
+    <!-- Tab Contents -->
+    
+    <!-- TAB 1: Key Metrics -->
+    <div id="key-metrics" class="competitor-content active">
+        <h4 class="mb-4">📊 Métriques Clés</h4>
+        
+        <!-- Stats Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);">
+                        <i class="bx bx-user"></i>
+                    </div>
+                    <h5 class="metric-title">Abonnés</h5>
+                </div>
+                <div class="metric-value">{{ "{:,}".format(competitor.subscriber_count or 0) }}</div>
+                <div class="metric-description">Base d'audience totale</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-stable">
+                        <i class="bx bx-minus"></i>
+                        Données statiques
+                    </span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #28c76f 0%, #1f9e5a 100%);">
+                        <i class="bx bx-video"></i>
+                    </div>
+                    <h5 class="metric-title">Vidéos Totales</h5>
+                </div>
+                <div class="metric-value">{{ total_videos }}</div>
+                <div class="metric-description">Contenu total publié</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-up">
+                        <i class="bx bx-trending-up"></i>
+                        Croissance active
+                    </span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+                        <i class="bx bx-show"></i>
+                    </div>
+                    <h5 class="metric-title">Vues Totales</h5>
+                </div>
+                <div class="metric-value">{{ "{:,.1f}M".format(stats.total_views / 1000000) if stats.total_views > 1000000 else "{:,}".format(stats.total_views) }}</div>
+                <div class="metric-description">Audience cumulée</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-up">
+                        <i class="bx bx-trending-up"></i>
+                        Performance forte
+                    </span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #4ecdc4 0%, #3db8b0 100%);">
+                        <i class="bx bx-bar-chart-alt-2"></i>
+                    </div>
+                    <h5 class="metric-title">Vues Moyennes</h5>
+                </div>
+                <div class="metric-value">{{ "{:,}".format(stats.avg_views or 0) }}</div>
+                <div class="metric-description">Performance par vidéo</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-stable">
+                        <i class="bx bx-minus"></i>
+                        Consistant
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- What and When Section -->
+        <div class="strategy-section">
+            <h5 class="mb-3">🎯 What and When</h5>
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <div class="strategy-title">
+                        <i class="bx bx-time"></i>
+                        Video Length
+                    </div>
+                    <div class="strategy-stats">
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ "{:.1f}min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</div>
+                            <div class="strategy-stat-label">Durée Moyenne</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.short_form_percentage }}%</div>
+                            <div class="strategy-stat-label">Courts</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.long_form_percentage }}%</div>
+                            <div class="strategy-stat-label">Longs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-title">
+                        <i class="bx bx-calendar"></i>
+                        Publishing Frequency
+                    </div>
+                    <div class="strategy-stats">
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ "{:.1f}/w".format(metrics.weekly_frequency) if metrics.weekly_frequency else "N/A" }}</div>
+                            <div class="strategy-stat-label">Par Semaine</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.most_active_day or "N/A" }}</div>
+                            <div class="strategy-stat-label">Jour Optimal</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.consistency_score or "N/A" }}%</div>
+                            <div class="strategy-stat-label">Consistance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brand Message Section -->
+        <div class="strategy-section">
+            <h5 class="mb-3">💬 Brand Message</h5>
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <div class="strategy-title">
+                        <i class="bx bx-target-lock"></i>
+                        Hero/Hub/Help Distribution
+                    </div>
+                    <div class="strategy-progress">
+                        <div>Hero ({{ hero_count }} vidéos)</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill hero-progress" style="width: {{ (hero_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+                    <div class="strategy-progress">
+                        <div>Hub ({{ hub_count }} vidéos)</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill hub-progress" style="width: {{ (hub_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+                    <div class="strategy-progress">
+                        <div>Help ({{ help_count }} vidéos)</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill help-progress" style="width: {{ (help_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-card">
+                    <div class="strategy-title">
+                        <i class="bx bx-palette"></i>
+                        Tone of Voice & Consistency
+                    </div>
+                    <div class="strategy-stats">
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.tone_consistency or "N/A" }}%</div>
+                            <div class="strategy-stat-label">Cohérence</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.thumbnail_consistency or "N/A" }}%</div>
+                            <div class="strategy-stat-label">Miniatures</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-value">{{ metrics.brand_alignment or "N/A" }}%</div>
+                            <div class="strategy-stat-label">Alignement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: Follower Growth -->
+    <div id="follower-growth" class="competitor-content">
+        <h4 class="mb-4">📈 Analyse de Croissance d'Audience</h4>
+        
+        <!-- CSV Upload Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bx bx-upload me-2"></i>
+                        <h5 class="mb-0">Import de Données de Croissance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="csv-upload-zone" class="upload-zone">
+                            <i class="bx bx-cloud-upload"></i>
+                            <p class="mb-2"><strong>Glissez votre fichier CSV ici ou cliquez pour sélectionner</strong></p>
+                            <p class="text-muted small">Format attendu : Date, Subscriber_Count (CSV avec headers)</p>
+                            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                            <button class="btn btn-outline-primary btn-sm mt-2" onclick="document.getElementById('csv-file-input').click()">
+                                <i class="bx bx-folder-open me-1"></i>
+                                Choisir un fichier
+                            </button>
+                        </div>
+                        <div id="csv-status" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="bx bx-info-circle me-2"></i>
+                                <span id="csv-status-text">Prêt à importer...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Growth Analytics -->
+        <div class="row">
+            <!-- Growth Chart -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Évolution des Abonnés (12 mois)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="follower-growth-chart" style="height: 300px;">
+                            {% if subscriber_data and subscriber_data.has_data %}
+                            <canvas id="growthChart"></canvas>
+                            {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                <div class="text-center">
+                                    <i class="bx bx-line-chart" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    <p class="mt-2">Aucune donnée de croissance disponible</p>
+                                    <small>Importez un fichier CSV pour voir l'évolution</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Stats -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Statistiques de Croissance</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if subscriber_data and subscriber_data.has_data %}
+                        <div class="growth-stat-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Croissance Totale</span>
+                                <span class="fw-bold text-success">+{{ "{:,}".format(subscriber_data.stats.total_growth) }}</span>
+                            </div>
+                        </div>
+                        <div class="growth-stat-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Croissance %</span>
+                                <span class="fw-bold text-primary">{{ "{:.1f}%".format(subscriber_data.stats.growth_percentage) }}</span>
+                            </div>
+                        </div>
+                        <div class="growth-stat-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Points de Données</span>
+                                <span class="fw-bold">{{ subscriber_data.stats.total_entries }}</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted">
+                            <i class="bx bx-data"></i>
+                            <p class="mt-2 mb-0">Pas de données disponibles</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Growth Velocity Card -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Vélocité de Croissance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="velocity-metrics">
+                            <div class="velocity-item">
+                                <span class="velocity-label">Moyenne/Mois</span>
+                                <span class="velocity-value">{{ growth_velocity.monthly_avg if growth_velocity else "N/A" }}</span>
+                            </div>
+                            <div class="velocity-item">
+                                <span class="velocity-label">Tendance</span>
+                                <span class="velocity-value">
+                                    {% if growth_velocity and growth_velocity.trend == 'up' %}
+                                    <span class="text-success"><i class="bx bx-trending-up"></i> Accélération</span>
+                                    {% elif growth_velocity and growth_velocity.trend == 'down' %}
+                                    <span class="text-danger"><i class="bx bx-trending-down"></i> Décélération</span>
+                                    {% else %}
+                                    <span class="text-muted"><i class="bx bx-minus"></i> Stable</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Breakdown -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Répartition Mensuelle</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="monthly-breakdown-chart" style="height: 200px;">
+                            {% if monthly_breakdown %}
+                            <canvas id="monthlyChart"></canvas>
+                            {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                <div class="text-center">
+                                    <i class="bx bx-bar-chart-alt" style="font-size: 2rem; opacity: 0.3;"></i>
+                                    <p class="mt-2 mb-0">Pas de données mensuelles disponibles</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seasonality Analysis -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Analyse Saisonnière</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="seasonality-insights">
+                            <div class="insight-item">
+                                <i class="bx bx-calendar-star text-warning"></i>
+                                <div class="insight-content">
+                                    <strong>Meilleure Période</strong>
+                                    <p class="mb-0 text-muted">{{ best_growth_period.period if best_growth_period else "À déterminer" }}</p>
+                                </div>
+                            </div>
+                            <div class="insight-item">
+                                <i class="bx bx-calendar-minus text-danger"></i>
+                                <div class="insight-content">
+                                    <strong>Période Difficile</strong>
+                                    <p class="mb-0 text-muted">{{ worst_growth_period.period if worst_growth_period else "À déterminer" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Corrélations de Croissance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="correlation-insights">
+                            <div class="insight-item">
+                                <i class="bx bx-video text-primary"></i>
+                                <div class="insight-content">
+                                    <strong>Upload vs Croissance</strong>
+                                    <p class="mb-0 text-muted">Corrélation: {{ upload_correlation.coefficient if upload_correlation else "N/A" }}</p>
+                                </div>
+                            </div>
+                            <div class="insight-item">
+                                <i class="bx bx-trending-up text-success"></i>
+                                <div class="insight-content">
+                                    <strong>Pattern Optimal</strong>
+                                    <p class="mb-0 text-muted">{{ optimal_pattern.description if optimal_pattern else "En analyse..." }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: Top Videos -->
+    <div id="top-videos" class="competitor-content">
+        <h4 class="mb-4">🎯 Performances des Contenus</h4>
+        
+        <!-- Performance Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="performance-card">
+                    <div class="performance-icon views">
+                        <i class="bx bx-show"></i>
+                    </div>
+                    <div class="performance-content">
+                        <h6>Top par Vues</h6>
+                        <p class="performance-value">{{ "{:,.0f}".format(top_videos_views[0].view_count) if top_videos_views else "N/A" }}</p>
+                        <small class="text-muted">{{ top_videos_views[0].title[:30] + "..." if top_videos_views else "Aucune vidéo" }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="performance-card">
+                    <div class="performance-icon engagement">
+                        <i class="bx bx-heart"></i>
+                    </div>
+                    <div class="performance-content">
+                        <h6>Top Engagement</h6>
+                        <p class="performance-value">{{ "{:,.0f}".format(top_videos_likes[0].like_count) if top_videos_likes else "N/A" }}</p>
+                        <small class="text-muted">{{ top_videos_likes[0].title[:30] + "..." if top_videos_likes else "Aucune vidéo" }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="performance-card">
+                    <div class="performance-icon duration">
+                        <i class="bx bx-time"></i>
+                    </div>
+                    <div class="performance-content">
+                        <h6>Durée Moyenne</h6>
+                        <p class="performance-value">{{ "{:.1f}min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</p>
+                        <small class="text-muted">Pour toutes les vidéos</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="performance-card">
+                    <div class="performance-icon ratio">
+                        <i class="bx bx-pie-chart-alt-2"></i>
+                    </div>
+                    <div class="performance-content">
+                        <h6>Ratio Moyen</h6>
+                        <p class="performance-value">{{ "{:.1f}%".format(performance_ratio) if performance_ratio else "N/A" }}</p>
+                        <small class="text-muted">Engagement/Vues</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Videos Tables -->
+        <div class="row">
+            <!-- Top by Views -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🏆 Top par Vues</h5>
+                        <span class="badge bg-primary">{{ top_videos_views|length if top_videos_views else 0 }} vidéos</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Titre</th>
+                                        <th>Vues</th>
+                                        <th>Catégorie</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for video in top_videos_views[:10] %}
+                                    <tr>
+                                        <td class="fw-bold text-primary">{{ loop.index }}</td>
+                                        <td>
+                                            <div class="video-title-cell">
+                                                <strong>{{ video.title[:40] + "..." if video.title|length > 40 else video.title }}</strong>
+                                                <small class="d-block text-muted">{{ video.published_at[:10] if video.published_at else "N/A" }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">{{ "{:,}".format(video.view_count) }}</span>
+                                        </td>
+                                        <td>
+                                            {% if video.category == 'hero' %}
+                                            <span class="badge bg-danger-subtle text-danger">HERO</span>
+                                            {% elif video.category == 'hub' %}
+                                            <span class="badge bg-info-subtle text-info">HUB</span>
+                                            {% elif video.category == 'help' %}
+                                            <span class="badge bg-warning-subtle text-warning">HELP</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Non classé</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top by Engagement -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">❤️ Top par Engagement</h5>
+                        <span class="badge bg-success">{{ top_videos_likes|length if top_videos_likes else 0 }} vidéos</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Titre</th>
+                                        <th>Likes</th>
+                                        <th>Ratio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for video in top_videos_likes[:10] %}
+                                    <tr>
+                                        <td class="fw-bold text-success">{{ loop.index }}</td>
+                                        <td>
+                                            <div class="video-title-cell">
+                                                <strong>{{ video.title[:40] + "..." if video.title|length > 40 else video.title }}</strong>
+                                                <small class="d-block text-muted">{{ "{:,}".format(video.view_count) }} vues</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-danger">{{ "{:,}".format(video.like_count) }}</span>
+                                        </td>
+                                        <td>
+                                            {% set ratio = (video.like_count / video.view_count * 100) if video.view_count > 0 else 0 %}
+                                            <span class="fw-bold {% if ratio > 5 %}text-success{% elif ratio > 2 %}text-warning{% else %}text-muted{% endif %}">
+                                                {{ "{:.1f}%".format(ratio) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bubble Chart & Recent Videos -->
+        <div class="row mt-4">
+            <!-- Bubble Chart -->
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📊 Matrice Performance</h5>
+                        <small class="text-muted">Vues vs Engagement vs Durée</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="bubble-chart" style="height: 300px;">
+                            <canvas id="bubbleChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Videos Filter -->
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📅 Vidéos Récentes</h5>
+                        <div class="filter-controls">
+                            <select id="category-filter" class="form-select form-select-sm">
+                                <option value="">Toutes catégories</option>
+                                <option value="hero">HERO</option>
+                                <option value="hub">HUB</option>
+                                <option value="help">HELP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Vues</th>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-videos-table">
+                                    {% for video in videos[:20] %}
+                                    <tr data-category="{{ video.category or '' }}">
+                                        <td>
+                                            <div style="max-width: 200px;">
+                                                <strong class="text-truncate d-block">{{ video.title }}</strong>
+                                                <small class="text-muted">
+                                                    {% if video.duration_seconds %}
+                                                    {{ "{:.0f}min".format(video.duration_seconds / 60) }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">{{ "{:,}".format(video.view_count) if video.view_count else "0" }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ video.published_at[:10] if video.published_at else "N/A" }}</small>
+                                        </td>
+                                        <td>
+                                            {% if video.duration_seconds and video.duration_seconds < 60 %}
+                                            <span class="badge bg-primary-subtle text-primary">Short</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary">Long</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Patterns -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📈 Patterns de Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="pattern-insights">
+                            <div class="pattern-item">
+                                <i class="bx bx-trophy text-warning"></i>
+                                <div class="pattern-content">
+                                    <strong>Format Optimal</strong>
+                                    <p class="mb-0">
+                                        {% if metrics.avg_duration < 60 %}
+                                        Courts formats (<60s) performent mieux
+                                        {% elif metrics.avg_duration < 300 %}
+                                        Formats moyens (1-5min) équilibrés
+                                        {% else %}
+                                        Longs formats (>5min) pour l'engagement
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="pattern-item">
+                                <i class="bx bx-calendar text-info"></i>
+                                <div class="pattern-content">
+                                    <strong>Timing Optimal</strong>
+                                    <p class="mb-0">{{ metrics.most_active_day or "En analyse..." }}</p>
+                                </div>
+                            </div>
+                            <div class="pattern-item">
+                                <i class="bx bx-target-lock text-success"></i>
+                                <div class="pattern-content">
+                                    <strong>Catégorie Leader</strong>
+                                    <p class="mb-0">
+                                        {% if hero_count > hub_count and hero_count > help_count %}
+                                        HERO ({{ hero_count }} vidéos)
+                                        {% elif hub_count > help_count %}
+                                        HUB ({{ hub_count }} vidéos)
+                                        {% else %}
+                                        HELP ({{ help_count }} vidéos)
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🎯 Trending Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="trending-insights">
+                            <div class="trend-category">
+                                <h6 class="trend-title">Sujets Émergents</h6>
+                                <div class="trend-tags">
+                                    {% set words = [] %}
+                                    {% for video in videos[:10] %}
+                                        {% for word in video.title.split() %}
+                                            {% if word|length > 4 %}
+                                                {% set _ = words.append(word.lower()) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% set word_counts = {} %}
+                                    {% for word in words %}
+                                        {% set _ = word_counts.update({word: word_counts.get(word, 0) + 1}) %}
+                                    {% endfor %}
+                                    {% for word, count in word_counts.items() %}
+                                        {% if count >= 2 and loop.index <= 6 %}
+                                        <span class="trend-tag">{{ word.title() }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="trend-category mt-3">
+                                <h6 class="trend-title">Titres Performants</h6>
+                                <div class="title-patterns">
+                                    <small class="text-muted">
+                                        {% if top_videos_views %}
+                                        "{{ top_videos_views[0].title[:50] + "..." if top_videos_views[0].title|length > 50 else top_videos_views[0].title }}"
+                                        {% else %}
+                                        Analyse en cours...
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: Content Strategy -->
+    <div id="content-strategy" class="competitor-content">
+        <h4 class="mb-4">🎭 Stratégie de Contenu</h4>
+        
+        <!-- Strategic Overview -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📊 Distribution Stratégique Actuelle</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="strategy-distribution">
+                            <div class="strategy-item hero-strategy">
+                                <div class="strategy-header">
+                                    <i class="bx bx-star"></i>
+                                    <span class="strategy-type">HERO</span>
+                                    <span class="strategy-count">{{ hero_count }} vidéos ({{ "{:.1f}%".format((hero_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                </div>
+                                <div class="strategy-bar">
+                                    <div class="strategy-fill hero-fill" style="width: {{ (hero_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                                </div>
+                                <p class="strategy-description">Contenu de marque et d'inspiration pour awareness</p>
+                            </div>
+                            
+                            <div class="strategy-item hub-strategy">
+                                <div class="strategy-header">
+                                    <i class="bx bx-book-open"></i>
+                                    <span class="strategy-type">HUB</span>
+                                    <span class="strategy-count">{{ hub_count }} vidéos ({{ "{:.1f}%".format((hub_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                </div>
+                                <div class="strategy-bar">
+                                    <div class="strategy-fill hub-fill" style="width: {{ (hub_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                                </div>
+                                <p class="strategy-description">Contenu éducatif et engageant pour rétention</p>
+                            </div>
+                            
+                            <div class="strategy-item help-strategy">
+                                <div class="strategy-header">
+                                    <i class="bx bx-help-circle"></i>
+                                    <span class="strategy-type">HELP</span>
+                                    <span class="strategy-count">{{ help_count }} vidéos ({{ "{:.1f}%".format((help_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                </div>
+                                <div class="strategy-bar">
+                                    <div class="strategy-fill help-fill" style="width: {{ (help_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
+                                </div>
+                                <p class="strategy-description">Contenu d'aide et support pour conversion</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🎯 Score Stratégique</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="strategy-score">
+                            {% set strategy_score = 85 %}  <!-- Placeholder calculation -->
+                            <div class="score-circle">
+                                <span class="score-value">{{ strategy_score }}/100</span>
+                            </div>
+                            <p class="score-label">Équilibre Stratégique</p>
+                            <div class="score-insights">
+                                {% if strategy_score >= 80 %}
+                                <span class="badge bg-success-subtle text-success">Excellent équilibre</span>
+                                {% elif strategy_score >= 60 %}
+                                <span class="badge bg-warning-subtle text-warning">Équilibre correct</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger">À rééquilibrer</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Calendar & Format Analysis -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📅 Calendrier de Contenu</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="calendar-insights">
+                            <div class="calendar-item">
+                                <i class="bx bx-calendar-week text-primary"></i>
+                                <div class="calendar-content">
+                                    <strong>Fréquence Optimale</strong>
+                                    <p class="mb-0">{{ "{:.1f}".format(metrics.weekly_frequency) }} vidéos/semaine</p>
+                                </div>
+                            </div>
+                            <div class="calendar-item">
+                                <i class="bx bx-time text-success"></i>
+                                <div class="calendar-content">
+                                    <strong>Jour de Publication</strong>
+                                    <p class="mb-0">{{ metrics.most_active_day or "En analyse..." }}</p>
+                                </div>
+                            </div>
+                            <div class="calendar-item">
+                                <i class="bx bx-trending-up text-warning"></i>
+                                <div class="calendar-content">
+                                    <strong>Consistance</strong>
+                                    <p class="mb-0">{{ metrics.consistency_score or "N/A" }}% régularité</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="publishing-pattern mt-3">
+                            <h6 class="pattern-title">Pattern de Publication</h6>
+                            <div class="pattern-week">
+                                {% for day in ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+                                <div class="pattern-day {% if day == 'Mar' %}active{% endif %}">
+                                    <span class="day-label">{{ day }}</span>
+                                    <div class="day-activity"></div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🎬 Analyse des Formats</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="format-analysis">
+                            <div class="format-item">
+                                <div class="format-header">
+                                    <i class="bx bx-mobile-alt text-primary"></i>
+                                    <span class="format-type">Shorts</span>
+                                    <span class="format-percentage">{{ "{:.1f}%".format(metrics.short_form_percentage) }}</span>
+                                </div>
+                                <div class="format-bar">
+                                    <div class="format-fill shorts-fill" style="width: {{ metrics.short_form_percentage }}%;"></div>
+                                </div>
+                                <small class="text-muted">Vidéos < 60 secondes</small>
+                            </div>
+                            
+                            <div class="format-item">
+                                <div class="format-header">
+                                    <i class="bx bx-desktop text-success"></i>
+                                    <span class="format-type">Longs Formats</span>
+                                    <span class="format-percentage">{{ "{:.1f}%".format(metrics.long_form_percentage) }}</span>
+                                </div>
+                                <div class="format-bar">
+                                    <div class="format-fill long-fill" style="width: {{ metrics.long_form_percentage }}%;"></div>
+                                </div>
+                                <small class="text-muted">Vidéos > 60 secondes</small>
+                            </div>
+                        </div>
+                        
+                        <div class="format-insights mt-3">
+                            <h6 class="insights-title">Insights Format</h6>
+                            <div class="insight-tags">
+                                {% if metrics.short_form_percentage > 50 %}
+                                <span class="insight-tag primary">Focus Shorts</span>
+                                {% endif %}
+                                {% if metrics.avg_duration > 300 %}
+                                <span class="insight-tag success">Contenu Approfondi</span>
+                                {% endif %}
+                                {% if metrics.consistency_score > 80 %}
+                                <span class="insight-tag warning">Publication Régulière</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance by Category & Strategic Insights -->
+        <div class="row mt-4">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📈 Performance par Catégorie</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="category-performance">
+                            <div class="performance-category hero-performance">
+                                <div class="category-header">
+                                    <span class="category-name">HERO</span>
+                                    <span class="category-roi">ROI: +{{ "{:.0f}%".format(hero_roi) if hero_roi else "N/A" }}</span>
+                                </div>
+                                <div class="category-metrics">
+                                    <div class="metric-item">
+                                        <span class="metric-label">Vues Moy.</span>
+                                        <span class="metric-value">{{ "{:,}".format(hero_avg_views) if hero_avg_views else "N/A" }}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Engagement</span>
+                                        <span class="metric-value">{{ "{:.1f}%".format(hero_engagement) if hero_engagement else "N/A" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="performance-category hub-performance">
+                                <div class="category-header">
+                                    <span class="category-name">HUB</span>
+                                    <span class="category-roi">ROI: +{{ "{:.0f}%".format(hub_roi) if hub_roi else "N/A" }}</span>
+                                </div>
+                                <div class="category-metrics">
+                                    <div class="metric-item">
+                                        <span class="metric-label">Vues Moy.</span>
+                                        <span class="metric-value">{{ "{:,}".format(hub_avg_views) if hub_avg_views else "N/A" }}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Engagement</span>
+                                        <span class="metric-value">{{ "{:.1f}%".format(hub_engagement) if hub_engagement else "N/A" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="performance-category help-performance">
+                                <div class="category-header">
+                                    <span class="category-name">HELP</span>
+                                    <span class="category-roi">ROI: +{{ "{:.0f}%".format(help_roi) if help_roi else "N/A" }}</span>
+                                </div>
+                                <div class="category-metrics">
+                                    <div class="metric-item">
+                                        <span class="metric-label">Vues Moy.</span>
+                                        <span class="metric-value">{{ "{:,}".format(help_avg_views) if help_avg_views else "N/A" }}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Engagement</span>
+                                        <span class="metric-value">{{ "{:.1f}%".format(help_engagement) if help_engagement else "N/A" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">💡 Recommandations Stratégiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="strategic-recommendations">
+                            <div class="recommendation-item priority-high">
+                                <i class="bx bx-trending-up text-danger"></i>
+                                <div class="recommendation-content">
+                                    <strong>Augmenter HERO</strong>
+                                    <p class="mb-0">Ratio actuel {{ "{:.0f}%".format((hero_count / total_videos * 100)) if total_videos > 0 else "0%" }}, recommandé 30-40%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-item priority-medium">
+                                <i class="bx bx-time text-warning"></i>
+                                <div class="recommendation-content">
+                                    <strong>Optimiser Timing</strong>
+                                    <p class="mb-0">Publier le {{ metrics.most_active_day or "mardi" }} pour +25% d'engagement</p>
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-item priority-low">
+                                <i class="bx bx-mobile-alt text-info"></i>
+                                <div class="recommendation-content">
+                                    <strong>Diversifier Formats</strong>
+                                    <p class="mb-0">Équilibrer Shorts/Longs selon audience</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="strategy-gaps mt-3">
+                            <h6 class="gaps-title">Opportunités Identifiées</h6>
+                            <div class="gap-tags">
+                                <span class="gap-tag hero">Plus de contenu inspirationnel</span>
+                                <span class="gap-tag timing">Consistance temporelle</span>
+                                <span class="gap-tag format">Formats innovants</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competitor Comparison -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🏆 Comparaison Concurrentielle</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="competitor-comparison">
+                            <div class="comparison-header">
+                                <div class="competitor-name">{{ competitor.name }}</div>
+                                <div class="comparison-metrics">
+                                    <span class="metric-badge hero">{{ "{:.0f}%".format((hero_count / total_videos * 100)) if total_videos > 0 else "0%" }} HERO</span>
+                                    <span class="metric-badge hub">{{ "{:.0f}%".format((hub_count / total_videos * 100)) if total_videos > 0 else "0%" }} HUB</span>
+                                    <span class="metric-badge help">{{ "{:.0f}%".format((help_count / total_videos * 100)) if total_videos > 0 else "0%" }} HELP</span>
+                                </div>
+                            </div>
+                            
+                            <div class="industry-benchmark">
+                                <h6 class="benchmark-title">Benchmark Secteur</h6>
+                                <div class="benchmark-bars">
+                                    <div class="benchmark-item">
+                                        <span class="benchmark-label">HERO Optimal</span>
+                                        <div class="benchmark-bar">
+                                            <div class="benchmark-fill" style="width: 35%;"></div>
+                                            <span class="benchmark-value">30-40%</span>
+                                        </div>
+                                    </div>
+                                    <div class="benchmark-item">
+                                        <span class="benchmark-label">HUB Optimal</span>
+                                        <div class="benchmark-bar">
+                                            <div class="benchmark-fill" style="width: 50%;"></div>
+                                            <span class="benchmark-value">45-55%</span>
+                                        </div>
+                                    </div>
+                                    <div class="benchmark-item">
+                                        <span class="benchmark-label">HELP Optimal</span>
+                                        <div class="benchmark-bar">
+                                            <div class="benchmark-fill" style="width: 15%;"></div>
+                                            <span class="benchmark-value">10-20%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: Sentiment Analysis -->
+    <div id="sentiment-analysis" class="competitor-content">
+        <h4 class="mb-4">💭 Analyse de Sentiment</h4>
+        
+        <!-- Sentiment Overview -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card sentiment-health-card">
+                    <div class="card-body text-center">
+                        <div class="sentiment-score-circle">
+                            {% set sentiment_health = sentiment.sentiment_health if sentiment else 78 %}
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#f1f1f4" stroke-width="8"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#28c76f" stroke-width="8" 
+                                        stroke-dasharray="{{ sentiment_health * 3.14 }}, 314" transform="rotate(-90 60 60)"/>
+                            </svg>
+                            <div class="score-center">
+                                <span class="score-number">{{ sentiment_health }}</span>
+                                <span class="score-label">Score Santé</span>
+                            </div>
+                        </div>
+                        <h6 class="mt-3 mb-1">Perception Globale</h6>
+                        <p class="text-muted small mb-0">Basé sur l'analyse de {{ sentiment.total_analyzed if sentiment else 450 }}+ titres vidéos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📊 Distribution des Sentiments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="sentiment-distribution">
+                            <div class="sentiment-item positive">
+                                <div class="sentiment-icon">
+                                    <i class="bx bx-happy"></i>
+                                </div>
+                                <div class="sentiment-content">
+                                    <div class="sentiment-header">
+                                        <span class="sentiment-type">Positif</span>
+                                        <span class="sentiment-percentage">{{ sentiment.positive_percentage if sentiment else 65 }}%</span>
+                                    </div>
+                                    <div class="sentiment-bar">
+                                        <div class="sentiment-fill positive-fill" style="width: {{ sentiment.positive_percentage if sentiment else 65 }}%;"></div>
+                                    </div>
+                                    <small class="text-muted">{{ sentiment.positive_count if sentiment else 293 }} vidéos</small>
+                                </div>
+                            </div>
+                            
+                            <div class="sentiment-item neutral">
+                                <div class="sentiment-icon">
+                                    <i class="bx bx-meh"></i>
+                                </div>
+                                <div class="sentiment-content">
+                                    <div class="sentiment-header">
+                                        <span class="sentiment-type">Neutre</span>
+                                        <span class="sentiment-percentage">{{ sentiment.neutral_percentage if sentiment else 25 }}%</span>
+                                    </div>
+                                    <div class="sentiment-bar">
+                                        <div class="sentiment-fill neutral-fill" style="width: {{ sentiment.neutral_percentage if sentiment else 25 }}%;"></div>
+                                    </div>
+                                    <small class="text-muted">{{ sentiment.neutral_count if sentiment else 113 }} vidéos</small>
+                                </div>
+                            </div>
+                            
+                            <div class="sentiment-item negative">
+                                <div class="sentiment-icon">
+                                    <i class="bx bx-sad"></i>
+                                </div>
+                                <div class="sentiment-content">
+                                    <div class="sentiment-header">
+                                        <span class="sentiment-type">Négatif</span>
+                                        <span class="sentiment-percentage">{{ sentiment.negative_percentage if sentiment else 10 }}%</span>
+                                    </div>
+                                    <div class="sentiment-bar">
+                                        <div class="sentiment-fill negative-fill" style="width: {{ sentiment.negative_percentage if sentiment else 10 }}%;"></div>
+                                    </div>
+                                    <small class="text-muted">{{ sentiment.negative_count if sentiment else 44 }} vidéos</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trending Emotions & Geographic -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📈 Évolution des Émotions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="emotion-trend-chart" style="height: 250px;">
+                            <canvas id="emotionChart"></canvas>
+                        </div>
+                        <div class="emotion-legend mt-3">
+                            <div class="legend-item">
+                                <span class="legend-color positive"></span>
+                                <span class="legend-label">Positif</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color neutral"></span>
+                                <span class="legend-label">Neutre</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color negative"></span>
+                                <span class="legend-label">Négatif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🌍 Sentiment Géographique</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="geo-sentiment">
+                            <div class="geo-item">
+                                <div class="geo-header">
+                                    <span class="geo-country">🇫🇷 France</span>
+                                    <span class="geo-score positive">82%</span>
+                                </div>
+                                <div class="geo-details">
+                                    <small class="text-muted">156 commentaires • Excellent accueil</small>
+                                </div>
+                            </div>
+                            
+                            <div class="geo-item">
+                                <div class="geo-header">
+                                    <span class="geo-country">🇩🇪 Allemagne</span>
+                                    <span class="geo-score positive">75%</span>
+                                </div>
+                                <div class="geo-details">
+                                    <small class="text-muted">98 commentaires • Qualité appréciée</small>
+                                </div>
+                            </div>
+                            
+                            <div class="geo-item">
+                                <div class="geo-header">
+                                    <span class="geo-country">🇳🇱 Pays-Bas</span>
+                                    <span class="geo-score positive">79%</span>
+                                </div>
+                                <div class="geo-details">
+                                    <small class="text-muted">67 commentaires • Très satisfait</small>
+                                </div>
+                            </div>
+                            
+                            <div class="geo-item">
+                                <div class="geo-header">
+                                    <span class="geo-country">🇬🇧 Royaume-Uni</span>
+                                    <span class="geo-score neutral">68%</span>
+                                </div>
+                                <div class="geo-details">
+                                    <small class="text-muted">23 commentaires • Retours mitigés</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Sentiment & Alerts -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🎭 Sentiment par Type de Contenu</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="content-sentiment">
+                            <div class="content-type-sentiment">
+                                <div class="content-header">
+                                    <span class="content-label">HERO Content</span>
+                                    <span class="sentiment-metrics">
+                                        <span class="positive-rate">72%</span>
+                                        <span class="neutral-rate">20%</span>
+                                        <span class="negative-rate">8%</span>
+                                    </span>
+                                </div>
+                                <div class="sentiment-breakdown">
+                                    <div class="breakdown-bar">
+                                        <div class="positive-segment" style="width: 72%;"></div>
+                                        <div class="neutral-segment" style="width: 20%;"></div>
+                                        <div class="negative-segment" style="width: 8%;"></div>
+                                    </div>
+                                </div>
+                                <p class="content-insight">Les vidéos inspirationnelles génèrent beaucoup d'enthousiasme</p>
+                            </div>
+                            
+                            <div class="content-type-sentiment">
+                                <div class="content-header">
+                                    <span class="content-label">HUB Content</span>
+                                    <span class="sentiment-metrics">
+                                        <span class="positive-rate">64%</span>
+                                        <span class="neutral-rate">28%</span>
+                                        <span class="negative-rate">8%</span>
+                                    </span>
+                                </div>
+                                <div class="sentiment-breakdown">
+                                    <div class="breakdown-bar">
+                                        <div class="positive-segment" style="width: 64%;"></div>
+                                        <div class="neutral-segment" style="width: 28%;"></div>
+                                        <div class="negative-segment" style="width: 8%;"></div>
+                                    </div>
+                                </div>
+                                <p class="content-insight">Contenu éducatif bien reçu, engagement solide</p>
+                            </div>
+                            
+                            <div class="content-type-sentiment">
+                                <div class="content-header">
+                                    <span class="content-label">HELP Content</span>
+                                    <span class="sentiment-metrics">
+                                        <span class="positive-rate">58%</span>
+                                        <span class="neutral-rate">35%</span>
+                                        <span class="negative-rate">7%</span>
+                                    </span>
+                                </div>
+                                <div class="sentiment-breakdown">
+                                    <div class="breakdown-bar">
+                                        <div class="positive-segment" style="width: 58%;"></div>
+                                        <div class="neutral-segment" style="width: 35%;"></div>
+                                        <div class="negative-segment" style="width: 7%;"></div>
+                                    </div>
+                                </div>
+                                <p class="content-insight">Contenu utile mais plus neutre émotionnellement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚨 Alertes & Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="sentiment-alerts">
+                            {% if sentiment and sentiment.alerts %}
+                                {% for alert in sentiment.alerts %}
+                                    <div class="alert-item {{ alert.type }}">
+                                        <i class="bx {{ alert.icon }}"></i>
+                                        <div class="alert-content">
+                                            <strong>{{ alert.title }}</strong>
+                                            <p class="mb-0">{{ alert.description }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert-item success">
+                                    <i class="bx bx-check-circle"></i>
+                                    <div class="alert-content">
+                                        <strong>Sentiment Stable</strong>
+                                        <p class="mb-0">Pas de polémique détectée ce mois</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert-item info">
+                                    <i class="bx bx-info-circle"></i>
+                                    <div class="alert-content">
+                                        <strong>Opportunité</strong>
+                                        <p class="mb-0">Forte demande pour plus de contenu écologique</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="sentiment-recommendations mt-3">
+                            <h6 class="recommendations-title">Recommandations</h6>
+                            <div class="recommendation-tags">
+                                <span class="recommendation-tag positive">Amplifier contenu HERO</span>
+                                <span class="recommendation-tag neutral">Répondre aux tarifs</span>
+                                <span class="recommendation-tag opportunity">Créer série écologie</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Word Cloud & Top Comments -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">☁️ Mots-Clés Dominants</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="word-cloud">
+                            {% if sentiment and sentiment.top_keywords %}
+                                {% for keyword in sentiment.top_keywords %}
+                                    <span class="word-item size-{{ keyword.size }} {{ keyword.sentiment }}">{{ keyword.word }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="word-item size-xl positive">magnifique</span>
+                                <span class="word-item size-lg positive">parfait</span>
+                                <span class="word-item size-md neutral">vacances</span>
+                                <span class="word-item size-lg positive">excellent</span>
+                                <span class="word-item size-sm neutral">famille</span>
+                                <span class="word-item size-md positive">superbe</span>
+                                <span class="word-item size-sm negative">cher</span>
+                                <span class="word-item size-lg positive">recommande</span>
+                                <span class="word-item size-md neutral">enfants</span>
+                                <span class="word-item size-sm positive">génial</span>
+                                <span class="word-item size-md neutral">nature</span>
+                                <span class="word-item size-sm positive">fantastique</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">💬 Commentaires Représentatifs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="top-comments">
+                            <div class="comment-item positive">
+                                <div class="comment-header">
+                                    <span class="comment-sentiment">😊</span>
+                                    <span class="comment-type">Positif</span>
+                                </div>
+                                <p class="comment-text">"Séjour absolument magique ! Les enfants ont adoré l'Aqua Mundo et nous avons passé des vacances inoubliables."</p>
+                            </div>
+                            
+                            <div class="comment-item neutral">
+                                <div class="comment-header">
+                                    <span class="comment-sentiment">😐</span>
+                                    <span class="comment-type">Neutre</span>
+                                </div>
+                                <p class="comment-text">"Bon séjour dans l'ensemble. Les activités sont variées mais l'hébergement pourrait être rénové."</p>
+                            </div>
+                            
+                            <div class="comment-item negative">
+                                <div class="comment-header">
+                                    <span class="comment-sentiment">😞</span>
+                                    <span class="comment-type">Négatif</span>
+                                </div>
+                                <p class="comment-text">"Prix très élevé pour les prestations proposées. Déçu du rapport qualité-prix."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.competitor-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.competitor-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to clicked tab
+    event.target.closest('.competitor-tab').classList.add('active');
+}
+
+// Initialize animations when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars
+    setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            bar.style.width = bar.style.width; // Trigger animation
+        });
+    }, 500);
+    
+    // Initialize emotion chart
+    initEmotionChart();
+});
+
+// Emotion trend chart
+function initEmotionChart() {
+    const ctx = document.getElementById('emotionChart');
+    if (!ctx) return;
+    
+    // Get sentiment data from backend
+    const sentimentData = {{ sentiment.trends | tojson | safe if sentiment and sentiment.trends else '[]' }};
+    
+    // Default data if no backend data
+    const defaultData = [
+        {month: 'Jan', positive: 65, neutral: 25, negative: 10},
+        {month: 'Fév', positive: 68, neutral: 23, negative: 9},
+        {month: 'Mar', positive: 70, neutral: 22, negative: 8},
+        {month: 'Avr', positive: 67, neutral: 25, negative: 8},
+        {month: 'Mai', positive: 72, neutral: 20, negative: 8},
+        {month: 'Jun', positive: 75, neutral: 18, negative: 7}
+    ];
+    
+    const data = sentimentData.length > 0 ? sentimentData : defaultData;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.month),
+            datasets: [{
+                label: 'Positif',
+                data: data.map(d => d.positive),
+                borderColor: '#28c76f',
+                backgroundColor: 'rgba(40, 199, 111, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Neutre',
+                data: data.map(d => d.neutral),
+                borderColor: '#ff9f43',
+                backgroundColor: 'rgba(255, 159, 67, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Négatif',
+                data: data.map(d => d.negative),
+                borderColor: '#ea5455',
+                backgroundColor: 'rgba(234, 84, 85, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6
+                }
+            }
+        }
+    });
+}
+
+// Interactive word cloud
+function initWordCloud() {
+    document.querySelectorAll('.word-item').forEach(word => {
+        word.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.2)';
+            this.style.zIndex = '10';
+            this.title = `Sentiment: ${this.classList.contains('positive') ? 'Positif' : 
+                         this.classList.contains('negative') ? 'Négatif' : 'Neutre'}`;
+        });
+        
+        word.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.zIndex = '1';
+        });
+        
+        word.addEventListener('click', function() {
+            const sentiment = this.classList.contains('positive') ? 'positive' : 
+                             this.classList.contains('negative') ? 'negative' : 'neutral';
+            filterCommentsBySentiment(sentiment);
+        });
+    });
+}
+
+// Filter comments by sentiment
+function filterCommentsBySentiment(sentiment) {
+    const comments = document.querySelectorAll('.comment-item');
+    comments.forEach(comment => {
+        if (sentiment === 'all' || comment.classList.contains(sentiment)) {
+            comment.style.display = 'block';
+            comment.style.opacity = '1';
+        } else {
+            comment.style.opacity = '0.3';
+        }
+    });
+}
+
+// Initialize word cloud interactivity
+document.addEventListener('DOMContentLoaded', function() {
+    initWordCloud();
+});
+</script>
+{% endblock %}

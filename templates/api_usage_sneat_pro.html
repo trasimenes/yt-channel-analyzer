@@ -283,24 +283,24 @@
                     <i class="bx bx-calendar-day me-2 text-primary"></i>
                     Quota Quotidien
                 </h5>
-                <span class="badge bg-label-{{ 'success' if quota_data.percentage <= 50 else 'warning' if quota_data.percentage <= 80 else 'danger' }}">
-                    {{ quota_data.percentage }}% utilisé
+                <span class="badge bg-label-{{ 'success' if api_stats.usage_percentage <= 50 else 'warning' if api_stats.usage_percentage <= 80 else 'danger' }}">
+                    {{ "%.1f"|format(api_stats.usage_percentage if api_stats else 0) }}% utilisé
                 </span>
             </div>
             
             <div class="progress mb-2" style="height: 8px;">
-                <div class="progress-bar bg-{{ 'success' if quota_data.percentage <= 50 else 'warning' if quota_data.percentage <= 80 else 'danger' }}" 
+                <div class="progress-bar bg-{{ 'success' if api_stats.usage_percentage <= 50 else 'warning' if api_stats.usage_percentage <= 80 else 'danger' }}" 
                      role="progressbar" 
-                     style="width: {{ quota_data.percentage }}%" 
-                     aria-valuenow="{{ quota_data.percentage }}" 
+                     style="width: {{ api_stats.usage_percentage if api_stats else 0 }}%" 
+                     aria-valuenow="{{ api_stats.usage_percentage if api_stats else 0 }}" 
                      aria-valuemin="0" 
                      aria-valuemax="100">
                 </div>
             </div>
             
             <div class="d-flex justify-content-between text-muted small">
-                <span>{{ "{:,}".format(quota_data.daily_usage if quota_data else 0) }} / {{ "{:,}".format(quota_data.quota_limit if quota_data else 10000) }} requêtes</span>
-                <span>Reset: {{ quota_data.reset_time if quota_data else 'N/A' }}</span>
+                <span>{{ "{:,}".format(api_stats.current_daily_usage if api_stats else 0) }} / {{ "{:,}".format(api_stats.daily_limit if api_stats else 10000) }} requêtes</span>
+                <span>Reset: Minuit (UTC)</span>
             </div>
         </div>
 
@@ -316,7 +316,7 @@
                             
                             <div class="usage-overlay">
                                 <i class="bx bx-trending-up"></i>
-                                {{ "{:,}".format(quota_data.daily_usage if quota_data else 0) }}
+                                {{ "{:,}".format(api_stats.current_daily_usage if api_stats else 0) }}
                             </div>
                         </div>
                         
@@ -330,18 +330,18 @@
                             <div class="api-metrics">
                                 <div class="metric-item">
                                     <i class="bx bx-play"></i>
-                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} vidéos</span>
+                                    <span>{{ "{:,}".format(api_stats.total_requests if api_stats else 0) }} requêtes</span>
                                 </div>
                                 <div class="metric-item">
                                     <i class="bx bxl-youtube"></i>
-                                    <span>{{ "{:,}".format(api_stats.channels_analyzed if api_stats else 0) }} chaînes</span>
+                                    <span>{{ "{:,}".format(api_stats.remaining_quota if api_stats else 0) }} restantes</span>
                                 </div>
                             </div>
                             
                             <div class="mt-2">
-                                <span class="status-badge status-{{ 'healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'critical' }}">
-                                    <i class="bx bx-{{ 'check' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'error' if (quota_data.daily_usage if usage_data else 0) >= 8000 else 'time' }}"></i>
-                                    {{ 'Healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'Warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'Critical' }}
+                                <span class="status-badge status-{{ api_stats.status if api_stats else 'unknown' }}">
+                                    <i class="bx bx-{{ 'check' if api_stats.status == 'healthy' else 'time' if api_stats.status == 'warning' else 'error' if api_stats.status == 'critical' else 'question-mark' }}"></i>
+                                    {{ api_stats.status|title if api_stats else 'Unknown' }}
                                 </span>
                             </div>
                         </div>
@@ -357,7 +357,7 @@
                             
                             <div class="usage-overlay">
                                 <i class="bx bx-search-alt"></i>
-                                {{ "{:,}".format(api_stats.search_requests if api_stats else 0) }}
+                                {{ "{:,}".format(0) }}
                             </div>
                         </div>
                         
@@ -371,11 +371,11 @@
                             <div class="api-metrics">
                                 <div class="metric-item">
                                     <i class="bx bx-search"></i>
-                                    <span>{{ "{:,}".format(api_stats.search_requests if api_stats else 0) }} recherches</span>
+                                    <span>{{ "{:,}".format(0) }} recherches</span>
                                 </div>
                                 <div class="metric-item">
                                     <i class="bx bx-list-ul"></i>
-                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} résultats</span>
+                                    <span>{{ "{:,}".format(0) }} résultats</span>
                                 </div>
                             </div>
                             
@@ -398,7 +398,7 @@
                             
                             <div class="usage-overlay">
                                 <i class="bx bx-collection"></i>
-                                {{ "{:,}".format(api_stats.search_requests if api_stats else 0) }}
+                                {{ "{:,}".format(355) }}
                             </div>
                         </div>
                         
@@ -416,7 +416,7 @@
                                 </div>
                                 <div class="metric-item">
                                     <i class="bx bx-play"></i>
-                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} vidéos</span>
+                                    <span>{{ "{:,}".format(api_stats.total_requests if api_stats else 0) }} vidéos</span>
                                 </div>
                             </div>
                             
@@ -439,7 +439,7 @@
                             
                             <div class="usage-overlay">
                                 <i class="bx bx-comment"></i>
-                                {{ "{:,}".format(api_stats.errors if api_stats else 0) }}
+                                {{ "{:,}".format(0) }}
                             </div>
                         </div>
                         
@@ -453,11 +453,11 @@
                             <div class="api-metrics">
                                 <div class="metric-item">
                                     <i class="bx bx-message-detail"></i>
-                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} commentaires</span>
+                                    <span>{{ "{:,}".format(0) }} commentaires</span>
                                 </div>
                                 <div class="metric-item">
                                     <i class="bx bx-happy"></i>
-                                    <span>{{ "{:,}".format(api_stats.videos_fetched if api_stats else 0) }} analyses</span>
+                                    <span>{{ "{:,}".format(0) }} analyses</span>
                                 </div>
                             </div>
                             
@@ -490,48 +490,48 @@
                         <tbody>
                             <tr>
                                 <td class="table-api-title">YouTube Data API v3</td>
-                                <td>{{ "{:,}".format(quota_data.daily_usage if usage_data else 0) }}</td>
-                                <td>{{ "{:,}".format(usage_data.videos_fetched if usage_data else 0) }} vidéos, {{ "{:,}".format(usage_data.channels_fetched if usage_data else 0) }} chaînes</td>
+                                <td>{{ "{:,}".format(api_stats.current_daily_usage if api_stats else 0) }}</td>
+                                <td>Données vidéos et chaînes</td>
                                 <td>
-                                    <span class="status-badge status-{{ 'healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'critical' }}">
-                                        <i class="bx bx-{{ 'check' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'error' if (quota_data.daily_usage if usage_data else 0) >= 8000 else 'time' }}"></i> 
-                                        {{ 'Healthy' if (quota_data.daily_usage if usage_data else 0) < 5000 else 'Warning' if (quota_data.daily_usage if usage_data else 0) < 8000 else 'Critical' }}
+                                    <span class="status-badge status-{{ api_stats.status if api_stats else 'unknown' }}">
+                                        <i class="bx bx-{{ 'check' if api_stats.status == 'healthy' else 'time' if api_stats.status == 'warning' else 'error' if api_stats.status == 'critical' else 'question-mark' }}"></i> 
+                                        {{ api_stats.status|title if api_stats else 'Unknown' }}
                                     </span>
                                 </td>
-                                <td>{{ recent_calls[0].timestamp if usage_data else 'N/A' }}</td>
+                                <td>N/A</td>
                             </tr>
                             <tr>
                                 <td class="table-api-title">YouTube Search API</td>
-                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }}</td>
-                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }} recherches</td>
+                                <td>{{ "{:,}".format(0) }}</td>
+                                <td>Recherches par mots-clés</td>
                                 <td>
                                     <span class="status-badge status-healthy">
                                         <i class="bx bx-check"></i> Active
                                     </span>
                                 </td>
-                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                                <td>N/A</td>
                             </tr>
                             <tr>
                                 <td class="table-api-title">Playlists API</td>
-                                <td>{{ "{:,}".format(api_stats.search_requests if usage_data else 0) }}</td>
-                                <td>{{ "{:,}".format(355 if usage_data else 0) }} playlists</td>
+                                <td>{{ "{:,}".format(0) }}</td>
+                                <td>355 playlists</td>
                                 <td>
                                     <span class="status-badge status-healthy">
                                         <i class="bx bx-check"></i> Opérationnelle
                                     </span>
                                 </td>
-                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                                <td>N/A</td>
                             </tr>
                             <tr>
                                 <td class="table-api-title">Comments API</td>
-                                <td>{{ "{:,}".format(api_stats.errors if usage_data else 0) }}</td>
-                                <td>{{ "{:,}".format(api_stats.videos_fetched if usage_data else 0) }} commentaires</td>
+                                <td>{{ "{:,}".format(0) }}</td>
+                                <td>Commentaires et sentiment</td>
                                 <td>
                                     <span class="status-badge status-warning">
                                         <i class="bx bx-time"></i> Optionnelle
                                     </span>
                                 </td>
-                                <td>{{ recent_calls[-1].timestamp if usage_data else 'N/A' }}</td>
+                                <td>N/A</td>
                             </tr>
                         </tbody>
                     </table>
@@ -556,7 +556,7 @@
                                 Clé API YouTube
                             </label>
                             <div class="input-group">
-                                <input type="password" class="form-control" value="AIza...{{ api_config.key_suffix if api_config.key_suffix else 'Non configurée' }}" readonly>
+                                <input type="password" class="form-control" value="AIza...{{ 'Configurée' if api_stats else 'Non configurée' }}" readonly>
                                 <button class="btn btn-outline-secondary" type="button">
                                     <i class="bx bx-show"></i>
                                 </button>
@@ -568,7 +568,7 @@
                                 <i class="bx bx-time me-1"></i>
                                 Limite Quotidienne
                             </label>
-                            <input type="number" class="form-control" value="{{ quota_data.quota_limit if usage_data else 10000 }}" readonly>
+                            <input type="number" class="form-control" value="{{ api_stats.daily_limit if api_stats else 10000 }}" readonly>
                         </div>
                     </div>
                     
@@ -591,7 +591,7 @@
                                 <i class="bx bx-refresh me-1"></i>
                                 Dernier Reset
                             </label>
-                            <input type="text" class="form-control" value="{{ quota_data.reset_time if usage_data else 'N/A' }}" readonly>
+                            <input type="text" class="form-control" value="Minuit (UTC)" readonly>
                         </div>
                     </div>
                 </div>

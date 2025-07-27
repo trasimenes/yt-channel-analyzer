@@ -147,7 +147,7 @@
             </li>
 
             <!-- Publishing Frequency -->
-            <li class="menu-item {% if request.endpoint == 'main.performance-dashboard' %}active{% endif %}">
+            <li class="menu-item {% if request.endpoint == 'insights.frequency_dashboard' %}active{% endif %}">
               <a href="/frequency-dashboard" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-time"></i>
                 <div class="text-truncate" data-i18n="Publishing Frequency">Publishing Frequency</div>
@@ -160,8 +160,8 @@
             </li>
 
             <!-- Brand Insights -->
-            <li class="menu-item {% if request.endpoint == 'insights.insights' %}active{% endif %}">
-              <a href="/insights" class="menu-link">
+            <li class="menu-item {% if request.endpoint == 'insights.brand-insights' %}active{% endif %}">
+              <a href="/brand-insights" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bulb"></i>
                 <div class="text-truncate" data-i18n="Brand Insights">Brand Insights</div>
               </a>
@@ -172,6 +172,14 @@
               <a href="/country-insights" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-globe"></i>
                 <div class="text-truncate" data-i18n="Country Insights">Country Insights</div>
+              </a>
+            </li>
+
+            <!-- Europe Insights -->
+            <li class="menu-item {% if request.endpoint == 'insights.europe-insights' %}active{% endif %}">
+              <a href="/europe-insights" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-world"></i>
+                <div class="text-truncate" data-i18n="Europe Insights">Europe Insights</div>
               </a>
             </li>
 
@@ -541,18 +549,16 @@
                 <!-- Dev Mode Toggle -->
                 <li class="nav-item me-3">
                   <div class="form-check form-switch mb-0">
-                    <form method="post" action="/toggle-dev-mode" id="devModeForm">
-                      <input 
-                        class="form-check-input" 
-                        type="checkbox" 
-                        id="devModeSwitch" 
-                        {% if dev_mode %}checked{% endif %} 
-                        onchange="document.getElementById('devModeForm').submit()"
-                      />
-                      <label class="form-check-label" for="devModeSwitch">
-                        Dev Mode
-                      </label>
-                    </form>
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="devModeSwitch" 
+                      {% if dev_mode %}checked{% endif %} 
+                      onchange="toggleDevMode()"
+                    />
+                    <label class="form-check-label" for="devModeSwitch">
+                      Dev Mode
+                    </label>
                   </div>
                 </li>
 
@@ -610,7 +616,7 @@
                       </a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="/logout">
+                      <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                         <i class="bx bx-power-off me-2"></i>
                         <span class="align-middle">Déconnexion</span>
                       </a>
@@ -691,6 +697,36 @@
 
     <!-- Custom search functionality -->
     <script>
+    // Toggle Dev Mode function - AJAX transparent
+    function toggleDevMode() {
+        console.log('Toggle dev mode called');
+        const checkbox = document.getElementById('devModeSwitch');
+        console.log('Checkbox checked:', checkbox.checked);
+        
+        fetch('/toggle-dev-mode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Dev mode toggled successfully');
+                // Actualiser seulement la sidebar pour montrer/cacher les items dev
+                location.reload();
+            } else {
+                console.error('Error toggling dev mode');
+                // Remettre le checkbox dans l'état précédent en cas d'erreur
+                checkbox.checked = !checkbox.checked;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Remettre le checkbox dans l'état précédent en cas d'erreur
+            checkbox.checked = !checkbox.checked;
+        });
+    }
+
     // Gérer la recherche dans la navbar
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('.search-input');

@@ -1,0 +1,562 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Countries Analysis - YT Channel Analyzer{% endblock %}
+
+{% block vendor_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Insights Cards */
+    .insight-card {
+        border-left: 4px solid;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .insight-card.success {
+        border-color: #28c76f;
+        background: rgba(40, 199, 111, 0.05);
+    }
+    
+    .insight-card.warning {
+        border-color: #ff9f43;
+        background: rgba(255, 159, 67, 0.05);
+    }
+    
+    .insight-card.info {
+        border-color: #00cfe8;
+        background: rgba(0, 207, 232, 0.05);
+    }
+    
+    .insight-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+    }
+    
+    .insight-icon {
+        font-size: 2rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+    }
+    
+    .insight-icon.success {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .insight-icon.warning {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .insight-icon.info {
+        background: rgba(0, 207, 232, 0.1);
+        color: #00cfe8;
+    }
+    
+    /* Opportunity Score Badge */
+    .opportunity-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .opportunity-high {
+        background: rgba(40, 199, 111, 0.1);
+        color: #28c76f;
+    }
+    
+    .opportunity-medium {
+        background: rgba(255, 159, 67, 0.1);
+        color: #ff9f43;
+    }
+    
+    .opportunity-low {
+        background: rgba(234, 84, 85, 0.1);
+        color: #ea5455;
+    }
+    
+    /* DataTable Customization */
+    .dataTables_wrapper .dataTables_filter input {
+        border: 2px solid #e7e7ff;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: #696cff;
+        box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
+    }
+    
+    /* Country flag in table */
+    .country-flag-sm {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    /* Drill-down styles */
+    .drill-down-content {
+        display: none;
+        padding: 1rem;
+        background: #f5f5f9;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .drill-down-content.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold py-3 mb-0">
+                <span class="text-muted fw-light">Insights /</span> Countries Analysis
+            </h4>
+            <div>
+                <button class="btn btn-primary" onclick="exportData()">
+                    <i class="bx bx-download me-2"></i>
+                    Export Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Insights automatiques -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="mb-3">🔍 Key Insights</h5>
+                <div class="insights-container">
+                    {% for insight in insights %}
+                    <div class="card insight-card {{ insight.type }}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="insight-icon {{ insight.type }}">
+                                        <i class="bx {{ insight.icon }}"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <h6 class="mb-1">{{ insight.title }}</h6>
+                                    <p class="mb-0">{{ insight.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Countries</h6>
+                                <h3 class="mb-0">{{ total_countries }}</h3>
+                            </div>
+                            <div class="avatar bg-label-primary">
+                                <i class="bx bx-globe"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Competitors</h6>
+                                <h3 class="mb-0">{{ countries_data|sum(attribute='competitor_count') }}</h3>
+                            </div>
+                            <div class="avatar bg-label-info">
+                                <i class="bx bx-group"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Videos</h6>
+                                <h3 class="mb-0">{{ "{:,}".format(countries_data|sum(attribute='video_count')) }}</h3>
+                            </div>
+                            <div class="avatar bg-label-success">
+                                <i class="bx bx-video"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Avg Engagement</h6>
+                                <h3 class="mb-0">{{ "%.2f"|format(countries_data|map(attribute='engagement_rate')|list|sum / (countries_data|length if countries_data else 1)) }}%</h3>
+                            </div>
+                            <div class="avatar bg-label-warning">
+                                <i class="bx bx-trending-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <!-- Radar Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Performance Multi-critères</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="radarChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bar Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Volume vs Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="barChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Data Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Comparative Analysis by Country</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="countriesTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Pays</th>
+                                <th>Concurrents</th>
+                                <th>Vidéos</th>
+                                <th>Vues/vidéo</th>
+                                <th>Engagement</th>
+                                <th>Top Performer</th>
+                                <th>Opportunity Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for country in countries_data %}
+                            <tr data-country="{{ country.country }}">
+                                <td>
+                                    <span class="country-flag-sm">
+                                        {% if country.country == 'France' %}🇫🇷
+                                        {% elif country.country == 'Germany' %}🇩🇪
+                                        {% elif country.country == 'Netherlands' %}🇳🇱
+                                        {% elif country.country == 'United Kingdom' %}🇬🇧
+                                        {% elif country.country == 'Belgium' %}🇧🇪
+                                        {% elif country.country == 'Switzerland' %}🇨🇭
+                                        {% elif country.country == 'International' %}🌍
+                                        {% else %}🏳️
+                                        {% endif %}
+                                    </span>
+                                    <strong>{{ country.country }}</strong>
+                                </td>
+                                <td>{{ country.competitor_count }}</td>
+                                <td>{{ "{:,}".format(country.video_count) }}</td>
+                                <td>{{ "{:,}".format(country.avg_views_per_video) }}</td>
+                                <td>
+                                    <span class="badge bg-label-primary">{{ country.engagement_rate }}%</span>
+                                </td>
+                                <td>{{ country.top_performer|default('-', true) }}</td>
+                                <td>
+                                    <span class="opportunity-score 
+                                        {% if country.opportunity_score >= 70 %}opportunity-high
+                                        {% elif country.opportunity_score >= 40 %}opportunity-medium
+                                        {% else %}opportunity-low{% endif %}">
+                                        <i class="bx bx-target-lock"></i>
+                                        {{ country.opportunity_score }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="toggleDrillDown('{{ country.country }}')">
+                                        <i class="bx bx-search-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="drill-down-row" id="drill-{{ country.country }}" style="display: none;">
+                                <td colspan="8">
+                                    <div class="drill-down-content">
+                                        <h6 class="mb-3">Content Distribution - {{ country.country }}</h6>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="progress mb-2" style="height: 25px;">
+                                                    <div class="progress-bar bg-danger" style="width: {{ country.hero_percentage }}%">
+                                                        Hero: {{ country.hero_percentage }}%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="progress mb-2" style="height: 25px;">
+                                                    <div class="progress-bar bg-info" style="width: {{ country.hub_percentage }}%">
+                                                        Hub: {{ country.hub_percentage }}%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="progress mb-2" style="height: 25px;">
+                                                    <div class="progress-bar bg-success" style="width: {{ country.help_percentage }}%">
+                                                        Help: {{ country.help_percentage }}%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if country.country in top_videos_by_country %}
+                                        <h6 class="mt-3 mb-2">Top Performing Video</h6>
+                                        {% for video in top_videos_by_country[country.country][:1] %}
+                                        <div class="alert alert-info">
+                                            <strong>{{ video.title }}</strong><br>
+                                            <small>By {{ video.competitor }} • {{ "{:,}".format(video.views) }} views • {{ video.category }}</small>
+                                        </div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor_js %}
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Initialize DataTable
+$(document).ready(function() {
+    $('#countriesTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        order: [[3, 'desc']], // Sort by views/video by default
+        language: {
+            search: "Rechercher:",
+            lengthMenu: "Afficher _MENU_ pays",
+            info: "Affichage de _START_ à _END_ sur _TOTAL_ pays",
+            paginate: {
+                first: "Premier",
+                last: "Dernier",
+                next: "Suivant",
+                previous: "Précédent"
+            }
+        }
+    });
+});
+
+// Toggle drill-down
+function toggleDrillDown(country) {
+    const drillRow = document.getElementById(`drill-${country}`);
+    const isVisible = drillRow.style.display !== 'none';
+    
+    // Hide all drill-downs
+    document.querySelectorAll('.drill-down-row').forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Toggle current
+    if (!isVisible) {
+        drillRow.style.display = 'table-row';
+    }
+}
+
+// Prepare data for charts
+const countriesData = {{ countries_data|tojson }};
+const topCountries = countriesData.slice(0, 5);
+
+// Radar Chart
+const radarCtx = document.getElementById('radarChart').getContext('2d');
+new Chart(radarCtx, {
+    type: 'radar',
+    data: {
+        labels: ['Videos', 'Views/Video', 'Engagement', 'Hero Content', 'Hub Content', 'Help Content'],
+        datasets: topCountries.map((country, index) => ({
+            label: country.country,
+            data: [
+                (country.video_count / Math.max(...countriesData.map(c => c.video_count))) * 100,
+                (country.avg_views_per_video / Math.max(...countriesData.map(c => c.avg_views_per_video))) * 100,
+                country.engagement_rate,
+                country.hero_percentage,
+                country.hub_percentage,
+                country.help_percentage
+            ],
+            borderColor: ['#696cff', '#ff6b6b', '#4ecdc4', '#ff9f43', '#28c76f'][index],
+            backgroundColor: ['#696cff', '#ff6b6b', '#4ecdc4', '#ff9f43', '#28c76f'][index] + '20',
+            pointBackgroundColor: ['#696cff', '#ff6b6b', '#4ecdc4', '#ff9f43', '#28c76f'][index],
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: ['#696cff', '#ff6b6b', '#4ecdc4', '#ff9f43', '#28c76f'][index]
+        }))
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+// Bar Chart
+const barCtx = document.getElementById('barChart').getContext('2d');
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: topCountries.map(c => c.country),
+        datasets: [{
+            label: 'Volume (Videos)',
+            data: topCountries.map(c => c.video_count),
+            backgroundColor: '#696cff',
+            yAxisID: 'y'
+        }, {
+            label: 'Performance (Views/Video)',
+            data: topCountries.map(c => c.avg_views_per_video),
+            backgroundColor: '#ff6b6b',
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Number of Videos'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Views per Video'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
+
+// Export data
+function exportData() {
+    const data = countriesData.map(country => ({
+        'Pays': country.country,
+        'Concurrents': country.competitor_count,
+        'Vidéos': country.video_count,
+        'Vues/vidéo': country.avg_views_per_video,
+        'Engagement (%)': country.engagement_rate,
+        'Top Performer': country.top_performer,
+        'Opportunity Score': country.opportunity_score,
+        'Hero (%)': country.hero_percentage,
+        'Hub (%)': country.hub_percentage,
+        'Help (%)': country.help_percentage
+    }));
+    
+    const csv = convertToCSV(data);
+    downloadCSV(csv, 'countries_analysis.csv');
+}
+
+function convertToCSV(data) {
+    const headers = Object.keys(data[0]);
+    const rows = data.map(obj => headers.map(header => obj[header]));
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+}
+
+function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

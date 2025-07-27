@@ -280,10 +280,27 @@ class BrandInsightsService:
         # Prepare recommendations based on analysis
         recommendations = self._generate_recommendations(all_metrics)
         
+        # Transform structure for template compatibility
+        channels_data = {}
+        
+        for country, metrics in all_metrics.items():
+            if metrics.get('has_content', False):
+                # Create channel data in format expected by template
+                channels_data[country] = {
+                    'name': metrics['channel_name'],
+                    'region': country,
+                    'stats': {
+                        'video_count': metrics['metrics']['total_videos'],
+                        'total_views': metrics['metrics']['total_views'],
+                        'avg_duration_minutes': metrics['metrics']['avg_duration_minutes']
+                    }
+                }
+        
         return {
             'success': True,
             'channels_analyzed': total_channels,
-            'brand_metrics': all_metrics,
+            'channels': channels_data,  # Template expects this key
+            'brand_metrics': all_metrics,  # Keep for backward compatibility
             'recommendations': recommendations,
             'analysis_timestamp': datetime.now().isoformat()
         }

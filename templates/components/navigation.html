@@ -21,7 +21,7 @@
                 
                 <!-- Competitors -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'concurrents' %}active{% endif %}" href="/concurrents">
+                    <a class="nav-link {% if request.endpoint == 'competitors.concurrents' %}active{% endif %}" href="/concurrents">
                         <i class="bi bi-people me-1"></i>
                         Competitors
                     </a>
@@ -100,41 +100,41 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="analyticsDropdown">
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'top_videos' %}active{% endif %}" href="/top-videos">
+                            <a class="dropdown-item {% if request.endpoint == 'competitors.top-videos' %}active{% endif %}" href="/top-videos">
                                 <i class="bi bi-trophy me-2"></i>
                                 Top Vidéos Globales
                                 <span class="badge bg-warning ms-1">Global</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'top_playlists' %}active{% endif %}" href="/top-playlists">
+                            <a class="dropdown-item {% if request.endpoint == 'competitors.top-playlists' %}active{% endif %}" href="/top-playlists">
                                 <i class="bi bi-collection-play me-2"></i>
                                 Top Playlists Globales
                                 <span class="badge bg-info ms-1">New</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'top_topics' %}active{% endif %}" href="/top-topics">
+                            <a class="dropdown-item {% if request.endpoint == 'insights.top-topics' %}active{% endif %}" href="/top-topics">
                                 <i class="bi bi-tags me-2"></i>
                                 Topics & Personas
                                 <span class="badge bg-primary ms-1">Analysis</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'countries_analysis' %}active{% endif %}" href="/countries-analysis">
+                            <a class="dropdown-item {% if request.endpoint == 'insights.countries-analysis' %}active{% endif %}" href="/countries-analysis">
                                 <i class="bi bi-globe me-2"></i>
                                 Analyse par Pays
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'insights' %}active{% endif %}" href="/insights">
+                            <a class="dropdown-item {% if request.endpoint == 'insights.insights' %}active{% endif %}" href="/insights">
                                 <i class="bi bi-lightbulb me-2"></i>
                                 Conseils Marque
                                 <span class="badge bg-success ms-1">AI</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'frequency_dashboard' %}active{% endif %}" href="{{ url_for('frequency_dashboard') }}">
+                            <a class="dropdown-item {% if request.endpoint == 'main.performance-dashboard' %}active{% endif %}" href="{{ url_for('frequency_dashboard') }}">
                                 <i class="bi bi-calendar-week me-2"></i>
                                 Fréquence Publication
                             </a>
@@ -158,14 +158,14 @@
                             <i class="bi bi-gear me-2"></i>Configuration
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'business' %}active{% endif %}" href="/business">
+                            <a class="dropdown-item {% if request.endpoint == 'admin.settings' %}active{% endif %}" href="/business">
                                 <i class="bi bi-briefcase me-2"></i>
                                 Business Settings
                                 <span class="badge bg-success ms-1">Métier</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'settings' %}active{% endif %}" href="/settings">
+                            <a class="dropdown-item {% if request.endpoint == 'admin.settings' %}active{% endif %}" href="/settings">
                                 <i class="bi bi-sliders me-2"></i>
                                 Settings & Patterns
                                 <span class="badge bg-info ms-1">Dev</span>
@@ -194,7 +194,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.endpoint == 'api_usage_page' %}active{% endif %}" href="/api-usage" 
+                            <a class="dropdown-item {% if request.endpoint == 'admin.api_usage' %}active{% endif %}" href="/api-usage" 
                                title="Surveillez l'utilisation de l'API YouTube">
                                 <i class="bi bi-cloud-arrow-up me-2"></i>
                                 Usage API YouTube

@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 from yt_channel_analyzer.database.base import get_db_connection
 
 # Clé API depuis .env
-API_KEY = "AIzaSyCKYHty6Zl_wjCXBFVLSU2u5c8sNhgBbxk"
+API_KEY = os.getenv('YOUTUBE_API_KEY', None)  # Use environment variable
 
 # Construire le service YouTube
 youtube = build('youtube', 'v3', developerKey=API_KEY)

@@ -388,10 +388,10 @@
                     <div class="filter-group">
                         <label class="form-label">Filtrer par région</label>
                         <select class="form-select" id="regionFilter" onchange="applyFilters()">
-                            <option value="all">Toutes les régions</option>
-                            <option value="western-europe">Europe de l'Ouest</option>
-                            <option value="northern-europe">Europe du Nord</option>
-                            <option value="central-europe">Europe Centrale</option>
+                            <option value="all" {% if region == 'all' %}selected{% endif %}>Toutes les régions</option>
+                            <option value="europe" {% if region == 'europe' %}selected{% endif %}>Europe</option>
+                            <option value="north_america" {% if region == 'north_america' %}selected{% endif %}>Amérique du Nord</option>
+                            <option value="asia" {% if region == 'asia' %}selected{% endif %}>Asie</option>
                         </select>
                     </div>
                 </div>
@@ -400,10 +400,10 @@
                     <div class="filter-group">
                         <label class="form-label">Nombre de résultats</label>
                         <select class="form-select" id="limitFilter" onchange="applyFilters()">
-                            <option value="10">10 pays</option>
-                            <option value="20" selected>20 pays</option>
-                            <option value="50">50 pays</option>
-                            <option value="all">Tous les pays</option>
+                            <option value="10" {% if limit == 10 %}selected{% endif %}>10 pays</option>
+                            <option value="20" {% if limit == 20 %}selected{% endif %}>20 pays</option>
+                            <option value="50" {% if limit == 50 %}selected{% endif %}>50 pays</option>
+                            <option value="100" {% if limit == 100 %}selected{% endif %}>Tous les pays</option>
                         </select>
                     </div>
                 </div>
@@ -412,17 +412,29 @@
             <div class="filter-group mt-3">
                 <label class="form-label">Trier par</label>
                 <div class="sort-buttons">
-                    <button class="sort-btn active" onclick="updateSort('total_videos')">
+                    <button class="sort-btn {% if sort_by == 'total_videos' %}active{% endif %}" onclick="updateSort('total_videos')">
                         <i class="bx bx-collection-play me-1"></i> Nombre de vidéos
+                        {% if sort_by == 'total_videos' %}
+                            <i class="bx bx-chevron-{{ 'down' if order == 'desc' else 'up' }} ms-1"></i>
+                        {% endif %}
                     </button>
-                    <button class="sort-btn" onclick="updateSort('total_views')">
+                    <button class="sort-btn {% if sort_by == 'total_views' %}active{% endif %}" onclick="updateSort('total_views')">
                         <i class="bx bx-show me-1"></i> Vues totales
+                        {% if sort_by == 'total_views' %}
+                            <i class="bx bx-chevron-{{ 'down' if order == 'desc' else 'up' }} ms-1"></i>
+                        {% endif %}
                     </button>
-                    <button class="sort-btn" onclick="updateSort('avg_engagement')">
+                    <button class="sort-btn {% if sort_by == 'engagement_rate' %}active{% endif %}" onclick="updateSort('engagement_rate')">
                         <i class="bx bx-trending-up me-1"></i> Engagement
+                        {% if sort_by == 'engagement_rate' %}
+                            <i class="bx bx-chevron-{{ 'down' if order == 'desc' else 'up' }} ms-1"></i>
+                        {% endif %}
                     </button>
-                    <button class="sort-btn" onclick="updateSort('competitors_count')">
+                    <button class="sort-btn {% if sort_by == 'competitor_count' %}active{% endif %}" onclick="updateSort('competitor_count')">
                         <i class="bx bx-user-group me-1"></i> Concurrents
+                        {% if sort_by == 'competitor_count' %}
+                            <i class="bx bx-chevron-{{ 'down' if order == 'desc' else 'up' }} ms-1"></i>
+                        {% endif %}
                     </button>
                 </div>
             </div>
@@ -523,8 +535,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% if countries_data %}
-                                {% for country in countries_data %}
+                            {% if countries %}
+                                {% for country in countries %}
                                 <tr>
                                     <td class="number-format">{{ loop.index }}</td>
                                     <td class="table-country-name">
@@ -540,13 +552,13 @@
                                         </span>
                                         {{ country.name }}
                                     </td>
-                                    <td class="number-format">{{ country.competitors_count or 0 }}</td>
+                                    <td class="number-format">{{ country.competitor_count or 0 }}</td>
                                     <td class="number-format">{{ country.total_videos or 0 }}</td>
                                     <td class="number-format">{{ "{:,}".format(country.total_views or 0) }}</td>
                                     <td class="number-format">{{ "{:,}".format(country.total_likes or 0) }}</td>
                                     <td class="number-format">{{ "{:,}".format(country.total_comments or 0) }}</td>
-                                    <td class="number-format">{{ (country.avg_views or 0)|int }}</td>
-                                    <td class="number-format">{{ (country.avg_engagement_rate or 0)|round(2) }}%</td>
+                                    <td class="number-format">{{ (country.avg_views_per_video or 0)|int }}</td>
+                                    <td class="number-format">{{ (country.engagement_rate or 0)|round(2) }}%</td>
                                 </tr>
                                 {% endfor %}
                             {% endif %}
@@ -561,10 +573,10 @@
 
 {% block page_js %}
 <script>
-let currentSort = 'total_videos';
-let currentOrder = 'desc';
-let currentRegion = 'all';
-let currentLimit = 20;
+let currentSort = '{{ sort_by }}';
+let currentOrder = '{{ order }}';
+let currentRegion = '{{ region }}';
+let currentLimit = {{ limit }};
 let currentView = 'grid';
 
 function toggleView(view) {

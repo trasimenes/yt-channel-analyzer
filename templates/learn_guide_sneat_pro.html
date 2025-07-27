@@ -1,0 +1,749 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}{{ guide_title }} - Guide - YT Channel Analyzer{% endblock %}
+
+{% block vendor_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .guide-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .guide-hero h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-hero .guide-meta {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    
+    .guide-meta span {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+    }
+    
+    .guide-navigation {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    
+    .guide-content {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    
+    .guide-section {
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e7e7ff;
+    }
+    
+    .guide-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .guide-section h2 {
+        color: #696cff;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-section h3 {
+        color: #5a5fe7;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .strategy-matrix {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .matrix-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border-left: 4px solid;
+        transition: transform 0.3s ease;
+    }
+    
+    .matrix-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .matrix-card.hero {
+        border-left-color: #ff6b6b;
+        background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    }
+    
+    .matrix-card.hub {
+        border-left-color: #4ecdc4;
+        background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    }
+    
+    .matrix-card.help {
+        border-left-color: #45b7d1;
+        background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
+    }
+    
+    .matrix-card h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .example-videos {
+        background: #f8f9ff;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .example-videos h4 {
+        color: #696cff;
+        margin-bottom: 1rem;
+    }
+    
+    .video-example {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 3px solid #696cff;
+    }
+    
+    .video-example:last-child {
+        margin-bottom: 0;
+    }
+    
+    .checklist {
+        background: #f0f9ff;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .checklist ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .checklist li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 0.375rem;
+    }
+    
+    .checklist li::before {
+        content: "✅";
+        font-size: 1.1rem;
+    }
+    
+    .tip-box {
+        background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+        border: 1px solid #fdba74;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .tip-box h4 {
+        color: #ea580c;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .tip-box h4::before {
+        content: "💡";
+        font-size: 1.2rem;
+    }
+    
+    .btn-guide-nav {
+        background: linear-gradient(135deg, #696cff 0%, #5a5fe7 100%);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-guide-nav:hover {
+        background: linear-gradient(135deg, #5a5fe7 0%, #4c51bf 100%);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e7e7ff;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #696cff 0%, #5a5fe7 100%);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Système d'onglets vertical pour les marques */
+    .brands-tabs-section {
+        margin: 2rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        font-family: 'Inter', sans-serif;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .brands-tab-container {
+        max-width: 900px;
+        width: 100%;
+        padding: 40px 30px;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0px 4px 20px rgba(102, 126, 234, 0.1), 0px 8px 32px rgba(102, 126, 234, 0.08);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .brands-tab-content input {
+        display: none;
+    }
+    
+    .brands-tab-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .brands-list {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        width: 25%;
+        margin-right: 40px;
+    }
+    
+    .brands-list label {
+        cursor: pointer;
+        height: 50px;
+        line-height: 50px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #64748b;
+        padding-left: 20px;
+        transition: all 0.3s ease;
+        z-index: 10;
+        border-radius: 10px;
+        margin-bottom: 5px;
+    }
+    
+    #canon:checked ~ .brands-list label.canon,
+    #nikon:checked ~ .brands-list label.nikon,
+    #hermes:checked ~ .brands-list label.hermes {
+        color: #ffffff;
+        font-weight: 700;
+    }
+    
+    .brands-slider {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 50px;
+        width: 100%;
+        border-radius: 10px;
+        transition: all 0.4s ease;
+        background: linear-gradient(135deg, #696cff 0%, #5a5fe7 100%);
+        box-shadow: 0 4px 12px rgba(105, 108, 255, 0.3);
+    }
+    
+    #canon:checked ~ .brands-list .brands-slider {
+        top: 0;
+    }
+    
+    #nikon:checked ~ .brands-list .brands-slider {
+        top: 55px;
+    }
+    
+    #hermes:checked ~ .brands-list .brands-slider {
+        top: 110px;
+    }
+    
+    .brands-text-content {
+        width: 75%;
+        height: 100%;
+        color: #475569;
+        min-height: 300px;
+    }
+    
+    .brands-text {
+        display: none;
+    }
+    
+    .brands-text .brands-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        border-bottom: 2px solid #696cff;
+        padding-bottom: 10px;
+    }
+    
+    .brands-text-content .canon {
+        display: block;
+    }
+    
+    #canon:checked ~ .brands-text-content .canon,
+    #nikon:checked ~ .brands-text-content .nikon,
+    #hermes:checked ~ .brands-text-content .hermes {
+        display: block;
+    }
+    
+    #nikon:checked ~ .brands-text-content .canon,
+    #hermes:checked ~ .brands-text-content .canon {
+        display: none;
+    }
+    
+    .brands-list label:hover {
+        color: #696cff;
+        background-color: #f8fafc;
+    }
+    
+    /* Styles pour les sections d'exemples de marques */
+    .brand-example-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .brand-example-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #696cff;
+        margin-bottom: 0.8rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #696cff;
+    }
+    
+    .brand-example-section ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .brand-example-section li {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+        list-style: none;
+        padding-left: 0;
+        line-height: 1.5;
+        position: relative;
+    }
+    
+    .brand-example-section li::before {
+        content: "•";
+        color: #696cff;
+        font-weight: bold;
+        position: absolute;
+        left: -0.8rem;
+    }
+    
+    /* Responsive pour les onglets marques */
+    @media (max-width: 768px) {
+        .brands-tabs-section {
+            padding: 1rem;
+        }
+        
+        .brands-tab-container {
+            padding: 20px 15px;
+        }
+        
+        .brands-tab-content {
+            flex-direction: column;
+        }
+        
+        .brands-list {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            flex-direction: row;
+            justify-content: space-around;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        
+        .brands-list label {
+            font-size: 12px;
+            height: 40px;
+            line-height: 40px;
+            padding: 0 10px;
+            text-align: center;
+            border-radius: 6px;
+            margin-bottom: 0;
+        }
+        
+        .brands-slider {
+            height: 40px;
+        }
+        
+        .brands-text-content {
+            width: 100%;
+        }
+        
+        .brands-text .brands-title {
+            font-size: 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Hero Section -->
+    <div class="guide-hero">
+        <div class="guide-icon mb-3" style="font-size: 4rem;">{{ guide_icon }}</div>
+        <h1>{{ guide_title }}</h1>
+        <p class="lead mb-0">{{ guide_description }}</p>
+        <div class="guide-meta">
+            <span>⏱️ {{ guide_duration }}</span>
+            <span>📈 {{ guide_level }}</span>
+            <span>📊 {{ guide_category }}</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="guide-navigation">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('insights.learn') }}" class="btn btn-outline-primary">
+                <i class='bx bx-arrow-back'></i> Retour aux guides
+            </a>
+            <div class="d-flex gap-2">
+                <span class="badge bg-primary">Guide {{ guide_number }}/6</span>
+                <span class="badge bg-success">{{ guide_level }}</span>
+            </div>
+        </div>
+        <div class="progress-bar mt-3">
+            <div class="progress-fill" style="width: {{ (guide_number / 6 * 100) }}%;"></div>
+        </div>
+    </div>
+
+    <!-- Guide Content -->
+    <div class="guide-content">
+        {% if guide_name == 'hero_hub_help_strategy' %}
+        
+        <!-- Section 1: Introduction -->
+        <div class="guide-section">
+            <h2>🎯 Introduction à la Stratégie Hero Hub Help</h2>
+            <p class="lead">La stratégie Hero Hub Help, développée par Google, est un framework de contenu qui vous aide à organiser votre contenu YouTube de manière stratégique pour maximiser votre audience et engagement.</p>
+            
+            <div class="tip-box">
+                <h4>Pourquoi cette stratégie ?</h4>
+                <p>Cette approche vous permet de créer un écosystème de contenu équilibré qui attire de nouveaux viewers (Hero), fidélise votre audience (Hub), et répond aux questions spécifiques (Help).</p>
+            </div>
+        </div>
+
+        <!-- Section 2: La Matrice Hero Hub Help -->
+        <div class="guide-section">
+            <h2>📊 La Matrice Hero Hub Help</h2>
+            
+            <div class="strategy-matrix">
+                <div class="matrix-card hero">
+                    <h4>🔥 HERO Content</h4>
+                    <p><strong>Objectif :</strong> Attirer massivement</p>
+                    <p><strong>Fréquence :</strong> 1-2 fois par mois</p>
+                    <p><strong>Caractéristiques :</strong></p>
+                    <ul>
+                        <li>Contenu viral ou tendance</li>
+                        <li>Production haute qualité</li>
+                        <li>Large audience potentielle</li>
+                        <li>Événements spéciaux</li>
+                    </ul>
+                </div>
+                
+                <div class="matrix-card hub">
+                    <h4>🎯 HUB Content</h4>
+                    <p><strong>Objectif :</strong> Fidéliser l'audience</p>
+                    <p><strong>Fréquence :</strong> 1-3 fois par semaine</p>
+                    <p><strong>Caractéristiques :</strong></p>
+                    <ul>
+                        <li>Contenu régulier et prévisible</li>
+                        <li>Séries et formats récurrents</li>
+                        <li>Engagement communautaire</li>
+                        <li>Identité de marque forte</li>
+                    </ul>
+                </div>
+                
+                <div class="matrix-card help">
+                    <h4>🛠️ HELP Content</h4>
+                    <p><strong>Objectif :</strong> Résoudre des problèmes</p>
+                    <p><strong>Fréquence :</strong> En continu</p>
+                    <p><strong>Caractéristiques :</strong></p>
+                    <ul>
+                        <li>Réponses aux questions fréquentes</li>
+                        <li>Tutoriels et guides</li>
+                        <li>Solutions pratiques</li>
+                        <li>SEO et recherche optimisés</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Exemples Concrets -->
+        <div class="guide-section">
+            <h2>💡 Exemples par Secteur</h2>
+            
+            <h3>🏨 Hôtellerie & Tourisme</h3>
+            <div class="example-videos">
+                <h4>Exemples Hero :</h4>
+                <div class="video-example">
+                    <strong>"Les 10 Hôtels les Plus Incroyables du Monde"</strong><br>
+                    <small>Contenu viral, production cinématographique, large appel</small>
+                </div>
+                <div class="video-example">
+                    <strong>"Ouverture Exclusive : Nouveau Resort Paradisiaque"</strong><br>
+                    <small>Événement spécial, première mondiale, buzz marketing</small>
+                </div>
+            </div>
+            
+            <div class="example-videos">
+                <h4>Exemples Hub :</h4>
+                <div class="video-example">
+                    <strong>"Coulisses #15 : Une Journée avec notre Chef"</strong><br>
+                    <small>Série régulière, fidélisation, identité de marque</small>
+                </div>
+                <div class="video-example">
+                    <strong>"Destinations Secrètes : Episode 8"</strong><br>
+                    <small>Format récurrent, communauté engagée</small>
+                </div>
+            </div>
+            
+            <div class="example-videos">
+                <h4>Exemples Help :</h4>
+                <div class="video-example">
+                    <strong>"Comment Bien Préparer sa Valise : Guide Complet"</strong><br>
+                    <small>Tutoriel pratique, problème récurrent, SEO optimisé</small>
+                </div>
+                <div class="video-example">
+                    <strong>"Que Faire en Cas d'Annulation de Vol ?"</strong><br>
+                    <small>Solution à un problème spécifique, recherche ciblée</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Répartition Optimale -->
+        <div class="guide-section">
+            <h2>⚖️ Répartition Recommandée</h2>
+            <p>Basé sur l'analyse de {{ stats.total_competitors }} concurrents dans notre base de données :</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="matrix-card hero text-center">
+                        <h4>HERO</h4>
+                        <div style="font-size: 2.5rem; font-weight: bold;">10-20%</div>
+                        <p>du contenu total</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="matrix-card hub text-center">
+                        <h4>HUB</h4>
+                        <div style="font-size: 2.5rem; font-weight: bold;">60-70%</div>
+                        <p>du contenu total</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="matrix-card help text-center">
+                        <h4>HELP</h4>
+                        <div style="font-size: 2.5rem; font-weight: bold;">15-25%</div>
+                        <p>du contenu total</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Exemples de Marques -->
+        {% if brands_data %}
+        <div class="guide-section">
+            <h2>🏢 Exemples de Marques Réelles</h2>
+            
+            <div class="brands-tabs-section">
+                <div class="brands-tab-container">
+                    <div class="brands-tab-content">
+                        {% set brand_ids = ['canon', 'nikon', 'hermes'] %}
+                        {% for brand in brands_data %}
+                            <input type="radio" name="brand-slider" {% if loop.first %}checked{% endif %} id="{{ brand_ids[loop.index0] if loop.index0 < 3 else 'brand' + loop.index|string }}">
+                        {% endfor %}
+
+                        <div class="brands-list">
+                            {% for brand in brands_data %}
+                                <label for="{{ brand_ids[loop.index0] if loop.index0 < 3 else 'brand' + loop.index|string }}" class="{{ brand_ids[loop.index0] if loop.index0 < 3 else 'brand' + loop.index|string }}">
+                                    <span>{{ brand.logo }} {{ brand.name }}</span>
+                                </label>
+                            {% endfor %}
+                            <div class="brands-slider"></div>
+                        </div>
+
+                        <div class="brands-text-content">
+                            {% for brand in brands_data %}
+                                <div class="{{ brand_ids[loop.index0] if loop.index0 < 3 else 'brand' + loop.index|string }} brands-text">
+                                    <div class="brands-title">{{ brand.logo }} {{ brand.name }}</div>
+                                    <div class="brand-example-section">
+                                        <div class="brand-example-title">🔥 HERO</div>
+                                        <ul>
+                                            {% for item in brand.hero %}
+                                                <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="brand-example-section">
+                                        <div class="brand-example-title">🎯 HUB</div>
+                                        <ul>
+                                            {% for item in brand.hub %}
+                                                <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="brand-example-section">
+                                        <div class="brand-example-title">🛠️ HELP</div>
+                                        <ul>
+                                            {% for item in brand.help %}
+                                                <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Section 6: Plan d'Action -->
+        <div class="guide-section">
+            <h2>🚀 Plan d'Action</h2>
+            
+            <div class="checklist">
+                <h4>Checklist de mise en œuvre :</h4>
+                <ul>
+                    <li>Auditer votre contenu existant selon la matrice Hero Hub Help</li>
+                    <li>Identifier les gaps dans chaque catégorie</li>
+                    <li>Planifier 3 mois de contenu avec la répartition optimale</li>
+                    <li>Créer des templates pour chaque type de contenu</li>
+                    <li>Mettre en place un calendrier de publication</li>
+                    <li>Analyser les performances par catégorie mensuellement</li>
+                    <li>Ajuster la stratégie selon les résultats</li>
+                </ul>
+            </div>
+            
+            <div class="tip-box">
+                <h4>Conseil Pro</h4>
+                <p>Commencez par renforcer votre contenu Hub pour stabiliser votre audience, puis développez progressivement vos contenus Hero et Help. La cohérence est plus importante que la quantité.</p>
+            </div>
+        </div>
+
+        {% endif %}
+    </div>
+
+    <!-- Navigation Guides -->
+    <div class="guide-navigation">
+        <div class="row">
+            <div class="col-md-6">
+                {% if guide_number > 1 %}
+                <a href="{{ url_for('insights.learn_guide', guide_name='previous_guide') }}" class="btn btn-guide-nav">
+                    <i class='bx bx-chevron-left'></i> Guide Précédent
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-md-6 text-end">
+                {% if guide_number < 6 %}
+                <a href="{{ url_for('insights.learn_guide', guide_name='next_guide') }}" class="btn btn-guide-nav">
+                    Guide Suivant <i class='bx bx-chevron-right'></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block vendor_js %}
+<script src="{{ url_for('static', filename='sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// Animation pour les cartes de matrice
+document.addEventListener('DOMContentLoaded', function() {
+    const matrixCards = document.querySelectorAll('.matrix-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    matrixCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

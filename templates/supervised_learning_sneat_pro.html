@@ -323,7 +323,7 @@
                 <span class="text-muted fw-light">IA /</span> Apprentissage Supervisé
             </h4>
             <div class="d-flex align-items-center gap-3">
-                <a href="{{ url_for('supervised_learning_stats') }}" class="btn btn-outline-primary">
+                <a href="{{ url_for('supervised_learning_legacy') }}" class="btn btn-outline-primary">
                     <i class="bx bx-line-chart me-2"></i>
                     Statistiques
                 </a>
@@ -345,22 +345,9 @@
                 </div>
                 <div class="col-md-9">
                     <div class="btn-group w-100" role="group">
-                        <a href="{{ url_for('supervised_learning_page', strategy='global_top') }}" 
-                           class="btn btn-outline-primary {% if strategy == 'global_top' %}active{% endif %}">
-                            <i class="bx bx-trending-up me-1"></i> Top Global
-                        </a>
-                        <a href="{{ url_for('supervised_learning_page', strategy='competitor_top') }}" 
-                           class="btn btn-outline-primary {% if strategy == 'competitor_top' %}active{% endif %}">
-                            <i class="bx bx-target-lock me-1"></i> Top Concurrent
-                        </a>
-                        <a href="{{ url_for('supervised_learning_page', strategy='low_confidence') }}" 
-                           class="btn btn-outline-primary {% if strategy == 'low_confidence' %}active{% endif %}">
-                            <i class="bx bx-error-circle me-1"></i> Confiance Faible
-                        </a>
-                        <a href="{{ url_for('supervised_learning_page', strategy='balanced') }}" 
-                           class="btn btn-outline-primary {% if strategy == 'balanced' %}active{% endif %}">
-                            <i class="bx bx-check-shield me-1"></i> Équilibré
-                        </a>
+                        <span class="btn btn-outline-primary active">
+                            <i class="bx bx-target-lock me-1"></i> Classification par Concurrent
+                        </span>
                     </div>
                 </div>
             </div>
@@ -540,8 +527,8 @@
                                 <i class="bx bx-check-circle text-success" style="font-size: 4rem;"></i>
                                 <h3 class="mt-3 mb-2">Aucune vidéo à valider</h3>
                                 <p class="text-muted">Toutes les vidéos ont été validées selon la stratégie actuelle.</p>
-                                <a href="{{ url_for('supervised_learning_page', strategy='balanced') }}" class="btn btn-primary mt-2">
-                                    Essayer une autre stratégie
+                                <a href="{{ url_for('supervised_learning_legacy') }}" class="btn btn-primary mt-2">
+                                    Aller à l'apprentissage supervisé
                                 </a>
                             </div>
                             {% endfor %}
@@ -630,8 +617,8 @@
                                 <i class="bx bx-check-circle text-success" style="font-size: 4rem;"></i>
                                 <h3 class="mt-3 mb-2">Aucune playlist à valider</h3>
                                 <p class="text-muted">Toutes les playlists ont été validées selon la stratégie actuelle.</p>
-                                <a href="{{ url_for('supervised_learning_page', strategy='balanced') }}" class="btn btn-primary mt-2">
-                                    Essayer une autre stratégie
+                                <a href="{{ url_for('supervised_learning_legacy') }}" class="btn btn-primary mt-2">
+                                    Aller à l'apprentissage supervisé
                                 </a>
                             </div>
                             {% endfor %}
@@ -727,30 +714,33 @@ function validateVideo(videoId, category) {
     btn.disabled = true;
     btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Validation...';
     
-    fetch('/api/supervised/feedback', {
+    console.log(`🔍 [CLASSIFY-DEBUG] Validating video ${videoId} as ${category}`);
+    
+    fetch('/api/tag-video', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
             video_id: videoId,
-            category: category,
-            feedback_type: 'correction'
+            category: category
         })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status === 'success') {
+        console.log(`🔍 [CLASSIFY-DEBUG] Video API response:`, data);
+        if (data.success === true) {
             const card = document.querySelector(`[data-video-id="${videoId}"]`);
             card.classList.add('validated');
             showToast('Classification vidéo mise à jour avec succès !');
         } else {
-            alert('Erreur: ' + data.message);
+            console.error(`🔍 [CLASSIFY-DEBUG] Video API error:`, data);
+            alert('Erreur: ' + (data.error || data.message || 'Erreur inconnue'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Erreur de communication avec le serveur');
+        console.error(`🔍 [CLASSIFY-DEBUG] Video network error:`, error);
+        alert('Erreur de communication avec le serveur: ' + error.message);
     })
     .finally(() => {
         btn.disabled = false;
@@ -763,30 +753,33 @@ function validatePlaylist(playlistId, category) {
     btn.disabled = true;
     btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Validation...';
     
-    fetch('/api/supervised/playlist-feedback', {
+    console.log(`🔍 [CLASSIFY-DEBUG] Validating playlist ${playlistId} as ${category}`);
+    
+    fetch('/api/tag-playlist', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
             playlist_id: playlistId,
-            category: category,
-            feedback_type: 'correction'
+            category: category
         })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status === 'success') {
+        console.log(`🔍 [CLASSIFY-DEBUG] API response:`, data);
+        if (data.success === true) {
             const card = document.querySelector(`[data-playlist-id="${playlistId}"]`);
             card.classList.add('validated');
             showToast('Classification playlist mise à jour avec succès !');
         } else {
-            alert('Erreur: ' + data.message);
+            console.error(`🔍 [CLASSIFY-DEBUG] Playlist API error:`, data);
+            alert('Erreur: ' + (data.error || data.message || 'Erreur inconnue'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Erreur de communication avec le serveur');
+        console.error(`🔍 [CLASSIFY-DEBUG] Playlist network error:`, error);
+        alert('Erreur de communication avec le serveur: ' + error.message);
     })
     .finally(() => {
         btn.disabled = false;
