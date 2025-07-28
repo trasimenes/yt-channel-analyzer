@@ -267,6 +267,32 @@
         align-items: center;
         gap: 0.25rem;
     }
+    
+    .metric-binary {
+        margin: 1rem 0;
+        font-size: 1.1rem;
+    }
+    
+    .metric-binary .metric-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f1f4;
+    }
+    
+    .metric-binary .metric-line:last-child {
+        border-bottom: none;
+    }
+    
+    .metric-binary .metric-label {
+        color: #566a7f;
+    }
+    
+    .metric-binary .metric-percent {
+        font-weight: 700;
+        color: #1e3c72;
+    }
 
     @media (max-width: 768px) {
         .metrics-grid {
@@ -312,8 +338,8 @@
             <div class="europe-flag">🇪🇺</div>
             <h1 class="europe-name">Europe</h1>
             <p class="europe-subtitle">
-                Consolidation de {{ europe_data.total_countries|default(0) }} pays européens 
-                • {{ europe_data.total_videos|default(0) }} vidéos analysées
+                Consolidation of {{ europe_data.total_countries|default(0) }} European countries 
+                • {{ europe_data.total_videos|default(0) }} videos analyzed
             </p>
         </div>
 
@@ -325,22 +351,22 @@
                     <div class="metric-icon">
                         <i class="bx bx-time"></i>
                     </div>
-                    <h3 class="metric-title">Durée des Vidéos</h3>
+                    <h3 class="metric-title">Video Duration</h3>
                 </div>
                 <div class="metric-value">
                     {{ europe_data.video_length.avg_duration_minutes|default(0)|round(1) }} min
                 </div>
                 <div class="metric-description">
-                    Durée moyenne européenne : {{ europe_data.video_length.total_videos|default(0) }} vidéos analysées
+                    European average duration: {{ europe_data.video_length.total_videos|default(0) }} videos analyzed
                 </div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-{{ 'up' if europe_data.video_length.avg_duration_minutes > 5 else 'stable' if europe_data.video_length.avg_duration_minutes > 2 else 'down' }}">
                         {% if europe_data.video_length.avg_duration_minutes > 5 %}
-                            <i class="bx bx-trending-up"></i> Contenu long
+                            <i class="bx bx-trending-up"></i> Long content
                         {% elif europe_data.video_length.avg_duration_minutes > 2 %}
-                            <i class="bx bx-minus"></i> Durée moyenne
+                            <i class="bx bx-minus"></i> Average duration
                         {% else %}
-                            <i class="bx bx-trending-down"></i> Contenu court
+                            <i class="bx bx-trending-down"></i> Short content
                         {% endif %}
                     </span>
                 </div>
@@ -352,13 +378,13 @@
                     <div class="metric-icon">
                         <i class="bx bx-calendar"></i>
                     </div>
-                    <h3 class="metric-title">Fréquence de Publication</h3>
+                    <h3 class="metric-title">Publishing Frequency</h3>
                 </div>
                 <div class="metric-value">
                     {{ europe_data.video_frequency.videos_per_week|default(0)|round(1) }}/sem
                 </div>
                 <div class="metric-description">
-                    Publication moyenne européenne de {{ europe_data.video_frequency.videos_per_week|default(0)|round(1) }} vidéos par semaine
+                    European average publication of {{ europe_data.video_frequency.videos_per_week|default(0)|round(1) }} videos per week
                 </div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-{{ 'up' if europe_data.video_frequency.videos_per_week > 10 else 'stable' if europe_data.video_frequency.videos_per_week > 5 else 'down' }}">
@@ -373,27 +399,54 @@
                 </div>
             </div>
 
-            <!-- Most Liked Topic -->
+            <!-- Most Liked Topics -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon">
                         <i class="bx bx-heart"></i>
                     </div>
-                    <h3 class="metric-title">Sujet le Plus Apprécié</h3>
+                    <h3 class="metric-title">Most Liked Topics</h3>
                 </div>
-                <div class="metric-value" style="font-size: 1.5rem;">
-                    {% if europe_data.most_liked_topics and europe_data.most_liked_topics[0] %}
-                        {{ europe_data.most_liked_topics[0].title|default('N/A')|title }}
-                    {% else %}N/A{% endif %}
+                <div class="metric-value">
+                    <div class="text-center mb-2">
+                        <h6 class="fw-bold" style="font-size: 0.9rem; color: #1e3c72;">
+                            🇪🇺 Top European Topics
+                        </h6>
+                    </div>
+                    {% if europe_data.most_liked_topics and europe_data.most_liked_topics|length > 0 %}
+                        <ol class="list-unstyled mb-0" style="font-size: 0.75rem;">
+                            {% for topic in europe_data.most_liked_topics[:3] %}
+                            <li class="mb-1">
+                                <strong>{{ loop.index }}.</strong> {{ topic.title|truncate(45) }}
+                                <br><small class="text-muted">({{ topic.like_ratio|default(0)|round(0) }}% engagement • {{ topic.country|default('Europe') }})</small>
+                            </li>
+                            {% endfor %}
+                            {% if europe_data.most_liked_topics|length > 3 %}
+                            <div class="topics-extra-europe" style="display: none;">
+                                {% for topic in europe_data.most_liked_topics[3:5] %}
+                                <li class="mb-1">
+                                    <strong>{{ loop.index + 3 }}.</strong> {{ topic.title|truncate(45) }}
+                                    <br><small class="text-muted">({{ topic.like_ratio|default(0)|round(0) }}% engagement • {{ topic.country|default('Europe') }})</small>
+                                </li>
+                                {% endfor %}
+                            </div>
+                            <div class="text-center mt-2">
+                                <a href="#" class="topics-toggle-europe small" style="color: #1e3c72;" onclick="toggleTopics('europe'); return false;">
+                                    <i class="bx bx-chevron-down me-1"></i>Show more
+                                </a>
+                            </div>
+                            {% endif %}
+                        </ol>
+                    {% else %}
+                        <div class="text-muted text-center">No topics identified</div>
+                    {% endif %}
                 </div>
                 <div class="metric-description">
-                    {% if europe_data.most_liked_topics and europe_data.most_liked_topics[0] %}
-                        {{ europe_data.most_liked_topics[0].like_ratio|default(0)|round(1) }}% d'engagement • {{ europe_data.most_liked_topics[0].country|default('Europe') }}
-                    {% else %}Aucun sujet populaire identifié{% endif %}
+                    Top videos by engagement from European international actors
                 </div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-up">
-                        <i class="bx bx-like"></i> Top européen
+                        <i class="bx bx-like"></i> European focus
                     </span>
                 </div>
             </div>
@@ -404,7 +457,7 @@
                     <div class="metric-icon">
                         <i class="bx bx-pie-chart"></i>
                     </div>
-                    <h3 class="metric-title">Distribution HHH Europe</h3>
+                    <h3 class="metric-title">HHH Distribution</h3>
                 </div>
                 <div class="metric-value" style="font-size: 1.2rem;">
                     H{{ europe_data.hub_help_hero.hero_percentage|default(0)|round(0) }}% 
@@ -413,9 +466,9 @@
                 </div>
                 <div class="metric-description">
                     {% if europe_data.hub_help_hero.total_categorized|default(0) > 0 %}
-                        Hero-Hub-Help distribution européenne sur {{ europe_data.hub_help_hero.total_categorized }} vidéos catégorisées
+                        European Hero-Hub-Help distribution on {{ europe_data.hub_help_hero.total_categorized }} categorized videos
                     {% else %}
-                        ⚠️ Données de classification limitées - Consolidation en cours
+                        ⚠️ Limited classification data - Consolidation in progress
                     {% endif %}
                 </div>
                 <div class="metric-trend">
@@ -431,20 +484,24 @@
                     <div class="metric-icon">
                         <i class="bx bx-target-lock"></i>
                     </div>
-                    <h3 class="metric-title">Organique vs Payé Europe</h3>
+                    <h3 class="metric-title">Organic vs Paid</h3>
                 </div>
                 <div class="metric-value">
-                    {{ europe_data.organic_vs_paid.organic_percentage|default(0)|round(1) }}%
+                    <!-- Format binaire avec icônes -->
+                    <div class="metric-binary">
+                        <div class="metric-line">
+                            <span class="metric-label">🎯 Organic content</span>
+                            <span class="metric-percent">{{ europe_data.organic_vs_paid.organic_percentage|default(0)|round(1) }}%</span>
+                        </div>
+                        <div class="metric-line">
+                            <span class="metric-label">💶 Sponsored content</span>
+                            <span class="metric-percent">{{ europe_data.organic_vs_paid.paid_percentage|default(0)|round(1) }}%</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="metric-description">
-                    {{ europe_data.organic_vs_paid.organic_count|default(0) }} vidéos organiques analysées en Europe
+                    {{ europe_data.organic_vs_paid.organic_count|default(0) }} organic videos analyzed in Europe
                 </div>
-                
-                <!-- Barre de répartition Organic vs Paid -->
-                <div class="my-3">
-                    <div id="organic-paid-bar-europe" style="width:100%; height:40px;"></div>
-                </div>
-                
                 <div class="metric-trend">
                     <span class="trend-indicator trend-{{ 'up' if europe_data.organic_vs_paid.organic_percentage > 70 else 'stable' if europe_data.organic_vs_paid.organic_percentage > 50 else 'down' }}">
                         {% if europe_data.organic_vs_paid.organic_percentage > 70 %}
@@ -464,20 +521,24 @@
                     <div class="metric-icon">
                         <i class="bx bx-video"></i>
                     </div>
-                    <h3 class="metric-title">Shorts vs Vidéos 16:9</h3>
+                    <h3 class="metric-title">Shorts vs 16:9 Videos</h3>
                 </div>
                 <div class="metric-value">
-                    {{ europe_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%
+                    <!-- Format binaire avec icônes -->
+                    <div class="metric-binary">
+                        <div class="metric-line">
+                            <span class="metric-label">⚡ Shorts (<60s)</span>
+                            <span class="metric-percent">{{ europe_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%</span>
+                        </div>
+                        <div class="metric-line">
+                            <span class="metric-label">📺 Long videos (>60s)</span>
+                            <span class="metric-percent">{{ europe_data.shorts_distribution.regular_percentage|default(0)|round(1) }}%</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="metric-description">
-                    {{ europe_data.shorts_distribution.shorts_count|default(0) }} Shorts sur {{ europe_data.shorts_distribution.total_videos|default(0) }} vidéos européennes
+                    {{ europe_data.shorts_distribution.shorts_count|default(0) }} Shorts out of {{ europe_data.shorts_distribution.total_videos|default(0) }} European videos
                 </div>
-                
-                <!-- Barre de répartition Shorts vs Regular -->
-                <div class="my-3">
-                    <div id="shorts-regular-bar-europe" style="width:100%; height:40px;"></div>
-                </div>
-                
                 <div class="metric-trend">
                     <span class="trend-indicator trend-{{ 'up' if europe_data.shorts_distribution.shorts_percentage > 40 else 'stable' if europe_data.shorts_distribution.shorts_percentage > 20 else 'down' }}">
                         {% if europe_data.shorts_distribution.shorts_percentage > 40 %}
@@ -497,7 +558,7 @@
                     <div class="metric-icon">
                         <i class="bx bx-image"></i>
                     </div>
-                    <h3 class="metric-title">Cohérence des Miniatures</h3>
+                    <h3 class="metric-title">Thumbnail Consistency</h3>
                 </div>
                 <div class="metric-value">
                     {{ europe_data.thumbnail_consistency.consistency_score|default(0)|round(1) }}/10
@@ -508,11 +569,11 @@
                 <div class="metric-trend">
                     <span class="trend-indicator trend-{{ 'up' if europe_data.thumbnail_consistency.consistency_score > 7 else 'stable' if europe_data.thumbnail_consistency.consistency_score > 5 else 'down' }}">
                         {% if europe_data.thumbnail_consistency.consistency_score > 7 %}
-                            <i class="bx bx-trending-up"></i> Excellente cohérence
+                            <i class="bx bx-trending-up"></i> Excellent consistency
                         {% elif europe_data.thumbnail_consistency.consistency_score > 5 %}
-                            <i class="bx bx-minus"></i> Cohérence correcte
+                            <i class="bx bx-minus"></i> Good consistency
                         {% else %}
-                            <i class="bx bx-trending-down"></i> À améliorer
+                            <i class="bx bx-trending-down"></i> Needs improvement
                         {% endif %}
                     </span>
                 </div>
@@ -524,17 +585,17 @@
                     <div class="metric-icon">
                         <i class="bx bx-text"></i>
                     </div>
-                    <h3 class="metric-title">Champ Lexical Europe</h3>
+                    <h3 class="metric-title">Lexical Field</h3>
                 </div>
                 <div class="metric-value" style="font-size: 1.2rem;">
                     {{ europe_data.tone_of_voice.dominant_tone|default('N/A')|title }}
                 </div>
                 <div class="metric-description">
-                    Tonalité dominante européenne avec {{ europe_data.tone_of_voice.emotional_words|default(0) }} mots émotionnels
+                    European dominant tone with {{ europe_data.tone_of_voice.emotional_words|default(0) }} emotional words
                 </div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-stable">
-                        <i class="bx bx-book"></i> Analyse européenne
+                        <i class="bx bx-book"></i> European analysis
                     </span>
                 </div>
             </div>
@@ -625,91 +686,23 @@
 {% endblock %}
 
 {% block page_js %}
-<!-- Segment JS for distribution bars -->
-<script src="{{ url_for('static', filename='js/segment.js') }}"></script>
-<link href="{{ url_for('static', filename='css/segment.css') }}" rel="stylesheet">
-
 <script>
-// Initialize Organic vs Paid bar for Europe
-function initializeOrganicPaidBarEurope() {
-    {% if europe_data and europe_data.organic_vs_paid %}
-    const organicData = {
-        organic_count: {{ europe_data.organic_vs_paid.organic_count|default(0) }},
-        paid_count: {{ europe_data.organic_vs_paid.paid_count|default(0) }},
-        organic_percentage: {{ europe_data.organic_vs_paid.organic_percentage|default(0)|round(1) }},
-        paid_percentage: {{ europe_data.organic_vs_paid.paid_percentage|default(0)|round(1) }}
-    };
+// Toggle topics show/hide functionality for Europe topics
+function toggleTopics(type) {
+    if (type !== 'europe') return; // Only handle europe topics
     
-    const el = document.getElementById('organic-paid-bar-europe');
-    if (!el) return;
+    const extraDiv = document.querySelector(`.topics-extra-europe`);
+    const toggleLink = document.querySelector(`.topics-toggle-europe`);
     
-    // Clear existing content
-    el.innerHTML = '';
-    
-    // Use absolute values for segment calculation
-    buildSegmentBar(el, {
-        data: [
-            {
-                label: "Organique",
-                value: Math.max(organicData.organic_count, 1),
-                color: "#28c76f",
-                title: `${organicData.organic_percentage}% Organique (${organicData.organic_count} vidéos)`
-            },
-            {
-                label: "Payé", 
-                value: Math.max(organicData.paid_count, 1),
-                color: "#ff9f43",
-                title: `${organicData.paid_percentage}% Payé (${organicData.paid_count} vidéos)`
-            }
-        ],
-        width: "100%",
-        height: "40px"
-    });
-    {% endif %}
+    if (extraDiv && toggleLink) {
+        if (extraDiv.style.display === 'none') {
+            extraDiv.style.display = 'block';
+            toggleLink.innerHTML = '<i class="bx bx-chevron-up me-1"></i>Show less';
+        } else {
+            extraDiv.style.display = 'none';
+            toggleLink.innerHTML = '<i class="bx bx-chevron-down me-1"></i>Show more';
+        }
+    }
 }
-
-// Initialize Shorts vs Regular bar for Europe
-function initializeShortsRegularBarEurope() {
-    {% if europe_data and europe_data.shorts_distribution %}
-    const shortsData = {
-        shorts_count: {{ europe_data.shorts_distribution.shorts_count|default(0) }},
-        regular_count: {{ europe_data.shorts_distribution.regular_count|default(0) }},
-        shorts_percentage: {{ europe_data.shorts_distribution.shorts_percentage|default(0)|round(1) }},
-        regular_percentage: {{ europe_data.shorts_distribution.regular_percentage|default(0)|round(1) }}
-    };
-    
-    const el = document.getElementById('shorts-regular-bar-europe');
-    if (!el) return;
-    
-    // Clear existing content
-    el.innerHTML = '';
-    
-    // Use absolute values for segment calculation
-    buildSegmentBar(el, {
-        data: [
-            {
-                label: "Shorts",
-                value: Math.max(shortsData.shorts_count, 1),
-                color: "#ff6384",
-                title: `${shortsData.shorts_percentage}% Shorts (${shortsData.shorts_count} vidéos)`
-            },
-            {
-                label: "Vidéos 16:9", 
-                value: Math.max(shortsData.regular_count, 1),
-                color: "#36a2eb",
-                title: `${shortsData.regular_percentage}% Vidéos 16:9 (${shortsData.regular_count} vidéos)`
-            }
-        ],
-        width: "100%",
-        height: "40px"
-    });
-    {% endif %}
-}
-
-// Auto-initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeOrganicPaidBarEurope();
-    initializeShortsRegularBarEurope();
-});
 </script>
 {% endblock %}

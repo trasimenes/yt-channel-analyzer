@@ -101,15 +101,38 @@
     
     .metric-title {
         font-weight: 600;
-        color: #566a7f;
+        color: #696cff; /* Bleu corporate pour titres */
         margin: 0;
+        font-size: 0.9rem; /* Petit titre avec icône */
     }
     
     .metric-value {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 700;
-        color: #696cff;
+        color: #333; /* Noir/Gris foncé pour valeurs principales */
         margin-bottom: 0.5rem;
+    }
+    
+    .metric-binary {
+        font-size: 1rem; /* Taille adaptée pour format binaire */
+    }
+    
+    .metric-comparison {
+        font-size: 0.875rem;
+        color: #8592a3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-comparison .percent {
+        font-weight: 600;
+    }
+    
+    .metric-comparison .percent.positive {
+        color: #28c76f;
+    }
+    
+    .metric-comparison .percent.negative {
+        color: #ea5455;
     }
     
     .metric-description {
@@ -413,6 +436,7 @@
         <!-- Country Navigation -->
         <div class="country-nav">
             {% for country_key, country_data in insights.items() %}
+                {% if 'international' not in country_key|lower %}
                 <button class="country-tab {% if loop.first %}active{% endif %}" 
                         onclick="showCountry('{{ country_key }}')" 
                         id="tab-{{ country_key }}">
@@ -426,11 +450,13 @@
                     {% else %}🏳️{% endif %}
                     {{ country_key }}
                 </button>
+                {% endif %}
             {% endfor %}
         </div>
 
         <!-- Country Content -->
         {% for country_key, country_data in insights.items() %}
+            {% if 'international' not in country_key|lower %}
             <div class="country-content {% if loop.first %}active{% endif %}" id="content-{{ country_key }}">
                 
                 <!-- Country Header -->
@@ -457,22 +483,23 @@
                             <div class="metric-icon">
                                 <i class="bx bx-time"></i>
                             </div>
-                            <h3 class="metric-title">Durée des Vidéos</h3>
+                            <h3 class="metric-title">Video Length</h3>
                         </div>
                         <div class="metric-value">
-                            {{ country_data.video_length.avg_duration_minutes|default(0)|round(1) }} min
+                            {{ country_data.video_length.dual_metric.global_formatted }}
+                            <span style="font-size: 0.8rem; color: #a8b3c1; font-weight: 400; display: block;">🇪🇺 EUROPE</span>
                         </div>
-                        <div class="metric-description">
-                            Durée moyenne des vidéos : {{ country_data.video_length.total_videos|default(0) }} vidéos analysées
+                        <div class="metric-comparison">
+                            {{ country_data.video_length.dual_metric.local_formatted }} <span class="percent {{ 'positive' if country_data.video_length.dual_metric.gap_percent > 0 else 'negative' }}">{{ country_data.video_length.dual_metric.gap_formatted }}</span>
                         </div>
                         <div class="metric-trend">
                             <span class="trend-indicator trend-{{ 'up' if country_data.video_length.avg_duration_minutes > 5 else 'stable' if country_data.video_length.avg_duration_minutes > 2 else 'down' }}">
                                 {% if country_data.video_length.avg_duration_minutes > 5 %}
-                                    <i class="bx bx-trending-up"></i> Contenu long
+                                    <i class="bx bx-trending-up"></i> Long content
                                 {% elif country_data.video_length.avg_duration_minutes > 2 %}
-                                    <i class="bx bx-minus"></i> Durée moyenne
+                                    <i class="bx bx-minus"></i> Average duration
                                 {% else %}
-                                    <i class="bx bx-trending-down"></i> Contenu court
+                                    <i class="bx bx-trending-down"></i> Short content
                                 {% endif %}
                             </span>
                         </div>
@@ -484,48 +511,113 @@
                             <div class="metric-icon">
                                 <i class="bx bx-calendar"></i>
                             </div>
-                            <h3 class="metric-title">Fréquence de Publication</h3>
+                            <h3 class="metric-title">Publishing Frequency</h3>
                         </div>
                         <div class="metric-value">
-                            {{ country_data.video_frequency.videos_per_week|default(0)|round(1) }}/sem
+                            {{ country_data.video_frequency.dual_metric.global_formatted }}
+                            <span style="font-size: 0.8rem; color: #a8b3c1; font-weight: 400; display: block;">🇪🇺 EUROPE</span>
                         </div>
-                        <div class="metric-description">
-                            Publication moyenne de {{ country_data.video_frequency.videos_per_week|default(0)|round(1) }} vidéos par semaine
+                        <div class="metric-comparison">
+                            {{ country_data.video_frequency.dual_metric.local_formatted }} <span class="percent {{ 'positive' if country_data.video_frequency.dual_metric.gap_percent > 0 else 'negative' }}">{{ country_data.video_frequency.dual_metric.gap_formatted }}</span>
                         </div>
                         <div class="metric-trend">
                             <span class="trend-indicator trend-{{ 'up' if country_data.video_frequency.videos_per_week > 2 else 'stable' if country_data.video_frequency.videos_per_week > 0.5 else 'down' }}">
                                 {% if country_data.video_frequency.videos_per_week > 2 %}
-                                    <i class="bx bx-trending-up"></i> Très actif
+                                    <i class="bx bx-trending-up"></i> Very active
                                 {% elif country_data.video_frequency.videos_per_week > 0.5 %}
-                                    <i class="bx bx-minus"></i> Modérément actif
+                                    <i class="bx bx-minus"></i> Moderately active
                                 {% else %}
-                                    <i class="bx bx-trending-down"></i> Peu actif
+                                    <i class="bx bx-trending-down"></i> Low activity
                                 {% endif %}
                             </span>
                         </div>
                     </div>
 
-                    <!-- Most Liked Topic -->
+                    <!-- Most Liked Topics -->
                     <div class="metric-card">
                         <div class="metric-header">
                             <div class="metric-icon">
                                 <i class="bx bx-heart"></i>
                             </div>
-                            <h3 class="metric-title">Sujet le Plus Apprécié</h3>
+                            <h3 class="metric-title">Most Liked Topics</h3>
                         </div>
-                        <div class="metric-value" style="font-size: 1.5rem;">
-                            {% if country_data.most_liked_topics and country_data.most_liked_topics[0] %}
-                                {{ country_data.most_liked_topics[0].topic|default('N/A')|title }}
-                            {% else %}N/A{% endif %}
+                        <div class="metric-value">
+                            {% if country_data.most_liked_topics_dual %}
+                                <div class="row">
+                                    <!-- Colonne National -->
+                                    <div class="col-6 border-end">
+                                        <h6 class="text-center mb-2 fw-bold" style="font-size: 0.8rem;">
+                                            {% if country_key|lower == 'france' %}🇫🇷{% elif country_key|lower == 'germany' %}🇩🇪{% elif country_key|lower == 'netherlands' %}🇳🇱{% elif country_key|lower == 'united kingdom' %}🇬🇧{% else %}🏴{% endif %} National
+                                        </h6>
+                                        {% if country_data.most_liked_topics_dual.national %}
+                                            <ol class="list-unstyled mb-0" style="font-size: 0.75rem;">
+                                                {% for topic in country_data.most_liked_topics_dual.national[:3] %}
+                                                <li class="mb-1">
+                                                    <strong>{{ loop.index }}.</strong> {{ topic.topic|truncate(40) }}
+                                                    <br><small class="text-muted">({{ topic.avg_engagement|round(0) }} engagement)</small>
+                                                </li>
+                                                {% endfor %}
+                                                {% if country_data.most_liked_topics_dual.national|length > 3 %}
+                                                <div class="topics-extra-national" style="display: none;">
+                                                    {% for topic in country_data.most_liked_topics_dual.national[3:5] %}
+                                                    <li class="mb-1">
+                                                        <strong>{{ loop.index + 3 }}.</strong> {{ topic.topic|truncate(40) }}
+                                                        <br><small class="text-muted">({{ topic.avg_engagement|round(0) }} engagement)</small>
+                                                    </li>
+                                                    {% endfor %}
+                                                </div>
+                                                <a href="#" class="topics-toggle-national small text-muted" onclick="toggleTopics('national'); return false;">
+                                                    <i class="bx bx-chevron-down me-1"></i>Show more
+                                                </a>
+                                                {% endif %}
+                                            </ol>
+                                        {% else %}
+                                            <div class="text-muted small">No topics</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Colonne International -->
+                                    <div class="col-6">
+                                        <h6 class="text-center mb-2 fw-bold" style="font-size: 0.8rem;">
+                                            🇪🇺 International
+                                        </h6>
+                                        {% if country_data.most_liked_topics_dual.international %}
+                                            <ol class="list-unstyled mb-0" style="font-size: 0.75rem;">
+                                                {% for topic in country_data.most_liked_topics_dual.international[:3] %}
+                                                <li class="mb-1">
+                                                    <strong>{{ loop.index }}.</strong> {{ topic.topic|truncate(40) }}
+                                                    <br><small class="text-muted">({{ topic.avg_engagement|round(0) }} engagement)</small>
+                                                </li>
+                                                {% endfor %}
+                                                {% if country_data.most_liked_topics_dual.international|length > 3 %}
+                                                <div class="topics-extra-international" style="display: none;">
+                                                    {% for topic in country_data.most_liked_topics_dual.international[3:5] %}
+                                                    <li class="mb-1">
+                                                        <strong>{{ loop.index + 3 }}.</strong> {{ topic.topic|truncate(40) }}
+                                                        <br><small class="text-muted">({{ topic.avg_engagement|round(0) }} engagement)</small>
+                                                    </li>
+                                                    {% endfor %}
+                                                </div>
+                                                <a href="#" class="topics-toggle-international small text-muted" onclick="toggleTopics('international'); return false;">
+                                                    <i class="bx bx-chevron-down me-1"></i>Show more
+                                                </a>
+                                                {% endif %}
+                                            </ol>
+                                        {% else %}
+                                            <div class="text-muted small">No topics</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-muted">No topics identified</div>
+                            {% endif %}
                         </div>
                         <div class="metric-description">
-                            {% if country_data.most_liked_topics and country_data.most_liked_topics[0] %}
-                                {{ country_data.most_liked_topics[0].avg_likes|default(0)|round(0) }} likes en moyenne sur ce sujet
-                            {% else %}Aucun sujet populaire identifié{% endif %}
+                            Engagement (Likes + Comments): National market vs International actors
                         </div>
                         <div class="metric-trend">
                             <span class="trend-indicator trend-up">
-                                <i class="bx bx-like"></i> Top sujet
+                                <i class="bx bx-trending-up"></i> Dual comparison
                             </span>
                         </div>
                     </div>
@@ -536,13 +628,46 @@
                             <div class="metric-icon">
                                 <i class="bx bx-pie-chart"></i>
                             </div>
-                            <h3 class="metric-title">Distribution HHH</h3>
+                            <h3 class="metric-title">HHH Distribution</h3>
                         </div>
-                        <div class="metric-value" style="font-size: 1.2rem;">
-                            H{{ country_data.hub_help_hero.hero_percentage|default(0)|round(0) }}% 
-                            H{{ country_data.hub_help_hero.hub_percentage|default(0)|round(0) }}% 
-                            H{{ country_data.hub_help_hero.help_percentage|default(0)|round(0) }}%
+                        {% if country_data.hub_help_hero.dual_metric %}
+                        <!-- Comparaison détaillée par catégorie -->
+                        <div class="metric-value" style="font-size: 1rem; line-height: 1.6;">
+                            <!-- Hero -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span style="color: #8592a3;">Hero:</span>
+                                <div class="text-end">
+                                    <span style="color: #696cff; font-weight: 700; font-size: 1.1rem;">{{ country_data.hub_help_hero.dual_metric.national.hero_percentage|default(0)|round(0) }}%</span>
+                                    <small style="color: #a8b3c1; display: block; font-size: 0.7rem;">vs {{ country_data.hub_help_hero.dual_metric.marche.hero_percentage|default(0)|round(0) }}% Europe</small>
+                                </div>
+                            </div>
+                            <!-- Hub -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span style="color: #8592a3;">Hub:</span>
+                                <div class="text-end">
+                                    <span style="color: #696cff; font-weight: 700; font-size: 1.1rem;">{{ country_data.hub_help_hero.dual_metric.national.hub_percentage|default(0)|round(0) }}%</span>
+                                    <small style="color: #a8b3c1; display: block; font-size: 0.7rem;">vs {{ country_data.hub_help_hero.dual_metric.marche.hub_percentage|default(0)|round(0) }}% Europe</small>
+                                </div>
+                            </div>
+                            <!-- Help -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span style="color: #8592a3;">Help:</span>
+                                <div class="text-end">
+                                    <span style="color: #696cff; font-weight: 700; font-size: 1.1rem;">{{ country_data.hub_help_hero.dual_metric.national.help_percentage|default(0)|round(0) }}%</span>
+                                    <small style="color: #a8b3c1; display: block; font-size: 0.7rem;">vs {{ country_data.hub_help_hero.dual_metric.marche.help_percentage|default(0)|round(0) }}% Europe</small>
+                                </div>
+                            </div>
                         </div>
+                        {% else %}
+                        <!-- Fallback : distribution simple -->
+                        <div class="metric-value">
+                            <div style="font-size: 1.2rem; font-weight: 400; line-height: 1.4;">
+                                <span style="color: #8592a3;">Hero:</span> <span style="color: #696cff; font-weight: 700;">{{ country_data.hub_help_hero.hero_percentage|default(0)|round(0) }}%</span> | 
+                                <span style="color: #8592a3;">Hub:</span> <span style="color: #696cff; font-weight: 700;">{{ country_data.hub_help_hero.hub_percentage|default(0)|round(0) }}%</span> | 
+                                <span style="color: #8592a3;">Help:</span> <span style="color: #696cff; font-weight: 700;">{{ country_data.hub_help_hero.help_percentage|default(0)|round(0) }}%</span>
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="metric-description">
                             Hero-Hub-Help distribution sur {{ (country_data.hub_help_hero.hero_count|default(0) + country_data.hub_help_hero.hub_count|default(0) + country_data.hub_help_hero.help_count|default(0)) }} vidéos catégorisées
                         </div>
@@ -559,28 +684,41 @@
                             <div class="metric-icon">
                                 <i class="bx bx-target-lock"></i>
                             </div>
-                            <h3 class="metric-title">Organique vs Payé</h3>
+                            <h3 class="metric-title">Organic vs Paid</h3>
                         </div>
+                        {% if country_data.organic_vs_paid.dual_metric %}
                         <div class="metric-value">
-                            {{ country_data.organic_vs_paid.organic_percentage|default(0)|round(1) }}%
+                            {{ country_data.organic_vs_paid.dual_metric.global_formatted }}
+                            <span style="font-size: 0.8rem; color: #a8b3c1; font-weight: 400; display: block;">🇪🇺 EUROPE</span>
                         </div>
-                        <div class="metric-description">
-                            {{ country_data.organic_vs_paid.organic_count|default(0) }} vidéos organiques analysées
+                        <div class="metric-comparison">
+                            {{ country_data.organic_vs_paid.dual_metric.local_formatted }} <span class="percent {{ 'positive' if country_data.organic_vs_paid.dual_metric.gap_percent > 0 else 'negative' }}">{{ country_data.organic_vs_paid.dual_metric.gap_formatted }}</span>
                         </div>
+                        {% else %}
+                        <div class="metric-value">
+                            <!-- Format binaire avec icônes -->
+                            <div class="metric-binary">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>🎯 Organic content</span>
+                                    <strong>{{ country_data.organic_vs_paid.organic_percentage|default(0)|round(1) }}%</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center text-muted">
+                                    <span>💶 Sponsored content</span>
+                                    <span>{{ country_data.organic_vs_paid.paid_percentage|default(0)|round(1) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         
-                        <!-- Barre de répartition Organic vs Paid -->
-                        <div class="my-3">
-                            <div id="organic-paid-bar-{{ country_key }}" style="width:100%; height:40px;"></div>
-                        </div>
                         
                         <div class="metric-trend">
                             <span class="trend-indicator trend-{{ 'up' if country_data.organic_vs_paid.organic_percentage > 80 else 'stable' if country_data.organic_vs_paid.organic_percentage > 60 else 'down' }}">
                                 {% if country_data.organic_vs_paid.organic_percentage > 80 %}
-                                    <i class="bx bx-trending-up"></i> Très organique
+                                    <i class="bx bx-trending-up"></i> Very organic
                                 {% elif country_data.organic_vs_paid.organic_percentage > 60 %}
-                                    <i class="bx bx-minus"></i> Équilibré
+                                    <i class="bx bx-minus"></i> Balanced
                                 {% else %}
-                                    <i class="bx bx-trending-down"></i> Plus de payé
+                                    <i class="bx bx-trending-down"></i> More paid
                                 {% endif %}
                             </span>
                         </div>
@@ -592,28 +730,41 @@
                             <div class="metric-icon">
                                 <i class="bx bx-video"></i>
                             </div>
-                            <h3 class="metric-title">Shorts vs Vidéos 16:9</h3>
+                            <h3 class="metric-title">Shorts vs Regular Videos</h3>
                         </div>
+                        {% if country_data.shorts_distribution.dual_metric %}
                         <div class="metric-value">
-                            {{ country_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%
+                            {{ country_data.shorts_distribution.dual_metric.global_formatted }}
+                            <span style="font-size: 0.8rem; color: #a8b3c1; font-weight: 400; display: block;">🇪🇺 EUROPE</span>
                         </div>
-                        <div class="metric-description">
-                            {{ country_data.shorts_distribution.shorts_count|default(0) }} Shorts sur {{ country_data.shorts_distribution.total_videos|default(0) }} vidéos
+                        <div class="metric-comparison">
+                            {{ country_data.shorts_distribution.dual_metric.local_formatted }} <span class="percent {{ 'positive' if country_data.shorts_distribution.dual_metric.gap_percent > 0 else 'negative' }}">{{ country_data.shorts_distribution.dual_metric.gap_formatted }}</span>
                         </div>
+                        {% else %}
+                        <div class="metric-value">
+                            <!-- Format binaire avec icônes -->
+                            <div class="metric-binary">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>⚡ Shorts (<60s)</span>
+                                    <strong>{{ country_data.shorts_distribution.shorts_percentage|default(0)|round(1) }}%</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center text-muted">
+                                    <span>📺 Long videos (>60s)</span>
+                                    <span>{{ country_data.shorts_distribution.regular_percentage|default(0)|round(1) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         
-                        <!-- Barre de répartition Shorts vs Regular -->
-                        <div class="my-3">
-                            <div id="shorts-regular-bar-{{ country_key }}" style="width:100%; height:40px;"></div>
-                        </div>
                         
                         <div class="metric-trend">
                             <span class="trend-indicator trend-{{ 'up' if country_data.shorts_distribution.shorts_percentage > 40 else 'stable' if country_data.shorts_distribution.shorts_percentage > 20 else 'down' }}">
                                 {% if country_data.shorts_distribution.shorts_percentage > 40 %}
-                                    <i class="bx bx-trending-up"></i> Fort usage Shorts
+                                    <i class="bx bx-trending-up"></i> High Shorts usage
                                 {% elif country_data.shorts_distribution.shorts_percentage > 20 %}
-                                    <i class="bx bx-minus"></i> Usage modéré
+                                    <i class="bx bx-minus"></i> Moderate usage
                                 {% else %}
-                                    <i class="bx bx-trending-down"></i> Peu de Shorts
+                                    <i class="bx bx-trending-down"></i> Few Shorts
                                 {% endif %}
                             </span>
                         </div>
@@ -625,24 +776,19 @@
                             <div class="metric-icon">
                                 <i class="bx bx-image"></i>
                             </div>
-                            <h3 class="metric-title">Cohérence des Miniatures</h3>
+                            <h3 class="metric-title">Thumbnail Consistency</h3>
                         </div>
                         <div class="metric-value">
-                            {{ country_data.thumbnail_consistency.consistency_score|default(0)|round(1) }}/10
-                        </div>
-                        <div class="metric-description">
-                            Score de cohérence des miniatures sur {{ country_data.thumbnail_consistency.with_thumbnails|default(0) }} miniatures
-                        </div>
-                        <div class="metric-trend">
-                            <span class="trend-indicator trend-{{ 'up' if country_data.thumbnail_consistency.consistency_score > 7 else 'stable' if country_data.thumbnail_consistency.consistency_score > 5 else 'down' }}">
+                            <h3 class="mb-0 text-dark">
+                                {{ country_data.thumbnail_consistency.consistency_score|default(0)|round(1) }}/10 
                                 {% if country_data.thumbnail_consistency.consistency_score > 7 %}
-                                    <i class="bx bx-trending-up"></i> Excellente cohérence
+                                    <span class="text-success">✓ Excellent</span>
                                 {% elif country_data.thumbnail_consistency.consistency_score > 5 %}
-                                    <i class="bx bx-minus"></i> Cohérence correcte
+                                    <span class="text-primary">~ Good</span>
                                 {% else %}
-                                    <i class="bx bx-trending-down"></i> À améliorer
+                                    <span class="text-warning">⚠ Needs improvement</span>
                                 {% endif %}
-                            </span>
+                            </h3>
                         </div>
                     </div>
 
@@ -652,17 +798,17 @@
                             <div class="metric-icon">
                                 <i class="bx bx-text"></i>
                             </div>
-                            <h3 class="metric-title">Champ Lexical</h3>
+                            <h3 class="metric-title">Lexical Field</h3>
                         </div>
                         <div class="metric-value" style="font-size: 1.2rem;">
                             {{ country_data.tone_of_voice.dominant_tone|default('N/A')|title }}
                         </div>
                         <div class="metric-description">
-                            Tonalité dominante avec {{ country_data.tone_of_voice.emotional_words|default(0) }} mots émotionnels
+                            Dominant tone with {{ country_data.tone_of_voice.emotional_words|default(0) }} emotional words
                         </div>
                         <div class="metric-trend">
                             <span class="trend-indicator trend-stable">
-                                <i class="bx bx-book"></i> Analyse lexicale
+                                <i class="bx bx-book"></i> Lexical analysis
                             </span>
                         </div>
                     </div>
@@ -700,13 +846,14 @@
                 </div>
 
             </div>
+            {% endif %}
         {% endfor %}
 
         {% else %}
         <div class="text-center py-5">
             <i class="bx bx-world" style="font-size: 4rem; color: #8592a3;"></i>
-            <h3 class="mt-3 mb-2">Aucune donnée d'insights par pays</h3>
-            <p class="text-muted">Les insights par pays ne sont pas encore disponibles.</p>
+            <h3 class="mt-3 mb-2">No country insights data available</h3>
+            <p class="text-muted">Country insights are not yet available.</p>
         </div>
         {% endif %}
     </div>
@@ -742,11 +889,7 @@ function showCountry(countryKey) {
         tabElement.classList.add('active');
     }
     
-    // Refresh the organic/paid bars for the selected country
-    setTimeout(() => {
-        initializeOrganicPaidBarsForCountry(countryKey);
-        initializeShortsRegularBarsForCountry(countryKey);
-    }, 100);
+    // No bars to refresh - using static format
 }
 
 // Initialize Organic vs Paid bars
@@ -847,11 +990,23 @@ document.addEventListener('DOMContentLoaded', function() {
         firstContent.classList.add('active');
     }
     
-    // Initialize all organic/paid bars and shorts/regular bars
-    {% for country in insights.keys() %}
-    initializeOrganicPaidBarsForCountry("{{ country }}");
-    initializeShortsRegularBarsForCountry("{{ country }}");
-    {% endfor %}
+    // Bar initialization removed - using static binary format
 });
+
+// Toggle topics show/hide functionality
+function toggleTopics(type) {
+    const extraDiv = document.querySelector(`.topics-extra-${type}`);
+    const toggleLink = document.querySelector(`.topics-toggle-${type}`);
+    
+    if (extraDiv && toggleLink) {
+        if (extraDiv.style.display === 'none') {
+            extraDiv.style.display = 'block';
+            toggleLink.innerHTML = '<i class="bx bx-chevron-up me-1"></i>Show less';
+        } else {
+            extraDiv.style.display = 'none';
+            toggleLink.innerHTML = '<i class="bx bx-chevron-down me-1"></i>Show more';
+        }
+    }
+}
 </script>
 {% endblock %}
