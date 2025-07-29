@@ -3,6 +3,98 @@
 ## Vue d'ensemble
 Application Flask d'analyse de chaînes YouTube avec système de classification sémantique et d'analyse concurrentielle.
 
+## 🏗️ Architecture Développement vs Production - SÉPARATION DES ENVIRONNEMENTS
+
+### ⚠️ PRINCIPE FONDAMENTAL : DEV AVEC ML, PRODUCTION LÉGÈRE
+
+**Architecture duale** : Développement local avec tous les modèles ML, production avec affichage uniquement.
+
+#### 🔬 **Environnement DÉVELOPPEMENT**
+- **Modèles ML activés** : sentence-transformers, torch, classifications sémantiques
+- **Calculs complets** : Entraînement, analyse, classification automatique
+- **Base complète** : Toutes les fonctionnalités disponibles
+- **Performance** : Acceptable car ressources locales dédiées
+
+#### 🚀 **Environnement PRODUCTION**
+- **ML désactivé** : Aucun téléchargement de modèles (438MB+ évités)
+- **Mode patterns** : Classification par mots-clés multilingues uniquement
+- **Affichage rapide** : Interface utilisateur réactive
+- **Sécurité** : Impossible de charger accidentellement les modèles
+
+### 🔧 Configuration par Variables d'Environnement
+
+#### Fichiers de configuration
+- **`.env.development`** : `YTA_ENVIRONMENT=development`, `YTA_ENABLE_ML=true`
+- **`.env.production`** : `YTA_ENVIRONMENT=production`, `YTA_ENABLE_ML=false`
+- **`config.py`** : Gestionnaire centralisé des configurations
+
+#### Variables d'environnement clés
+```bash
+# Mode de fonctionnement
+YTA_ENVIRONMENT=production          # development | production
+YTA_ENABLE_ML=false                # true | false
+
+# Sécurité production (empêche téléchargements)
+TRANSFORMERS_OFFLINE=1
+HF_HUB_OFFLINE=1
+```
+
+### 🚀 Scripts de Démarrage
+
+#### Développement local
+```bash
+# Avec script dédié
+python run_development.py
+
+# Ou avec variables
+YTA_ENVIRONMENT=development YTA_ENABLE_ML=true python app.py
+```
+
+#### Production (Passenger)
+```python
+# passenger_wsgi_production.py
+os.environ['YTA_ENVIRONMENT'] = 'production'
+os.environ['YTA_ENABLE_ML'] = 'false'
+
+# Force la désactivation avant import
+sys.modules['sentence_transformers'] = None
+sys.modules['transformers'] = None
+sys.modules['torch'] = None
+```
+
+### 🛡️ Protection dans le Code
+
+#### Classification.py - Vérification automatique
+```python
+def _init_semantic_classifier(self):
+    # Vérification de la configuration avant tout chargement
+    from config import config
+    if not config.should_load_ml_models():
+        print(f"🚫 Modèles ML désactivés (env: {config.ENVIRONMENT})")
+        self.semantic_classifier = None
+        return
+```
+
+#### Détection automatique d'environnement
+1. **Variable explicite** : `YTA_ENVIRONMENT=production`
+2. **Fallback environnement** : `YTA_ENABLE_ML=false`
+3. **Protection réseau** : `TRANSFORMERS_OFFLINE=1`
+
+### 📋 Workflow Recommandé
+
+1. **🔬 Développement local** : Tous calculs ML, classifications, entraînements
+2. **📊 Export des résultats** : Classifications sauvées en base avec `classification_source`
+3. **🚀 Déploiement production** : Interface rapide utilisant les résultats pré-calculés
+4. **🔄 Synchronisation** : Base de données commune entre dev et prod
+
+### ✅ Avantages de cette Architecture
+
+- **Performance production** : Chargement instantané (0s vs 40s)
+- **Développement complet** : Tous les outils ML disponibles localement
+- **Sécurité** : Impossible de charger les modèles en production
+- **Maintenance** : Configuration centralisée via variables d'environnement
+- **Flexibilité** : Basculement facile entre les modes
+
 ## 🧠 Hiérarchie de Classification - RÈGLE ABSOLUE
 
 ### ⚠️ PRIORITÉ ABSOLUE : HUMAIN > SENTENCE TRANSFORMER > PATTERNS

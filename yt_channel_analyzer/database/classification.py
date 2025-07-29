@@ -396,6 +396,21 @@ class PlaylistClassifier:
     
     def _init_semantic_classifier(self):
         """Initialiser le classificateur sémantique de façon asynchrone avec retry"""
+        # Vérification de la configuration avant tout chargement
+        try:
+            from config import config
+            if not config.should_load_ml_models():
+                print(f"[PLAYLIST-CLASSIFIER] 🚫 Modèles ML désactivés (env: {config.ENVIRONMENT}) - mode patterns uniquement")
+                self.semantic_classifier = None
+                return
+        except ImportError:
+            # Si pas de config, on détecte via variables d'environnement
+            import os
+            if os.getenv('YTA_ENVIRONMENT') == 'production' or os.getenv('YTA_ENABLE_ML', 'true').lower() == 'false':
+                print("[PLAYLIST-CLASSIFIER] 🚫 Modèles ML désactivés par variable d'environnement - mode patterns uniquement")
+                self.semantic_classifier = None
+                return
+        
         try:
             # Tentative d'importation et d'initialisation
             from yt_channel_analyzer.semantic_classifier import SemanticHubHeroHelpClassifier
