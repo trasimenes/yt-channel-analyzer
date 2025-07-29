@@ -390,6 +390,91 @@
         margin-top: 0.25rem;
     }
     
+    /* Top 5 Engaging Videos Styles */
+    .engaging-videos-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .engaging-video-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        border-left: 4px solid #f59e0b;
+        transition: all 0.3s ease;
+    }
+    
+    .engaging-video-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .video-rank {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .video-info {
+        flex: 1;
+    }
+    
+    .video-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .video-metrics {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .metric-badge {
+        background: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid #e9ecef;
+    }
+    
+    .metric-badge.views { border-color: #3498db; color: #3498db; }
+    .metric-badge.likes { border-color: #e74c3c; color: #e74c3c; }
+    .metric-badge.comments { border-color: #9b59b6; color: #9b59b6; }
+    .metric-badge.engagement { border-color: #f39c12; color: #f39c12; }
+    
+    .video-themes {
+        font-size: 0.875rem;
+    }
+    
+    .theme-tag {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        margin-right: 0.25rem;
+        display: inline-block;
+        margin-top: 0.25rem;
+    }
+    
     /* TAB 3: Top Videos Styles */
     .performance-card {
         display: flex;
@@ -1541,176 +1626,181 @@
     <div id="key-metrics" class="competitor-content active">
         <h4 class="mb-4">📊 Métriques Clés</h4>
         
-        <!-- Stats Cards -->
+        <!-- Key Metrics Cards - As requested by user -->
         <div class="metrics-grid">
+            <!-- Durée des Vidéos -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);">
-                        <i class="bx bx-user"></i>
+                        <i class="bx bx-time-five"></i>
                     </div>
-                    <h5 class="metric-title">Abonnés</h5>
+                    <h5 class="metric-title">Durée des Vidéos</h5>
                 </div>
-                <div class="metric-value">{{ "{:,}".format(competitor.subscriber_count or 0) }}</div>
-                <div class="metric-description">Base d'audience totale</div>
+                <div class="metric-value">{{ "{:.1f} min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</div>
+                <div class="metric-description">Durée moyenne par vidéo</div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-stable">
-                        <i class="bx bx-minus"></i>
-                        Données statiques
+                        <i class="bx bx-trending-up"></i>
+                        {{ metrics.short_form_percentage }}% courts
                     </span>
                 </div>
             </div>
 
+            <!-- Fréquence de Publication -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #28c76f 0%, #1f9e5a 100%);">
-                        <i class="bx bx-video"></i>
+                        <i class="bx bx-calendar-event"></i>
                     </div>
-                    <h5 class="metric-title">Vidéos Totales</h5>
+                    <h5 class="metric-title">Fréquence de Publication</h5>
                 </div>
-                <div class="metric-value">{{ total_videos }}</div>
-                <div class="metric-description">Contenu total publié</div>
+                <div class="metric-value">{{ "{:.1f}/sem".format(metrics.weekly_frequency) if metrics.weekly_frequency else "N/A" }}</div>
+                <div class="metric-description">Vidéos par semaine</div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-up">
-                        <i class="bx bx-trending-up"></i>
-                        Croissance active
+                        <i class="bx bx-calendar"></i>
+                        {{ metrics.most_active_day or "N/A" }}
                     </span>
                 </div>
             </div>
 
+            <!-- Distribution HHH -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
-                        <i class="bx bx-show"></i>
+                        <i class="bx bx-target-lock"></i>
                     </div>
-                    <h5 class="metric-title">Vues Totales</h5>
+                    <h5 class="metric-title">Distribution HHH</h5>
                 </div>
-                <div class="metric-value">{{ "{:,.1f}M".format(stats.total_views / 1000000) if stats.total_views > 1000000 else "{:,}".format(stats.total_views) }}</div>
-                <div class="metric-description">Audience cumulée</div>
+                <div class="metric-value">{{ "{:.0f}%-{:.0f}%-{:.0f}%".format((hero_count / total_videos * 100) if total_videos > 0 else 0, (hub_count / total_videos * 100) if total_videos > 0 else 0, (help_count / total_videos * 100) if total_videos > 0 else 0) }}</div>
+                <div class="metric-description">Hero-Hub-Help répartition</div>
                 <div class="metric-trend">
-                    <span class="trend-indicator trend-up">
-                        <i class="bx bx-trending-up"></i>
-                        Performance forte
+                    <span class="trend-indicator trend-stable">
+                        <i class="bx bx-pie-chart-alt-2"></i>
+                        Équilibre stratégique
                     </span>
                 </div>
             </div>
 
+            <!-- Organique vs Payé -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #4ecdc4 0%, #3db8b0 100%);">
-                        <i class="bx bx-bar-chart-alt-2"></i>
+                        <i class="bx bx-dollar-circle"></i>
                     </div>
-                    <h5 class="metric-title">Vues Moyennes</h5>
+                    <h5 class="metric-title">Organique vs Payé</h5>
                 </div>
-                <div class="metric-value">{{ "{:,}".format(stats.avg_views or 0) }}</div>
-                <div class="metric-description">Performance par vidéo</div>
+                <div class="metric-value">{{ stats.organic_percentage }}% / {{ stats.paid_percentage }}%</div>
+                <div class="metric-description">Répartition du contenu</div>
                 <div class="metric-trend">
-                    <span class="trend-indicator trend-stable">
-                        <i class="bx bx-minus"></i>
-                        Consistant
+                    <span class="trend-indicator trend-up">
+                        <i class="bx bx-trending-up"></i>
+                        Seuil: {{ "{:,}".format(stats.paid_threshold) }} vues
                     </span>
                 </div>
             </div>
-        </div>
-
-        <!-- What and When Section -->
-        <div class="strategy-section">
-            <h5 class="mb-3">🎯 What and When</h5>
-            <div class="strategy-grid">
-                <div class="strategy-card">
-                    <div class="strategy-title">
-                        <i class="bx bx-time"></i>
-                        Video Length
+            
+            <!-- Shorts vs Vidéos 16:9 -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #ff9f43 0%, #ee8a3a 100%);">
+                        <i class="bx bx-mobile-alt"></i>
                     </div>
-                    <div class="strategy-stats">
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ "{:.1f}min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</div>
-                            <div class="strategy-stat-label">Durée Moyenne</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.short_form_percentage }}%</div>
-                            <div class="strategy-stat-label">Courts</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.long_form_percentage }}%</div>
-                            <div class="strategy-stat-label">Longs</div>
-                        </div>
-                    </div>
+                    <h5 class="metric-title">Shorts vs Vidéos 16:9</h5>
                 </div>
-
-                <div class="strategy-card">
-                    <div class="strategy-title">
-                        <i class="bx bx-calendar"></i>
-                        Publishing Frequency
-                    </div>
-                    <div class="strategy-stats">
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ "{:.1f}/w".format(metrics.weekly_frequency) if metrics.weekly_frequency else "N/A" }}</div>
-                            <div class="strategy-stat-label">Par Semaine</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.most_active_day or "N/A" }}</div>
-                            <div class="strategy-stat-label">Jour Optimal</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.consistency_score or "N/A" }}%</div>
-                            <div class="strategy-stat-label">Consistance</div>
-                        </div>
-                    </div>
+                <div class="metric-value">{{ shorts_data.shorts_percentage if shorts_data else "N/A" }}% / {{ 100 - (shorts_data.shorts_percentage or 0) if shorts_data else "N/A" }}%</div>
+                <div class="metric-description">Format de contenu</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-stable">
+                        <i class="bx bx-devices"></i>
+                        Multi-format
+                    </span>
                 </div>
             </div>
-        </div>
-
-        <!-- Brand Message Section -->
-        <div class="strategy-section">
-            <h5 class="mb-3">💬 Brand Message</h5>
-            <div class="strategy-grid">
-                <div class="strategy-card">
-                    <div class="strategy-title">
-                        <i class="bx bx-target-lock"></i>
-                        Hero/Hub/Help Distribution
+            
+            <!-- Cohérence des Miniatures -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <i class="bx bx-image"></i>
                     </div>
-                    <div class="strategy-progress">
-                        <div>Hero ({{ hero_count }} vidéos)</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill hero-progress" style="width: {{ (hero_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
-                        </div>
-                    </div>
-                    <div class="strategy-progress">
-                        <div>Hub ({{ hub_count }} vidéos)</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill hub-progress" style="width: {{ (hub_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
-                        </div>
-                    </div>
-                    <div class="strategy-progress">
-                        <div>Help ({{ help_count }} vidéos)</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill help-progress" style="width: {{ (help_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
-                        </div>
-                    </div>
+                    <h5 class="metric-title">Cohérence des Miniatures</h5>
                 </div>
-
-                <div class="strategy-card">
-                    <div class="strategy-title">
+                <div class="metric-value">{{ metrics.thumbnail_consistency or "N/A" }}%</div>
+                <div class="metric-description">Consistance visuelle</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-stable">
                         <i class="bx bx-palette"></i>
-                        Tone of Voice & Consistency
-                    </div>
-                    <div class="strategy-stats">
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.tone_consistency or "N/A" }}%</div>
-                            <div class="strategy-stat-label">Cohérence</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.thumbnail_consistency or "N/A" }}%</div>
-                            <div class="strategy-stat-label">Miniatures</div>
-                        </div>
-                        <div class="strategy-stat">
-                            <div class="strategy-stat-value">{{ metrics.brand_alignment or "N/A" }}%</div>
-                            <div class="strategy-stat-label">Alignement</div>
-                        </div>
-                    </div>
+                        Identité visuelle
+                    </span>
                 </div>
             </div>
+            
+            <!-- Champ Lexical -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <i class="bx bx-message-detail"></i>
+                    </div>
+                    <h5 class="metric-title">Champ Lexical</h5>
+                </div>
+                <div class="metric-value">{{ metrics.tone_consistency or "N/A" }}%</div>
+                <div class="metric-description">Cohérence de tonalité</div>
+                <div class="metric-trend">
+                    <span class="trend-indicator trend-up">
+                        <i class="bx bx-conversation"></i>
+                        Tone of voice
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Top 5 Sujets qui Engagent -->
+            <div class="metric-card" style="grid-column: span 2;">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="bx bx-trophy"></i>
+                    </div>
+                    <h5 class="metric-title">Top 5 Sujets qui Engagent</h5>
+                </div>
+                <div class="metric-description mb-3">Vidéos avec le plus d'engagement (likes + commentaires)</div>
+                
+                {% if top_engaging_videos %}
+                    <div class="engaging-videos-list">
+                        {% for video in top_engaging_videos %}
+                        <div class="engaging-video-item">
+                            <div class="video-rank">{{ video.rank }}</div>
+                            <div class="video-info">
+                                <div class="video-title">{{ video.title[:50] }}{% if video.title|length > 50 %}...{% endif %}</div>
+                                <div class="video-metrics">
+                                    <span class="metric-badge views">👁️ {{ "{:,}".format(video.view_count) }}</span>
+                                    <span class="metric-badge likes">❤️ {{ "{:,}".format(video.like_count) }}</span>
+                                    <span class="metric-badge comments">💬 {{ "{:,}".format(video.comment_count) }}</span>
+                                    <span class="metric-badge engagement">📊 {{ video.engagement_rate }}%</span>
+                                </div>
+                                <div class="video-themes">
+                                    <strong>Thèmes:</strong> 
+                                    {% if video.themes %}
+                                        {% for theme in video.themes %}
+                                            <span class="theme-tag">{{ theme }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">Aucun thème identifié</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="bx bx-info-circle"></i>
+                        Aucune donnée d'engagement disponible
+                    </div>
+                {% endif %}
+            </div>
         </div>
+
+
     </div>
 
     <!-- TAB 2: Follower Growth -->

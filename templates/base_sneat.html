@@ -32,7 +32,7 @@
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/fonts/boxicons.css') }}" />
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/fonts/fontawesome.css') }}" /> -->
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/fonts/flag-icons.css') }}" /> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/fonts/flag-icons.css') }}" />
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='sneat-pro/assets/vendor/css/rtl/core.css') }}" />
@@ -300,51 +300,28 @@
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
               <!-- Search -->
               <div class="navbar-nav align-items-center">
-                <div class="nav-item navbar-search-wrapper mb-0">
-                  <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
-                    <i class="bx bx-search bx-sm"></i>
-                    <span class="d-none d-md-inline-block text-muted">Rechercher (Ctrl+/)</span>
-                  </a>
+                <div class="nav-item navbar-search-wrapper mb-0" style="position: relative; width: 300px;">
+                  <div class="input-group">
+                    <span class="input-group-text border-0 bg-transparent">
+                      <i class="bx bx-search bx-sm text-muted"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control border-0 bg-transparent"
+                      placeholder="Rechercher une chaîne..."
+                      aria-label="Rechercher..."
+                      id="navbar-search-direct"
+                      autocomplete="off"
+                      style="box-shadow: none;"
+                    />
+                  </div>
+                  <div class="autocomplete-list position-absolute" id="navbar-autocomplete-direct" 
+                       style="z-index:1000; width:100%; left:0; top:100%; display:none; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 300px; overflow-y: auto; margin-top: 2px;"></div>
                 </div>
               </div>
               <!-- /Search -->
 
               <ul class="navbar-nav flex-row align-items-center ms-auto">
-                <!-- Language -->
-                <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
-                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <i class="fi fi-fr fis rounded-circle fs-3 me-1"></i>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" href="javascript:void(0);" data-language="fr">
-                        <i class="fi fi-fr fis rounded-circle fs-4 me-1"></i>
-                        <span class="align-middle">Français</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="javascript:void(0);" data-language="en">
-                        <i class="fi fi-us fis rounded-circle fs-4 me-1"></i>
-                        <span class="align-middle">English</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="javascript:void(0);" data-language="de">
-                        <i class="fi fi-de fis rounded-circle fs-4 me-1"></i>
-                        <span class="align-middle">Deutsch</span>
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-                <!--/ Language -->
-
-                <!-- Style Switcher -->
-                <li class="nav-item me-2 me-xl-0">
-                  <a class="nav-link style-switcher-toggle hide-arrow" href="javascript:void(0);">
-                    <i class="bx bx-sm bx-sun"></i>
-                  </a>
-                </li>
-                <!--/ Style Switcher -->
 
                 <!-- Quick links  -->
                 <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
@@ -627,16 +604,6 @@
               </ul>
             </div>
 
-            <!-- Search Small Screens -->
-            <div class="navbar-search-wrapper search-input-wrapper d-none">
-              <input
-                type="text"
-                class="form-control search-input container-xxl border-0"
-                placeholder="Rechercher..."
-                aria-label="Rechercher..."
-              />
-              <i class="bx bx-x bx-sm search-toggler cursor-pointer"></i>
-            </div>
           </nav>
           <!-- / Navbar -->
 
@@ -689,14 +656,116 @@
     <!-- Vendors JS -->
     {% block vendor_js %}{% endblock %}
 
+    <!-- Typeahead.js pour la recherche Sneat -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/typeahead.js@0.11.1/dist/typeahead.bundle.min.js"></script> -->
+    
     <!-- Main JS -->
-    <script src="{{ url_for('static', filename='sneat-pro/assets/js/main.js') }}"></script>
+    <!-- Désactivé temporairement pour éviter le conflit avec notre recherche -->
+    <!-- <script src="{{ url_for('static', filename='sneat-pro/assets/js/main.js') }}"></script> -->
+    
+    <!-- Initialize Perfect Scrollbar for menu manually -->
+    <script>
+    $(document).ready(function() {
+        // Initialize Perfect Scrollbar for the menu
+        const menuInner = document.querySelector('.menu-inner');
+        if (menuInner && typeof PerfectScrollbar !== 'undefined') {
+            new PerfectScrollbar(menuInner, {
+                suppressScrollX: true,
+                wheelPropagation: false
+            });
+        }
+        
+        // Initialize menu toggle functionality
+        const menuToggle = document.querySelector('.layout-menu-toggle');
+        const layoutMenu = document.querySelector('#layout-menu');
+        const layoutContainer = document.querySelector('.layout-container');
+        
+        if (menuToggle && layoutMenu) {
+            menuToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (layoutContainer) {
+                    layoutContainer.classList.toggle('layout-menu-collapsed');
+                }
+            });
+        }
+    });
+    </script>
 
     <!-- Page JS -->
     {% block page_js %}{% endblock %}
 
-    <!-- Custom search functionality -->
+    <!-- CSS pour la recherche navbar -->
+    <style>
+    .navbar-search-wrapper .search-toggler,
+    .nav-item.navbar-search-wrapper .search-toggler,
+    a.search-toggler {
+        color: #a1acb8;
+        cursor: pointer;
+        transition: color 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-search-wrapper .search-toggler:hover {
+        color: #5A6ACF;
+        text-decoration: none;
+    }
+
+    /* Fix cursor for search input */
+    .search-input-wrapper .search-input,
+    #navbar-search-input {
+        cursor: text !important;
+        pointer-events: auto !important;
+    }
+
+    /* Ensure search wrapper is properly styled */
+    .navbar-search-wrapper.search-input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    
+    /* Style pour les éléments d'autocomplete */
+    .autocomplete-item:hover .bx-show {
+        transform: scale(1.2);
+        transition: transform 0.2s;
+    }
+    
+    .autocomplete-item:hover .bx-plus-circle {
+        transform: scale(1.2) rotate(90deg);
+        transition: transform 0.2s;
+    }
+    
+    .autocomplete-item {
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Fix menu scrollbar */
+    .layout-menu .menu-inner {
+        height: calc(100vh - 4rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .layout-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1000;
+    }
+    </style>
+    
+    <!-- Direct search functionality -->
     <script>
+    $(document).ready(function() {
+        console.log('Direct navbar search initialized');
+    });
+    
     // Toggle Dev Mode function - AJAX transparent
     function toggleDevMode() {
         console.log('Toggle dev mode called');
@@ -727,18 +796,129 @@
         });
     }
 
-    // Gérer la recherche dans la navbar
+    // Gérer la recherche dans la navbar avec autocomplétion
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.querySelector('.search-input');
+        const navbarSearchInput = document.getElementById('navbar-search-direct');
+        const navbarAutocompleteList = document.getElementById('navbar-autocomplete-direct');
         
-        if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
+        if (navbarSearchInput && navbarAutocompleteList) {
+            // Focus sur la barre de recherche navbar
+            navbarSearchInput.addEventListener('focus', function(e) {
+                e.stopPropagation();
+                // Masquer l'autocomplétion du champ principal si elle est ouverte
+                const mainAutocomplete = document.getElementById('autocomplete-list');
+                if (mainAutocomplete) {
+                    mainAutocomplete.style.display = 'none';
+                }
+            });
+            
+            // Autocomplétion pour la navbar
+            navbarSearchInput.addEventListener('input', async function() {
+                const q = this.value.trim();
+                if (!q) { 
+                    navbarAutocompleteList.innerHTML = ''; 
+                    navbarAutocompleteList.style.display = 'none';
+                    return; 
+                }
+                
+                try {
+                    const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
+                    
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    
+                    const suggestions = await res.json();
+                    navbarAutocompleteList.innerHTML = '';
+                    
+                    if (suggestions.length > 0) {
+                        suggestions.forEach(s => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-item px-3 py-2 border-bottom';
+                            div.style.cursor = 'pointer';
+                            
+                            // Style différent selon si la chaîne est analysée ou non
+                            const statusBadge = s.is_analyzed 
+                                ? '<span class="badge bg-success ms-2">Analysé</span>'
+                                : '<span class="badge bg-primary ms-2">Nouveau</span>';
+                            
+                            const subscriberInfo = s.subscriber_count 
+                                ? `<small class="text-muted"> • ${s.subscriber_count.toLocaleString()} abonnés</small>`
+                                : '';
+                            
+                            div.innerHTML = `
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="${s.thumbnail || '/static/competitors/images/default.jpg'}" 
+                                             class="rounded-circle" width="32" height="32" alt="">
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">
+                                            ${s.name}
+                                            ${statusBadge}
+                                        </div>
+                                        <small class="text-muted">
+                                            ${s.country || 'Pays non spécifié'}
+                                            ${subscriberInfo}
+                                        </small>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        ${s.is_analyzed 
+                                            ? '<i class="bx bx-show text-primary" title="Voir les détails"></i>' 
+                                            : '<i class="bx bx-plus-circle text-success" title="Analyser cette chaîne"></i>'}
+                                    </div>
+                                </div>
+                            `;
+                            div.onclick = () => {
+                                if (s.is_analyzed) {
+                                    // Chaîne déjà analysée : aller aux détails
+                                    window.location.href = `/competitor/${s.id}`;
+                                } else {
+                                    // Nouvelle chaîne : préparer les données pour la modale
+                                    navbarAutocompleteList.style.display = 'none';
+                                    showAnalysisModal(s.name, s.url);
+                                }
+                            };
+                            navbarAutocompleteList.appendChild(div);
+                        });
+                        navbarAutocompleteList.style.display = 'block';
+                    } else {
+                        // Afficher un message "Aucun résultat"
+                        navbarAutocompleteList.innerHTML = `
+                            <div class="autocomplete-item px-3 py-2 text-muted text-center">
+                                <small>Aucune chaîne trouvée pour "${q}"</small>
+                            </div>
+                        `;
+                        navbarAutocompleteList.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Autocomplete error:', error);
+                    // Afficher un message d'erreur à l'utilisateur
+                    navbarAutocompleteList.innerHTML = `
+                        <div class="autocomplete-item px-3 py-2 text-danger text-center">
+                            <small><i class="bx bx-error-circle me-1"></i>Erreur de recherche</small>
+                        </div>
+                    `;
+                    navbarAutocompleteList.style.display = 'block';
+                }
+            });
+            
+            // Enter key pour recherche directe
+            navbarSearchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     const searchTerm = this.value.trim();
                     if (searchTerm) {
-                        // Rediriger vers la page principale avec le terme de recherche
-                        window.location.href = `http://127.0.0.1:8082/?search=${encodeURIComponent(searchTerm)}`;
+                        // Rediriger vers la page d'accueil avec le terme de recherche
+                        window.location.href = `/?search=${encodeURIComponent(searchTerm)}`;
                     }
+                }
+            });
+            
+            // Masquer l'autocomplétion quand on clique ailleurs
+            document.addEventListener('click', function(e) {
+                if (!navbarSearchInput.contains(e.target) && !navbarAutocompleteList.contains(e.target)) {
+                    navbarAutocompleteList.innerHTML = '';
+                    navbarAutocompleteList.style.display = 'none';
                 }
             });
         }
@@ -751,15 +931,161 @@
                 if (searchToggler) {
                     searchToggler.click();
                     setTimeout(() => {
-                        const searchInput = document.querySelector('.search-input');
-                        if (searchInput) {
-                            searchInput.focus();
+                        const navbarSearchInput = document.getElementById('navbar-search-input');
+                        if (navbarSearchInput) {
+                            navbarSearchInput.focus();
                         }
                     }, 100);
                 }
             }
         });
     });
+    
+    // Fonction pour afficher la modale d'analyse
+    function showAnalysisModal(channelName, channelUrl) {
+        // Créer la modale si elle n'existe pas
+        if (!document.getElementById('analysisModal')) {
+            const modalHtml = `
+                <div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bx bx-analyse me-2"></i>
+                                    Analyser une nouvelle chaîne
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center mb-4">
+                                    <i class="bx bx-youtube bx-lg text-danger"></i>
+                                    <h6 class="mt-2 mb-1" id="modalChannelName"></h6>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de vidéos à analyser</label>
+                                    <select class="form-select" id="modalMaxVideos">
+                                        <option value="0" selected>Toutes les vidéos (complet)</option>
+                                        <option value="10">10 vidéos (test rapide)</option>
+                                        <option value="30">30 vidéos</option>
+                                        <option value="50">50 vidéos</option>
+                                        <option value="100">100 vidéos</option>
+                                        <option value="500">500 vidéos</option>
+                                    </select>
+                                    <div class="form-text">L'analyse complète peut prendre plusieurs minutes selon le nombre de vidéos.</div>
+                                </div>
+                                
+                                <div class="alert alert-info d-flex align-items-center" role="alert">
+                                    <i class="bx bx-info-circle me-2"></i>
+                                    <div>
+                                        L'analyse se fera en arrière-plan. Vous pourrez suivre la progression dans l'onglet Tâches.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="button" class="btn btn-primary" id="startAnalysisBtn" onclick="startAnalysisFromModal()">
+                                    <i class="bx bx-play-circle me-1"></i>
+                                    Lancer l'analyse
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+        
+        // Mettre à jour les données
+        document.getElementById('modalChannelName').textContent = channelName;
+        document.getElementById('analysisModal').dataset.channelUrl = channelUrl;
+        document.getElementById('analysisModal').dataset.channelName = channelName;
+        
+        // Afficher la modale
+        const modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+        modal.show();
+    }
+    
+    // Fonction pour lancer l'analyse depuis la modale
+    function startAnalysisFromModal() {
+        const modal = document.getElementById('analysisModal');
+        const channelUrl = modal.dataset.channelUrl;
+        const channelName = modal.dataset.channelName;
+        const maxVideos = document.getElementById('modalMaxVideos').value;
+        const button = document.getElementById('startAnalysisBtn');
+        const originalContent = button.innerHTML;
+        
+        // Désactiver le bouton et afficher le loader
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Lancement...';
+        
+        fetch('/background-analysis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                channel_url: channelUrl,
+                channel_name: channelName,
+                max_videos: maxVideos
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Fermer la modale
+                bootstrap.Modal.getInstance(modal).hide();
+                
+                // Afficher un toast de succès
+                showToast(`Analyse lancée pour "${channelName}"`, 'success');
+                
+                // Rediriger vers les tâches après un court délai
+                setTimeout(() => {
+                    window.location.href = '/tasks';
+                }, 1500);
+            } else {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+                showToast('Erreur: ' + (result.error || 'Erreur inconnue'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            showToast('Erreur lors du lancement de l\'analyse', 'danger');
+        });
+    }
+    
+    // Fonction pour afficher des toasts
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="bs-toast toast fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+                <div class="toast-header bg-${type}">
+                    <i class="bx bx-${type === 'success' ? 'check-circle' : type === 'danger' ? 'x-circle' : 'info-circle'} me-2"></i>
+                    <div class="me-auto fw-semibold text-white">${type === 'success' ? 'Succès' : type === 'danger' ? 'Erreur' : 'Info'}</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        const toastElement = document.createElement('div');
+        toastElement.innerHTML = toastHtml;
+        document.body.appendChild(toastElement);
+        
+        const toast = new bootstrap.Toast(toastElement.querySelector('.toast'));
+        
+        setTimeout(() => {
+            toastElement.remove();
+        }, 5000);
+    }
     </script>
+    
+    <!-- Global Refresh System -->
+    <script src="{{ url_for('static', filename='js/global-refresh.js') }}"></script>
+    
   </body>
 </html>

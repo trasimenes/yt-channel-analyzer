@@ -707,24 +707,21 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Ultimate Action -->
         <div class="action-buttons">
-            <button type="button" class="btn btn-outline-primary action-btn" onclick="optimizeDatabase()">
-                <i class="bx bx-data me-2"></i>
-                Optimiser Base de Données
+            <button type="button" class="btn btn-primary action-btn" onclick="runUltimateRefresh()" style="flex: 1; min-width: 100%;">
+                <i class="bx bx-rocket me-2"></i>
+                🚀 ULTIMATE REFRESH - Tout Corriger et Recalculer
             </button>
-            <button type="button" class="btn btn-outline-warning action-btn" onclick="refreshAllData()">
-                <i class="bx bx-refresh me-2"></i>
-                Actualiser Toutes les Données
-            </button>
-            <button type="button" class="btn btn-outline-success action-btn" onclick="runFullBackup()">
-                <i class="bx bx-download me-2"></i>
-                Sauvegarde Complète
-            </button>
-            <button type="button" class="btn btn-outline-danger action-btn" onclick="emergencyReset()">
-                <i class="bx bx-reset me-2"></i>
-                Reset d'Urgence
-            </button>
+        </div>
+
+        <!-- Ultimate Console -->
+        <div class="maintenance-log" id="ultimateConsole" style="display: none;">
+            <h6 class="mb-3">
+                <i class="bx bx-terminal me-2"></i>
+                Console ULTIMATE REFRESH - Ultra Verbose
+            </h6>
+            <div id="consoleOutput" style="background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 500px; overflow-y: auto; white-space: pre-wrap;"></div>
         </div>
 
         <!-- Maintenance Log -->
@@ -864,14 +861,119 @@ function optimizeDatabase() {
     }
 }
 
-function refreshAllData() {
-    if (confirm('Actualiser toutes les données depuis l\'API YouTube ?')) {
-        showAlert('Actualisation des données...', 'info');
-        // Simulate data refresh
-        setTimeout(() => {
-            showAlert('Données actualisées avec succès', 'success');
-        }, 6000);
+function runUltimateRefresh() {
+    if (confirm('🚀 ULTIMATE REFRESH - Lancer le processus complet ?\n\n✅ Import API + Correction dates\n✅ Classification intelligente\n✅ Recalcul toutes métriques\n✅ Force refresh cache\n\nCette opération peut prendre 10-15 minutes.')) {
+        
+        // Afficher la console
+        document.getElementById('ultimateConsole').style.display = 'block';
+        const consoleOutput = document.getElementById('consoleOutput');
+        consoleOutput.innerHTML = '';
+        
+        // Scroll vers la console
+        document.getElementById('ultimateConsole').scrollIntoView({ behavior: 'smooth' });
+        
+        // Démarrer l'ULTIMATE REFRESH
+        fetch('/api/ultimate-refresh/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('🚀 ULTIMATE REFRESH démarré - Console activée', 'info');
+                appendToConsole('[ULTIMATE] 🚀 Processus ULTIMATE REFRESH démarré...\n');
+                appendToConsole('[ULTIMATE] 🛡️ Protection humaine activée - Classifications sacrées préservées\n');
+                appendToConsole('[ULTIMATE] ⚡ Mode ultra-verbose activé\n\n');
+                
+                // Surveiller le progrès en temps réel
+                monitorUltimateRefresh();
+                
+            } else {
+                showAlert('Erreur lors du démarrage: ' + data.error, 'danger');
+                appendToConsole('[ERROR] ❌ Erreur de démarrage: ' + data.error + '\n');
+            }
+        })
+        .catch(error => {
+            showAlert('Erreur de connexion: ' + error.message, 'danger');
+            appendToConsole('[ERROR] ❌ Erreur de connexion: ' + error.message + '\n');
+        });
     }
+}
+
+function appendToConsole(text) {
+    const consoleOutput = document.getElementById('consoleOutput');
+    if (consoleOutput) {
+        const timestamp = new Date().toLocaleTimeString();
+        consoleOutput.innerHTML += `[${timestamp}] ${text}`;
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+}
+
+function monitorUltimateRefresh() {
+    const ultimateInterval = setInterval(() => {
+        fetch('/api/ultimate-refresh/status', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.status) {
+                
+                // Afficher les messages en temps réel
+                if (data.status.current_message) {
+                    appendToConsole(`[ULTIMATE] ${data.status.current_message}\n`);
+                }
+                
+                // Afficher les stats
+                if (data.status.stats) {
+                    const stats = data.status.stats;
+                    if (stats.competitors_processed > 0) {
+                        appendToConsole(`[STATS] 🏢 ${stats.competitors_processed} concurrents | 📋 ${stats.playlists_imported} playlists | 📺 ${stats.videos_updated} vidéos | 📅 ${stats.dates_corrected} dates | ⏱️ ${stats.durations_fixed} durées | 🎯 ${stats.classifications_applied} classifications\n`);
+                    }
+                }
+                
+                // Afficher le log détaillé
+                if (data.detailed_log && data.detailed_log.length > 0) {
+                    data.detailed_log.forEach(entry => {
+                        appendToConsole(`[${entry.competitor}] ${entry.action}: ${JSON.stringify(entry.details)}\n`);
+                    });
+                }
+                
+                // Vérifier si terminé
+                if (!data.status.is_running) {
+                    clearInterval(ultimateInterval);
+                    
+                    if (data.status.error) {
+                        appendToConsole(`[ULTIMATE] ❌ ÉCHEC: ${data.status.error}\n`);
+                        showAlert('ULTIMATE REFRESH échoué: ' + data.status.error, 'danger');
+                    } else {
+                        appendToConsole('[ULTIMATE] ✅ TERMINÉ AVEC SUCCÈS!\n');
+                        appendToConsole('[ULTIMATE] 🎉 Toutes les métriques ont été recalculées\n');
+                        appendToConsole('[ULTIMATE] 🔄 Cache force-cleared partout\n');
+                        appendToConsole('[ULTIMATE] 💾 Données sauvegardées en base\n\n');
+                        appendToConsole('========================================\n');
+                        appendToConsole('🚀 ULTIMATE REFRESH COMPLETE!\n');
+                        appendToConsole('========================================\n');
+                        
+                        showAlert('🎉 ULTIMATE REFRESH terminé avec succès!', 'success');
+                        
+                        // Rafraîchir la page après 3 secondes
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            appendToConsole(`[ERROR] ❌ Erreur surveillance: ${error.message}\n`);
+        });
+    }, 1000); // Vérifier chaque seconde pour ultra-verbose
 }
 
 function runFullBackup() {
@@ -909,5 +1011,151 @@ function showAlert(message, type) {
         }
     }, 4000);
 }
+
+let globalRefreshInterval = null;
+
+function showGlobalProgressBar() {
+    // Créer la barre de progression en bas de l'écran
+    const existingBar = document.getElementById('global-progress-bar');
+    if (existingBar) {
+        existingBar.remove();
+    }
+    
+    const progressBar = document.createElement('div');
+    progressBar.id = 'global-progress-bar';
+    progressBar.innerHTML = `
+        <div style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 10000; 
+                    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+                    border-top: 1px solid #e7e7ff; padding: 15px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm text-primary me-3" role="status"></div>
+                    <div>
+                        <div class="fw-bold text-primary">Rafraîchissement Global en Cours</div>
+                        <small class="text-muted" id="progress-message">Initialisation...</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-3" id="progress-percent">0%</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="hideGlobalProgressBar()">
+                        <i class="bx bx-x"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="progress" style="height: 8px; border-radius: 4px;">
+                <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" 
+                     id="progress-fill" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(progressBar);
+    
+    // Décaler le contenu pour ne pas masquer la barre
+    document.body.style.paddingBottom = '120px';
+}
+
+function hideGlobalProgressBar() {
+    const progressBar = document.getElementById('global-progress-bar');
+    if (progressBar) {
+        progressBar.remove();
+    }
+    document.body.style.paddingBottom = '0';
+    
+    if (globalRefreshInterval) {
+        clearInterval(globalRefreshInterval);
+        globalRefreshInterval = null;
+    }
+}
+
+function updateGlobalProgress(status) {
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressMessage = document.getElementById('progress-message');
+    
+    if (progressFill && progressPercent && progressMessage) {
+        const percent = status.progress_percent || 0;
+        
+        progressFill.style.width = percent + '%';
+        progressFill.setAttribute('aria-valuenow', percent);
+        progressPercent.textContent = Math.round(percent) + '%';
+        progressMessage.textContent = status.current_message || 'En cours...';
+        
+        // Changer la couleur en cas d'erreur
+        if (status.error) {
+            progressFill.classList.remove('bg-primary');
+            progressFill.classList.add('bg-danger');
+            progressMessage.textContent = 'Erreur: ' + status.error;
+        }
+    }
+}
+
+function monitorGlobalRefresh() {
+    // Arrêter la surveillance précédente si elle existe
+    if (globalRefreshInterval) {
+        clearInterval(globalRefreshInterval);
+    }
+    
+    globalRefreshInterval = setInterval(() => {
+        fetch('/api/global-refresh/status', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.status) {
+                updateGlobalProgress(data.status);
+                
+                // Vérifier si terminé
+                if (!data.status.is_running) {
+                    clearInterval(globalRefreshInterval);
+                    globalRefreshInterval = null;
+                    
+                    setTimeout(() => {
+                        hideGlobalProgressBar();
+                        
+                        if (data.status.error) {
+                            showAlert('Rafraîchissement échoué: ' + data.status.error, 'danger');
+                        } else {
+                            showAlert('Rafraîchissement global terminé avec succès!', 'success');
+                            
+                            // Rafraîchir la page après 2 secondes
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        }
+                    }, 1000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la surveillance:', error);
+        });
+    }, 2000); // Vérifier toutes les 2 secondes
+}
+
+// Vérifier au chargement de la page s'il y a un refresh en cours
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier le cookie
+    const refreshRunning = document.cookie.includes('global_refresh_running=true');
+    
+    if (refreshRunning) {
+        // Vérifier le statut réel
+        fetch('/api/global-refresh/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.status && data.status.is_running) {
+                    showGlobalProgressBar();
+                    monitorGlobalRefresh();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la vérification du statut:', error);
+            });
+    }
+});
 </script>
 {% endblock %}

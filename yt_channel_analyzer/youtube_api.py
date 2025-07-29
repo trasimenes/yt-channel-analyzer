@@ -302,6 +302,40 @@ class YouTubeAPI:
         
         return channels
     
+    def get_videos_info(self, video_ids: List[str]) -> Dict[str, Dict]:
+        """
+        Récupère les informations de base de plusieurs vidéos
+        
+        Args:
+            video_ids (List[str]): Liste des IDs de vidéos
+            
+        Returns:
+            Dict[str, Dict]: Dictionnaire {video_id: data} des vidéos
+        """
+        videos_info = {}
+        
+        # L'API limite à 50 IDs par requête
+        for i in range(0, len(video_ids), 50):
+            batch_ids = video_ids[i:i+50]
+            
+            params = {
+                'part': 'id,snippet',
+                'id': ','.join(batch_ids)
+            }
+            
+            response = self._make_request('videos', params)
+            
+            for item in response.get('items', []):
+                videos_info[item['id']] = {
+                    'snippet': {
+                        'publishedAt': item['snippet']['publishedAt'],
+                        'title': item['snippet']['title'],
+                        'channelTitle': item['snippet']['channelTitle']
+                    }
+                }
+        
+        return videos_info
+    
     def get_quota_usage(self) -> Dict:
         """
         Retourne l'utilisation du quota

@@ -322,6 +322,16 @@ const input = document.getElementById('search-chaine');
 const list = document.getElementById('autocomplete-list');
 const urlInput = document.getElementById('channel-url');
 
+// Empêcher le focus de la navbar quand on clique sur le champ de recherche
+input.addEventListener('focus', function(e) {
+    e.stopPropagation();
+    // Masquer l'autocomplétion de la navbar si elle est ouverte
+    const navbarAutocomplete = document.getElementById('navbar-autocomplete-direct');
+    if (navbarAutocomplete) {
+        navbarAutocomplete.style.display = 'none';
+    }
+});
+
 input.addEventListener('input', async function() {
     const q = input.value.trim();
     if (!q) { 
@@ -331,7 +341,7 @@ input.addEventListener('input', async function() {
     }
     
     try {
-        const res = await fetch(`/autocomplete?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
         const suggestions = await res.json();
         list.innerHTML = '';
         
@@ -389,7 +399,7 @@ async function loadRecentAnalyses() {
         const recentList = document.getElementById('recent-list');
         if (data.analyses && data.analyses.length > 0) {
             recentList.innerHTML = data.analyses.map(item => `
-                <div class="recent-item" onclick="window.location.href='/concurrent/${item.id}'">
+                <div class="recent-item" onclick="window.location.href='/competitor/${item.id}'">
                     <img src="${item.thumbnail || '/static/sneat-pro/img/avatars/1.png'}" alt="${item.name}">
                     <div>
                         <h6 class="mb-0">${item.name}</h6>
@@ -484,6 +494,25 @@ function showToast(message, type = 'info') {
 // Load data on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadRecentAnalyses();
+    
+    // Gérer les paramètres URL pour pré-remplir les champs
+    const urlParams = new URLSearchParams(window.location.search);
+    const channelName = urlParams.get('channel_name');
+    const channelUrl = urlParams.get('channel_url');
+    const search = urlParams.get('search');
+    
+    const searchInput = document.getElementById('search-chaine');
+    const urlInput = document.getElementById('channel-url');
+    
+    if (channelName && searchInput) {
+        searchInput.value = channelName;
+    }
+    if (channelUrl && urlInput) {
+        urlInput.value = channelUrl;
+    }
+    if (search && searchInput && !channelName) {
+        searchInput.value = search;
+    }
 });
 </script>
 {% endblock %}

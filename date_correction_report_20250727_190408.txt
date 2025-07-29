@@ -1,0 +1,115 @@
+📊 RAPPORT DE CORRECTION DES DATES
+========================================
+Date du rapport : 2025-07-27 19:04:08
+
+📈 RÉSUMÉ
+--------------------
+Vidéos analysées : 8489
+Dates suspectes détectées : 3
+Corrections appliquées : 4203
+Échecs API : 0
+
+🔍 ANOMALIES DÉTECTÉES
+--------------------
+
+📅 Dates identiques massives:
+  - 2025-07-05: 4202 vidéos
+  - 2025-07-11: 1464 vidéos
+
+📥 Dates d'import détectées:
+  - 2025-07-05: 4202 vidéos
+    Concurrents: Expedia,Center Parcs,Hilton,Marriott Bonvoy,Center Parcs France,Club Med,Landal,Booking.com,VVF,Roompot,Hof van Saksen
+  - 2025-01-07: 1 vidéos
+    Concurrents: Center Parcs Ferienparks
+
+🏢 Uniformité par concurrent:
+  - Expedia: 760 vidéos, seulement 1 dates distinctes
+  - Center Parcs: 42 vidéos, seulement 1 dates distinctes
+  - Hilton: 790 vidéos, seulement 1 dates distinctes
+  - Marriott Bonvoy: 473 vidéos, seulement 1 dates distinctes
+  - Center Parcs France: 235 vidéos, seulement 1 dates distinctes
+  - Club Med: 562 vidéos, seulement 1 dates distinctes
+  - Landal: 484 vidéos, seulement 1 dates distinctes
+  - Booking.com: 82 vidéos, seulement 1 dates distinctes
+  - Center Parcs: 433 vidéos, seulement 1 dates distinctes
+  - VVF: 88 vidéos, seulement 1 dates distinctes
+  - Roompot: 158 vidéos, seulement 1 dates distinctes
+  - Hof van Saksen: 95 vidéos, seulement 1 dates distinctes
+  - Airbnb: 561 vidéos, seulement 1 dates distinctes
+  - Belambra: 269 vidéos, seulement 1 dates distinctes
+  - Siblu Villages: 190 vidéos, seulement 1 dates distinctes
+  - HOMAIR: 225 vidéos, seulement 1 dates distinctes
+  - Huttopia Campings & Villages: 92 vidéos, seulement 1 dates distinctes
+  - Marriott International: 117 vidéos, seulement 1 dates distinctes
+  - TUI Deutschland: 256 vidéos, seulement 0 dates distinctes
+  - ARD Reisen: 752 vidéos, seulement 0 dates distinctes
+  - Switzerland: 764 vidéos, seulement 0 dates distinctes
+  - Maritim Hotels: 71 vidéos, seulement 0 dates distinctes
+  - simply Munich: 187 vidéos, seulement 0 dates distinctes
+  - Bavaria Travel: 126 vidéos, seulement 0 dates distinctes
+  - HessenTourismus: 115 vidéos, seulement 0 dates distinctes
+  - Eurocamp.co.uk: 328 vidéos, seulement 0 dates distinctes
+
+✅ ÉCHANTILLON DE CORRECTIONS
+--------------------
+
+📹 Cruising by the Douro 🌊⛵...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.811491
+   Après: 2025-07-04T22:01:03Z
+
+📹 Phil Hunts for Jungle-Grown Cacao in Panama | The ...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.815416
+   Après: 2025-06-30T17:00:26Z
+
+📹 Escape to Waikiki 🌺...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.815935
+   Après: 2025-06-24T23:00:19Z
+
+📹 Marianela Tries Surfing in Panama | The Next Turn ...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.816128
+   Après: 2025-06-23T17:00:53Z
+
+📹 Visit Downtown Chicago in 30 Seconds 🌆✨...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.816282
+   Après: 2025-06-19T22:01:08Z
+
+📹 Dreamy Views of Niagara Falls...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.816528
+   Après: 2025-06-17T22:00:14Z
+
+📹 Marianela Sees Panama from Above | The Next Turn b...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.816715
+   Après: 2025-06-16T17:00:45Z
+
+📹 Manhattan, NYC 🚕✨...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.816879
+   Après: 2025-06-12T22:01:02Z
+
+📹 London Hidden Gem: Word on the Water...
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.817080
+   Après: 2025-06-11T23:26:28Z
+
+📹 Book the Disney Cruise, you won't regret it....
+   Concurrent: Expedia
+   Avant: 2025-07-05 16:29:33.817377
+   Après: 2025-06-11T23:25:05Z
+
+💡 RECOMMANDATIONS
+--------------------
+1. Vérifier les calculs de fréquence après correction
+2. Mettre à jour les analyses temporelles
+3. Auditer les scripts d'import pour éviter ce problème
+4. Implémenter une validation automatique des dates
+
+🔄 COMMANDE DE ROLLBACK
+--------------------
+python youtube_date_correction_agent.py --rollback

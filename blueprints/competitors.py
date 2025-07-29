@@ -75,17 +75,22 @@ def concurrents():
         if competitors:
             print(f"[DEBUG COMPETITORS] Premier concurrent : {competitors[0]['name']} avec {competitors[0]['video_count']} vidéos")
         
-        return render_template('concurrents_sneat_pro.html', 
+        # Calculer le total des vidéos
+        total_videos = sum(comp['video_count'] for comp in competitors)
+        
+        return render_template('concurrents_sneat_pro_tabs.html', 
                              competitors=competitors,
                              total_competitors=len(competitors),
+                             total_videos=total_videos,
                              dev_mode=session.get('dev_mode', False))
                              
     except sqlite3.Error as e:
         print(f"[ERROR] Database error in concurrents: {e}")
         flash("Erreur lors du chargement des concurrents", "error")
-        return render_template('concurrents_sneat_pro.html', 
+        return render_template('concurrents_sneat_pro_tabs.html', 
                              competitors=[],
-                             total_competitors=0)
+                             total_competitors=0,
+                             total_videos=0)
 
 
 @competitors_bp.route('/competitor/<int:competitor_id>')
@@ -111,6 +116,16 @@ def competitor_detail(competitor_id):
             flash("Concurrent non trouvé.", "error")
             return redirect(url_for('competitors.concurrents'))
         
+        # Ajouter l'analyse d'engagement
+        from yt_channel_analyzer.engagement_analyzer import EngagementAnalyzer
+        engagement_analyzer = EngagementAnalyzer()
+        
+        # Top 5 vidéos les plus engageantes avec leurs thèmes
+        top_engaging_videos = engagement_analyzer.get_top_engaging_videos(competitor_id)
+        
+        # Aperçu général de l'engagement
+        engagement_overview = engagement_analyzer.get_competitor_engagement_overview(competitor_id)
+        
         # Render new tabbed template with clean data structure
         return render_template('competitor_detail_tabs.html',
                                competitor=data['competitor'],
@@ -132,6 +147,8 @@ def competitor_detail(competitor_id):
                                shorts_data=data['shorts_data'],
                                videos_by_category=data['videos_by_category'],
                                total_videos=len(data['videos']),
+                               top_engaging_videos=top_engaging_videos,
+                               engagement_overview=engagement_overview,
                                dev_mode=session.get('dev_mode', False))
     
     except Exception as e:

@@ -20,8 +20,11 @@ from .base import (
 def init_db():
     """Initialiser la base de données"""
     try:
-        from .base import DatabaseSchema
-        return DatabaseSchema.update_database_schema()
+        from .base import DatabaseSchema, get_db_connection
+        conn = get_db_connection()
+        result = DatabaseSchema.update_database_schema(conn)
+        conn.close()
+        return result
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation de la base de données: {e}")
         return False

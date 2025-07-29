@@ -5,8 +5,13 @@ Extracted from monolithic app.py to improve maintainability.
 """
 from flask import Blueprint, jsonify, request, current_app
 from blueprints.auth import login_required
+from yt_channel_analyzer.database import get_db_connection
 import os
+import json
+import subprocess
+import threading
 from datetime import datetime
+from pathlib import Path
 
 try:
     import psutil
@@ -23,7 +28,6 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 def recent_analyses():
     """API pour récupérer les analyses récentes"""
     try:
-        from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -151,7 +155,6 @@ def clear_cache():
 def optimize_database():
     """Optimiser la base de données"""
     try:
-        from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -225,7 +228,6 @@ def export_performance_metrics():
 def recalculate_organic_status():
     """Recalculer le statut organique/payé des vidéos"""
     try:
-        from yt_channel_analyzer.database import get_db_connection
         
         # Récupérer le nouveau seuil depuis les paramètres
         new_threshold = request.json.get('threshold', 10000)
@@ -493,7 +495,6 @@ def launch_background_task():
 def export_sentiment_analysis():
     """Export sentiment analysis data as JSON"""
     try:
-        from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -615,7 +616,6 @@ def tag_playlist():
             print(f"❌ [DEBUG] Catégorie invalide: {category}")
             return jsonify({'success': False, 'error': 'Catégorie invalide'}), 400
         
-        from yt_channel_analyzer.database import get_db_connection
         from yt_channel_analyzer.hierarchical_classifier import HierarchicalClassifier
         
         print(f"🔗 [DEBUG] Import des modules OK")
@@ -803,7 +803,6 @@ def tag_video():
         if category not in ['hero', 'hub', 'help']:
             return jsonify({'success': False, 'error': 'Catégorie invalide'}), 400
         
-        from yt_channel_analyzer.database import get_db_connection
         from yt_channel_analyzer.hierarchical_classifier import HierarchicalClassifier
         
         conn = get_db_connection()
@@ -849,7 +848,6 @@ def import_sentiment_analysis():
                 'error': 'Invalid data format. Expected JSON with "videos" key.'
             }), 400
         
-        from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -946,7 +944,6 @@ def import_sentiment_analysis():
 def get_classification_hierarchy_stats():
     """Obtenir les statistiques de la hiérarchie de classification"""
     try:
-        from yt_channel_analyzer.database import get_db_connection
         from yt_channel_analyzer.hierarchical_classifier import HierarchicalClassifier
         
         conn = get_db_connection()
@@ -985,7 +982,6 @@ def test_classification_hierarchy():
         if not video_id and not playlist_id:
             return jsonify({"success": False, "error": "video_id ou playlist_id requis"}), 400
         
-        from yt_channel_analyzer.database import get_db_connection
         from yt_channel_analyzer.hierarchical_classifier import HierarchicalClassifier
         
         conn = get_db_connection()
@@ -1007,4 +1003,286 @@ def test_classification_hierarchy():
         return jsonify({
             "success": False,
             "error": str(e)
+        }), 500
+
+
+@api_bp.route('/global-refresh/start', methods=['POST'])
+@login_required
+def start_global_refresh():
+    """Démarrer le rafraîchissement global des données"""
+    try:
+        import threading
+        import subprocess
+        import sys
+        from pathlib import Path
+        
+        # Créer un cookie pour indiquer qu'un refresh est en cours
+        from flask import make_response
+        
+        # Lancer le script en arrière-plan
+        script_path = Path(__file__).parent.parent / "global_refresh_system.py"
+        
+        def run_refresh():
+            try:
+                subprocess.run([sys.executable, str(script_path)], 
+                             capture_output=True, text=True, timeout=3600)
+            except Exception as e:
+                print(f"Erreur lors du rafraîchissement: {e}")
+        
+        # Démarrer le thread
+        refresh_thread = threading.Thread(target=run_refresh)
+        refresh_thread.daemon = True
+        refresh_thread.start()
+        
+        response = make_response(jsonify({
+            'success': True,
+            'message': 'Rafraîchissement global démarré en arrière-plan'
+        }))
+        
+        # Définir un cookie pour 1 heure
+        response.set_cookie('global_refresh_running', 'true', max_age=3600, samesite='Lax')
+        
+        return response
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@api_bp.route('/global-refresh/status', methods=['GET'])
+@login_required
+def get_global_refresh_status():
+    """Obtenir le statut du rafraîchissement global"""
+    try:
+        import json
+        
+        status_file = "/tmp/global_refresh_status.json"
+        
+        try:
+            with open(status_file, 'r') as f:
+                status = json.load(f)
+        except:
+            status = {
+                'is_running': False,
+                'current_step': 0,
+                'total_steps': 0,
+                'progress_percent': 0,
+                'current_message': 'Aucun processus en cours',
+                'error': None,
+                'timestamp': 0
+            }
+        
+        return jsonify({
+            'success': True,
+            'status': status
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@api_bp.route('/autocomplete')
+@login_required  
+def autocomplete():
+    """Route pour l'autocomplétion des chaînes YouTube - Retourne les concurrents existants en priorité"""
+    q = request.args.get('q', '')
+    if not q.strip():
+        return jsonify([])
+    
+    try:
+        from yt_channel_analyzer.youtube_api import YouTubeAPI
+        
+        suggestions = []
+        
+        # 1. D'abord chercher dans les concurrents existants (priorité haute)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                c.id,
+                c.name,
+                c.channel_url as url,
+                c.country,
+                c.thumbnail_url,
+                COUNT(v.id) as video_count
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            WHERE c.name LIKE ? OR c.name LIKE ?
+            GROUP BY c.id, c.name, c.channel_url, c.country, c.thumbnail_url
+            ORDER BY 
+                CASE 
+                    WHEN c.name LIKE ? THEN 1  -- Commence par la recherche
+                    WHEN c.name LIKE ? THEN 2  -- Contient la recherche
+                    ELSE 3
+                END,
+                COUNT(v.id) DESC
+            LIMIT 5
+        """, (f"{q}%", f"%{q}%", f"{q}%", f"%{q}%"))
+        
+        existing_results = cursor.fetchall()
+        existing_names = set()
+        
+        for result in existing_results:
+            competitor_id, name, url, country, thumbnail_url, video_count = result
+            existing_names.add(name.lower())
+            
+            local_thumbnail = f"/static/competitors/images/{competitor_id}.jpg"
+            
+            suggestions.append({
+                'id': competitor_id,
+                'name': name,
+                'url': url or '',
+                'country': country or 'Pays non spécifié',
+                'thumbnail': local_thumbnail,
+                'video_count': video_count,
+                'is_analyzed': True,
+                'priority': 'existing'
+            })
+        
+        conn.close()
+        
+        # 2. Ensuite chercher sur YouTube API (toutes les chaînes)
+        try:
+            youtube_api = YouTubeAPI()
+            youtube_channels = youtube_api.search_channels(q, max_results=10)
+            
+            for channel in youtube_channels:
+                # Éviter les doublons avec les chaînes existantes
+                if channel['title'].lower() not in existing_names:
+                    suggestions.append({
+                        'id': None,  # Pas encore en base
+                        'name': channel['title'],
+                        'url': channel.get('url', ''),
+                        'country': 'YouTube Search',
+                        'thumbnail': channel.get('thumbnail', '/static/competitors/images/default.jpg'),
+                        'video_count': 0,
+                        'subscriber_count': 0,
+                        'is_analyzed': False,
+                        'priority': 'youtube'
+                    })
+            
+            print(f"[AUTOCOMPLETE] ✅ {len(existing_results)} existants + {len(youtube_channels)} YouTube pour '{q}'")
+            
+        except Exception as youtube_error:
+            print(f"[AUTOCOMPLETE] ⚠️ Erreur YouTube API: {youtube_error}")
+            # Continuer avec seulement les résultats existants
+        
+        # Limiter à 10 résultats maximum
+        suggestions = suggestions[:10]
+        
+        return jsonify(suggestions)
+        
+    except Exception as e:
+        print(f"[AUTOCOMPLETE] ❌ Erreur: {e}")
+        return jsonify([])
+
+
+@api_bp.route('/ultimate-refresh/start', methods=['POST'])
+@login_required
+def start_ultimate_refresh():
+    """Démarrer l'ULTIMATE REFRESH SYSTEM"""
+    try:
+        import threading
+        import subprocess
+        import sys
+        from pathlib import Path
+        
+        # Lancer le script ULTIMATE en arrière-plan
+        script_path = Path(__file__).parent.parent / "ultimate_global_refresh_system.py"
+        
+        def run_ultimate_refresh():
+            try:
+                # Lancer avec confirmation automatique
+                process = subprocess.Popen(
+                    [sys.executable, str(script_path)],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                # Envoyer 'y' pour confirmer automatiquement
+                stdout, stderr = process.communicate(input='y\n', timeout=3600)
+                
+                print(f"[ULTIMATE] Process terminé avec code: {process.returncode}")
+                if stdout:
+                    print(f"[ULTIMATE] STDOUT: {stdout}")
+                if stderr:
+                    print(f"[ULTIMATE] STDERR: {stderr}")
+                    
+            except Exception as e:
+                print(f"[ULTIMATE] Erreur lors de l'exécution: {e}")
+        
+        # Démarrer le thread
+        ultimate_thread = threading.Thread(target=run_ultimate_refresh)
+        ultimate_thread.daemon = True
+        ultimate_thread.start()
+        
+        return jsonify({
+            'success': True,
+            'message': '🚀 ULTIMATE REFRESH démarré en arrière-plan'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@api_bp.route('/ultimate-refresh/status', methods=['GET'])
+@login_required
+def get_ultimate_refresh_status():
+    """Obtenir le statut de l'ULTIMATE REFRESH"""
+    try:
+        import json
+        
+        status_file = "/tmp/ultimate_refresh_status.json"
+        report_pattern = "/tmp/ultimate_refresh_report_*.json"
+        
+        try:
+            with open(status_file, 'r') as f:
+                status = json.load(f)
+        except:
+            status = {
+                'is_running': False,
+                'current_step': 0,
+                'total_steps': 0,
+                'progress_percent': 0,
+                'current_message': 'Aucun processus ULTIMATE en cours',
+                'error': None,
+                'timestamp': 0,
+                'stats': {}
+            }
+        
+        # Chercher le rapport le plus récent
+        detailed_log = []
+        try:
+            import glob
+            report_files = glob.glob(report_pattern)
+            if report_files:
+                # Prendre le plus récent
+                latest_report = max(report_files, key=lambda x: os.path.getctime(x))
+                with open(latest_report, 'r') as f:
+                    report_data = json.load(f)
+                    detailed_log = report_data.get('detailed_log', [])[-10:]  # 10 dernières entrées
+        except:
+            pass
+        
+        return jsonify({
+            'success': True,
+            'status': status,
+            'detailed_log': detailed_log
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 500

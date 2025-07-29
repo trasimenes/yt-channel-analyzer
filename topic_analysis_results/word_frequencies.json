@@ -1,11 +1,15 @@
 {
   "title_words": {
-    "total_words": 42952,
-    "unique_words": 11908,
+    "total_words": 44790,
+    "unique_words": 11944,
     "top_500": [
       {
         "word": "tourism",
         "count": 445
+      },
+      {
+        "word": "camping",
+        "count": 346
       },
       {
         "word": "guide",
@@ -28,6 +32,10 @@
         "count": 278
       },
       {
+        "word": "centerparcs",
+        "count": 244
+      },
+      {
         "word": "your",
         "count": 215
       },
@@ -36,12 +44,28 @@
         "count": 200
       },
       {
+        "word": "greenparks",
+        "count": 193
+      },
+      {
+        "word": "video",
+        "count": 181
+      },
+      {
         "word": "discover",
         "count": 178
       },
       {
+        "word": "park",
+        "count": 163
+      },
+      {
         "word": "how",
         "count": 151
+      },
+      {
+        "word": "resort",
+        "count": 132
       },
       {
         "word": "stay",
@@ -156,6 +180,14 @@
         "count": 81
       },
       {
+        "word": "cottage",
+        "count": 80
+      },
+      {
+        "word": "italy",
+        "count": 79
+      },
+      {
         "word": "bungalowpark",
         "count": 79
       },
@@ -237,6 +269,10 @@
       },
       {
         "word": "road",
+        "count": 56
+      },
+      {
+        "word": "all",
         "count": 56
       },
       {
@@ -416,6 +452,10 @@
         "count": 40
       },
       {
+        "word": "booking",
+        "count": 40
+      },
+      {
         "word": "costa",
         "count": 40
       },
@@ -461,6 +501,10 @@
       },
       {
         "word": "popular",
+        "count": 39
+      },
+      {
+        "word": "ferienpark",
         "count": 39
       },
       {
@@ -514,6 +558,10 @@
       {
         "word": "vraies",
         "count": 37
+      },
+      {
+        "word": "like",
+        "count": 36
       },
       {
         "word": "story",
@@ -600,6 +648,10 @@
         "count": 34
       },
       {
+        "word": "spain",
+        "count": 34
+      },
+      {
         "word": "director",
         "count": 34
       },
@@ -625,6 +677,10 @@
       },
       {
         "word": "alps",
+        "count": 33
+      },
+      {
+        "word": "vakantiepark",
         "count": 33
       },
       {
@@ -944,6 +1000,10 @@
         "count": 25
       },
       {
+        "word": "parc",
+        "count": 25
+      },
+      {
         "word": "了解万豪旅享家",
         "count": 25
       },
@@ -1240,7 +1300,15 @@
         "count": 20
       },
       {
+        "word": "comment",
+        "count": 20
+      },
+      {
         "word": "home2",
+        "count": 20
+      },
+      {
+        "word": "portugal",
         "count": 20
       },
       {
@@ -1465,6 +1533,10 @@
       },
       {
         "word": "style",
+        "count": 17
+      },
+      {
+        "word": "parks",
         "count": 17
       },
       {
@@ -1930,124 +2002,52 @@
       {
         "word": "restaurant",
         "count": 14
-      },
-      {
-        "word": "natural",
-        "count": 14
-      },
-      {
-        "word": "domaines",
-        "count": 14
-      },
-      {
-        "word": "normandie",
-        "count": 14
-      },
-      {
-        "word": "loire",
-        "count": 14
-      },
-      {
-        "word": "responsable",
-        "count": 14
-      },
-      {
-        "word": "pierre",
-        "count": 14
-      },
-      {
-        "word": "gelderland",
-        "count": 14
-      },
-      {
-        "word": "maken",
-        "count": 14
-      },
-      {
-        "word": "wintersport",
-        "count": 14
-      },
-      {
-        "word": "drenthe",
-        "count": 14
-      },
-      {
-        "word": "beer",
-        "count": 14
-      },
-      {
-        "word": "alpine",
-        "count": 14
-      },
-      {
-        "word": "meer",
-        "count": 14
-      },
-      {
-        "word": "naar",
-        "count": 14
-      },
-      {
-        "word": "jouw",
-        "count": 14
-      },
-      {
-        "word": "dome",
-        "count": 14
-      },
-      {
-        "word": "heide",
-        "count": 14
-      },
-      {
-        "word": "emploi",
-        "count": 14
       }
     ]
   },
   "description_words": {
-    "total_words": 293834,
-    "unique_words": 44326,
+    "total_words": 302122,
+    "unique_words": 44510,
     "top_500": [
       {
         "word": "sie",
-        "count": 2348
+        "count": 2388
       },
       {
         "word": "hier",
-        "count": 1734
+        "count": 1753
       },
       {
         "word": "you",
-        "count": 1484
+        "count": 1502
       },
       {
         "word": "more",
-        "count": 1356
+        "count": 1389
       },
       {
         "word": "your",
-        "count": 1309
+        "count": 1319
       },
       {
         "word": "sich",
-        "count": 1263
+        "count": 1277
       },
       {
         "word": "film",
-        "count": 1075
+        "count": 1078
       },
       {
         "word": "auch",
-        "count": 1074
+        "count": 1078
       },
       {
         "word": "mehr",
-        "count": 1041
+        "count": 1048
       },
       {
         "word": "wunderschön",
-        "count": 1011
+        "count": 1012
       },
       {
         "word": "kanal",
@@ -2059,87 +2059,87 @@
       },
       {
         "word": "nicht",
-        "count": 926
+        "count": 931
+      },
+      {
+        "word": "ihr",
+        "count": 857
       },
       {
         "word": "dir",
-        "count": 852
+        "count": 854
+      },
+      {
+        "word": "wie",
+        "count": 850
       },
       {
         "word": "weitere",
         "count": 850
       },
       {
-        "word": "ihr",
-        "count": 847
-      },
-      {
-        "word": "wie",
-        "count": 838
-      },
-      {
         "word": "über",
-        "count": 804
+        "count": 816
       },
       {
         "word": "hessen",
-        "count": 802
+        "count": 816
       },
       {
         "word": "alle",
-        "count": 792
-      },
-      {
-        "word": "our",
-        "count": 752
+        "count": 799
       },
       {
         "word": "find",
-        "count": 744
+        "count": 772
+      },
+      {
+        "word": "our",
+        "count": 769
       },
       {
         "word": "kannst",
         "count": 734
       },
       {
+        "word": "out",
+        "count": 714
+      },
+      {
+        "word": "nach",
+        "count": 711
+      },
+      {
         "word": "infos",
         "count": 710
       },
       {
-        "word": "nach",
-        "count": 708
+        "word": "unsere",
+        "count": 706
+      },
+      {
+        "word": "wir",
+        "count": 705
       },
       {
         "word": "abonnieren",
         "count": 701
       },
       {
+        "word": "unser",
+        "count": 694
+      },
+      {
         "word": "mediathek",
         "count": 694
       },
       {
-        "word": "unsere",
-        "count": 693
-      },
-      {
-        "word": "unser",
-        "count": 690
-      },
-      {
-        "word": "out",
-        "count": 686
-      },
-      {
-        "word": "wir",
-        "count": 678
-      },
-      {
         "word": "durch",
-        "count": 672
+        "count": 679
       },
       {
         "word": "aus",
-        "count": 666
+        "count": 675
       },
       {
         "word": "ihn",
@@ -2147,7 +2147,7 @@
       },
       {
         "word": "zum",
-        "count": 628
+        "count": 634
       },
       {
         "word": "gefällt",
@@ -2155,7 +2155,7 @@
       },
       {
         "word": "stay",
-        "count": 598
+        "count": 602
       },
       {
         "word": "wurde",
@@ -2167,10 +2167,18 @@
       },
       {
         "word": "about",
-        "count": 566
+        "count": 577
+      },
+      {
+        "word": "urlaub",
+        "count": 575
       },
       {
         "word": "here",
+        "count": 569
+      },
+      {
+        "word": "als",
         "count": 565
       },
       {
@@ -2178,24 +2186,28 @@
         "count": 563
       },
       {
-        "word": "als",
-        "count": 562
-      },
-      {
-        "word": "urlaub",
-        "count": 554
+        "word": "camping",
+        "count": 556
       },
       {
         "word": "dieser",
-        "count": 551
+        "count": 553
       },
       {
         "word": "stand",
-        "count": 525
+        "count": 528
       },
       {
         "word": "noch",
         "count": 523
+      },
+      {
+        "word": "uns",
+        "count": 517
+      },
+      {
+        "word": "unseren",
+        "count": 517
       },
       {
         "word": "fakten",
@@ -2206,12 +2218,8 @@
         "count": 515
       },
       {
-        "word": "uns",
-        "count": 513
-      },
-      {
         "word": "----",
-        "count": 512
+        "count": 513
       },
       {
         "word": "aussagen",
@@ -2226,10 +2234,6 @@
         "count": 512
       },
       {
-        "word": "unseren",
-        "count": 509
-      },
-      {
         "word": "ardreisen",
         "count": 508
       },
@@ -2238,8 +2242,12 @@
         "count": 507
       },
       {
+        "word": "hotel",
+        "count": 485
+      },
+      {
         "word": "visit",
-        "count": 482
+        "count": 484
       },
       {
         "word": "geht",
@@ -2247,35 +2255,47 @@
       },
       {
         "word": "instagram",
-        "count": 476
+        "count": 477
+      },
+      {
+        "word": "subscribe",
+        "count": 471
       },
       {
         "word": "eines",
-        "count": 468
+        "count": 471
       },
       {
-        "word": "hotel",
-        "count": 462
+        "word": "discover",
+        "count": 465
       },
       {
         "word": "next",
         "count": 461
       },
       {
-        "word": "discover",
+        "word": "all",
         "count": 460
       },
       {
         "word": "familie",
-        "count": 451
+        "count": 456
       },
       {
         "word": "gibt",
-        "count": 438
+        "count": 443
+      },
+      {
+        "word": "video",
+        "count": 440
+      },
+      {
+        "word": "videos",
+        "count": 440
       },
       {
         "word": "new",
-        "count": 424
+        "count": 432
       },
       {
         "word": "redaktion",
@@ -2283,10 +2303,18 @@
       },
       {
         "word": "einer",
-        "count": 399
+        "count": 403
       },
       {
         "word": "city",
+        "count": 394
+      },
+      {
+        "word": "erleben",
+        "count": 393
+      },
+      {
+        "word": "how",
         "count": 391
       },
       {
@@ -2298,24 +2326,24 @@
         "count": 391
       },
       {
-        "word": "erleben",
+        "word": "parc",
         "count": 388
       },
       {
-        "word": "how",
-        "count": 386
+        "word": "tipps",
+        "count": 384
       },
       {
         "word": "seitdem",
         "count": 384
       },
       {
-        "word": "tipps",
-        "count": 378
+        "word": "vom",
+        "count": 376
       },
       {
-        "word": "vom",
-        "count": 375
+        "word": "get",
+        "count": 372
       },
       {
         "word": "----------------------------------------",
@@ -2323,39 +2351,43 @@
       },
       {
         "word": "findet",
-        "count": 367
-      },
-      {
-        "word": "get",
-        "count": 365
+        "count": 368
       },
       {
         "word": "tour",
-        "count": 364
+        "count": 366
       },
       {
         "word": "com",
-        "count": 362
+        "count": 365
       },
       {
         "word": "schönsten",
-        "count": 361
+        "count": 363
       },
       {
         "word": "bis",
-        "count": 354
+        "count": 360
       },
       {
         "word": "stadt",
-        "count": 352
+        "count": 358
       },
       {
         "word": "natur",
-        "count": 352
+        "count": 356
+      },
+      {
+        "word": "park",
+        "count": 350
+      },
+      {
+        "word": "aktivitäten",
+        "count": 350
       },
       {
         "word": "aqua",
-        "count": 343
+        "count": 348
       },
       {
         "word": "jahr",
@@ -2363,123 +2395,135 @@
       },
       {
         "word": "inspiration",
-        "count": 339
-      },
-      {
-        "word": "aktivitäten",
-        "count": 336
-      },
-      {
-        "word": "one",
-        "count": 334
-      },
-      {
-        "word": "can",
-        "count": 332
-      },
-      {
-        "word": "mundo",
-        "count": 332
+        "count": 341
       },
       {
         "word": "best",
-        "count": 331
+        "count": 340
+      },
+      {
+        "word": "one",
+        "count": 337
+      },
+      {
+        "word": "mundo",
+        "count": 337
+      },
+      {
+        "word": "can",
+        "count": 336
       },
       {
         "word": "reise",
-        "count": 330
+        "count": 332
       },
       {
         "word": "when",
-        "count": 328
+        "count": 330
       },
       {
         "word": "unter",
-        "count": 327
+        "count": 328
       },
       {
         "word": "auftrag",
         "count": 325
       },
       {
+        "word": "vor",
+        "count": 322
+      },
+      {
         "word": "world",
-        "count": 317
+        "count": 320
       },
       {
         "word": "see",
-        "count": 315
-      },
-      {
-        "word": "vor",
-        "count": 315
+        "count": 316
       },
       {
         "word": "menschen",
+        "count": 316
+      },
+      {
+        "word": "euch",
+        "count": 314
+      },
+      {
+        "word": "where",
         "count": 311
+      },
+      {
+        "word": "experience",
+        "count": 310
       },
       {
         "word": "nature",
         "count": 307
       },
       {
-        "word": "where",
-        "count": 306
-      },
-      {
-        "word": "experience",
-        "count": 305
-      },
-      {
         "word": "zur",
-        "count": 303
+        "count": 304
       },
       {
         "word": "holiday",
-        "count": 302
-      },
-      {
-        "word": "euch",
-        "count": 300
-      },
-      {
-        "word": "camper",
-        "count": 298
-      },
-      {
-        "word": "through",
-        "count": 294
+        "count": 303
       },
       {
         "word": "ihre",
-        "count": 294
+        "count": 301
       },
       {
         "word": "entdecken",
+        "count": 299
+      },
+      {
+        "word": "camper",
+        "count": 299
+      },
+      {
+        "word": "through",
+        "count": 297
+      },
+      {
+        "word": "resort",
+        "count": 294
+      },
+      {
+        "word": "man",
+        "count": 294
+      },
+      {
+        "word": "ihren",
         "count": 292
+      },
+      {
+        "word": "welt",
+        "count": 291
       },
       {
         "word": "nos",
         "count": 290
       },
       {
-        "word": "man",
+        "word": "eurocamp",
         "count": 289
       },
       {
-        "word": "welt",
-        "count": 289
-      },
-      {
-        "word": "ihren",
-        "count": 286
+        "word": "trip",
+        "count": 278
       },
       {
         "word": "wdrreisen",
         "count": 277
       },
       {
-        "word": "trip",
-        "count": 274
+        "word": "region",
+        "count": 275
+      },
+      {
+        "word": "nur",
+        "count": 275
       },
       {
         "word": "bij",
@@ -2490,24 +2534,12 @@
         "count": 271
       },
       {
-        "word": "nur",
-        "count": 269
-      },
-      {
         "word": "folge",
         "count": 268
       },
       {
-        "word": "region",
-        "count": 267
-      },
-      {
         "word": "ihrer",
-        "count": 265
-      },
-      {
-        "word": "eurocamp",
-        "count": 260
+        "count": 267
       },
       {
         "word": "blog",
@@ -2523,19 +2555,19 @@
       },
       {
         "word": "erinnerungen",
-        "count": 254
+        "count": 255
       },
       {
         "word": "seit",
-        "count": 253
+        "count": 255
+      },
+      {
+        "word": "insel",
+        "count": 252
       },
       {
         "word": "intro",
         "count": 252
-      },
-      {
-        "word": "insel",
-        "count": 251
       },
       {
         "word": "her",
@@ -2546,11 +2578,15 @@
         "count": 249
       },
       {
-        "word": "home",
-        "count": 246
+        "word": "münchen",
+        "count": 249
       },
       {
-        "word": "münchen",
+        "word": "home",
+        "count": 248
+      },
+      {
+        "word": "land",
         "count": 246
       },
       {
@@ -2559,58 +2595,66 @@
       },
       {
         "word": "können",
-        "count": 243
-      },
-      {
-        "word": "land",
-        "count": 242
+        "count": 244
       },
       {
         "word": "begrüßung",
         "count": 240
       },
       {
+        "word": "ganz",
+        "count": 235
+      },
+      {
         "word": "jetzt",
-        "count": 234
+        "count": 235
       },
       {
         "word": "neue",
+        "count": 235
+      },
+      {
+        "word": "what",
         "count": 233
       },
       {
         "word": "into",
-        "count": 229
+        "count": 231
+      },
+      {
+        "word": "sein",
+        "count": 231
+      },
+      {
+        "word": "dich",
+        "count": 231
+      },
+      {
+        "word": "ganze",
+        "count": 230
       },
       {
         "word": "anderen",
         "count": 229
       },
       {
-        "word": "sein",
-        "count": 229
-      },
-      {
-        "word": "dich",
-        "count": 228
-      },
-      {
-        "word": "ganze",
-        "count": 228
-      },
-      {
-        "word": "ganz",
+        "word": "youtube",
         "count": 226
       },
       {
-        "word": "what",
+        "word": "top",
         "count": 225
       },
       {
-        "word": "why",
+        "word": "geschichte",
+        "count": 224
+      },
+      {
+        "word": "art",
         "count": 223
       },
       {
-        "word": "geschichte",
+        "word": "why",
         "count": 223
       },
       {
@@ -2618,52 +2662,48 @@
         "count": 223
       },
       {
-        "word": "art",
+        "word": "most",
         "count": 222
       },
       {
         "word": "wasser",
-        "count": 220
+        "count": 221
       },
       {
         "word": "erlebt",
-        "count": 219
+        "count": 221
+      },
+      {
+        "word": "like",
+        "count": 220
       },
       {
         "word": "vacation",
-        "count": 218
-      },
-      {
-        "word": "top",
-        "count": 217
+        "count": 219
       },
       {
         "word": "market",
-        "count": 216
+        "count": 219
       },
       {
         "word": "just",
-        "count": 215
+        "count": 218
       },
       {
-        "word": "most",
+        "word": "take",
+        "count": 217
+      },
+      {
+        "word": "denn",
+        "count": 217
+      },
+      {
+        "word": "perfect",
         "count": 215
       },
       {
         "word": "hiltonforthestay",
         "count": 215
-      },
-      {
-        "word": "denn",
-        "count": 214
-      },
-      {
-        "word": "perfect",
-        "count": 213
-      },
-      {
-        "word": "take",
-        "count": 212
       },
       {
         "word": "deutschlands",
@@ -2674,88 +2714,88 @@
         "count": 210
       },
       {
+        "word": "unserem",
+        "count": 210
+      },
+      {
+        "word": "make",
+        "count": 209
+      },
+      {
         "word": "deze",
         "count": 209
       },
       {
-        "word": "unserem",
-        "count": 207
-      },
-      {
-        "word": "make",
-        "count": 205
+        "word": "schon",
+        "count": 206
       },
       {
         "word": "learn",
-        "count": 203
-      },
-      {
-        "word": "schon",
-        "count": 203
-      },
-      {
-        "word": "campingplatz",
-        "count": 202
+        "count": 205
       },
       {
         "word": "family",
-        "count": 201
+        "count": 204
       },
       {
-        "word": "check",
-        "count": 199
+        "word": "campingplatz",
+        "count": 203
       },
       {
         "word": "kann",
-        "count": 199
+        "count": 202
+      },
+      {
+        "word": "check",
+        "count": 200
       },
       {
         "word": "spaß",
+        "count": 200
+      },
+      {
+        "word": "abenteuer",
+        "count": 198
+      },
+      {
+        "word": "enjoy",
         "count": 197
+      },
+      {
+        "word": "unterwegs",
+        "count": 197
+      },
+      {
+        "word": "meer",
+        "count": 196
+      },
+      {
+        "word": "gemeinsam",
+        "count": 196
+      },
+      {
+        "word": "diese",
+        "count": 196
+      },
+      {
+        "word": "who",
+        "count": 195
       },
       {
         "word": "over",
         "count": 195
       },
       {
-        "word": "abenteuer",
-        "count": 195
-      },
-      {
-        "word": "diese",
-        "count": 195
-      },
-      {
         "word": "essen",
-        "count": 194
-      },
-      {
-        "word": "unterwegs",
-        "count": 194
-      },
-      {
-        "word": "who",
-        "count": 193
+        "count": 195
       },
       {
         "word": "diesem",
         "count": 193
       },
       {
-        "word": "meer",
-        "count": 193
-      },
-      {
-        "word": "enjoy",
-        "count": 191
-      },
-      {
         "word": "some",
-        "count": 190
-      },
-      {
-        "word": "gemeinsam",
-        "count": 190
+        "count": 192
       },
       {
         "word": "familienspaß",
@@ -2771,10 +2811,18 @@
       },
       {
         "word": "dome",
-        "count": 185
+        "count": 188
       },
       {
         "word": "sehen",
+        "count": 185
+      },
+      {
+        "word": "explore",
+        "count": 183
+      },
+      {
+        "word": "alles",
         "count": 183
       },
       {
@@ -2782,39 +2830,55 @@
         "count": 181
       },
       {
-        "word": "explore",
+        "word": "parks",
         "count": 180
+      },
+      {
+        "word": "time",
+        "count": 179
+      },
+      {
+        "word": "deutschen",
+        "count": 179
+      },
+      {
+        "word": "viel",
+        "count": 179
       },
       {
         "word": "-----",
         "count": 179
       },
       {
-        "word": "time",
-        "count": 177
-      },
-      {
-        "word": "deutschen",
-        "count": 177
-      },
-      {
-        "word": "alles",
-        "count": 175
-      },
-      {
-        "word": "ganzen",
-        "count": 175
-      },
-      {
-        "word": "viel",
-        "count": 175
-      },
-      {
-        "word": "tradition",
-        "count": 174
+        "word": "www",
+        "count": 178
       },
       {
         "word": "beim",
+        "count": 176
+      },
+      {
+        "word": "ganzen",
+        "count": 176
+      },
+      {
+        "word": "kultur",
+        "count": 176
+      },
+      {
+        "word": "frankreich",
+        "count": 176
+      },
+      {
+        "word": "tradition",
+        "count": 175
+      },
+      {
+        "word": "jede",
+        "count": 175
+      },
+      {
+        "word": "join",
         "count": 173
       },
       {
@@ -2826,23 +2890,35 @@
         "count": 173
       },
       {
-        "word": "kultur",
-        "count": 173
-      },
-      {
-        "word": "join",
-        "count": 172
-      },
-      {
         "word": "alten",
         "count": 172
       },
       {
-        "word": "frankreich",
-        "count": 172
+        "word": "ready",
+        "count": 171
       },
       {
-        "word": "ready",
+        "word": "grand",
+        "count": 171
+      },
+      {
+        "word": "beautiful",
+        "count": 171
+      },
+      {
+        "word": "viele",
+        "count": 171
+      },
+      {
+        "word": "beach",
+        "count": 170
+      },
+      {
+        "word": "während",
+        "count": 170
+      },
+      {
+        "word": "erfahren",
         "count": 170
       },
       {
@@ -2854,52 +2930,32 @@
         "count": 170
       },
       {
-        "word": "grand",
-        "count": 169
-      },
-      {
         "word": "folgen",
-        "count": 169
+        "count": 170
       },
       {
         "word": "modern",
-        "count": 168
-      },
-      {
-        "word": "beach",
-        "count": 168
-      },
-      {
-        "word": "beautiful",
-        "count": 168
-      },
-      {
-        "word": "erfahren",
-        "count": 168
-      },
-      {
-        "word": "jede",
-        "count": 168
-      },
-      {
-        "word": "start",
-        "count": 166
-      },
-      {
-        "word": "während",
-        "count": 166
-      },
-      {
-        "word": "viele",
-        "count": 166
+        "count": 169
       },
       {
         "word": "geben",
-        "count": 166
+        "count": 169
       },
       {
         "word": "genau",
-        "count": 166
+        "count": 169
+      },
+      {
+        "word": "start",
+        "count": 168
+      },
+      {
+        "word": "unique",
+        "count": 168
+      },
+      {
+        "word": "follow",
+        "count": 167
       },
       {
         "word": "tamina",
@@ -2907,7 +2963,15 @@
       },
       {
         "word": "wohnmobil",
+        "count": 166
+      },
+      {
+        "word": "dabei",
         "count": 165
+      },
+      {
+        "word": "day",
+        "count": 164
       },
       {
         "word": "vos",
@@ -2918,43 +2982,63 @@
         "count": 164
       },
       {
-        "word": "day",
-        "count": 163
-      },
-      {
         "word": "seine",
-        "count": 163
+        "count": 164
       },
       {
         "word": "wald",
         "count": 163
       },
       {
-        "word": "unique",
+        "word": "strand",
         "count": 162
       },
       {
-        "word": "dabei",
+        "word": "immer",
         "count": 162
       },
       {
         "word": "experiences",
-        "count": 159
+        "count": 161
       },
       {
-        "word": "entdecke",
-        "count": 159
+        "word": "dann",
+        "count": 161
       },
       {
         "word": "diesen",
-        "count": 159
+        "count": 161
       },
       {
         "word": "ihrem",
+        "count": 161
+      },
+      {
+        "word": "centerparcs",
+        "count": 160
+      },
+      {
+        "word": "entdecke",
+        "count": 160
+      },
+      {
+        "word": "tropischen",
+        "count": 160
+      },
+      {
+        "word": "rund",
         "count": 159
       },
       {
-        "word": "strand",
+        "word": "städte",
+        "count": 159
+      },
+      {
+        "word": "gerne",
+        "count": 159
+      },
+      {
+        "word": "great",
         "count": 158
       },
       {
@@ -2970,11 +3054,7 @@
         "count": 158
       },
       {
-        "word": "tropischen",
-        "count": 158
-      },
-      {
-        "word": "immer",
+        "word": "winter",
         "count": 157
       },
       {
@@ -2982,19 +3062,11 @@
         "count": 157
       },
       {
-        "word": "rund",
-        "count": 157
-      },
-      {
-        "word": "dann",
-        "count": 157
-      },
-      {
-        "word": "winter",
+        "word": "than",
         "count": 156
       },
       {
-        "word": "gerne",
+        "word": "ferienhäusern",
         "count": 156
       },
       {
@@ -3002,55 +3074,67 @@
         "count": 156
       },
       {
-        "word": "than",
-        "count": 155
-      },
-      {
-        "word": "ferienhäusern",
-        "count": 155
-      },
-      {
-        "word": "great",
-        "count": 154
-      },
-      {
         "word": "lesen",
-        "count": 154
+        "count": 156
       },
       {
         "word": "also",
+        "count": 154
+      },
+      {
+        "word": "finden",
+        "count": 154
+      },
+      {
+        "word": "every",
         "count": 153
       },
       {
-        "word": "städte",
+        "word": "know",
         "count": 153
       },
       {
         "word": "not",
-        "count": 152
+        "count": 153
       },
       {
         "word": "guests",
-        "count": 152
+        "count": 153
+      },
+      {
+        "word": "leben",
+        "count": 153
       },
       {
         "word": "willkommen",
         "count": 152
       },
       {
-        "word": "finden",
+        "word": "wollen",
+        "count": 152
+      },
+      {
+        "word": "ihnen",
         "count": 151
       },
       {
-        "word": "leben",
+        "word": "swiss",
         "count": 151
+      },
+      {
+        "word": "tag",
+        "count": 150
       },
       {
         "word": "einige",
         "count": 150
       },
       {
-        "word": "know",
+        "word": "schöne",
+        "count": 150
+      },
+      {
+        "word": "machen",
         "count": 149
       },
       {
@@ -3058,31 +3142,15 @@
         "count": 149
       },
       {
-        "word": "wollen",
-        "count": 149
-      },
-      {
-        "word": "schöne",
-        "count": 149
-      },
-      {
-        "word": "tag",
-        "count": 148
-      },
-      {
         "word": "einzigartigen",
         "count": 148
       },
       {
-        "word": "swiss",
+        "word": "niederlanden",
         "count": 148
       },
       {
-        "word": "every",
-        "count": 147
-      },
-      {
-        "word": "www",
+        "word": "place",
         "count": 147
       },
       {
@@ -3090,11 +3158,11 @@
         "count": 147
       },
       {
-        "word": "machen",
+        "word": "atmosphäre",
         "count": 147
       },
       {
-        "word": "atmosphäre",
+        "word": "möchten",
         "count": 147
       },
       {
@@ -3106,15 +3174,11 @@
         "count": 145
       },
       {
-        "word": "möchten",
-        "count": 145
-      },
-      {
-        "word": "niederlanden",
-        "count": 145
-      },
-      {
         "word": "paar",
+        "count": 144
+      },
+      {
+        "word": "landschaft",
         "count": 144
       },
       {
@@ -3122,15 +3186,15 @@
         "count": 144
       },
       {
+        "word": "belgien",
+        "count": 144
+      },
+      {
         "word": "letzten",
         "count": 144
       },
       {
-        "word": "place",
-        "count": 143
-      },
-      {
-        "word": "landschaft",
+        "word": "bietet",
         "count": 143
       },
       {
@@ -3142,11 +3206,15 @@
         "count": 143
       },
       {
+        "word": "around",
+        "count": 142
+      },
+      {
         "word": "website",
         "count": 142
       },
       {
-        "word": "ihnen",
+        "word": "unserer",
         "count": 142
       },
       {
@@ -3154,27 +3222,23 @@
         "count": 141
       },
       {
-        "word": "around",
-        "count": 140
-      },
-      {
-        "word": "bietet",
-        "count": 140
-      },
-      {
         "word": "pinterest",
         "count": 140
       },
       {
-        "word": "belgien",
+        "word": "familienurlaub",
         "count": 140
+      },
+      {
+        "word": "clubs",
+        "count": 139
       },
       {
         "word": "kilometer",
         "count": 139
       },
       {
-        "word": "familienurlaub",
+        "word": "grünen",
         "count": 139
       },
       {
@@ -3186,28 +3250,32 @@
         "count": 138
       },
       {
-        "word": "grünen",
-        "count": 138
-      },
-      {
-        "word": "clubs",
-        "count": 137
-      },
-      {
         "word": "woche",
-        "count": 137
+        "count": 138
       },
       {
         "word": "she",
         "count": 136
       },
       {
-        "word": "unserer",
+        "word": "plan",
         "count": 136
       },
       {
-        "word": "plan",
+        "word": "heart",
         "count": 135
+      },
+      {
+        "word": "erlebe",
+        "count": 135
+      },
+      {
+        "word": "along",
+        "count": 134
+      },
+      {
+        "word": "cottage",
+        "count": 134
       },
       {
         "word": "cœur",
@@ -3218,15 +3286,15 @@
         "count": 134
       },
       {
-        "word": "erlebe",
-        "count": 134
-      },
-      {
-        "word": "heart",
+        "word": "resorts",
         "count": 133
       },
       {
-        "word": "along",
+        "word": "burgen",
+        "count": 133
+      },
+      {
+        "word": "trinken",
         "count": 133
       },
       {
@@ -3234,11 +3302,11 @@
         "count": 133
       },
       {
-        "word": "resorts",
+        "word": "there",
         "count": 132
       },
       {
-        "word": "burgen",
+        "word": "gassen",
         "count": 132
       },
       {
@@ -3246,11 +3314,15 @@
         "count": 131
       },
       {
+        "word": "away",
+        "count": 131
+      },
+      {
         "word": "buchen",
         "count": 131
       },
       {
-        "word": "trinken",
+        "word": "mal",
         "count": 131
       },
       {
@@ -3258,31 +3330,23 @@
         "count": 131
       },
       {
-        "word": "there",
-        "count": 130
-      },
-      {
-        "word": "away",
-        "count": 130
-      },
-      {
-        "word": "gassen",
-        "count": 130
-      },
-      {
         "word": "parcs-parks",
         "count": 130
-      },
-      {
-        "word": "mal",
-        "count": 129
       },
       {
         "word": "eintauchen",
         "count": 129
       },
       {
+        "word": "eigenen",
+        "count": 128
+      },
+      {
         "word": "sports",
+        "count": 127
+      },
+      {
+        "word": "zwei",
         "count": 127
       },
       {
@@ -3290,23 +3354,23 @@
         "count": 127
       },
       {
-        "word": "eigenen",
+        "word": "kommentaren",
         "count": 127
       },
       {
-        "word": "kommentaren",
-        "count": 127
+        "word": "journey",
+        "count": 126
       },
       {
         "word": "island",
         "count": 126
       },
       {
-        "word": "zwei",
+        "word": "inspired",
         "count": 126
       },
       {
-        "word": "inspired",
+        "word": "ideas",
         "count": 125
       },
       {
@@ -3320,6 +3384,10 @@
       {
         "word": "macht",
         "count": 125
+      },
+      {
+        "word": "local",
+        "count": 124
       },
       {
         "word": "cet",
@@ -3338,11 +3406,15 @@
         "count": 124
       },
       {
-        "word": "journey",
+        "word": "teilnehmen",
+        "count": 124
+      },
+      {
+        "word": "life",
         "count": 123
       },
       {
-        "word": "teilnehmen",
+        "word": "lass",
         "count": 123
       },
       {
@@ -3350,11 +3422,15 @@
         "count": 123
       },
       {
-        "word": "ideas",
+        "word": "liegt",
         "count": 122
       },
       {
-        "word": "liegt",
+        "word": "entlang",
+        "count": 122
+      },
+      {
+        "word": "wohnwagen",
         "count": 122
       },
       {
@@ -3362,7 +3438,7 @@
         "count": 122
       },
       {
-        "word": "local",
+        "word": "adventure",
         "count": 121
       },
       {
@@ -3370,27 +3446,35 @@
         "count": 121
       },
       {
-        "word": "lass",
-        "count": 121
-      },
-      {
-        "word": "life",
+        "word": "way",
         "count": 120
-      },
-      {
-        "word": "wohnwagen",
-        "count": 120
-      },
-      {
-        "word": "adventure",
-        "count": 119
       },
       {
         "word": "destination",
+        "count": 120
+      },
+      {
+        "word": "familienurlaubs",
+        "count": 120
+      },
+      {
+        "word": "even",
+        "count": 119
+      },
+      {
+        "word": "since",
         "count": 119
       },
       {
         "word": "famille",
+        "count": 119
+      },
+      {
+        "word": "deine",
+        "count": 119
+      },
+      {
+        "word": "deinen",
         "count": 119
       },
       {
@@ -3406,10 +3490,6 @@
         "count": 119
       },
       {
-        "word": "familienurlaubs",
-        "count": 119
-      },
-      {
         "word": "vollkommen",
         "count": 119
       },
@@ -3418,11 +3498,7 @@
         "count": 119
       },
       {
-        "word": "even",
-        "count": 118
-      },
-      {
-        "word": "since",
+        "word": "booking",
         "count": 118
       },
       {
@@ -3434,24 +3510,24 @@
         "count": 118
       },
       {
-        "word": "deine",
-        "count": 118
-      },
-      {
-        "word": "deinen",
-        "count": 118
-      },
-      {
-        "word": "entlang",
-        "count": 118
-      },
-      {
         "word": "kallert",
         "count": 118
       },
       {
         "word": "überdachten",
         "count": 118
+      },
+      {
+        "word": "share",
+        "count": 117
+      },
+      {
+        "word": "highlights",
+        "count": 117
+      },
+      {
+        "word": "weg",
+        "count": 117
       },
       {
         "word": "samen",
@@ -3462,8 +3538,16 @@
         "count": 117
       },
       {
+        "word": "first",
+        "count": 116
+      },
+      {
         "word": "diy",
         "count": 116
+      },
+      {
+        "word": "love",
+        "count": 115
       },
       {
         "word": "ski",
@@ -3474,43 +3558,47 @@
         "count": 115
       },
       {
-        "word": "highlights",
-        "count": 115
-      },
-      {
         "word": "ons",
         "count": 115
       },
       {
-        "word": "way",
-        "count": 114
-      },
-      {
-        "word": "love",
-        "count": 114
-      },
-      {
-        "word": "first",
-        "count": 114
-      },
-      {
         "word": "könnt",
-        "count": 114
+        "count": 115
+      },
+      {
+        "word": "zeigen",
+        "count": 115
+      },
+      {
+        "word": "schweiz",
+        "count": 115
       },
       {
         "word": "bizarre",
         "count": 114
       },
       {
-        "word": "schweiz",
+        "word": "überraschen",
         "count": 114
+      },
+      {
+        "word": "bavarian",
+        "count": 114
+      },
+      {
+        "word": "fun",
+        "count": 113
+      },
+      {
+        "word": "mountain",
+        "count": 113
       },
       {
         "word": "village",
         "count": 113
       },
       {
-        "word": "weg",
+        "word": "neu",
         "count": 113
       },
       {
@@ -3522,7 +3610,11 @@
         "count": 113
       },
       {
-        "word": "fun",
+        "word": "culture",
+        "count": 112
+      },
+      {
+        "word": "los",
         "count": 112
       },
       {
@@ -3534,15 +3626,19 @@
         "count": 112
       },
       {
+        "word": "summer",
+        "count": 111
+      },
+      {
+        "word": "besten",
+        "count": 111
+      },
+      {
         "word": "hosts",
         "count": 111
       },
       {
-        "word": "neu",
-        "count": 111
-      },
-      {
-        "word": "überraschen",
+        "word": "seinen",
         "count": 111
       },
       {
@@ -3554,23 +3650,15 @@
         "count": 111
       },
       {
-        "word": "los",
-        "count": 110
-      },
-      {
-        "word": "summer",
-        "count": 110
-      },
-      {
         "word": "patrick",
         "count": 110
       },
       {
-        "word": "besten",
+        "word": "zeit",
         "count": 110
       },
       {
-        "word": "seinen",
+        "word": "wenn",
         "count": 110
       },
       {
@@ -3594,11 +3682,11 @@
         "count": 109
       },
       {
-        "word": "mountain",
+        "word": "each",
         "count": 109
       },
       {
-        "word": "wenn",
+        "word": "ersten",
         "count": 109
       },
       {
@@ -3606,27 +3694,27 @@
         "count": 109
       },
       {
+        "word": "ideen",
+        "count": 109
+      },
+      {
         "word": "blühende",
         "count": 109
       },
       {
-        "word": "culture",
+        "word": "water",
         "count": 108
       },
       {
-        "word": "zeit",
+        "word": "thema",
         "count": 108
       },
       {
-        "word": "ersten",
+        "word": "lassen",
         "count": 108
       },
       {
         "word": "erste",
-        "count": 108
-      },
-      {
-        "word": "ideen",
         "count": 108
       },
       {
@@ -3642,7 +3730,7 @@
         "count": 107
       },
       {
-        "word": "water",
+        "word": "door",
         "count": 107
       },
       {
@@ -3650,7 +3738,7 @@
         "count": 107
       },
       {
-        "word": "thema",
+        "word": "sowie",
         "count": 107
       },
       {
@@ -3666,7 +3754,11 @@
         "count": 107
       },
       {
-        "word": "each",
+        "word": "people",
+        "count": 106
+      },
+      {
+        "word": "channel",
         "count": 106
       },
       {
@@ -3678,7 +3770,7 @@
         "count": 106
       },
       {
-        "word": "sowie",
+        "word": "wandern",
         "count": 106
       },
       {
@@ -3694,7 +3786,7 @@
         "count": 106
       },
       {
-        "word": "door",
+        "word": "tips",
         "count": 105
       },
       {
@@ -3704,18 +3796,6 @@
       {
         "word": "enfants",
         "count": 105
-      },
-      {
-        "word": "wandern",
-        "count": 105
-      },
-      {
-        "word": "bavarian",
-        "count": 105
-      },
-      {
-        "word": "people",
-        "count": 104
       },
       {
         "word": "marriottbonvoy",
@@ -3730,7 +3810,11 @@
         "count": 104
       },
       {
-        "word": "lassen",
+        "word": "jahren",
+        "count": 104
+      },
+      {
+        "word": "besondere",
         "count": 104
       },
       {
@@ -3738,19 +3822,11 @@
         "count": 104
       },
       {
-        "word": "zeigen",
-        "count": 104
+        "word": "neuen",
+        "count": 103
       },
       {
         "word": "jij",
-        "count": 103
-      },
-      {
-        "word": "jahren",
-        "count": 103
-      },
-      {
-        "word": "besondere",
         "count": 103
       },
       {
@@ -3758,12 +3834,12 @@
         "count": 103
       },
       {
-        "word": "badeparadies",
+        "word": "lieblingsorte",
         "count": 103
       },
       {
-        "word": "tips",
-        "count": 102
+        "word": "badeparadies",
+        "count": 103
       },
       {
         "word": "besucht",
@@ -3775,11 +3851,11 @@
       },
       {
         "word": "reiseziele",
-        "count": 101
+        "count": 102
       },
       {
-        "word": "lieblingsorte",
-        "count": 101
+        "word": "places",
+        "count": 100
       },
       {
         "word": "year",
@@ -3798,6 +3874,10 @@
         "count": 100
       },
       {
+        "word": "entdeckt",
+        "count": 100
+      },
+      {
         "word": "führt",
         "count": 100
       },
@@ -3806,11 +3886,23 @@
         "count": 100
       },
       {
-        "word": "neuen",
+        "word": "look",
         "count": 99
       },
       {
-        "word": "places",
+        "word": "two",
+        "count": 98
+      },
+      {
+        "word": "meet",
+        "count": 98
+      },
+      {
+        "word": "paris",
+        "count": 98
+      },
+      {
+        "word": "direkt",
         "count": 98
       },
       {
@@ -3826,27 +3918,19 @@
         "count": 98
       },
       {
-        "word": "two",
-        "count": 97
-      },
-      {
-        "word": "look",
-        "count": 97
-      },
-      {
-        "word": "direkt",
-        "count": 97
-      },
-      {
         "word": "bollo",
         "count": 97
       },
       {
-        "word": "entdeckt",
+        "word": "große",
         "count": 97
       },
       {
-        "word": "paris",
+        "word": "welche",
+        "count": 97
+      },
+      {
+        "word": "cities",
         "count": 96
       },
       {
@@ -3858,11 +3942,19 @@
         "count": 96
       },
       {
+        "word": "selbst",
+        "count": 96
+      },
+      {
         "word": "würden",
         "count": 96
       },
       {
-        "word": "selbst",
+        "word": "ferienpark",
+        "count": 96
+      },
+      {
+        "word": "kids",
         "count": 95
       },
       {
@@ -3874,27 +3966,31 @@
         "count": 94
       },
       {
-        "word": "große",
+        "word": "history",
         "count": 94
       },
       {
-        "word": "welche",
+        "word": "watch",
         "count": 94
-      },
-      {
-        "word": "meet",
-        "count": 93
-      },
-      {
-        "word": "kids",
-        "count": 93
       },
       {
         "word": "design",
         "count": 93
       },
       {
+        "word": "train",
+        "count": 93
+      },
+      {
         "word": "friso",
+        "count": 93
+      },
+      {
+        "word": "sondern",
+        "count": 93
+      },
+      {
+        "word": "badeparadiese",
         "count": 93
       },
       {
@@ -3912,102 +4008,6 @@
       {
         "word": "social",
         "count": 92
-      },
-      {
-        "word": "cities",
-        "count": 92
-      },
-      {
-        "word": "kunst",
-        "count": 92
-      },
-      {
-        "word": "mein",
-        "count": 92
-      },
-      {
-        "word": "lukas",
-        "count": 92
-      },
-      {
-        "word": "swr",
-        "count": 92
-      },
-      {
-        "word": "versucht",
-        "count": 92
-      },
-      {
-        "word": "badeparadiese",
-        "count": 92
-      },
-      {
-        "word": "back",
-        "count": 91
-      },
-      {
-        "word": "spa",
-        "count": 91
-      },
-      {
-        "word": "train",
-        "count": 91
-      },
-      {
-        "word": "vakantie",
-        "count": 91
-      },
-      {
-        "word": "naar",
-        "count": 91
-      },
-      {
-        "word": "sondern",
-        "count": 91
-      },
-      {
-        "word": "prachtige",
-        "count": 90
-      },
-      {
-        "word": "onze",
-        "count": 90
-      },
-      {
-        "word": "meine",
-        "count": 90
-      },
-      {
-        "word": "favorite",
-        "count": 89
-      },
-      {
-        "word": "history",
-        "count": 89
-      },
-      {
-        "word": "points",
-        "count": 89
-      },
-      {
-        "word": "challenge",
-        "count": 89
-      },
-      {
-        "word": "older",
-        "count": 89
-      },
-      {
-        "word": "kulinarik",
-        "count": 89
-      },
-      {
-        "word": "zeige",
-        "count": 89
-      },
-      {
-        "word": "escape",
-        "count": 88
       }
     ]
   },
@@ -4020,6 +4020,14 @@
       {
         "bigram": "einfach münchen",
         "count": 86
+      },
+      {
+        "bigram": "video bungalowpark",
+        "count": 73
+      },
+      {
+        "bigram": "italy eurocamp",
+        "count": 55
       },
       {
         "bigram": "one day",
@@ -4043,6 +4051,10 @@
       },
       {
         "bigram": "road trip",
+        "count": 41
+      },
+      {
+        "bigram": "greenparks video",
         "count": 41
       },
       {
@@ -4086,6 +4098,10 @@
         "count": 34
       },
       {
+        "bigram": "booking com",
+        "count": 34
+      },
+      {
         "bigram": "dive into",
         "count": 32
       },
@@ -4098,7 +4114,11 @@
         "count": 32
       },
       {
-        "bigram": "city guide",
+        "bigram": "city video",
+        "count": 32
+      },
+      {
+        "bigram": "video guide",
         "count": 32
       },
       {
@@ -4142,6 +4162,10 @@
         "count": 29
       },
       {
+        "bigram": "découvrez camping",
+        "count": 29
+      },
+      {
         "bigram": "nahaufnahme neues",
         "count": 28
       },
@@ -4166,12 +4190,24 @@
         "count": 25
       },
       {
+        "bigram": "park primeur",
+        "count": 25
+      },
+      {
+        "bigram": "camping étoiles",
+        "count": 25
+      },
+      {
         "bigram": "bois daims",
         "count": 24
       },
       {
         "bigram": "imagefilm hotel",
         "count": 24
+      },
+      {
+        "bigram": "spain eurocamp",
+        "count": 23
       },
       {
         "bigram": "avonturen bollo",
@@ -4194,11 +4230,15 @@
         "count": 21
       },
       {
+        "bigram": "video regio",
+        "count": 21
+      },
+      {
         "bigram": "magic life",
         "count": 21
       },
       {
-        "bigram": "adriatic eurocamp",
+        "bigram": "adriatic italy",
         "count": 21
       },
       {
@@ -4218,12 +4258,20 @@
         "count": 19
       },
       {
+        "bigram": "park allgäu",
+        "count": 19
+      },
+      {
         "bigram": "brittany eurocamp",
         "count": 19
       },
       {
         "bigram": "campsite adriatic",
         "count": 19
+      },
+      {
+        "bigram": "camping domaine",
+        "count": 18
       },
       {
         "bigram": "young adventurers",
@@ -4239,6 +4287,10 @@
       },
       {
         "bigram": "your next",
+        "count": 17
+      },
+      {
+        "bigram": "camping vacances",
         "count": 17
       },
       {
@@ -4310,11 +4362,11 @@
         "count": 15
       },
       {
-        "bigram": "découvrez domaine",
+        "bigram": "summer challenges",
         "count": 15
       },
       {
-        "bigram": "summer challenges",
+        "bigram": "ardennes centerparcs",
         "count": 15
       },
       {
@@ -4346,11 +4398,19 @@
         "count": 15
       },
       {
-        "bigram": "garda eurocamp",
+        "bigram": "garda italy",
         "count": 15
       },
       {
-        "bigram": "discover your",
+        "bigram": "national park",
+        "count": 14
+      },
+      {
+        "bigram": "beach resort",
+        "count": 14
+      },
+      {
+        "bigram": "terhills resort",
         "count": 14
       },
       {
@@ -4359,6 +4419,14 @@
       },
       {
         "bigram": "réservez vite",
+        "count": 14
+      },
+      {
+        "bigram": "corentin camping",
+        "count": 14
+      },
+      {
+        "bigram": "camping val",
         "count": 14
       },
       {
@@ -4390,15 +4458,15 @@
         "count": 13
       },
       {
+        "bigram": "discover your",
+        "count": 13
+      },
+      {
         "bigram": "research hospital",
         "count": 13
       },
       {
         "bigram": "san diego",
-        "count": 13
-      },
-      {
-        "bigram": "discover our",
         "count": 13
       },
       {
@@ -4442,7 +4510,27 @@
         "count": 13
       },
       {
+        "bigram": "resort spa",
+        "count": 12
+      },
+      {
+        "bigram": "discover our",
+        "count": 12
+      },
+      {
         "bigram": "kids city",
+        "count": 12
+      },
+      {
+        "bigram": "park hochsauerland",
+        "count": 12
+      },
+      {
+        "bigram": "bij greenparks",
+        "count": 12
+      },
+      {
+        "bigram": "vip cottage",
         "count": 12
       },
       {
@@ -4455,6 +4543,10 @@
       },
       {
         "bigram": "charente maritime",
+        "count": 12
+      },
+      {
+        "bigram": "camping marina",
         "count": 12
       },
       {
@@ -4486,11 +4578,27 @@
         "count": 12
       },
       {
+        "bigram": "park vacation",
+        "count": 11
+      },
+      {
+        "bigram": "disneyland resort",
+        "count": 11
+      },
+      {
         "bigram": "dream adventures",
         "count": 11
       },
       {
         "bigram": "behind scenes",
+        "count": 11
+      },
+      {
+        "bigram": "découvrez domaine",
+        "count": 11
+      },
+      {
+        "bigram": "parc sandur",
         "count": 11
       },
       {
@@ -4506,6 +4614,10 @@
         "count": 11
       },
       {
+        "bigram": "centerparcs weekendtrip",
+        "count": 11
+      },
+      {
         "bigram": "wim ballieu",
         "count": 11
       },
@@ -4518,6 +4630,10 @@
         "count": 11
       },
       {
+        "bigram": "vacances camping",
+        "count": 11
+      },
+      {
         "bigram": "top spot",
         "count": 11
       },
@@ -4526,15 +4642,15 @@
         "count": 11
       },
       {
-        "bigram": "tuscany eurocamp",
+        "bigram": "tuscany italy",
         "count": 11
       },
       {
-        "bigram": "dorada eurocamp",
+        "bigram": "dorada spain",
         "count": 11
       },
       {
-        "bigram": "brava eurocamp",
+        "bigram": "brava spain",
         "count": 11
       },
       {
@@ -4582,11 +4698,19 @@
         "count": 10
       },
       {
+        "bigram": "park zandvoort",
+        "count": 10
+      },
+      {
         "bigram": "rio pedras",
         "count": 10
       },
       {
         "bigram": "grand massif",
+        "count": 10
+      },
+      {
+        "bigram": "bij centerparcs",
         "count": 10
       },
       {
@@ -4603,6 +4727,14 @@
       },
       {
         "bigram": "clubs exceptions",
+        "count": 10
+      },
+      {
+        "bigram": "camping lac",
+        "count": 10
+      },
+      {
+        "bigram": "près camping",
         "count": 10
       },
       {
@@ -4650,10 +4782,6 @@
         "count": 9
       },
       {
-        "bigram": "national vacation",
-        "count": 9
-      },
-      {
         "bigram": "jude children's",
         "count": 9
       },
@@ -4684,134 +4812,6 @@
       {
         "bigram": "stay music",
         "count": 9
-      },
-      {
-        "bigram": "تعرف على",
-        "count": 9
-      },
-      {
-        "bigram": "film festival",
-        "count": 9
-      },
-      {
-        "bigram": "point view",
-        "count": 9
-      },
-      {
-        "bigram": "landes gascogne",
-        "count": 9
-      },
-      {
-        "bigram": "exclusive collection",
-        "count": 9
-      },
-      {
-        "bigram": "tignes val",
-        "count": 9
-      },
-      {
-        "bigram": "back home",
-        "count": 9
-      },
-      {
-        "bigram": "history series",
-        "count": 9
-      },
-      {
-        "bigram": "series guide",
-        "count": 9
-      },
-      {
-        "bigram": "our vision",
-        "count": 9
-      },
-      {
-        "bigram": "echt liefde",
-        "count": 9
-      },
-      {
-        "bigram": "liefde natuur",
-        "count": 9
-      },
-      {
-        "bigram": "bij ardennes",
-        "count": 9
-      },
-      {
-        "bigram": "market dome",
-        "count": 9
-      },
-      {
-        "bigram": "how host",
-        "count": 9
-      },
-      {
-        "bigram": "meet hosts",
-        "count": 9
-      },
-      {
-        "bigram": "presqu'île giens",
-        "count": 9
-      },
-      {
-        "bigram": "ils recommandent",
-        "count": 9
-      },
-      {
-        "bigram": "ganze familie",
-        "count": 9
-      },
-      {
-        "bigram": "destination escape",
-        "count": 9
-      },
-      {
-        "bigram": "suisse bienfait",
-        "count": 9
-      },
-      {
-        "bigram": "bienfait vous",
-        "count": 9
-      },
-      {
-        "bigram": "schweiz tourismus",
-        "count": 9
-      },
-      {
-        "bigram": "jeff wilson",
-        "count": 9
-      },
-      {
-        "bigram": "swiss myths",
-        "count": 9
-      },
-      {
-        "bigram": "testet aqua",
-        "count": 9
-      },
-      {
-        "bigram": "auvergne eurocamp",
-        "count": 9
-      },
-      {
-        "bigram": "languedoc eurocamp",
-        "count": 9
-      },
-      {
-        "bigram": "gascony eurocamp",
-        "count": 9
-      },
-      {
-        "bigram": "roussillon eurocamp",
-        "count": 9
-      },
-      {
-        "bigram": "local lens",
-        "count": 8
-      },
-      {
-        "bigram": "how make",
-        "count": 8
       }
     ]
   },
@@ -4955,10 +4955,6 @@
       },
       {
         "bigram": "more about",
-        "count": 223
-      },
-      {
-        "bigram": "more information",
         "count": 221
       },
       {
@@ -4980,6 +4976,18 @@
       {
         "bigram": "check out",
         "count": 183
+      },
+      {
+        "bigram": "hiltonforthestay subscribe",
+        "count": 179
+      },
+      {
+        "bigram": "more videos",
+        "count": 178
+      },
+      {
+        "bigram": "subscribe youtube",
+        "count": 176
       },
       {
         "bigram": "mediathek wdr",
@@ -5034,8 +5042,16 @@
         "count": 135
       },
       {
+        "bigram": "more parc",
+        "count": 132
+      },
+      {
         "bigram": "uns instagram",
         "count": 131
+      },
+      {
+        "bigram": "parc information",
+        "count": 130
       },
       {
         "bigram": "information here",
@@ -5071,6 +5087,10 @@
       },
       {
         "bigram": "niederlanden belgien",
+        "count": 122
+      },
+      {
+        "bigram": "centerparcs centerparcsferienparks",
         "count": 122
       },
       {
@@ -5114,7 +5134,11 @@
         "count": 119
       },
       {
-        "bigram": "unsere niederlanden",
+        "bigram": "unsere videos",
+        "count": 119
+      },
+      {
+        "bigram": "videos niederlanden",
         "count": 119
       },
       {
@@ -5258,6 +5282,10 @@
         "count": 119
       },
       {
+        "bigram": "website centerparcs",
+        "count": 119
+      },
+      {
         "bigram": "lass dich",
         "count": 118
       },
@@ -5279,10 +5307,6 @@
       },
       {
         "bigram": "überdachten market",
-        "count": 118
-      },
-      {
-        "bigram": "website centerparcsferienparks",
         "count": 118
       },
       {
@@ -5342,10 +5366,6 @@
         "count": 110
       },
       {
-        "bigram": "more here",
-        "count": 109
-      },
-      {
         "bigram": "outro gefällt",
         "count": 109
       },
@@ -5358,7 +5378,15 @@
         "count": 109
       },
       {
+        "bigram": "more here",
+        "count": 108
+      },
+      {
         "bigram": "wir camper",
+        "count": 108
+      },
+      {
+        "bigram": "parks gärten",
         "count": 108
       },
       {
@@ -5510,7 +5538,7 @@
         "count": 106
       },
       {
-        "bigram": "oasen gärten",
+        "bigram": "oasen parks",
         "count": 106
       },
       {
@@ -5558,8 +5586,8 @@
         "count": 102
       },
       {
-        "bigram": "find your",
-        "count": 100
+        "bigram": "subscribe our",
+        "count": 101
       },
       {
         "bigram": "please visit",
@@ -5570,6 +5598,10 @@
         "count": 100
       },
       {
+        "bigram": "find your",
+        "count": 99
+      },
+      {
         "bigram": "ideas your",
         "count": 99
       },
@@ -5578,44 +5610,12 @@
         "count": 98
       },
       {
+        "bigram": "videos subscribe",
+        "count": 98
+      },
+      {
         "bigram": "erleben sie",
         "count": 97
-      },
-      {
-        "bigram": "mehr spaß",
-        "count": 97
-      },
-      {
-        "bigram": "ganzen welt",
-        "count": 95
-      },
-      {
-        "bigram": "tipps ideen",
-        "count": 95
-      },
-      {
-        "bigram": "holiday please",
-        "count": 95
-      },
-      {
-        "bigram": "discover more",
-        "count": 94
-      },
-      {
-        "bigram": "more our",
-        "count": 94
-      },
-      {
-        "bigram": "paar gute",
-        "count": 94
-      },
-      {
-        "bigram": "gute tipps",
-        "count": 94
-      },
-      {
-        "bigram": "wir würden",
-        "count": 94
       }
     ]
   }

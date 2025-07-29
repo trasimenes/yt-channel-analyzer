@@ -195,8 +195,9 @@ class YouTubeDateCorrectionAgent:
         youtube_dates = {}
         try:
             youtube = YouTubeAPI()
-        except ValueError as e:
-            logger.error(f"❌ YouTube API client not available: {e}")
+        except (ValueError, ImportError) as e:
+            logger.warning(f"⚠️ YouTube API client not available: {e}")
+            logger.info("📊 Will use existing youtube_published_at dates when available")
             return youtube_dates
             
         # Process in batches

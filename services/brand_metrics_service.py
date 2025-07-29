@@ -45,7 +45,7 @@ class BrandMetricsService:
             competitor_id, name, country = row
             # Map to friendly names
             if country == 'Germany':
-                key = 'Center Parcs Allemagne'
+                key = 'Center Parcs Ferien Parks'
             elif country == 'France':
                 key = 'Center Parcs France'
             elif country == 'Netherlands':
@@ -213,29 +213,29 @@ class BrandMetricsService:
         }
     
     def _calculate_most_liked_topics(self, competitor_id: int) -> List[Dict[str, Any]]:
-        """Calculate most liked topics for a competitor."""
+        """Calculate TOP 5 individual videos by engagement (likes + comments) for a competitor."""
         self.cursor.execute("""
             SELECT 
-                LOWER(v.title) as topic,
-                AVG(v.like_count) as avg_likes,
-                COUNT(*) as video_count
+                v.title as topic,
+                COALESCE(v.like_count, 0) as likes,
+                COALESCE(v.comment_count, 0) as comments,
+                (COALESCE(v.like_count, 0) + COALESCE(v.comment_count, 0)) as engagement_score
             FROM video v
-            WHERE v.concurrent_id = ? AND v.like_count IS NOT NULL
-            GROUP BY LOWER(v.title)
-            HAVING COUNT(*) >= 1
-            ORDER BY avg_likes DESC
+            WHERE v.concurrent_id = ? 
+            AND (v.like_count IS NOT NULL OR v.comment_count IS NOT NULL)
+            AND (COALESCE(v.like_count, 0) + COALESCE(v.comment_count, 0)) > 0
+            ORDER BY engagement_score DESC
             LIMIT 5
         """, (competitor_id,))
         
         topics = []
         for row in self.cursor.fetchall():
-            topic, avg_likes, video_count = row
-            # Extract key words from title
-            key_words = ' '.join(topic.split()[:3])  # First 3 words
+            title, likes, comments, engagement = row
             topics.append({
-                'topic': key_words.title(),
-                'avg_likes': round(avg_likes, 0),
-                'video_count': video_count
+                'topic': title,
+                'likes': int(likes),
+                'comments': int(comments),
+                'engagement_score': int(engagement)
             })
         
         return topics

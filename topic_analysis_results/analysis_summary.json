@@ -1,22 +1,26 @@
 {
-  "analysis_date": "2025-07-22T22:07:25.283163",
+  "analysis_date": "2025-07-28T10:28:30.209216",
   "total_videos": 8489,
   "total_videos_in_db": 8489,
   "videos_with_titles": 8489,
   "videos_with_descriptions": 7783,
   "videos_processed_titles": 8489,
   "videos_processed_descriptions": 7783,
-  "total_playlists": 355,
-  "total_playlists_in_db": 355,
-  "playlists_with_descriptions": 177,
-  "total_title_words_extracted": 42952,
-  "unique_title_words": 11908,
-  "total_description_words_extracted": 293834,
-  "unique_description_words": 44326,
+  "total_playlists": 538,
+  "total_playlists_in_db": 538,
+  "playlists_with_descriptions": 292,
+  "total_title_words_extracted": 44790,
+  "unique_title_words": 11944,
+  "total_description_words_extracted": 302122,
+  "unique_description_words": 44510,
   "top_20_title_words": [
     {
       "word": "tourism",
       "count": 445
+    },
+    {
+      "word": "camping",
+      "count": 346
     },
     {
       "word": "guide",
@@ -39,6 +43,10 @@
       "count": 278
     },
     {
+      "word": "centerparcs",
+      "count": 244
+    },
+    {
       "word": "your",
       "count": 215
     },
@@ -47,12 +55,28 @@
       "count": 200
     },
     {
+      "word": "greenparks",
+      "count": 193
+    },
+    {
+      "word": "video",
+      "count": 181
+    },
+    {
       "word": "discover",
       "count": 178
     },
     {
+      "word": "park",
+      "count": 163
+    },
+    {
       "word": "how",
       "count": 151
+    },
+    {
+      "word": "resort",
+      "count": 132
     },
     {
       "word": "stay",
@@ -69,72 +93,48 @@
     {
       "word": "hotel",
       "count": 129
-    },
-    {
-      "word": "münchen",
-      "count": 129
-    },
-    {
-      "word": "host",
-      "count": 126
-    },
-    {
-      "word": "new",
-      "count": 125
-    },
-    {
-      "word": "découvrez",
-      "count": 123
-    },
-    {
-      "word": "tour",
-      "count": 120
-    },
-    {
-      "word": "urlaub",
-      "count": 119
     }
   ],
   "top_20_description_words": [
     {
       "word": "sie",
-      "count": 2348
+      "count": 2388
     },
     {
       "word": "hier",
-      "count": 1734
+      "count": 1753
     },
     {
       "word": "you",
-      "count": 1484
+      "count": 1502
     },
     {
       "word": "more",
-      "count": 1356
+      "count": 1389
     },
     {
       "word": "your",
-      "count": 1309
+      "count": 1319
     },
     {
       "word": "sich",
-      "count": 1263
+      "count": 1277
     },
     {
       "word": "film",
-      "count": 1075
+      "count": 1078
     },
     {
       "word": "auch",
-      "count": 1074
+      "count": 1078
     },
     {
       "word": "mehr",
-      "count": 1041
+      "count": 1048
     },
     {
       "word": "wunderschön",
-      "count": 1011
+      "count": 1012
     },
     {
       "word": "kanal",
@@ -146,35 +146,35 @@
     },
     {
       "word": "nicht",
-      "count": 926
+      "count": 931
+    },
+    {
+      "word": "ihr",
+      "count": 857
     },
     {
       "word": "dir",
-      "count": 852
+      "count": 854
+    },
+    {
+      "word": "wie",
+      "count": 850
     },
     {
       "word": "weitere",
       "count": 850
     },
     {
-      "word": "ihr",
-      "count": 847
-    },
-    {
-      "word": "wie",
-      "count": 838
-    },
-    {
       "word": "über",
-      "count": 804
+      "count": 816
     },
     {
       "word": "hessen",
-      "count": 802
+      "count": 816
     },
     {
       "word": "alle",
-      "count": 792
+      "count": 799
     }
   ],
   "top_10_title_bigrams": [
@@ -185,6 +185,14 @@
     {
       "bigram": "einfach münchen",
       "count": 86
+    },
+    {
+      "bigram": "video bungalowpark",
+      "count": 73
+    },
+    {
+      "bigram": "italy eurocamp",
+      "count": 55
     },
     {
       "bigram": "one day",
@@ -209,14 +217,6 @@
     {
       "bigram": "road trip",
       "count": 41
-    },
-    {
-      "bigram": "viewfinder blog",
-      "count": 39
-    },
-    {
-      "bigram": "top-rated near",
-      "count": 39
     }
   ],
   "top_10_description_bigrams": [
@@ -261,261 +261,12 @@
       "count": 512
     }
   ],
-  "top_20_verbs": [
-    {
-      "word": "find",
-      "count": 721
-    },
-    {
-      "word": "discover",
-      "count": 488
-    },
-    {
-      "word": "visit",
-      "count": 439
-    },
-    {
-      "word": "stay",
-      "count": 375
-    },
-    {
-      "word": "découvrir",
-      "count": 364
-    },
-    {
-      "word": "get",
-      "count": 351
-    },
-    {
-      "word": "entdecken",
-      "count": 338
-    },
-    {
-      "word": "make",
-      "count": 325
-    },
-    {
-      "word": "take",
-      "count": 324
-    },
-    {
-      "word": "finden",
-      "count": 269
-    },
-    {
-      "word": "explore",
-      "count": 229
-    },
-    {
-      "word": "know",
-      "count": 215
-    },
-    {
-      "word": "learn",
-      "count": 210
-    },
-    {
-      "word": "enjoy",
-      "count": 204
-    },
-    {
-      "word": "see",
-      "count": 194
-    },
-    {
-      "word": "gehen",
-      "count": 188
-    },
-    {
-      "word": "want",
-      "count": 179
-    },
-    {
-      "word": "check",
-      "count": 176
-    },
-    {
-      "word": "machen",
-      "count": 175
-    },
-    {
-      "word": "geben",
-      "count": 169
-    }
-  ],
-  "top_20_adjectives": [
-    {
-      "word": "good",
-      "count": 306
-    },
-    {
-      "word": "new",
-      "count": 296
-    },
-    {
-      "word": "perfect",
-      "count": 255
-    },
-    {
-      "word": "ready",
-      "count": 184
-    },
-    {
-      "word": "old",
-      "count": 155
-    },
-    {
-      "word": "beautiful",
-      "count": 145
-    },
-    {
-      "word": "great",
-      "count": 138
-    },
-    {
-      "word": "unique",
-      "count": 138
-    },
-    {
-      "word": "schön",
-      "count": 123
-    },
-    {
-      "word": "modern",
-      "count": 122
-    },
-    {
-      "word": "nächster",
-      "count": 114
-    },
-    {
-      "word": "local",
-      "count": 103
-    },
-    {
-      "word": "prachtig",
-      "count": 100
-    },
-    {
-      "word": "nieuw",
-      "count": 99
-    },
-    {
-      "word": "easy",
-      "count": 94
-    },
-    {
-      "word": "grand",
-      "count": 94
-    },
-    {
-      "word": "swiss",
-      "count": 92
-    },
-    {
-      "word": "echt",
-      "count": 89
-    },
-    {
-      "word": "besonderer",
-      "count": 79
-    },
-    {
-      "word": "alt",
-      "count": 77
-    }
-  ],
-  "top_20_nouns": [
-    {
-      "word": "reise",
-      "count": 697
-    },
-    {
-      "word": "vacance",
-      "count": 643
-    },
-    {
-      "word": "hotel",
-      "count": 489
-    },
-    {
-      "word": "city",
-      "count": 382
-    },
-    {
-      "word": "holiday",
-      "count": 341
-    },
-    {
-      "word": "urlaub",
-      "count": 313
-    },
-    {
-      "word": "experience",
-      "count": 298
-    },
-    {
-      "word": "stay",
-      "count": 267
-    },
-    {
-      "word": "village",
-      "count": 262
-    },
-    {
-      "word": "trip",
-      "count": 260
-    },
-    {
-      "word": "information",
-      "count": 255
-    },
-    {
-      "word": "world",
-      "count": 249
-    },
-    {
-      "word": "nature",
-      "count": 247
-    },
-    {
-      "word": "home",
-      "count": 244
-    },
-    {
-      "word": "host",
-      "count": 243
-    },
-    {
-      "word": "moment",
-      "count": 239
-    },
-    {
-      "word": "short",
-      "count": 229
-    },
-    {
-      "word": "stadt",
-      "count": 228
-    },
-    {
-      "word": "family",
-      "count": 226
-    },
-    {
-      "word": "domaine",
-      "count": 223
-    }
-  ],
-  "grammar_stats": {
-    "fr": 2670,
-    "en": 7431,
-    "de": 2457,
-    "nl": 3714,
-    "other": 0
-  },
+  "top_20_verbs": [],
+  "top_20_adjectives": [],
+  "top_20_nouns": [],
+  "grammar_stats": {},
   "model_used": "paraphrase-multilingual-mpnet-base-v2",
-  "spacy_available": true,
+  "spacy_available": false,
   "coverage_report": {
     "titles_coverage": "8489/8489 (100.0%)",
     "descriptions_coverage": "7783/7783 (100.0%)",

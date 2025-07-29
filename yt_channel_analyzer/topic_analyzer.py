@@ -124,29 +124,14 @@ class TopicAnalyzer:
                 if comp.get('name'):
                     # Ajouter le nom complet
                     names.add(comp['name'].lower())
-                    # Ajouter chaque mot du nom (plus agressif)
+                    # Ajouter chaque mot du nom
                     for word in comp['name'].replace('-', ' ').replace('_', ' ').split():
-                        if len(word) > 1:  # Même les mots courts
+                        if len(word) > 2:  # Ignorer les mots très courts
                             names.add(word.lower())
         except Exception as e:
             print(f"[TOPIC-ANALYZER] Erreur chargement concurrents: {e}")
         
-        # Ajouter des marques de tourisme connues
-        tourism_brands = {
-            'centerparcs', 'center', 'parcs', 'landal', 'greenparks', 'roompot', 
-            'hogenboom', 'vakantiepark', 'ferienpark', 'holidaypark', 'resort',
-            'camping', 'bungalow', 'chalet', 'lodge', 'villa', 'cottage',
-            'booking', 'expedia', 'airbnb', 'tripadvisor', 'hotels', 'agoda',
-            'youtube', 'video', 'channel', 'subscribe', 'like', 'comment', 'share',
-            'watch', 'follow', 'notification', 'bell', 'thumbs', 'playlist',
-            'deutschland', 'germany', 'france', 'netherlands', 'belgium', 'austria',
-            'switzerland', 'italy', 'spain', 'portugal', 'united', 'kingdom',
-            'ferienparks', 'holidayparks', 'vakantiedorp', 'parc', 'park', 'parks'
-        }
-        
-        names.update(tourism_brands)
-        
-        print(f"[TOPIC-ANALYZER] 🚫 {len(names)} marques/concurrents à filtrer")
+        print(f"[TOPIC-ANALYZER] 🚫 {len(names)} noms de concurrents à filtrer")
         return names
         
     def _clean_text(self, text: str) -> List[str]:

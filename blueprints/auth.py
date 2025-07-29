@@ -34,6 +34,10 @@ def login_required(f):
     """Décorateur pour protéger les routes"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Permettre l'accès public à l'autocomplete pour la recherche navbar
+        if request.endpoint == 'api.autocomplete':
+            return f(*args, **kwargs)
+        
         if not session.get('authenticated'):
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)

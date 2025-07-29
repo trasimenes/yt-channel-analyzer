@@ -517,10 +517,12 @@ def brand_insights():
         print("[BRAND_INSIGHTS] 🔍 ULTRA-VERBOSE DEBUG MODE ACTIVÉ")
         
         from yt_channel_analyzer.database import get_db_connection
+        from services.local_global_metrics_service import LocalGlobalMetricsService
         from services.brand_metrics_service import BrandMetricsService
         
         conn = get_db_connection()
         service = BrandMetricsService(conn)
+        local_global_service = LocalGlobalMetricsService(conn)
         
         # Récupérer les chaînes Center Parcs
         center_parcs_channels = service.get_center_parcs_channels()
@@ -535,8 +537,21 @@ def brand_insights():
                 competitor_id = channel_info['competitor_id']
                 print(f"[BRAND_INSIGHTS] 📊 Calcul des métriques pour {brand_key} (ID {competitor_id})...")
                 
-                # Calculer les métriques
+                # Calculer les métriques de base
                 brand_metrics = service.calculate_brand_metrics(competitor_id)
+                
+                # Ajouter les métriques duales Local vs Global par pays
+                country = channel_info['country']
+                if country and country in ['Germany', 'France', 'Netherlands', 'United Kingdom']:
+                    enhanced_metrics = local_global_service.calculate_enhanced_country_metrics(country)
+                    # Fusionner les métriques duales dans les métriques de marque
+                    if 'video_length' in enhanced_metrics and 'dual_metric' in enhanced_metrics['video_length']:
+                        brand_metrics['video_length']['dual_metric'] = enhanced_metrics['video_length']['dual_metric']
+                    if 'video_frequency' in enhanced_metrics and 'dual_metric' in enhanced_metrics['video_frequency']:
+                        brand_metrics['video_frequency']['dual_metric'] = enhanced_metrics['video_frequency']['dual_metric']
+                    if 'hub_help_hero' in enhanced_metrics and 'dual_metric' in enhanced_metrics['hub_help_hero']:
+                        brand_metrics['hub_help_hero']['dual_metric'] = enhanced_metrics['hub_help_hero']['dual_metric']
+                
                 brand_metrics['competitor_id'] = competitor_id
                 brand_metrics['channel_name'] = channel_info['name']
                 brand_metrics['country'] = channel_info['country']
@@ -582,9 +597,9 @@ def brand_insights():
 @insights_bp.route('/country-insights')
 @login_required
 def country_insights():
-    """Page des insights par pays avec 7 métriques clés - Restored from backup"""
+    """Page des insights par pays avec 7 métriques clés - Enhanced with Local vs Global analysis"""
     try:
-        print("[COUNTRY_INSIGHTS] 🌍 Génération des insights par pays avec 7 métriques...")
+        print("[COUNTRY_INSIGHTS] 🌍 Génération des insights par pays avec analyse Local vs Global...")
         
         # Récupérer les pays réels de la base de données
         from yt_channel_analyzer.database import get_db_connection
@@ -601,12 +616,13 @@ def country_insights():
         
         for country in real_countries:
             try:
-                print(f"[COUNTRY_INSIGHTS] 📊 Calcul des 7 métriques pour {country}...")
+                print(f"[COUNTRY_INSIGHTS] 📊 Calcul des métriques Local vs Global pour {country}...")
                 
-                # Utiliser le service pour calculer les métriques détaillées
+                # Utiliser le nouveau service avec analyse Local vs Global
                 conn = get_db_connection()
-                service = CountryMetricsService(conn)
-                country_metrics = service.calculate_country_7_metrics(country)
+                from services.local_global_metrics_service import LocalGlobalMetricsService
+                enhanced_service = LocalGlobalMetricsService(conn)
+                country_metrics = enhanced_service.calculate_enhanced_country_metrics(country)
                 
                 # Ajouter le nombre de concurrents
                 cursor = conn.cursor()
@@ -617,7 +633,10 @@ def country_insights():
                 country_metrics['competitors_count'] = competitors_count
                 insights_by_country[country] = country_metrics
                 
-                print(f"[COUNTRY_INSIGHTS] ✅ 7 métriques générées pour {country}")
+                print(f"[COUNTRY_INSIGHTS] ✅ Métriques Local vs Global générées pour {country}")
+                if country_metrics.get('has_dual_metrics'):
+                    dual_info = country_metrics.get('dual_metrics_info', {})
+                    print(f"[COUNTRY_INSIGHTS] 📊 Métriques duales: video_length={dual_info.get('video_length')}, frequency={dual_info.get('frequency')}, shorts={dual_info.get('shorts')}")
                 
             except Exception as e:
                 print(f"[COUNTRY_INSIGHTS] ❌ Erreur pour {country}: {e}")
@@ -636,10 +655,11 @@ def country_insights():
                     'tone_of_voice': {'emotional_words': 0, 'action_words': 0, 'avg_title_length': 0, 'top_keywords': [], 'dominant_tone': 'Family'},
                     'shorts_distribution': {'total_videos': 0, 'shorts_count': 0, 'regular_count': 0, 'shorts_percentage': 0.0, 'regular_percentage': 0.0},
                     'competitors_count': 0,
-                    'total_videos': 0
+                    'total_videos': 0,
+                    'has_dual_metrics': False
                 }
         
-        print(f"[COUNTRY_INSIGHTS] ✅ 7 métriques générées pour {len(insights_by_country)} pays")
+        print(f"[COUNTRY_INSIGHTS] ✅ Métriques générées pour {len(insights_by_country)} pays")
 
         return render_template('country_insights_sneat_pro.html', 
                              insights=insights_by_country,
