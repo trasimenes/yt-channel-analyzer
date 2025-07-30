@@ -422,16 +422,16 @@
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
                         <i class="bx bx-grid-alt"></i>
-                        Grille
+                        Grid
                     </button>
                     <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
                         <i class="bx bx-list-ul"></i>
-                        Tableau
+                        Table
                     </button>
                 </div>
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
-                    Actualiser
+                    Refresh
                 </button>
             </div>
         </div>
@@ -460,7 +460,7 @@
             </div>
             <div class="stat-card">
                 <h3>{{ stats.shown_playlists|default(0) }}</h3>
-                <p>Affichées</p>
+                <p>Displayed</p>
             </div>
         </div>
 
@@ -469,9 +469,9 @@
             <div class="row">
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Filtrer par catégorie</label>
+                        <label class="form-label">Filter by category</label>
                         <select class="form-select" id="categoryFilter" onchange="applyFilters()">
-                            <option value="all" {% if current_category == 'all' %}selected{% endif %}>Toutes les catégories</option>
+                            <option value="all" {% if current_category == 'all' %}selected{% endif %}>All categories</option>
                             <option value="hero" {% if current_category == 'hero' %}selected{% endif %}>Hero</option>
                             <option value="hub" {% if current_category == 'hub' %}selected{% endif %}>Hub</option>
                             <option value="help" {% if current_category == 'help' %}selected{% endif %}>Help</option>
@@ -481,7 +481,7 @@
                 
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Nombre de résultats</label>
+                        <label class="form-label">Number of results</label>
                         <select class="form-select" id="limitFilter" onchange="applyFilters()">
                             <option value="25" {% if current_limit == 25 %}selected{% endif %}>25 playlists</option>
                             <option value="50" {% if current_limit == 50 %}selected{% endif %}>50 playlists</option>
@@ -493,15 +493,15 @@
             </div>
             
             <div class="filter-group mt-3">
-                <label class="form-label">Trier par</label>
+                <label class="form-label">Sort by</label>
                 <div class="sort-buttons">
                     <button class="sort-btn {% if current_sort == 'total_views' %}active{% endif %}" 
                             onclick="updateSort('total_views')">
-                        <i class="bx bx-show me-1"></i> Vues totales
+                        <i class="bx bx-show me-1"></i> Total views
                     </button>
                     <button class="sort-btn {% if current_sort == 'total_likes' %}active{% endif %}" 
                             onclick="updateSort('total_likes')">
-                        <i class="bx bx-like me-1"></i> Likes totaux
+                        <i class="bx bx-like me-1"></i> Total likes
                     </button>
                     <button class="sort-btn {% if current_sort == 'engagement_ratio' %}active{% endif %}" 
                             onclick="updateSort('engagement_ratio')">
@@ -509,11 +509,11 @@
                     </button>
                     <button class="sort-btn {% if current_sort == 'video_count' %}active{% endif %}" 
                             onclick="updateSort('video_count')">
-                        <i class="bx bx-collection-play me-1"></i> Nombre vidéos
+                        <i class="bx bx-collection-play me-1"></i> Video count
                     </button>
                     <button class="sort-btn {% if current_sort == 'latest_video_date' %}active{% endif %}" 
                             onclick="updateSort('latest_video_date')">
-                        <i class="bx bx-calendar me-1"></i> Dernière vidéo
+                        <i class="bx bx-calendar me-1"></i> Latest video
                     </button>
                 </div>
             </div>
@@ -539,7 +539,7 @@
                             
                             <div class="video-count-overlay">
                                 <i class="bx bx-collection-play"></i>
-                                {{ playlist.linked_videos or playlist.video_count }} vidéos
+                                {{ playlist.linked_videos or playlist.video_count }} videos
                             </div>
                         </div>
                         
@@ -621,13 +621,13 @@
                                 <th>Miniature</th>
                                 <th>Nom</th>
                                 <th>Competitor</th>
-                                <th>Catégorie</th>
+                                <th>Category</th>
                                 <th>Videos</th>
-                                <th>Vues totales</th>
-                                <th>Likes totaux</th>
-                                <th>Commentaires</th>
+                                <th>Total Views</th>
+                                <th>Total Likes</th>
+                                <th>Comments</th>
                                 <th>Engagement</th>
-                                <th>Durée moy.</th>
+                                <th>Avg Duration</th>
                                 <th>Latest Video</th>
                                 <th>Scores moyens</th>
                             </tr>

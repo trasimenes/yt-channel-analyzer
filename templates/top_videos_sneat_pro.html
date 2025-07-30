@@ -1,6 +1,6 @@
 {% extends "base_sneat.html" %}
 
-{% block title %}Top Vidéos - YT Channel Analyzer{% endblock %}
+{% block title %}Top Videos - YT Channel Analyzer{% endblock %}
 
 {% block page_css %}
 <style>
@@ -471,23 +471,25 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold py-3 mb-0">
-                <span class="text-muted fw-light">Analyse /</span> Top Vidéos
+                <span class="text-muted fw-light">Analytics /</span> Top Videos
             </h4>
             <div class="d-flex align-items-center gap-3">
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
                         <i class="bx bx-grid-alt"></i>
-                        Grille
+                        Grid
                     </button>
                     <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
                         <i class="bx bx-list-ul"></i>
-                        Tableau
+                        Table
                     </button>
                 </div>
+                {% if config.get('DEV_MODE', False) and not config.get('FORCE_PROD_MODE', False) %}
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
-                    Actualiser
+                    Refresh
                 </button>
+                {% endif %}
             </div>
         </div>
 
@@ -495,19 +497,19 @@
         <div class="stats-cards">
             <div class="stat-card">
                 <h3>{{ stats.total_videos|default(0) }}</h3>
-                <p>Vidéos totales</p>
+                <p>Total Videos</p>
             </div>
             <div class="stat-card">
                 <h3>{{ stats.total_competitors|default(0) }}</h3>
-                <p>Concurrents</p>
+                <p>Competitors</p>
             </div>
             <div class="stat-card">
                 <h3>{{ stats.total_organic_videos|default(0) }}</h3>
-                <p>Vidéos organiques</p>
+                <p>Organic Videos</p>
             </div>
             <div class="stat-card">
                 <h3>{{ stats.total_paid_videos|default(0) }}</h3>
-                <p>Vidéos sponsorisées</p>
+                <p>Sponsored Videos</p>
             </div>
         </div>
 
@@ -516,9 +518,9 @@
             <div class="row">
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Filtrer par catégorie</label>
+                        <label class="form-label">Filter by category</label>
                         <select class="form-select" id="categoryFilter" onchange="applyFilters()">
-                            <option value="all" {% if current_category == 'all' %}selected{% endif %}>Toutes les catégories</option>
+                            <option value="all" {% if current_category == 'all' %}selected{% endif %}>All categories</option>
                             <option value="hero" {% if current_category == 'hero' %}selected{% endif %}>Hero</option>
                             <option value="hub" {% if current_category == 'hub' %}selected{% endif %}>Hub</option>
                             <option value="help" {% if current_category == 'help' %}selected{% endif %}>Help</option>
@@ -528,34 +530,34 @@
                 
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Type de contenu</label>
+                        <label class="form-label">Content type</label>
                         <select class="form-select" id="organicFilter" onchange="applyFilters()">
-                            <option value="all" {% if current_organic == 'all' %}selected{% endif %}>Tous les types</option>
-                            <option value="organic" {% if current_organic == 'organic' %}selected{% endif %}>Organique</option>
-                            <option value="paid" {% if current_organic == 'paid' %}selected{% endif %}>Sponsorisé</option>
+                            <option value="all" {% if current_organic == 'all' %}selected{% endif %}>All types</option>
+                            <option value="organic" {% if current_organic == 'organic' %}selected{% endif %}>Organic</option>
+                            <option value="paid" {% if current_organic == 'paid' %}selected{% endif %}>Sponsored</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Nombre de résultats</label>
+                        <label class="form-label">Number of results</label>
                         <select class="form-select" id="limitFilter" onchange="applyFilters()">
-                            <option value="25" {% if current_limit == 25 %}selected{% endif %}>25 vidéos</option>
-                            <option value="50" {% if current_limit == 50 %}selected{% endif %}>50 vidéos</option>
-                            <option value="100" {% if current_limit == 100 %}selected{% endif %}>100 vidéos</option>
-                            <option value="200" {% if current_limit == 200 %}selected{% endif %}>200 vidéos</option>
+                            <option value="25" {% if current_limit == 25 %}selected{% endif %}>25 videos</option>
+                            <option value="50" {% if current_limit == 50 %}selected{% endif %}>50 videos</option>
+                            <option value="100" {% if current_limit == 100 %}selected{% endif %}>100 videos</option>
+                            <option value="200" {% if current_limit == 200 %}selected{% endif %}>200 videos</option>
                         </select>
                     </div>
                 </div>
             </div>
             
             <div class="filter-group mt-3">
-                <label class="form-label">Trier par</label>
+                <label class="form-label">Sort by</label>
                 <div class="sort-buttons">
                     <button class="sort-btn {% if current_sort == 'view_count' %}active{% endif %}" 
                             onclick="updateSort('view_count')">
-                        <i class="bx bx-show me-1"></i> Vues
+                        <i class="bx bx-show me-1"></i> Views
                     </button>
                     <button class="sort-btn {% if current_sort == 'like_count' %}active{% endif %}" 
                             onclick="updateSort('like_count')">
@@ -563,7 +565,7 @@
                     </button>
                     <button class="sort-btn {% if current_sort == 'comment_count' %}active{% endif %}" 
                             onclick="updateSort('comment_count')">
-                        <i class="bx bx-comment me-1"></i> Commentaires
+                        <i class="bx bx-comment me-1"></i> Comments
                     </button>
                     <button class="sort-btn {% if current_sort == 'published_at' %}active{% endif %}" 
                             onclick="updateSort('published_at')">
@@ -571,7 +573,7 @@
                     </button>
                     <button class="sort-btn {% if current_sort == 'duration_seconds' %}active{% endif %}" 
                             onclick="updateSort('duration_seconds')">
-                        <i class="bx bx-time me-1"></i> Durée
+                        <i class="bx bx-time me-1"></i> Duration
                     </button>
                 </div>
             </div>
@@ -596,7 +598,7 @@
                         {% endif %}
                         
                         <span class="organic-badge {{ video.organic_status }}">
-                            {{ 'Organique' if video.organic_status == 'organic' else 'Sponsorisé' }}
+                            {{ 'Organic' if video.organic_status == 'organic' else 'Sponsored' }}
                         </span>
                         
                         {% if video.duration_formatted and video.duration_formatted != 'N/A' %}
@@ -676,7 +678,7 @@
             {% if videos|length >= current_limit %}
             <button class="load-more-btn" onclick="loadMoreVideos()">
                 <i class="bx bx-plus me-2"></i>
-                Charger plus de vidéos
+                Load more videos
             </button>
             {% endif %}
         </div>
@@ -689,16 +691,16 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Miniature</th>
-                                <th>Titre</th>
-                                <th>Concurrent</th>
-                                <th>Catégorie</th>
+                                <th>Thumbnail</th>
+                                <th>Title</th>
+                                <th>Competitor</th>
+                                <th>Category</th>
                                 <th>Type</th>
-                                <th>Vues</th>
+                                <th>Views</th>
                                 <th>Likes</th>
-                                <th>Commentaires</th>
+                                <th>Comments</th>
                                 <th>Engagement</th>
-                                <th>Durée</th>
+                                <th>Duration</th>
                                 <th>Date</th>
                                 <th>Scores</th>
                             </tr>
@@ -728,7 +730,7 @@
                                 </td>
                                 <td>
                                     <span class="table-organic-badge {{ video.organic_status }}">
-                                        {{ 'Organique' if video.organic_status == 'organic' else 'Sponsorisé' }}
+                                        {{ 'Organic' if video.organic_status == 'organic' else 'Sponsored' }}
                                     </span>
                                 </td>
                                 <td class="number-format">{{ "{:,}".format(video.view_count) }}</td>
@@ -840,7 +842,7 @@ async function loadMoreVideos() {
     isLoading = true;
     const btn = event.target;
     const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Chargement...';
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Loading...';
     btn.disabled = true;
     
     try {
@@ -916,7 +918,7 @@ function createVideoCard(video) {
                     ${video.category ? `<span class="category-badge category-${video.category.toLowerCase()}">${video.category.toUpperCase()}</span>` : ''}
                     
                     <span class="organic-badge ${video.organic_status}">
-                        ${video.organic_status === 'organic' ? 'Organique' : 'Sponsorisé'}
+                        ${video.organic_status === 'organic' ? 'Organic' : 'Sponsored'}
                     </span>
                     
                     ${video.duration_formatted && video.duration_formatted !== 'N/A' ? 

@@ -348,10 +348,12 @@
                         Tableau
                     </button>
                 </div>
+                {% if config.get('DEV_MODE', False) and not config.get('FORCE_PROD_MODE', False) %}
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
                     Actualiser
                 </button>
+                {% endif %}
             </div>
         </div>
 

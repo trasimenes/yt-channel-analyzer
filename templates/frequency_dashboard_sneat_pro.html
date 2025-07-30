@@ -400,23 +400,25 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold py-3 mb-0">
-                <span class="text-muted fw-light">Analyse /</span> Fréquence de Publication
+                <span class="text-muted fw-light">Analysis /</span> Publishing Frequency
             </h4>
             <div class="d-flex align-items-center gap-3">
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
                         <i class="bx bx-grid-alt"></i>
-                        Grille
+                        Grid
                     </button>
                     <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
                         <i class="bx bx-list-ul"></i>
-                        Tableau
+                        Table
                     </button>
                 </div>
+                {% if config.get('DEV_MODE', False) and not config.get('FORCE_PROD_MODE', False) %}
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
                     Actualiser
                 </button>
+                {% endif %}
             </div>
         </div>
 
@@ -428,7 +430,7 @@
             </div>
             <div class="stat-card">
                 <h3>{{ country_data|length|default(0) }}</h3>
-                <p>Pays analysés</p>
+                <p>Countries Analyzed</p>
             </div>
             <div class="stat-card">
                 <h3>{{ frequency_stats.avg_per_week|default(0)|round(1) }}</h3>
@@ -436,11 +438,11 @@
             </div>
             <div class="stat-card">
                 <h3>{{ impact_analysis.high_frequency_performers|length|default(0) }}</h3>
-                <p>Très actifs (>1/sem)</p>
+                <p>Very Active (>1/week)</p>
             </div>
             <div class="stat-card">
                 <h3>{{ impact_analysis.low_frequency_performers|length|default(0) }}</h3>
-                <p>Peu actifs (<0.25/sem)</p>
+                <p>Low Activity (<0.25/week)</p>
             </div>
         </div>
 

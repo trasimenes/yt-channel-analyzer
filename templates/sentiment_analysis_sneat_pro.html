@@ -440,6 +440,21 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold py-3 mb-0">
                 <span class="text-muted fw-light">Analyse /</span> Sentiment des Vidéos
+                {% if data_source %}
+                <small class="ms-2 badge bg-info">
+                    {% if data_source == 'live_database' %}
+                        🔄 Live DB
+                    {% elif data_source == 'uploaded_json' %}
+                        📁 JSON Upload
+                    {% elif data_source == 'last_backup' %}
+                        🛡️ Backup
+                    {% elif data_source == 'emergency_fallback' %}
+                        ⚠️ Emergency
+                    {% else %}
+                        📊 {{ data_source }}
+                    {% endif %}
+                </small>
+                {% endif %}
             </h4>
             <div class="d-flex align-items-center gap-3">
                 <!-- Developer Mode Controls -->
