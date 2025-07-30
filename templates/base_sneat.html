@@ -214,8 +214,9 @@
 
             <!-- DATA menu item removed as requested -->
 
-            <!-- AI Learning (dev mode only) -->
+            <!-- AI Learning -->
             {% if dev_mode %}
+            <!-- Development: Full AI Learning Menu -->
             <li class="menu-header small text-uppercase">
               <span class="menu-header-text">AI & Machine Learning</span>
             </li>
@@ -248,6 +249,17 @@
                   </a>
                 </li>
               </ul>
+            </li>
+            {% else %}
+            <!-- Production: Simplified - Only Playlist Classification -->
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">Classification</span>
+            </li>
+            <li class="menu-item {% if request.endpoint == 'human_classifications' %}active{% endif %}">
+              <a href="/human-classifications" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-category"></i>
+                <div class="text-truncate" data-i18n="Playlist Classification">Playlist Classification</div>
+              </a>
             </li>
 
             <!-- DEV Section (only visible in dev mode) -->

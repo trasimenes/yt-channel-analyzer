@@ -1849,6 +1849,7 @@
                         <div id="follower-growth-chart" style="height: 300px;">
                             {% if subscriber_data and subscriber_data.has_data %}
                             <canvas id="growthChart"></canvas>
+                            <!-- Debug: subscriber_data found with {{ subscriber_data.stats.total_entries }} entries -->
                             {% else %}
                             <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                 <div class="text-center">
@@ -3038,6 +3039,8 @@
 {% endblock %}
 
 {% block page_js %}
+<!-- Chart.js for subscriber growth chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function showTab(tabId) {
     // Hide all tab contents
@@ -3182,9 +3185,91 @@ function filterCommentsBySentiment(sentiment) {
     });
 }
 
+// Initialize subscriber growth chart
+function initGrowthChart() {
+    const ctx = document.getElementById('growthChart');
+    if (!ctx) {
+        console.log('Growth chart canvas not found');
+        return;
+    }
+    
+    {% if subscriber_data and subscriber_data.has_data %}
+    const chartData = {{ subscriber_data.chart_data | tojson | safe }};
+    console.log('Growth chart data:', chartData);
+    
+    if (chartData && chartData.datasets && chartData.datasets.length > 0) {
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 4,
+                        hoverRadius: 6
+                    },
+                    line: {
+                        tension: 0.4
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#333',
+                        bodyColor: '#666',
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString() + ' abonnés';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+}
+
 // Initialize word cloud interactivity
 document.addEventListener('DOMContentLoaded', function() {
     initWordCloud();
+    initGrowthChart();
 });
 </script>
 {% endblock %}

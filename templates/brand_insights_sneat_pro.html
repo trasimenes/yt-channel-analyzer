@@ -481,14 +481,16 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold py-3 mb-0">
-                <span class="text-muted fw-light">Analyse /</span> Brand Insights 
+                <span class="text-muted fw-light">Analysis /</span> Brand Insights 
                 <span class="badge bg-success ms-2">NOUVEAU TEMPLATE</span>
             </h4>
             <div class="d-flex align-items-center gap-3">
+                {% if config.get('DEV_MODE', False) and not config.get('FORCE_PROD_MODE', False) %}
                 <button class="btn btn-secondary" onclick="location.reload()">
                     <i class="bx bx-refresh me-2"></i>
-                    Actualiser
+                    Refresh
                 </button>
+                {% endif %}
             </div>
         </div>
 
@@ -529,7 +531,7 @@
                         {% else %}🏕️{% endif %}
                     </div>
                     <h2 class="brand-name">{{ brand_key }}</h2>
-                    <p class="brand-subtitle">Analyse détaillée des performances YouTube</p>
+                    <p class="brand-subtitle">Detailed YouTube performance analysis</p>
                 </div>
                 
 
@@ -545,7 +547,7 @@
                         </div>
                         <div class="metric-value">{{ brand_data.video_length.avg_duration_minutes|default(0)|round(1) }} min</div>
                         <div class="metric-description">
-                            {{ brand_data.video_length.total_videos|default(0) }} vidéos analysées
+                            {{ brand_data.video_length.total_videos|default(0) }} videos analyzed
                         </div>
                     </div>
 
@@ -557,9 +559,9 @@
                             </div>
                             <h3 class="metric-title">Publishing Frequency</h3>
                         </div>
-                        <div class="metric-value">{{ brand_data.video_frequency.videos_per_week|default(0)|round(1) }}/sem</div>
+                        <div class="metric-value">{{ brand_data.video_frequency.videos_per_week|default(0)|round(1) }}/week</div>
                         <div class="metric-description">
-                            Fréquence de publication hebdomadaire
+                            Weekly publishing frequency
                         </div>
                     </div>
 
@@ -582,7 +584,7 @@
                                 
                                 {% if brand_data.most_liked_topics|length > 3 %}
                                 <div class="topic-toggle" onclick="toggleMoreTopics('{{ brand_key }}')">
-                                    <span id="toggle-text-{{ brand_key }}">Voir plus (+{{ brand_data.most_liked_topics|length - 3 }})</span>
+                                    <span id="toggle-text-{{ brand_key }}">Show more (+{{ brand_data.most_liked_topics|length - 3 }})</span>
                                 </div>
                                 <div id="more-topics-{{ brand_key }}" class="more-topics" style="display: none;">
                                     {% for topic in brand_data.most_liked_topics[3:] %}
@@ -595,8 +597,8 @@
                                 {% endif %}
                             {% else %}
                                 <div class="topic-item">
-                                    <div class="topic-title">Aucun sujet populaire</div>
-                                    <div class="topic-engagement">Données insuffisantes</div>
+                                    <div class="topic-title">No popular topics</div>
+                                    <div class="topic-engagement">Insufficient data</div>
                                 </div>
                             {% endif %}
                         </div>
@@ -616,7 +618,7 @@
                             <span style="color: #8592a3;">Help:</span> <span style="color: #696cff; font-weight: 700;">{{ brand_data.hub_help_hero.help_percentage|default(0)|round(0) }}%</span>
                         </div>
                         <div class="metric-description">
-                            {{ brand_data.hub_help_hero.categorized_videos|default(0) }} vidéos catégorisées
+                            {{ brand_data.hub_help_hero.categorized_videos|default(0) }} videos categorized
                         </div>
                     </div>
 
@@ -630,11 +632,11 @@
                         </div>
                         <div class="metric-binary">
                             <div class="metric-line">
-                                <span class="metric-label">Organique</span>
+                                <span class="metric-label">Organic</span>
                                 <span class="metric-percent" style="color: #696cff; font-weight: 700;">{{ brand_data.organic_vs_paid.organic_percentage|default(0)|round(0) }}%</span>
                             </div>
                             <div class="metric-line">
-                                <span class="metric-label">Payé</span>
+                                <span class="metric-label">Paid</span>
                                 <span class="metric-percent" style="color: #696cff; font-weight: 700;">{{ brand_data.organic_vs_paid.paid_percentage|default(0)|round(0) }}%</span>
                             </div>
                         </div>
@@ -654,12 +656,12 @@
                                 <span class="metric-percent" style="color: #696cff; font-weight: 700;">{{ brand_data.shorts_distribution.shorts_percentage|default(0)|round(0) }}%</span>
                             </div>
                             <div class="metric-line">
-                                <span class="metric-label">Vidéos 16:9</span>
+                                <span class="metric-label">16:9 Videos</span>
                                 <span class="metric-percent" style="color: #696cff; font-weight: 700;">{{ brand_data.shorts_distribution.regular_percentage|default(0)|round(0) }}%</span>
                             </div>
                         </div>
                         <div class="metric-description">
-                            {{ brand_data.shorts_distribution.total_videos|default(0) }} vidéos totales
+                            {{ brand_data.shorts_distribution.total_videos|default(0) }} total videos
                         </div>
                     </div>
 
@@ -673,7 +675,7 @@
                         </div>
                         <div class="metric-value">{{ brand_data.thumbnail_consistency.consistency_score|default(0)|round(1) }}/10</div>
                         <div class="metric-description">
-                            Cohérence visuelle des miniatures
+                            Visual consistency of thumbnails
                         </div>
                     </div>
 
@@ -687,7 +689,7 @@
                         </div>
                         <div class="metric-value">{{ brand_data.tone_of_voice.dominant_tone|default('N/A')|title }}</div>
                         <div class="metric-description">
-                            Tonalité dominante du contenu
+                            Dominant content tone
                         </div>
                     </div>
                 </div>
@@ -729,8 +731,8 @@
         {% else %}
         <div class="text-center py-5">
             <i class="bx bx-world" style="font-size: 4rem; color: #8592a3;"></i>
-            <h3 class="mt-3 mb-2">Aucune donnée d'insights par pays</h3>
-            <p class="text-muted">Les insights par pays ne sont pas encore disponibles.</p>
+            <h3 class="mt-3 mb-2">No country insights data</h3>
+            <p class="text-muted">Country insights are not yet available.</p>
         </div>
         {% endif %}
     </div>
@@ -776,11 +778,11 @@ function toggleMoreTopics(brandKey) {
     
     if (moreTopics.style.display === 'none') {
         moreTopics.style.display = 'block';
-        toggleText.textContent = 'Voir moins';
+        toggleText.textContent = 'Show less';
     } else {
         moreTopics.style.display = 'none';
         const hiddenCount = moreTopics.children.length;
-        toggleText.textContent = `Voir plus (+${hiddenCount})`;
+        toggleText.textContent = `Show more (+${hiddenCount})`;
     }
 }
 
