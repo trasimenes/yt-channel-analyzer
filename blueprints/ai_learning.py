@@ -26,7 +26,7 @@ def dev_mode_required(f):
 @ai_learning_bp.route('/human-classifications')
 @login_required
 def human_classifications():
-    """Page des vidéos ET playlists classifiées par l'humain - DUAL MODE"""
+    """Page de classification des playlists - DUAL MODE (DEV: all, PROD: playlists only)"""
     try:
         from yt_channel_analyzer.database import get_db_connection
         
@@ -39,30 +39,48 @@ def human_classifications():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Compter les classifications humaines (vidéos + playlists)
-        cursor.execute("""
-            SELECT COUNT(*) FROM (
-                SELECT 1 FROM video 
+        # Different queries based on environment
+        if config.should_load_ml_models():
+            # Development: Show both videos and playlists
+            cursor.execute("""
+                SELECT COUNT(*) FROM (
+                    SELECT 1 FROM video 
+                    WHERE is_human_validated = 1 AND classification_source = 'human'
+                    UNION ALL
+                    SELECT 1 FROM playlist 
+                    WHERE human_verified = 1 AND classification_source = 'human'
+                )
+            """)
+            total_count = cursor.fetchone()[0]
+            
+            # Récupérer les données avec pagination
+            cursor.execute("""
+                SELECT 'video' as type, id, title, category, view_count, 0 as video_count
+                FROM video 
                 WHERE is_human_validated = 1 AND classification_source = 'human'
                 UNION ALL
-                SELECT 1 FROM playlist 
+                SELECT 'playlist' as type, id, name as title, category, 0 as view_count, video_count
+                FROM playlist 
                 WHERE human_verified = 1 AND classification_source = 'human'
-            )
-        """)
-        total_count = cursor.fetchone()[0]
-        
-        # Récupérer les données avec pagination
-        cursor.execute("""
-            SELECT 'video' as type, id, title, category, view_count, 0 as video_count
-            FROM video 
-            WHERE is_human_validated = 1 AND classification_source = 'human'
-            UNION ALL
-            SELECT 'playlist' as type, id, name as title, category, 0 as view_count, video_count
-            FROM playlist 
-            WHERE human_verified = 1 AND classification_source = 'human'
-            ORDER BY type, id
-            LIMIT ? OFFSET ?
-        """, (per_page, offset))
+                ORDER BY type, id
+                LIMIT ? OFFSET ?
+            """, (per_page, offset))
+        else:
+            # Production: Only show playlists for categorization
+            cursor.execute("""
+                SELECT COUNT(*) FROM playlist 
+                WHERE human_verified = 1 AND classification_source = 'human'
+            """)
+            total_count = cursor.fetchone()[0]
+            
+            # Récupérer seulement les playlists
+            cursor.execute("""
+                SELECT 'playlist' as type, id, name as title, category, 0 as view_count, video_count
+                FROM playlist 
+                WHERE human_verified = 1 AND classification_source = 'human'
+                ORDER BY id
+                LIMIT ? OFFSET ?
+            """, (per_page, offset))
         
         items = []
         for row in cursor.fetchall():
@@ -91,7 +109,9 @@ def human_classifications():
                              has_prev=(page > 1),
                              has_next=(page < total_pages),
                              ml_enabled=config.should_load_ml_models(),
-                             dev_mode=session.get('dev_mode', False))
+                             dev_mode=session.get('dev_mode', False),
+                             production_mode=not config.should_load_ml_models(),
+                             show_playlists_only=not config.should_load_ml_models())
                              
     except Exception as e:
         print(f"[HUMAN-CLASSIFICATIONS] ❌ Erreur: {e}")
@@ -110,6 +130,7 @@ def human_classifications():
 
 @ai_learning_bp.route('/classification-stats')
 @login_required
+@dev_mode_required
 def classification_stats():
     """Page des statistiques de classification - DUAL MODE"""
     try:
@@ -199,6 +220,7 @@ def classification_stats():
 
 @ai_learning_bp.route('/sentence-transformers')
 @login_required
+@dev_mode_required
 def sentence_transformers():
     """Page Sentence Transformers - DUAL MODE (dev: modèles actifs, prod: cache)"""
     try:
@@ -355,3 +377,29 @@ def model_status():
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
+
+
+@ai_learning_bp.route('/transformers-dashboard')
+@login_required
+@dev_mode_required
+def transformers_dashboard():
+    """Tableau de bord des transformers - DEV ONLY"""
+    # Redirect to sentence-transformers for consistency
+    return redirect(url_for('ai_learning.sentence_transformers'))
+
+
+@ai_learning_bp.route('/supervised-learning')
+@login_required
+def supervised_learning():
+    """Page principale de supervised learning - DUAL MODE"""
+    # Redirect to human-classifications which shows the supervised learning data
+    return redirect(url_for('ai_learning.human_classifications'))
+
+
+@ai_learning_bp.route('/supervised-learning/stats')
+@login_required  
+@dev_mode_required
+def supervised_learning_stats():
+    """Statistiques de supervised learning - DEV ONLY"""
+    # Redirect to classification-stats which shows detailed stats
+    return redirect(url_for('ai_learning.classification_stats'))

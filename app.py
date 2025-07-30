@@ -526,8 +526,8 @@ def countries_analysis():
                 insights.append({
                     'type': 'success',
                     'icon': 'bx-bulb',
-                    'title': f"📈 Pattern de succès identifié",
-                    'message': f"{top_performer['country']} (leader performance) mise sur {top_performer['hub_percentage']:.0f}% de contenu Hub - Reproduire ce modèle sur autres marchés"
+                    'title': f"📈 Success pattern identified",
+                    'message': f"{top_performer['country']} (performance leader) focuses on {top_performer['hub_percentage']:.0f}% Hub content - Replicate this model in other markets"
                 })
             
             # Alerte sur les marchés avec faible engagement générale
@@ -538,8 +538,8 @@ def countries_analysis():
                     insights.append({
                         'type': 'warning',
                         'icon': 'bx-time',
-                        'title': f"📉 Engagement critique",
-                        'message': f"Engagement global faible ({avg_engagement:.2f}%). {market['country']} particulièrement touché - Réviser stratégie de contenu et formats"
+                        'title': f"📉 Critical engagement",
+                        'message': f"Low global engagement ({avg_engagement:.2f}%). {market['country']} particularly affected - Review content strategy and formats"
                     })
         
         # Récupérer les top vidéos par pays pour le drill-down

@@ -37,7 +37,7 @@ class Config:
             return False
         
         # En développement : selon la variable d'environnement
-        return cls.ENABLE_ML_MODELS
+        return os.getenv('YTA_ENABLE_ML', 'true').lower() == 'true'
 
 class DevelopmentConfig(Config):
     """Configuration pour développement local"""

@@ -374,12 +374,12 @@ def learn_guide(guide_name):
             # Données du guide Hero Hub Help
             guide_data = {
                 'guide_name': 'hero_hub_help_strategy',
-                'guide_title': 'Stratégie Hero Hub Help',
-                'guide_description': 'Comprendre la matrice Google pour optimiser votre contenu YouTube',
+                'guide_title': 'Hero Hub Help Strategy',
+                'guide_description': 'Understand Google\'s matrix to optimize your YouTube content',
                 'guide_icon': '🎯',
                 'guide_duration': '15 min',
-                'guide_level': 'Débutant',
-                'guide_category': 'Stratégie',
+                'guide_level': 'Beginner',
+                'guide_category': 'Strategy',
                 'guide_number': 1
             }
             
@@ -1152,7 +1152,101 @@ def frequency_dashboard():
 @insights_bp.route('/sentiment-analysis')
 @login_required
 def sentiment_analysis():
-    """Page d'analyse des sentiments avec XLM-RoBERTa multilingue"""
+    """Page d'analyse des sentiments avec système de fallback à trois niveaux"""
+    
+    # Import the fallback system
+    from sentiment_analysis_fallback import get_sentiment_data, get_fallback_data
+    
+    try:
+        # Get data using the three-tier fallback system
+        data = get_sentiment_data()
+        
+        if not data:
+            data = get_fallback_data()
+        
+        # Extract data for template
+        stats = data.get('stats', {})
+        videos = data.get('videos', [])
+        charts_data = data.get('charts_data', {})
+        export_info = data.get('export_info', {})
+        
+        # Handle pagination and filtering
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 25))
+        sentiment_filter = request.args.get('sentiment', 'all')
+        sort_by = request.args.get('sort_by', 'positive_count')
+        order = request.args.get('order', 'desc')
+        
+        # Filter by sentiment
+        if sentiment_filter != 'all':
+            videos = [v for v in videos if v.get('dominant_sentiment') == sentiment_filter]
+        
+        # Sort
+        reverse = (order == 'desc')
+        if sort_by in ['positive_count', 'negative_count', 'total_comments', 'positive_percentage']:
+            videos = sorted(videos, key=lambda x: x.get(sort_by, 0), reverse=reverse)
+        
+        # Paginate
+        total_videos = len(videos)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        paginated_videos = videos[start_idx:end_idx]
+        
+        total_pages = max(1, (total_videos + per_page - 1) // per_page)
+        
+        # Set config based on environment
+        from config import config
+        dev_mode = config.should_load_ml_models()
+        
+        return render_template('sentiment_analysis_sneat_pro.html',
+            stats=stats,
+            all_videos=paginated_videos,
+            current_page=page,
+            total_pages=total_pages,
+            per_page=per_page,
+            total_videos=total_videos,
+            sentiment_filter=sentiment_filter,
+            sort_by=sort_by,
+            order=order,
+            config={'DEV_MODE': dev_mode},
+            charts_data=charts_data,
+            export_info=export_info,
+            data_source=export_info.get('data_source_used', 'unknown'),
+            ml_enabled=dev_mode,
+            dev_mode=session.get('dev_mode', False)
+        )
+        
+    except Exception as e:
+        print(f"[SENTIMENT-ANALYSIS] ❌ Erreur: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Emergency fallback
+        data = get_fallback_data()
+        stats = data.get('stats', {})
+        
+        return render_template('sentiment_analysis_sneat_pro.html',
+            stats=stats,
+            all_videos=[],
+            current_page=1,
+            total_pages=1,
+            per_page=25,
+            total_videos=0,
+            sentiment_filter='all',
+            sort_by='positive_count',
+            order='desc',
+            config={'DEV_MODE': False},
+            charts_data={},
+            export_info={'error': str(e), 'data_source_used': 'emergency_fallback'},
+            data_source='emergency_fallback',
+            ml_enabled=False,
+            dev_mode=False
+        )
+
+
+# Keep a backup of the original function for reference
+def sentiment_analysis_original():
+    """Original sentiment analysis function - kept for reference"""
     try:
         import sqlite3
         from pathlib import Path
