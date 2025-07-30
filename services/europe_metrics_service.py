@@ -196,18 +196,21 @@ class EuropeMetricsService:
                     freq_per_week = 3.0
                     print(f"[EUROPE_FREQ] 🚨 {name}: fréquence ajustée à 3.0/sem")
                 
-                # Accumulation pondérée par le nombre de vidéos
+                # Accumulation simple et précise
                 total_videos += video_count
-                total_weighted_weeks += weeks_span * video_count  # Pondération !
+                total_weighted_weeks += weeks_span  # Somme simple des périodes
                 frequencies.append(freq_per_week)
                 competitor_count += 1
         
         if not frequencies or total_weighted_weeks == 0:
             return self._empty_frequency_metrics()
         
-        # Fréquence européenne pondérée = total vidéos / moyenne pondérée des semaines
-        weighted_avg_weeks = total_weighted_weeks / total_videos
-        videos_per_week = round(total_videos / weighted_avg_weeks, 1)
+        # Fréquence européenne = moyenne des fréquences individuelles (plus logique)
+        videos_per_week = round(sum(frequencies) / len(frequencies), 1)
+        # Alternative: fréquence globale = total vidéos / moyenne des périodes
+        # videos_per_week = round(total_videos / (total_weighted_weeks / competitor_count), 1)
+        
+        weighted_avg_weeks = total_weighted_weeks / competitor_count
         
         print(f"[EUROPE_FREQ] 📊 {competitor_count} concurrents analysés")
         print(f"[EUROPE_FREQ] 📈 {total_videos:,} vidéos sur {weighted_avg_weeks:.1f} semaines pondérées")

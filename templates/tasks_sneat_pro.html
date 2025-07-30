@@ -1,6 +1,6 @@
 {% extends "base_sneat.html" %}
 
-{% block title %}Tâches en cours - YT Channel Analyzer{% endblock %}
+{% block title %}Tasks in Progress - YT Channel Analyzer{% endblock %}
 
 {% block page_css %}
 <style>
@@ -419,7 +419,7 @@
                 </div>
             </div>
             <div class="col-1">
-                <span id="global-task-count">0 tâches</span>
+                <span id="global-task-count">0 tasks</span>
             </div>
         </div>
     </div>
@@ -429,22 +429,22 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold py-3 mb-0">
-                <span class="text-muted fw-light">Système /</span> Tâches en cours
+                <span class="text-muted fw-light">System /</span> Tasks in Progress
             </h4>
             <div class="d-flex align-items-center gap-3">
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
                         <i class="bx bx-grid-alt"></i>
-                        Grille
+                        Grid
                     </button>
                     <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
                         <i class="bx bx-list-ul"></i>
-                        Tableau
+                        Table
                     </button>
                 </div>
                 <button class="btn btn-secondary" onclick="refreshTasks()">
                     <i class="bx bx-refresh me-2"></i>
-                    Actualiser
+                    Refresh
                 </button>
             </div>
         </div>
@@ -460,19 +460,19 @@
         <div class="stats-cards">
             <div class="stat-card">
                 <h3 id="total-tasks">{{ tasks|length if tasks else 0 }}</h3>
-                <p>Tâches totales</p>
+                <p>Total tasks</p>
             </div>
             <div class="stat-card">
                 <h3 id="running-tasks">{{ tasks|selectattr("status", "equalto", "running")|list|length if tasks else 0 }}</h3>
-                <p>En cours</p>
+                <p>Running</p>
             </div>
             <div class="stat-card">
                 <h3 id="completed-tasks">{{ tasks|selectattr("status", "equalto", "completed")|list|length if tasks else 0 }}</h3>
-                <p>Terminées</p>
+                <p>Completed</p>
             </div>
             <div class="stat-card">
                 <h3 id="error-tasks">{{ tasks|selectattr("status", "equalto", "error")|list|length if tasks else 0 }}</h3>
-                <p>Erreurs</p>
+                <p>Errors</p>
             </div>
         </div>
 
@@ -481,7 +481,7 @@
             <ul class="nav nav-tabs" id="taskTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="running-tasks-tab" data-bs-toggle="tab" data-bs-target="#running-tasks" type="button" role="tab">
-                        <i class="bx bx-play me-2"></i>Tâches en cours
+                        <i class="bx bx-play me-2"></i>Tasks in Progress
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -537,13 +537,13 @@
                                             
                                             <div class="status-overlay">
                                                 {% if task.status == 'running' %}
-                                                    <span class="badge bg-primary">EN COURS</span>
+                                                    <span class="badge bg-primary">RUNNING</span>
                                                 {% elif task.status == 'completed' %}
-                                                    <span class="badge bg-success">TERMINÉ</span>
+                                                    <span class="badge bg-success">COMPLETED</span>
                                                 {% elif task.status == 'error' %}
-                                                    <span class="badge bg-danger">ERREUR</span>
+                                                    <span class="badge bg-danger">ERROR</span>
                                                 {% else %}
-                                                    <span class="badge bg-secondary">SUSPENDU</span>
+                                                    <span class="badge bg-secondary">PAUSED</span>
                                                 {% endif %}
                                             </div>
                                             
@@ -557,7 +557,7 @@
                                             <h5 class="task-title" title="{{ task.channel_name }}">{{ task.channel_name }}</h5>
                                             
                                             <div class="task-description">
-                                                {{ task.current_step|default('En attente...') }}
+                                                {{ task.current_step|default('Waiting...') }}
                                             </div>
                                             
                                             <div class="progress-wrapper">
@@ -580,11 +580,11 @@
                                             <div class="task-metrics">
                                                 <div class="metric-item">
                                                     <i class="bx bx-play"></i>
-                                                    <span>{{ task.videos_found|default(0) }} trouvées</span>
+                                                    <span>{{ task.videos_found|default(0) }} found</span>
                                                 </div>
                                                 <div class="metric-item">
                                                     <i class="bx bx-check"></i>
-                                                    <span>{{ task.videos_processed|default(0) }} traitées</span>
+                                                    <span>{{ task.videos_processed|default(0) }} processed</span>
                                                 </div>
                                             </div>
                                             
@@ -592,42 +592,42 @@
                                                 {% if task.status == 'running' %}
                                                 <button class="btn btn-outline-warning btn-sm task-action-btn" onclick="cancelTask('{{ task.id }}')">
                                                     <i class="bx bx-stop"></i>
-                                                    Arrêter
+                                                    Stop
                                                 </button>
                                                 {% elif task.status == 'paused' or task.status == 'error' %}
                                                 <button class="btn btn-outline-success btn-sm task-action-btn" onclick="resumeTask('{{ task.id }}')">
                                                     <i class="bx bx-play"></i>
-                                                    Reprendre
+                                                    Resume
                                                 </button>
                                                 {% endif %}
                                                 
                                                 {% if task.status == 'completed' %}
                                                 <a href="/concurrents" class="btn btn-primary btn-sm task-action-btn">
                                                     <i class="bx bx-chart"></i>
-                                                    Résultats
+                                                    Results
                                                 </a>
                                                 {% endif %}
                                                 
                                                 {% if task.status != 'running' %}
                                                 <button class="btn btn-outline-danger btn-sm task-action-btn" onclick="deleteTask('{{ task.id }}')">
                                                     <i class="bx bx-trash"></i>
-                                                    Supprimer
+                                                    Delete
                                                 </button>
                                                 {% endif %}
                                                 
                                                 <a href="{{ task.channel_url }}" target="_blank" class="btn btn-outline-secondary btn-sm task-action-btn">
                                                     <i class="bx bx-link-external"></i>
-                                                    Chaîne
+                                                    Channel
                                                 </a>
                                             </div>
                                             
                                             <div class="mt-2">
                                                 <small class="text-muted">
                                                     <i class="bx bx-time me-1"></i>
-                                                    Début: {{ task.start_time }}
+                                                    Start: {{ task.start_time }}
                                                     {% if task.end_time %}
                                                     <br><i class="bx bx-check-circle me-1"></i>
-                                                    Fin: {{ task.end_time }}
+                                                    End: {{ task.end_time }}
                                                     {% endif %}
                                                 </small>
                                             </div>
@@ -648,11 +648,11 @@
                                 <div class="col-12">
                                     <div class="empty-state">
                                         <i class="bx bx-time"></i>
-                                        <h3>Aucune tâche en cours</h3>
-                                        <p>Lancez une analyse en arrière-plan depuis la page d'accueil pour voir les tâches ici.</p>
+                                        <h3>No tasks in progress</h3>
+                                        <p>Start a background analysis from the home page to see tasks here.</p>
                                         <a href="/" class="btn btn-primary">
                                             <i class="bx bx-plus me-2"></i>
-                                            Démarrer une analyse
+                                            Start analysis
                                         </a>
                                     </div>
                                 </div>
@@ -668,12 +668,12 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Chaîne</th>
-                                            <th>Statut</th>
-                                            <th>Progrès</th>
-                                            <th>Vidéos</th>
-                                            <th>Étape actuelle</th>
-                                            <th>Durée</th>
+                                            <th>Channel</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Videos</th>
+                                            <th>Current step</th>
+                                            <th>Duration</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -686,13 +686,13 @@
                                                 <td>
                                                     <span class="status-badge status-{{ task.status }}">
                                                         {% if task.status == 'running' %}
-                                                            <i class="bx bx-play"></i> En cours
+                                                            <i class="bx bx-play"></i> Running
                                                         {% elif task.status == 'completed' %}
-                                                            <i class="bx bx-check"></i> Terminé
+                                                            <i class="bx bx-check"></i> Completed
                                                         {% elif task.status == 'error' %}
-                                                            <i class="bx bx-x"></i> Erreur
+                                                            <i class="bx bx-x"></i> Error
                                                         {% else %}
-                                                            <i class="bx bx-pause"></i> Suspendu
+                                                            <i class="bx bx-pause"></i> Paused
                                                         {% endif %}
                                                     </span>
                                                 </td>
@@ -712,7 +712,7 @@
                                                 <td>{{ task.current_step|default('En attente...') }}</td>
                                                 <td>
                                                     <small>
-                                                        Début: {{ task.start_time }}<br>
+                                                        Start: {{ task.start_time }}<br>
                                                         {% if task.end_time %}Fin: {{ task.end_time }}{% endif %}
                                                     </small>
                                                 </td>
@@ -1011,7 +1011,7 @@ function updateGlobalProgress(tasks) {
         
         globalProgress.style.width = avgProgress + '%';
         globalProgress.setAttribute('aria-valuenow', avgProgress);
-        globalTaskCount.textContent = runningTasks.length + (runningTasks.length === 1 ? ' tâche' : ' tâches');
+        globalTaskCount.textContent = runningTasks.length + (runningTasks.length === 1 ? ' task' : ' tasks');
     } else {
         globalProgressBar.style.display = 'none';
     }
@@ -1030,14 +1030,14 @@ async function cancelTask(taskId) {
         
         const result = await response.json();
         if (result.success) {
-            showAlert('Tâche arrêtée avec succès', 'success');
+            showAlert('Task stopped successfully', 'success');
             refreshTasks();
         } else {
-            showAlert('Erreur lors de l\'arrêt: ' + (result.error || 'Erreur inconnue'), 'danger');
+            showAlert('Error stopping task: ' + (result.error || 'Unknown error'), 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        showAlert('Erreur lors de l\'arrêt de la tâche', 'danger');
+        showAlert('Error stopping task', 'danger');
     }
 }
 
@@ -1054,14 +1054,14 @@ async function resumeTask(taskId) {
         
         const result = await response.json();
         if (result.success) {
-            showAlert('Tâche reprise avec succès', 'success');
+            showAlert('Task resumed successfully', 'success');
             refreshTasks();
         } else {
-            showAlert('Erreur lors de la reprise: ' + (result.error || 'Erreur inconnue'), 'danger');
+            showAlert('Error resuming task: ' + (result.error || 'Unknown error'), 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        showAlert('Erreur lors de la reprise de la tâche', 'danger');
+        showAlert('Error resuming task', 'danger');
     }
 }
 
@@ -1078,14 +1078,14 @@ async function deleteTask(taskId) {
         
         const result = await response.json();
         if (result.success) {
-            showAlert('Tâche supprimée avec succès', 'success');
+            showAlert('Task deleted successfully', 'success');
             refreshTasks();
         } else {
-            showAlert('Erreur lors de la suppression: ' + (result.error || 'Erreur inconnue'), 'danger');
+            showAlert('Error deleting task: ' + (result.error || 'Unknown error'), 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        showAlert('Erreur lors de la suppression de la tâche', 'danger');
+        showAlert('Error deleting task', 'danger');
     }
 }
 
@@ -1155,11 +1155,11 @@ async function updateAllValuesFromTasks() {
         statusDiv.innerHTML = `
             <div class="alert alert-danger py-2">
                 <i class="bx bx-error-circle me-2"></i>
-                <strong>Erreur:</strong> ${error.message || 'Failed to update values'}
+                <strong>Error:</strong> ${error.message || 'Failed to update values'}
             </div>
         `;
         
-        showAlert('Erreur lors de la mise à jour: ' + error.message, 'danger');
+        showAlert('Update error: ' + error.message, 'danger');
         
         setTimeout(() => {
             button.innerHTML = originalHtml;

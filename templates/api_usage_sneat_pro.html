@@ -262,7 +262,7 @@
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="toggleView('grid')" id="gridViewBtn">
                         <i class="bx bx-grid-alt"></i>
-                        Grille
+                        Grid
                     </button>
                     <button class="view-btn" onclick="toggleView('table')" id="tableViewBtn">
                         <i class="bx bx-list-ul"></i>
@@ -299,9 +299,19 @@
             </div>
             
             <div class="d-flex justify-content-between text-muted small">
-                <span>{{ "{:,}".format(api_stats.current_daily_usage if api_stats else 0) }} / {{ "{:,}".format(api_stats.daily_limit if api_stats else 10000) }} requêtes</span>
-                <span>Reset: Minuit (UTC)</span>
+                <span>{{ "{:,}".format(api_stats.current_daily_usage if api_stats else 0) }} / {{ "{:,}".format(api_stats.daily_limit if api_stats else 10000) }} requests</span>
+                <span>Reset: Midnight (UTC)</span>
             </div>
+            <!-- DEBUG: Show raw api_stats data -->
+            {% if api_stats %}
+            <div class="small text-info mt-1">
+                DEBUG: current_daily_usage={{ api_stats.current_daily_usage }}, total_requests={{ api_stats.total_requests }}
+            </div>
+            {% else %}
+            <div class="small text-danger mt-1">
+                DEBUG: api_stats is None or empty
+            </div>
+            {% endif %}
         </div>
 
         <!-- Grid View -->

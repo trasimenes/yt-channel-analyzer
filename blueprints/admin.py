@@ -424,7 +424,7 @@ def api_usage():
         sys.stdout.flush()
         
         # Lire le fichier de tracking des quotas API
-        quota_file = '../api_quota_tracking.json'
+        quota_file = 'api_quota_tracking.json'
         print(f"[ULTRA DEBUG] Looking for quota file: {quota_file}")
         print(f"[ULTRA DEBUG] Current working directory: {os.getcwd()}")
         print(f"[ULTRA DEBUG] Full path would be: {os.path.abspath(quota_file)}")

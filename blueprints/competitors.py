@@ -21,7 +21,7 @@ def test_auth():
 @competitors_bp.route('/concurrents')
 @login_required
 def concurrents():
-    """Page de liste des concurrents"""
+    """Competitors list page"""
     from yt_channel_analyzer.database import get_db_connection
     import sqlite3
     
@@ -29,7 +29,7 @@ def concurrents():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Récupérer tous les concurrents avec leurs statistiques incluant les compteurs par catégorie et playlists
+        # Get all competitors with their statistics including category counters and playlists
         cursor.execute("""
             SELECT 
                 c.id,
@@ -71,11 +71,11 @@ def concurrents():
         
         conn.close()
         
-        print(f"[DEBUG COMPETITORS] Nombre de concurrents trouvés : {len(competitors)}")
+        print(f"[DEBUG COMPETITORS] Number of competitors found: {len(competitors)}")
         if competitors:
-            print(f"[DEBUG COMPETITORS] Premier concurrent : {competitors[0]['name']} avec {competitors[0]['video_count']} vidéos")
+            print(f"[DEBUG COMPETITORS] First competitor: {competitors[0]['name']} with {competitors[0]['video_count']} videos")
         
-        # Calculer le total des vidéos
+        # Calculate total videos
         total_videos = sum(comp['video_count'] for comp in competitors)
         
         return render_template('concurrents_sneat_pro_tabs.html', 
@@ -86,7 +86,7 @@ def concurrents():
                              
     except sqlite3.Error as e:
         print(f"[ERROR] Database error in concurrents: {e}")
-        flash("Erreur lors du chargement des concurrents", "error")
+        flash("Error loading competitors", "error")
         return render_template('concurrents_sneat_pro_tabs.html', 
                              competitors=[],
                              total_competitors=0,
@@ -113,7 +113,7 @@ def competitor_detail(competitor_id):
         data = service.get_competitor_detail_data(competitor_id)
         
         if data is None:
-            flash("Concurrent non trouvé.", "error")
+            flash("Competitor not found.", "error")
             return redirect(url_for('competitors.concurrents'))
         
         # Ajouter l'analyse d'engagement
@@ -152,7 +152,7 @@ def competitor_detail(competitor_id):
                                dev_mode=session.get('dev_mode', False))
     
     except Exception as e:
-        flash(f"Erreur lors du chargement des données du concurrent: {str(e)}", "error")
+        flash(f"Error loading competitor data: {str(e)}", "error")
         return redirect(url_for('competitors.concurrents'))
 
 
@@ -181,7 +181,7 @@ def classify_competitor(competitor_id):
         
         if not competitor:
             print(f"❌ [CLASSIFY-DEBUG] Competitor {competitor_id} not found!")
-            flash("Concurrent non trouvé.", "error")
+            flash("Competitor not found.", "error")
             return redirect(url_for('competitors.concurrents'))
         
         # Récupérer toutes les playlists du concurrent
@@ -288,7 +288,7 @@ def delete_competitor(competitor_id):
         # Vérifier que le concurrent existe
         competitor = conn.execute('SELECT name FROM concurrent WHERE id = ?', (competitor_id,)).fetchone()
         if competitor is None:
-            flash("Concurrent non trouvé.", "error")
+            flash("Competitor not found.", "error")
             return redirect(url_for('competitors.concurrents'))
         
         competitor_name = competitor['name']

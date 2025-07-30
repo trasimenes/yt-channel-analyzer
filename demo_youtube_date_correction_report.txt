@@ -1,0 +1,65 @@
+📊 RAPPORT DE CORRECTION DES DATES YOUTUBE
+==================================================
+🕐 Généré le : 2025-07-30 11:20:23
+
+🔍 ANALYSE DES ANOMALIES
+-------------------------
+Concurrents analysés : 1
+Vidéos totales analysées : 61
+Dates suspectes détectées : 61
+Taux d'anomalie : 100.0%
+
+🚨 Pierre et Vacances (ID: 504)
+   • Vidéos totales : 61
+   • Date suspecte : 2025-07-30
+   • Fréquence : 61 vidéos (100.0%)
+   • Type d'anomalie : IMPORT_DATE_KNOWN
+   • Confiance : 100.0%
+
+
+🔧 CORRECTIONS APPLIQUÉES
+-------------------------
+Corrections tentées : 61
+Corrections réussies : 10
+Corrections échouées : 51
+Taux de succès : 16.4%
+
+📋 ÉCHANTILLON DE CORRECTIONS RÉUSSIES :
+
+   • T6_t48fSU90: 2025-07-30 10:53:07.043291 → 2025-02-04 01:47:37
+   • UPpPcCIKJWs: 2025-07-30 10:53:07.047615 → 2024-04-30 01:16:57
+   • lLWmKgsyO90: 2025-07-30 10:53:07.049141 → 2024-04-24 02:30:09
+   • 9Q1FrOs_Hoo: 2025-07-30 10:53:07.050900 → 2024-04-24 02:30:05
+   • Tib4SOQW4e8: 2025-07-30 10:53:07.052343 → 2024-03-08 01:15:09
+   ... et 5 autres
+
+❌ ÉCHANTILLON D'ÉCHECS :
+
+   • ZInR3sv5MnU: Date YouTube non récupérable
+   • WF0_vw9ewMI: Date YouTube non récupérable
+   • pTuveQkB878: Date YouTube non récupérable
+   ... et 48 autres
+
+
+💡 RECOMMANDATIONS
+------------------
+
+1. 🔍 VÉRIFICATION :
+   • Valider manuellement un échantillon de corrections
+   • Vérifier les métriques de fréquence après correction
+   • Contrôler la cohérence des nouvelles dates
+
+2. 🛡️ SÉCURITÉ :
+   • Backup créé : table 'video_dates_backup_1753867223'
+   • Rollback disponible avec la méthode rollback()
+   • Log détaillé dans youtube_date_correction.log
+
+3. 📈 SUIVI :
+   • Recalculer les métriques de fréquence temporelles
+   • Mettre à jour les analyses de tendances
+   • Auditer les autres concurrents pour des anomalies similaires
+
+4. 🔄 PRÉVENTION :
+   • Modifier les scripts d'import pour utiliser youtube_published_at
+   • Ajouter des validations de cohérence de dates
+   • Implémenter des alertes pour détecter les futures anomalies

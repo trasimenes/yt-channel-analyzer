@@ -1,6 +1,6 @@
 """
-YT Channel Analyzer - Application Flask Modulaire
-Architecture Blueprint pour remplacer le monolithe app.py de 10,122 lignes
+YT Channel Analyzer - Modular Flask Application
+Blueprint architecture to replace the 10,122 line monolithic app.py
 """
 import os
 from datetime import datetime
@@ -80,12 +80,12 @@ def inject_dev_mode():
 
 # --- DECORATORS ---
 def dev_mode_required(f):
-    """Décorateur pour limiter l'accès aux fonctions en mode dev uniquement"""
+    """Decorator to limit access to dev mode functions only"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         from flask import session, flash, redirect, url_for
         if not session.get('dev_mode', app.config.get('DEV_MODE', True)):
-            flash('Cette fonctionnalité n\'est disponible qu\'en mode développeur', 'warning')
+            flash('This feature is only available in developer mode', 'warning')
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
@@ -93,7 +93,7 @@ def dev_mode_required(f):
 # --- FILTRE JINJA2 ---
 @app.template_filter('competitor_thumbnail')
 def competitor_thumbnail_filter(competitor_id):
-    """Filtre pour obtenir la miniature locale d'un concurrent"""
+    """Filter to get local competitor thumbnail"""
     try:
         from yt_channel_analyzer.utils.thumbnails import get_competitor_thumbnail
         return get_competitor_thumbnail(competitor_id)
@@ -102,32 +102,32 @@ def competitor_thumbnail_filter(competitor_id):
 
 @app.template_filter('format_number')
 def format_number_filter(number, short=False):
-    """Filtre pour formater les nombres"""
+    """Filter to format numbers"""
     from blueprints.utils import format_number
     return format_number(number, short)
 
 @app.template_filter('format_duration')
 def format_duration_filter(seconds):
-    """Filtre pour formater les durées"""
+    """Filter to format durations"""
     from blueprints.utils import format_duration
     return format_duration(seconds)
 
 @app.template_filter('calculate_engagement')
 def calculate_engagement_filter(views, likes, comments):
-    """Filtre pour calculer l'engagement"""
+    """Filter to calculate engagement"""
     from blueprints.utils import calculate_engagement_rate
     return calculate_engagement_rate(views, likes, comments)
 
 # --- CHARGEMENT DE LA CLE API ---
 def load_youtube_api_key():
-    """Charger la clé API YouTube depuis la base de données"""
+    """Load YouTube API key from database"""
     try:
         from yt_channel_analyzer.database import get_db_connection
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Vérifier si la table existe
+        # Check if table exists
         cursor.execute("""
             SELECT name FROM sqlite_master 
             WHERE type='table' AND name='app_config'
@@ -142,17 +142,17 @@ def load_youtube_api_key():
             if result and result[0]:
                 app.config['YOUTUBE_API_KEY'] = result[0]
                 os.environ['YOUTUBE_API_KEY'] = result[0]
-                print(f"[STARTUP] ✅ Clé API YouTube chargée depuis la base de données")
+                print(f"[STARTUP] ✅ YouTube API key loaded from database")
                 conn.close()
                 return True
         
-        # Essayer depuis .env
+        # Try from .env
         env_key = os.getenv('YOUTUBE_API_KEY')
         if env_key:
             app.config['YOUTUBE_API_KEY'] = env_key
-            print(f"[STARTUP] ✅ Clé API YouTube chargée depuis .env")
+            print(f"[STARTUP] ✅ YouTube API key loaded from .env")
             
-            # Sauvegarder en base
+            # Save to database
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS app_config (
                     key TEXT PRIMARY KEY,
@@ -165,18 +165,18 @@ def load_youtube_api_key():
                 VALUES ('youtube_api_key', ?, datetime('now'))
             ''', (env_key,))
             conn.commit()
-            print(f"[STARTUP] 💾 Clé API sauvegardée en base de données")
+            print(f"[STARTUP] 💾 API key saved to database")
         
         conn.close()
         return True
         
     except Exception as e:
-        print(f"[ERROR] Erreur lors du chargement de la clé API: {e}")
+        print(f"[ERROR] Error loading API key: {e}")
         return False
 
 # --- REGISTRATION DES BLUEPRINTS ---
 def register_blueprints():
-    """Enregistrer tous les blueprints"""
+    """Register all blueprints"""
     try:
         # Authentication Blueprint
         from blueprints.auth import auth_bp
@@ -206,6 +206,12 @@ def register_blueprints():
         # Admin Blueprint
         from blueprints.admin import admin_bp
         app.register_blueprint(admin_bp)
+        print("[STARTUP] ✅ Blueprint 'admin' enregistré")
+        
+        # AI Learning Blueprint (dev/prod dual mode)
+        from blueprints.ai_learning import ai_learning_bp
+        app.register_blueprint(ai_learning_bp)
+        print("[STARTUP] ✅ Blueprint 'ai_learning' enregistré")
         
         # Blueprint pour l'API d'analyse émotionnelle
         from yt_channel_analyzer.sentiment_pipeline.emotion_api import emotion_api
@@ -216,7 +222,6 @@ def register_blueprints():
         from yt_channel_analyzer.sentiment_pipeline.batch_api import batch_api
         app.register_blueprint(batch_api)
         print("[STARTUP] ✅ Blueprint 'batch_api' enregistré")
-        print("[STARTUP] ✅ Blueprint 'admin' enregistré")
         
         print(f"[STARTUP] 🎯 {len(app.blueprints)} blueprints enregistrés avec succès")
         return True
@@ -295,11 +300,7 @@ def business_legacy():
     from flask import redirect, url_for
     return redirect(url_for('admin.settings'))
 
-@app.route('/data')
-def data_legacy():
-    """Route de compatibilité pour data export"""
-    from flask import redirect, url_for
-    return redirect(url_for('admin.data-export'))
+# /data route removed as requested
 
 # Route /learn maintenant gérée par insights_bp
 

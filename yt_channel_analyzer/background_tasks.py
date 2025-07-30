@@ -225,7 +225,7 @@ class BackgroundTaskManager:
         
         # Supprimer les données du cache si elles existent
         try:
-            from app import load_cache, save_cache, get_channel_key
+            from .cache_utils import load_cache, save_cache, get_channel_key
             cache_data = load_cache()
             channel_key = get_channel_key(task.channel_url)
             
@@ -343,7 +343,7 @@ class BackgroundTaskManager:
         """Worker pour le scraping en arrière-plan avec API YouTube"""
         try:
             from .youtube_adapter import get_channel_videos_data_api
-            from app import load_cache, get_channel_key, save_cache
+            from .cache_utils import load_cache, get_channel_key, save_cache
             
             # Log du changement vers l'API
             print(f"[TASKS] 🚀 Utilisation de l'API YouTube pour la tâche {task_id}")
@@ -435,7 +435,7 @@ class BackgroundTaskManager:
             print(f"[TASKS] 💾 Sauvegarde de {len(all_videos)} vidéos pour {channel_url}")
             
             # Mise à jour du cache avec toutes les vidéos
-            from app import save_competitor_data
+            from .cache_utils import save_competitor_data
             try:
                 competitor_id = save_competitor_data(channel_url, all_videos)
                 print(f"[TASKS] ✅ Sauvegarde réussie pour {channel_url}")

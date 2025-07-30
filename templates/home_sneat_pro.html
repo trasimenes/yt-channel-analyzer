@@ -154,8 +154,8 @@
 <div class="row">
     <div class="col-12">
         <div class="welcome-card">
-            <h2>Bienvenue sur YT Channel Analyzer</h2>
-            <p class="mb-0">Analysez et comparez les chaînes YouTube de vos concurrents pour optimiser votre stratégie de contenu.</p>
+            <h2>Welcome to YT Channel Analyzer</h2>
+            <p class="mb-0">Analyze and compare your competitors' YouTube channels to optimize your content strategy.</p>
         </div>
     </div>
 </div>
@@ -164,25 +164,25 @@
 <div class="row mb-4">
     <div class="col-sm-6 col-lg-3 mb-4">
         <div class="stats-card">
-            <h6>Chaînes analysées</h6>
+            <h6>Channels analyzed</h6>
             <h3 class="text-primary">{{ stats.total_channels | default(0) }}</h3>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3 mb-4">
         <div class="stats-card">
-            <h6>Vidéos indexées</h6>
+            <h6>Videos indexed</h6>
             <h3 class="text-info">{{ stats.total_videos | default(0) }}</h3>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3 mb-4">
         <div class="stats-card">
-            <h6>Playlists classifiées</h6>
+            <h6>Playlists classified</h6>
             <h3 class="text-success">{{ stats.total_playlists | default(0) }}</h3>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3 mb-4">
         <div class="stats-card">
-            <h6>Analyses IA</h6>
+            <h6>AI analyses</h6>
             <h3 class="text-warning">{{ stats.ai_classifications | default(0) }}</h3>
         </div>
     </div>
@@ -192,43 +192,43 @@
 <div class="row">
     <div class="col-lg-8">
         <div class="channel-search">
-            <h4 class="mb-4">Analyser une nouvelle chaîne</h4>
+            <h4 class="mb-4">Analyze a new channel</h4>
             <div class="search-input-wrapper mb-3">
                 <i class="bx bx-search"></i>
                 <input type="text" class="form-control form-control-lg search-input" 
-                       id="search-chaine" placeholder="Rechercher une chaîne YouTube..." 
+                       id="search-chaine" placeholder="Search for a YouTube channel..." 
                        autocomplete="off">
                 <div class="autocomplete-list" id="autocomplete-list" style="display: none;"></div>
             </div>
             
             <div class="mb-3">
                 <input type="url" class="form-control form-control-lg" id="channel-url" 
-                       placeholder="URL de la chaîne YouTube">
+                       placeholder="YouTube channel URL">
             </div>
             
             <div class="row align-items-end">
                 <div class="col-md-6 mb-3">
-                    <label for="max-videos" class="form-label">Nombre de vidéos à analyser</label>
+                    <label for="max-videos" class="form-label">Number of videos to analyze</label>
                     <select class="form-select" id="max-videos">
-                        <option value="10">10 vidéos (rapide)</option>
-                        <option value="30" selected>30 vidéos (recommandé)</option>
-                        <option value="50">50 vidéos</option>
-                        <option value="100">100 vidéos</option>
-                        <option value="500">500 vidéos</option>
-                        <option value="0">Toutes les vidéos</option>
+                        <option value="10">10 videos (quick)</option>
+                        <option value="30" selected>30 videos (recommended)</option>
+                        <option value="50">50 videos</option>
+                        <option value="100">100 videos</option>
+                        <option value="500">500 videos</option>
+                        <option value="0">All videos</option>
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
                     <button class="btn btn-primary btn-lg w-100" onclick="startBackgroundAnalysis()">
                         <i class="bx bx-play-circle me-2"></i>
-                        Lancer l'analyse
+                        Start analysis
                     </button>
                 </div>
             </div>
             
             <!-- Recent Analyses -->
             <div class="recent-analysis">
-                <h5 class="mb-3">Analyses récentes</h5>
+                <h5 class="mb-3">Recent analyses</h5>
                 <div id="recent-list">
                     <!-- Recent items will be loaded here -->
                 </div>
@@ -238,7 +238,7 @@
     
     <!-- Quick Actions -->
     <div class="col-lg-4">
-        <h4 class="mb-4">Actions rapides</h4>
+        <h4 class="mb-4">Quick actions</h4>
         
         <div class="row g-3">
             <div class="col-6">
@@ -246,7 +246,7 @@
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-user-circle text-primary"></i>
-                            <h6 class="mb-0">Concurrents</h6>
+                            <h6 class="mb-0">Competitors</h6>
                         </div>
                     </div>
                 </a>
@@ -257,18 +257,18 @@
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-video text-info"></i>
-                            <h6 class="mb-0">Top Vidéos</h6>
+                            <h6 class="mb-0">Top Videos</h6>
                         </div>
                     </div>
                 </a>
             </div>
             
             <div class="col-6">
-                <a href="/insights" class="text-decoration-none">
+                <a href="/brand-insights" class="text-decoration-none">
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-bulb text-warning"></i>
-                            <h6 class="mb-0">Insights</h6>
+                            <h6 class="mb-0">Brand Insights</h6>
                         </div>
                     </div>
                 </a>
@@ -279,7 +279,7 @@
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-brain text-success"></i>
-                            <h6 class="mb-0">IA Learning</h6>
+                            <h6 class="mb-0">AI Learning</h6>
                         </div>
                     </div>
                 </a>
@@ -290,7 +290,7 @@
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-code-alt text-danger"></i>
-                            <h6 class="mb-0">API YouTube</h6>
+                            <h6 class="mb-0">YouTube API</h6>
                         </div>
                     </div>
                 </a>
@@ -301,7 +301,7 @@
                     <div class="card quick-action-card">
                         <div class="card-body">
                             <i class="bx bx-cog text-secondary"></i>
-                            <h6 class="mb-0">Paramètres</h6>
+                            <h6 class="mb-0">Settings</h6>
                         </div>
                     </div>
                 </a>
@@ -403,12 +403,12 @@ async function loadRecentAnalyses() {
                     <img src="${item.thumbnail || '/static/sneat-pro/img/avatars/1.png'}" alt="${item.name}">
                     <div>
                         <h6 class="mb-0">${item.name}</h6>
-                        <small class="text-muted">${item.video_count} vidéos • ${item.date}</small>
+                        <small class="text-muted">${item.video_count} videos • ${item.date}</small>
                     </div>
                 </div>
             `).join('');
         } else {
-            recentList.innerHTML = '<p class="text-muted">Aucune analyse récente</p>';
+            recentList.innerHTML = '<p class="text-muted">No recent analyses</p>';
         }
     } catch (error) {
         console.error('Error loading recent analyses:', error);
@@ -421,15 +421,15 @@ async function startBackgroundAnalysis() {
     const searchChaine = document.getElementById('search-chaine').value.trim();
     
     if (!channelUrl) {
-        showToast('Veuillez entrer l\'URL de la chaîne YouTube', 'warning');
+        showToast('Please enter the YouTube channel URL', 'warning');
         return;
     }
     
-    const channelName = searchChaine || 'Canal sans nom';
+    const channelName = searchChaine || 'Unnamed channel';
     const button = event.target;
     const originalText = button.innerHTML;
     
-    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Lancement...';
+    button.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Starting...';
     button.disabled = true;
     
     try {
@@ -448,21 +448,21 @@ async function startBackgroundAnalysis() {
         const result = await response.json();
         
         if (result.success) {
-            button.innerHTML = '<i class="bx bx-check me-2"></i>Analyse lancée!';
-            showToast(`Analyse en cours pour "${channelName}"`, 'success');
+            button.innerHTML = '<i class="bx bx-check me-2"></i>Analysis started!';
+            showToast(`Analysis in progress for "${channelName}"`, 'success');
             setTimeout(() => {
                 window.location.href = '/tasks';
             }, 2000);
         } else {
             button.innerHTML = originalText;
             button.disabled = false;
-            showToast('Erreur: ' + (result.error || 'Erreur inconnue'), 'danger');
+            showToast('Error: ' + (result.error || 'Unknown error'), 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
         button.innerHTML = originalText;
         button.disabled = false;
-        showToast('Erreur lors du lancement de l\'analyse', 'danger');
+        showToast('Error starting analysis', 'danger');
     }
 }
 
@@ -472,7 +472,7 @@ function showToast(message, type = 'info') {
         <div class="bs-toast toast toast-placement-ex m-2 fade bg-${type} top-0 end-0 show" role="alert">
             <div class="toast-header">
                 <i class="bx bx-${type === 'success' ? 'check' : type === 'warning' ? 'error' : 'x'} me-2"></i>
-                <div class="me-auto fw-semibold">${type === 'success' ? 'Succès' : type === 'warning' ? 'Attention' : 'Erreur'}</div>
+                <div class="me-auto fw-semibold">${type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Error'}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
             <div class="toast-body">${message}</div>

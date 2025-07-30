@@ -1,0 +1,560 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Sentence Transformers - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .model-status {
+        padding: 2rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, rgba(40, 199, 111, 0.1) 0%, rgba(32, 191, 107, 0.05) 100%);
+        border: 2px solid rgba(40, 199, 111, 0.3);
+        color: #28c76f;
+    }
+    
+    .status-cached {
+        background: linear-gradient(135deg, rgba(255, 159, 67, 0.1) 0%, rgba(255, 143, 48, 0.05) 100%);
+        border: 2px solid rgba(255, 159, 67, 0.3);
+        color: #ff9f43;
+    }
+    
+    .model-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .model-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .model-description {
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #696cff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #8592a3;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-description {
+        font-size: 0.75rem;
+        color: #566a7f;
+    }
+    
+    .performance-card {
+        margin-bottom: 2rem;
+    }
+    
+    .classification-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #e7e7ff;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .classification-item:hover {
+        background: rgba(105, 108, 255, 0.05);
+        border-color: #696cff;
+    }
+    
+    .classification-category {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .classification-count {
+        color: #8592a3;
+    }
+    
+    .confidence-bar {
+        width: 100px;
+        height: 4px;
+        background: #f8f9fa;
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 0 1rem;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+    
+    .confidence-text {
+        font-size: 0.75rem;
+        color: #566a7f;
+        min-width: 35px;
+        text-align: right;
+    }
+    
+    .model-architecture {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 0.75rem;
+        padding: 2rem;
+        border: 1px solid #e7e7ff;
+    }
+    
+    .architecture-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f1f4;
+    }
+    
+    .architecture-item:last-child {
+        border-bottom: none;
+    }
+    
+    .architecture-label {
+        font-weight: 500;
+        color: #566a7f;
+    }
+    
+    .architecture-value {
+        color: #696cff;
+        font-weight: 600;
+    }
+    
+    .training-status {
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e7e7ff;
+        overflow: hidden;
+    }
+    
+    .training-header {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .training-body {
+        padding: 2rem;
+    }
+    
+    .training-metric {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .training-metric:last-child {
+        margin-bottom: 0;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .classification-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            margin: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold py-3 mb-0">
+                    <span class="text-muted fw-light">AI Learning /</span> Sentence Transformers
+                </h4>
+                {% if ml_enabled %}
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="refreshModel()">
+                        <i class="bx bx-refresh me-1"></i>
+                        Refresh Model
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Model Status -->
+            <div class="model-status {{ 'status-active' if model_stats.status == 'active' else 'status-cached' }}">
+                <div class="model-icon">
+                    {% if model_stats.status == 'active' %}
+                        <i class="bx bx-brain"></i>
+                    {% else %}
+                        <i class="bx bx-cloud"></i>
+                    {% endif %}
+                </div>
+                <div class="model-name">{{ model_stats.model_name }}</div>
+                <div class="model-description">
+                    {% if model_stats.status == 'active' %}
+                        Model loaded and ready for inference
+                    {% else %}
+                        Model disabled in production - showing cached results
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Model Statistics -->
+                <div class="col-lg-8">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ model_stats.dimensions }}</div>
+                            <div class="stat-label">Dimensions</div>
+                            <div class="stat-description">Vector embedding size</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value">{{ model_stats.training_examples }}</div>
+                            <div class="stat-label">Training Examples</div>
+                            <div class="stat-description">Human validated samples</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value">{{ model_stats.accuracy }}</div>
+                            <div class="stat-label">Accuracy</div>
+                            <div class="stat-description">Cross-validation score</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value">{{ model_stats.model_size }}</div>
+                            <div class="stat-label">Model Size</div>
+                            <div class="stat-description">
+                                {% if model_stats.status == 'active' %}
+                                    Downloaded and cached
+                                {% else %}
+                                    Not loaded in production
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Classifications -->
+                    <div class="card performance-card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bx bx-chart-line me-2"></i>
+                                Recent Classifications
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_classifications %}
+                                {% for classification in recent_classifications %}
+                                <div class="classification-item">
+                                    <div class="classification-category">{{ classification.category | upper }}</div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="classification-count">{{ classification.count }} items</div>
+                                        <div class="confidence-bar">
+                                            <div class="confidence-fill" style="width: {{ (classification.confidence * 100) | round(0) }}%"></div>
+                                        </div>
+                                        <div class="confidence-text">{{ (classification.confidence * 100) | round(1) }}%</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bx bx-data fs-1 text-muted mb-3"></i>
+                                    <h6 class="text-muted">No Recent Classifications</h6>
+                                    <p class="text-muted mb-0">
+                                        {% if ml_enabled %}
+                                            Run some classifications to see performance data here.
+                                        {% else %}
+                                            No cached classification data available.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Architecture & Training Info -->
+                <div class="col-lg-4">
+                    <div class="model-architecture mb-4">
+                        <h6 class="mb-3">
+                            <i class="bx bx-cube me-2"></i>
+                            Model Architecture
+                        </h6>
+                        <div class="architecture-item">
+                            <span class="architecture-label">Base Model</span>
+                            <span class="architecture-value">MPNet</span>
+                        </div>
+                        <div class="architecture-item">
+                            <span class="architecture-label">Layers</span>
+                            <span class="architecture-value">12</span>
+                        </div>
+                        <div class="architecture-item">
+                            <span class="architecture-label">Parameters</span>
+                            <span class="architecture-value">109M</span>
+                        </div>
+                        <div class="architecture-item">
+                            <span class="architecture-label">Max Sequence</span>
+                            <span class="architecture-value">512 tokens</span>
+                        </div>
+                        <div class="architecture-item">
+                            <span class="architecture-label">Languages</span>
+                            <span class="architecture-value">Multilingual</span>
+                        </div>
+                    </div>
+
+                    <div class="training-status">
+                        <div class="training-header">
+                            <h6 class="mb-0">
+                                <i class="bx bx-trophy me-2"></i>
+                                Training Status
+                            </h6>
+                        </div>
+                        <div class="training-body">
+                            <div class="training-metric">
+                                <span class="text-muted">Last Training</span>
+                                <span class="fw-bold">{{ model_stats.last_training }}</span>
+                            </div>
+                            <div class="training-metric">
+                                <span class="text-muted">Status</span>
+                                <span class="fw-bold text-{{ 'success' if model_stats.status == 'active' else 'warning' }}">
+                                    {% if model_stats.status == 'active' %}
+                                        Active
+                                    {% else %}
+                                        Cached Only
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="training-metric">
+                                <span class="text-muted">Environment</span>
+                                <span class="fw-bold">
+                                    {% if ml_enabled %}
+                                        Development
+                                    {% else %}
+                                        Production
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            {% if ml_enabled %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-play me-2"></i>
+                        Model Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="testClassification()">
+                            <i class="bx bx-test-tube me-1"></i>
+                            Test Classification
+                        </button>
+                        <button class="btn btn-success" onclick="trainModel()">
+                            <i class="bx bx-brain me-1"></i>
+                            Retrain Model
+                        </button>
+                        <button class="btn btn-info" onclick="validateModel()">
+                            <i class="bx bx-check-shield me-1"></i>
+                            Validate Performance
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="exportModel()">
+                            <i class="bx bx-export me-1"></i>
+                            Export Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bx bx-info-circle fs-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">Production Mode</h5>
+                    <p class="text-muted mb-3">
+                        Model training and testing features are disabled in production.<br>
+                        Switch to development mode to access full ML capabilities.
+                    </p>
+                    <a href="/classification-stats" class="btn btn-outline-primary">
+                        <i class="bx bx-chart-line me-1"></i>
+                        View Classification Stats
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+function refreshModel() {
+    fetch('/api/model-status')
+    .then(response => response.json())
+    .then(data => {
+        console.log('Model status:', data);
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error refreshing model status');
+    });
+}
+
+{% if ml_enabled %}
+function testClassification() {
+    const text = prompt('Enter text to classify:');
+    if (text) {
+        showLoading('Classifying text...');
+        fetch('/api/test-classification', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: text})
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            alert(`Classification: ${data.category}\nConfidence: ${data.confidence}`);
+        })
+        .catch(error => {
+            hideLoading();
+            alert('Error: ' + error.message);
+        });
+    }
+}
+
+function trainModel() {
+    if (confirm('Retrain the semantic model with current human classifications?')) {
+        showLoading('Training model...');
+        fetch('/api/train-model', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                alert('Model training completed successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            alert('Error: ' + error.message);
+        });
+    }
+}
+
+function validateModel() {
+    showLoading('Validating model performance...');
+    fetch('/api/validate-model', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        alert(`Model Validation Results:\nAccuracy: ${data.accuracy}\nPrecision: ${data.precision}\nRecall: ${data.recall}`);
+    })
+    .catch(error => {
+        hideLoading();
+        alert('Error: ' + error.message);
+    });
+}
+
+function exportModel() {
+    showLoading('Exporting model results...');
+    fetch('/api/export-classifications', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        hideLoading();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'classifications_export.json';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        hideLoading();
+        alert('Error: ' + error.message);
+    });
+}
+
+function showLoading(message) {
+    console.log('Loading: ' + message);
+    // Implement loading indicator
+}
+
+function hideLoading() {
+    console.log('Loading complete');
+    // Hide loading indicator
+}
+{% endif %}
+</script>
+{% endblock %}

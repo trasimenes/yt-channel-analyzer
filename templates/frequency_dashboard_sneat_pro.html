@@ -424,7 +424,7 @@
         <div class="stats-cards">
             <div class="stat-card">
                 <h3>{{ total_competitors|default(0) }}</h3>
-                <p>Concurrents analysés</p>
+                <p>Competitors Analyzed</p>
             </div>
             <div class="stat-card">
                 <h3>{{ country_data|length|default(0) }}</h3>
@@ -432,7 +432,7 @@
             </div>
             <div class="stat-card">
                 <h3>{{ frequency_stats.avg_per_week|default(0)|round(1) }}</h3>
-                <p>Fréquence moyenne/semaine</p>
+                <p>Average Frequency/Week</p>
             </div>
             <div class="stat-card">
                 <h3>{{ impact_analysis.high_frequency_performers|length|default(0) }}</h3>
@@ -463,9 +463,9 @@
                 
                 <div class="col-lg-4">
                     <div class="filter-group">
-                        <label class="form-label">Filtrer par fréquence</label>
+                        <label class="form-label">Filter by Frequency</label>
                         <select class="form-select" id="frequencyFilter" onchange="applyFilters()">
-                            <option value="all">Toutes les fréquences</option>
+                            <option value="all">All Frequencies</option>
                             <option value="high">Haute (>4/mois)</option>
                             <option value="medium">Moyenne (1-4/mois)</option>
                             <option value="low">Faible (<1/mois)</option>
@@ -477,10 +477,10 @@
                     <div class="filter-group">
                         <label class="form-label">Nombre de résultats</label>
                         <select class="form-select" id="limitFilter" onchange="applyFilters()">
-                            <option value="25">25 concurrents</option>
-                            <option value="50" selected>50 concurrents</option>
-                            <option value="100">100 concurrents</option>
-                            <option value="all">Tous les concurrents</option>
+                            <option value="25">25 competitors</option>
+                            <option value="50" selected>50 competitors</option>
+                            <option value="100">100 competitors</option>
+                            <option value="all">All competitors</option>
                         </select>
                     </div>
                 </div>
@@ -592,8 +592,8 @@
                 {% else %}
                     <div class="col-12 text-center py-5">
                         <i class="bx bx-calendar-week" style="font-size: 4rem; color: #8592a3;"></i>
-                        <h3 class="mt-3 mb-2">Aucune donnée de fréquence</h3>
-                        <p class="text-muted">Les données d'analyse de fréquence ne sont pas encore disponibles.</p>
+                        <h3 class="mt-3 mb-2">No Frequency Data</h3>
+                        <p class="text-muted">Frequency analysis data is not yet available.</p>
                     </div>
                 {% endif %}
             </div>
@@ -607,14 +607,14 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Concurrent</th>
+                                <th>Competitor</th>
                                 <th>Pays</th>
                                 <th>Semaines analysées</th>
-                                <th>Vidéos/semaine</th>
+                                <th>Videos/Week</th>
                                 <th>Hero/sem</th>
                                 <th>Hub/sem</th>
                                 <th>Help/sem</th>
-                                <th>Fréquence</th>
+                                <th>Frequency</th>
                             </tr>
                         </thead>
                         <tbody>

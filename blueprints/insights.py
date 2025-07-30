@@ -283,55 +283,55 @@ def learn():
             'classification_percentage': round((classified_videos / total_videos * 100) if total_videos > 0 else 0, 1)
         }
         
-        # Guides d'apprentissage disponibles
+        # Available learning guides
         guides = [
             {
                 'file': 'hero_hub_help_strategy.md',
                 'icon': '🎯',
-                'title': 'Stratégie Hero Hub Help',
-                'description': 'Comprendre la matrice Google pour optimiser votre contenu',
+                'title': 'Hero Hub Help Strategy',
+                'description': 'Understand Google\'s matrix to optimize your content',
                 'duration': '15 min',
-                'level': 'Débutant'
+                'level': 'Beginner'
             },
             {
                 'file': 'competitor_analysis.md',
                 'icon': '🔍',
-                'title': 'Analyse Concurrentielle',
-                'description': 'Méthodes pour analyser vos concurrents YouTube',
+                'title': 'Competitive Analysis',
+                'description': 'Methods to analyze your YouTube competitors',
                 'duration': '20 min',
-                'level': 'Intermédiaire'
+                'level': 'Intermediate'
             },
             {
                 'file': 'content_classification.md',
                 'icon': '📊',
-                'title': 'Classification de Contenu',
-                'description': 'Comment classifier efficacement vos vidéos',
+                'title': 'Content Classification',
+                'description': 'How to effectively classify your videos',
                 'duration': '12 min',
-                'level': 'Débutant'
+                'level': 'Beginner'
             },
             {
                 'file': 'semantic_analysis.md',
                 'icon': '🧠',
-                'title': 'Analyse Sémantique',
-                'description': 'Utiliser l\'IA pour comprendre le contenu',
+                'title': 'Semantic Analysis',
+                'description': 'Use AI to understand content',
                 'duration': '25 min',
-                'level': 'Avancé'
+                'level': 'Advanced'
             },
             {
                 'file': 'engagement_optimization.md',
                 'icon': '📈',
-                'title': 'Optimisation Engagement',
-                'description': 'Techniques pour améliorer l\'engagement',
+                'title': 'Engagement Optimization',
+                'description': 'Techniques to improve engagement',
                 'duration': '18 min',
-                'level': 'Intermédiaire'
+                'level': 'Intermediate'
             },
             {
                 'file': 'data_interpretation.md',
                 'icon': '📋',
-                'title': 'Interprétation des Données',
-                'description': 'Comment lire et utiliser vos analyses',
+                'title': 'Data Interpretation',
+                'description': 'How to read and use your analyses',
                 'duration': '22 min',
-                'level': 'Intermédiaire'
+                'level': 'Intermediate'
             }
         ]
         

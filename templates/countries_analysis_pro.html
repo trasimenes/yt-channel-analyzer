@@ -220,7 +220,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="fw-bold mb-1">Countries Analysis</h4>
-                    <p class="text-muted mb-0">Analyse comparative des performances par pays avec insights exploitables</p>
+                    <p class="text-muted mb-0">Comparative performance analysis by country with actionable insights</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-label-primary" onclick="refreshData()">
@@ -358,14 +358,14 @@
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header header-elements">
-                    <h5 class="card-title mb-0">Performance par Pays</h5>
+                    <h5 class="card-title mb-0">Performance by Country</h5>
                     <div class="card-action-element ms-auto py-0">
                         <div class="dropdown">
                             <button class="btn btn-sm btn-label-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('views')">Vues/Vidéo</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('views')">Views/Video</a></li>
                                 <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('engagement')">Engagement</a></li>
                                 <li><a class="dropdown-item" href="javascript:void(0);" onclick="updateChart('volume')">Volume</a></li>
                             </ul>
@@ -382,7 +382,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Distribution Hero • Hub • Help</h5>
+                    <h5 class="card-title mb-0">Hero • Hub • Help Distribution</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="contentDistributionChart" class="chartjs" data-height="350"></canvas>
@@ -396,8 +396,8 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Matrice Opportunités × Performance</h5>
-                    <p class="card-subtitle text-muted mb-0">Positionnement stratégique par pays</p>
+                    <h5 class="card-title mb-0">Opportunities × Performance Matrix</h5>
+                    <p class="card-subtitle text-muted mb-0">Strategic positioning by country</p>
                 </div>
                 <div class="card-body">
                     <canvas id="opportunityChart" class="chartjs" data-height="300"></canvas>
@@ -409,17 +409,17 @@
     <!-- Main Data Table -->
     <div class="card">
         <div class="card-header border-bottom">
-            <h5 class="card-title mb-0">Analyse Comparative par Pays</h5>
+            <h5 class="card-title mb-0">Comparative Analysis by Country</h5>
         </div>
         <div class="card-datatable table-responsive">
             <table id="countriesTable" class="table">
                 <thead>
                     <tr>
                         <th></th>
-                        <th>Pays</th>
-                        <th>Concurrents</th>
-                        <th>Vidéos</th>
-                        <th>Vues/vidéo</th>
+                        <th>Country</th>
+                        <th>Competitors</th>
+                        <th>Videos</th>
+                        <th>Views/Video</th>
                         <th>Trend</th>
                         <th>Engagement</th>
                         <th>Intensité</th>
@@ -451,7 +451,7 @@
                         </td>
                         <td>
                             <span class="badge bg-label-secondary">{{ country.competitor_count }}</span>
-                            <small class="d-block text-muted">{{ country.videos_per_competitor|int }}/concurrent</small>
+                            <small class="d-block text-muted">{{ country.videos_per_competitor|int }}/competitor</small>
                         </td>
                         <td>{{ "{:,}".format(country.video_count) }}</td>
                         <td>
@@ -534,7 +534,7 @@
                         <i class="bx bx-rocket me-2"></i>
                         🎯 Next Actions - Recommandations Stratégiques
                     </h5>
-                    <p class="card-subtitle mb-0">Basées sur l'analyse de vos 30 compétiteurs et 8,489 vidéos</p>
+                    <p class="card-subtitle mb-0">Based on analysis of your 30 competitors and 8,489 videos</p>
                 </div>
                 <div class="card-body">
                     <div class="row" id="nextActionsContainer">
@@ -551,7 +551,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="countryDetailTitle">Détails du pays</h5>
+                <h5 class="modal-title" id="countryDetailTitle">Country Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="countryDetailContent">
@@ -615,7 +615,7 @@ $(document).ready(function() {
                     {% endif %}
                     
                     // Additional stats
-                    html += '<h6 class="mb-3 mt-4">Statistiques détaillées</h6>';
+                    html += '<h6 class="mb-3 mt-4">Detailed Statistics</h6>';
                     html += '<div class="row">';
                     html += `
                         <div class="col-md-4">
@@ -627,8 +627,8 @@ $(document).ready(function() {
                             <p class="mb-0"><strong>${Math.floor(country.avg_duration / 60)}m ${country.avg_duration % 60}s</strong></p>
                         </div>
                         <div class="col-md-4">
-                            <small class="text-muted">Vidéo la plus vue</small>
-                            <p class="mb-0"><strong>${new Intl.NumberFormat('fr-FR').format(country.max_views)} vues</strong></p>
+                            <small class="text-muted">Most viewed video</small>
+                            <p class="mb-0"><strong>${new Intl.NumberFormat('en-US').format(country.max_views)} views</strong></p>
                         </div>
                     `;
                     html += '</div>';
@@ -1190,7 +1190,7 @@ function generateNextActions() {
             <div class="col-12">
                 <div class="alert alert-info text-center">
                     <i class="bx bx-info-circle fs-2 mb-2"></i>
-                    <h6>Stratégie Optimale Détectée</h6>
+                    <h6>Optimal Strategy Detected</h6>
                     <p class="mb-0">Vos marchés sont bien équilibrés. Continuez à monitorer les performances et ajustez selon les tendances émergentes.</p>
                 </div>
             </div>

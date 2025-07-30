@@ -26,39 +26,42 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 @api_bp.route('/recent-analyses')
 @login_required
 def recent_analyses():
-    """API pour récupérer les analyses récentes"""
+    """API to retrieve recent competitor analyses"""
     try:
+        from yt_channel_analyzer.utils.thumbnails import get_competitor_thumbnail
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Récupérer les dernières vidéos analysées avec leurs classifications
-        cursor.execute("""
+        # Get the 10 most recently added competitors
+        cursor.execute('''
             SELECT 
-                v.title,
-                v.category,
-                v.view_count,
-                c.name as competitor_name,
-                v.published_at,
-                v.classification_date
-            FROM video v
-            JOIN concurrent c ON v.concurrent_id = c.id
-            WHERE v.category IS NOT NULL 
-            AND v.category != '' 
-            AND v.category != 'uncategorized'
-            ORDER BY v.classification_date DESC, v.published_at DESC
+                c.id,
+                c.name,
+                c.channel_url,
+                c.thumbnail_url,
+                COUNT(v.id) as video_count,
+                DATE(c.created_at) as date_added
+            FROM concurrent c
+            LEFT JOIN video v ON c.id = v.concurrent_id
+            GROUP BY c.id
+            ORDER BY c.created_at DESC
             LIMIT 10
-        """)
+        ''')
         
         analyses = []
         for row in cursor.fetchall():
+            comp_id, name, channel_url, thumbnail_url, video_count, date_added = row
+            
+            # Use local thumbnail with fallback
+            thumbnail = get_competitor_thumbnail(comp_id)
+            
             analyses.append({
-                'title': row[0][:50] + '...' if len(row[0]) > 50 else row[0],
-                'category': row[1],
-                'view_count': row[2] or 0,
-                'competitor_name': row[3],
-                'published_at': row[4],
-                'classification_date': row[5] or row[4]
+                'id': comp_id,
+                'name': name,
+                'thumbnail': thumbnail,
+                'video_count': video_count,
+                'date': date_added or 'Unknown'
             })
         
         conn.close()

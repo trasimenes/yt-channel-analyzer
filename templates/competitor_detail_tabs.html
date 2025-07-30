@@ -1,6 +1,6 @@
 {% extends "base_sneat.html" %}
 
-{% block title %}{{ competitor.name }} - Analyse Détaillée{% endblock %}
+{% block title %}{{ competitor.name }} - Detailed Analysis{% endblock %}
 
 {% block page_css %}
 <style>
@@ -1589,7 +1589,7 @@
                 <a href="{{ url_for('competitors.classify_competitor', competitor_id=competitor.id) }}" 
                    class="btn btn-warning btn-sm mt-3">
                     <i class="bx bx-tag-alt me-1"></i>
-                    Classifier les playlists
+                    Classify Playlists
                 </a>
                 {% endif %}
             </div>
@@ -1624,20 +1624,20 @@
     
     <!-- TAB 1: Key Metrics -->
     <div id="key-metrics" class="competitor-content active">
-        <h4 class="mb-4">📊 Métriques Clés</h4>
+        <h4 class="mb-4">📊 Key Metrics</h4>
         
         <!-- Key Metrics Cards - As requested by user -->
         <div class="metrics-grid">
-            <!-- Durée des Vidéos -->
+            <!-- Video Duration -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);">
                         <i class="bx bx-time-five"></i>
                     </div>
-                    <h5 class="metric-title">Durée des Vidéos</h5>
+                    <h5 class="metric-title">Video Duration</h5>
                 </div>
                 <div class="metric-value">{{ "{:.1f} min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</div>
-                <div class="metric-description">Durée moyenne par vidéo</div>
+                <div class="metric-description">Average duration per video</div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-stable">
                         <i class="bx bx-trending-up"></i>
@@ -1646,16 +1646,16 @@
                 </div>
             </div>
 
-            <!-- Fréquence de Publication -->
+            <!-- Publishing Frequency -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #28c76f 0%, #1f9e5a 100%);">
                         <i class="bx bx-calendar-event"></i>
                     </div>
-                    <h5 class="metric-title">Fréquence de Publication</h5>
+                    <h5 class="metric-title">Publishing Frequency</h5>
                 </div>
                 <div class="metric-value">{{ "{:.1f}/sem".format(metrics.weekly_frequency) if metrics.weekly_frequency else "N/A" }}</div>
-                <div class="metric-description">Vidéos par semaine</div>
+                <div class="metric-description">Videos per week</div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-up">
                         <i class="bx bx-calendar"></i>
@@ -1673,22 +1673,22 @@
                     <h5 class="metric-title">Distribution HHH</h5>
                 </div>
                 <div class="metric-value">{{ "{:.0f}%-{:.0f}%-{:.0f}%".format((hero_count / total_videos * 100) if total_videos > 0 else 0, (hub_count / total_videos * 100) if total_videos > 0 else 0, (help_count / total_videos * 100) if total_videos > 0 else 0) }}</div>
-                <div class="metric-description">Hero-Hub-Help répartition</div>
+                <div class="metric-description">Hero-Hub-Help distribution</div>
                 <div class="metric-trend">
                     <span class="trend-indicator trend-stable">
                         <i class="bx bx-pie-chart-alt-2"></i>
-                        Équilibre stratégique
+                        Strategic balance</div>
                     </span>
                 </div>
             </div>
 
-            <!-- Organique vs Payé -->
+            <!-- Organic vs Paid -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #4ecdc4 0%, #3db8b0 100%);">
                         <i class="bx bx-dollar-circle"></i>
                     </div>
-                    <h5 class="metric-title">Organique vs Payé</h5>
+                    <h5 class="metric-title">Organic vs Paid</h5>
                 </div>
                 <div class="metric-value">{{ stats.organic_percentage }}% / {{ stats.paid_percentage }}%</div>
                 <div class="metric-description">Répartition du contenu</div>
@@ -1700,13 +1700,13 @@
                 </div>
             </div>
             
-            <!-- Shorts vs Vidéos 16:9 -->
+            <!-- Shorts vs 16:9 Videos -->
             <div class="metric-card">
                 <div class="metric-header">
                     <div class="metric-icon" style="background: linear-gradient(135deg, #ff9f43 0%, #ee8a3a 100%);">
                         <i class="bx bx-mobile-alt"></i>
                     </div>
-                    <h5 class="metric-title">Shorts vs Vidéos 16:9</h5>
+                    <h5 class="metric-title">Shorts vs 16:9 Videos</h5>
                 </div>
                 <div class="metric-value">{{ shorts_data.shorts_percentage if shorts_data else "N/A" }}% / {{ 100 - (shorts_data.shorts_percentage or 0) if shorts_data else "N/A" }}%</div>
                 <div class="metric-description">Format de contenu</div>
@@ -1762,7 +1762,7 @@
                     </div>
                     <h5 class="metric-title">Top 5 Sujets qui Engagent</h5>
                 </div>
-                <div class="metric-description mb-3">Vidéos avec le plus d'engagement (likes + commentaires)</div>
+                <div class="metric-description mb-3">Videos with highest engagement (likes + comments)</div>
                 
                 {% if top_engaging_videos %}
                     <div class="engaging-videos-list">
@@ -1805,7 +1805,7 @@
 
     <!-- TAB 2: Follower Growth -->
     <div id="follower-growth" class="competitor-content">
-        <h4 class="mb-4">📈 Analyse de Croissance d'Audience</h4>
+        <h4 class="mb-4">📈 Audience Growth Analysis</h4>
         
         <!-- CSV Upload Section -->
         <div class="row mb-4">
@@ -1813,7 +1813,7 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <i class="bx bx-upload me-2"></i>
-                        <h5 class="mb-0">Import de Données de Croissance</h5>
+                        <h5 class="mb-0">Growth Data Import</h5>
                     </div>
                     <div class="card-body">
                         <div id="csv-upload-zone" class="upload-zone">
@@ -1843,7 +1843,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Évolution des Abonnés (12 mois)</h5>
+                        <h5 class="mb-0">Subscriber Evolution (12 months)</h5>
                     </div>
                     <div class="card-body">
                         <div id="follower-growth-chart" style="height: 300px;">
@@ -1867,19 +1867,19 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Statistiques de Croissance</h5>
+                        <h5 class="mb-0">Growth Statistics</h5>
                     </div>
                     <div class="card-body">
                         {% if subscriber_data and subscriber_data.has_data %}
                         <div class="growth-stat-item">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Croissance Totale</span>
+                                <span class="text-muted">Total Growth</span>
                                 <span class="fw-bold text-success">+{{ "{:,}".format(subscriber_data.stats.total_growth) }}</span>
                             </div>
                         </div>
                         <div class="growth-stat-item">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Croissance %</span>
+                                <span class="text-muted">Growth %</span>
                                 <span class="fw-bold text-primary">{{ "{:.1f}%".format(subscriber_data.stats.growth_percentage) }}</span>
                             </div>
                         </div>
@@ -1901,7 +1901,7 @@
                 <!-- Growth Velocity Card -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h5 class="mb-0">Vélocité de Croissance</h5>
+                        <h5 class="mb-0">Growth Velocity</h5>
                     </div>
                     <div class="card-body">
                         <div class="velocity-metrics">
@@ -1957,7 +1957,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Analyse Saisonnière</h5>
+                        <h5 class="mb-0">Seasonal Analysis</h5>
                     </div>
                     <div class="card-body">
                         <div class="seasonality-insights">
@@ -1983,14 +1983,14 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">Corrélations de Croissance</h5>
+                        <h5 class="mb-0">Growth Correlations</h5>
                     </div>
                     <div class="card-body">
                         <div class="correlation-insights">
                             <div class="insight-item">
                                 <i class="bx bx-video text-primary"></i>
                                 <div class="insight-content">
-                                    <strong>Upload vs Croissance</strong>
+                                    <strong>Upload vs Growth</strong>
                                     <p class="mb-0 text-muted">Corrélation: {{ upload_correlation.coefficient if upload_correlation else "N/A" }}</p>
                                 </div>
                             </div>
@@ -1998,7 +1998,7 @@
                                 <i class="bx bx-trending-up text-success"></i>
                                 <div class="insight-content">
                                     <strong>Pattern Optimal</strong>
-                                    <p class="mb-0 text-muted">{{ optimal_pattern.description if optimal_pattern else "En analyse..." }}</p>
+                                    <p class="mb-0 text-muted">{{ optimal_pattern.description if optimal_pattern else "Under analysis..." }}</p>
                                 </div>
                             </div>
                         </div>
@@ -2010,7 +2010,7 @@
 
     <!-- TAB 3: Top Videos -->
     <div id="top-videos" class="competitor-content">
-        <h4 class="mb-4">🎯 Performances des Contenus</h4>
+        <h4 class="mb-4">🎯 Content Performance</h4>
         
         <!-- Performance Overview -->
         <div class="row mb-4">
@@ -2022,7 +2022,7 @@
                     <div class="performance-content">
                         <h6>Top par Vues</h6>
                         <p class="performance-value">{{ "{:,.0f}".format(top_videos_views[0].view_count) if top_videos_views else "N/A" }}</p>
-                        <small class="text-muted">{{ top_videos_views[0].title[:30] + "..." if top_videos_views else "Aucune vidéo" }}</small>
+                        <small class="text-muted">{{ top_videos_views[0].title[:30] + "..." if top_videos_views else "No videos" }}</small>
                     </div>
                 </div>
             </div>
@@ -2034,7 +2034,7 @@
                     <div class="performance-content">
                         <h6>Top Engagement</h6>
                         <p class="performance-value">{{ "{:,.0f}".format(top_videos_likes[0].like_count) if top_videos_likes else "N/A" }}</p>
-                        <small class="text-muted">{{ top_videos_likes[0].title[:30] + "..." if top_videos_likes else "Aucune vidéo" }}</small>
+                        <small class="text-muted">{{ top_videos_likes[0].title[:30] + "..." if top_videos_likes else "No videos" }}</small>
                     </div>
                 </div>
             </div>
@@ -2044,9 +2044,9 @@
                         <i class="bx bx-time"></i>
                     </div>
                     <div class="performance-content">
-                        <h6>Durée Moyenne</h6>
+                        <h6>Average Duration</h6>
                         <p class="performance-value">{{ "{:.1f}min".format(metrics.avg_duration / 60) if metrics.avg_duration else "N/A" }}</p>
-                        <small class="text-muted">Pour toutes les vidéos</small>
+                        <small class="text-muted">For all videos</small>
                     </div>
                 </div>
             </div>
@@ -2071,7 +2071,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">🏆 Top par Vues</h5>
-                        <span class="badge bg-primary">{{ top_videos_views|length if top_videos_views else 0 }} vidéos</span>
+                        <span class="badge bg-primary">{{ top_videos_views|length if top_videos_views else 0 }} videos</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -2122,7 +2122,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">❤️ Top par Engagement</h5>
-                        <span class="badge bg-success">{{ top_videos_likes|length if top_videos_likes else 0 }} vidéos</span>
+                        <span class="badge bg-success">{{ top_videos_likes|length if top_videos_likes else 0 }} videos</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -2185,7 +2185,7 @@
             <div class="col-md-7">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">📅 Vidéos Récentes</h5>
+                        <h5 class="mb-0">📅 Recent Videos</h5>
                         <div class="filter-controls">
                             <select id="category-filter" class="form-select form-select-sm">
                                 <option value="">Toutes catégories</option>
@@ -2279,11 +2279,11 @@
                                     <strong>Catégorie Leader</strong>
                                     <p class="mb-0">
                                         {% if hero_count > hub_count and hero_count > help_count %}
-                                        HERO ({{ hero_count }} vidéos)
+                                        HERO ({{ hero_count }} videos)
                                         {% elif hub_count > help_count %}
-                                        HUB ({{ hub_count }} vidéos)
+                                        HUB ({{ hub_count }} videos)
                                         {% else %}
-                                        HELP ({{ help_count }} vidéos)
+                                        HELP ({{ help_count }} videos)
                                         {% endif %}
                                     </p>
                                 </div>
@@ -2329,7 +2329,7 @@
                                         {% if top_videos_views %}
                                         "{{ top_videos_views[0].title[:50] + "..." if top_videos_views[0].title|length > 50 else top_videos_views[0].title }}"
                                         {% else %}
-                                        Analyse en cours...
+                                        Analysis in progress...
                                         {% endif %}
                                     </small>
                                 </div>
@@ -2343,14 +2343,14 @@
 
     <!-- TAB 4: Content Strategy -->
     <div id="content-strategy" class="competitor-content">
-        <h4 class="mb-4">🎭 Stratégie de Contenu</h4>
+        <h4 class="mb-4">🎭 Content Strategy</h4>
         
         <!-- Strategic Overview -->
         <div class="row mb-4">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📊 Distribution Stratégique Actuelle</h5>
+                        <h5 class="mb-0">📊 Current Strategic Distribution</h5>
                     </div>
                     <div class="card-body">
                         <div class="strategy-distribution">
@@ -2358,36 +2358,36 @@
                                 <div class="strategy-header">
                                     <i class="bx bx-star"></i>
                                     <span class="strategy-type">HERO</span>
-                                    <span class="strategy-count">{{ hero_count }} vidéos ({{ "{:.1f}%".format((hero_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                    <span class="strategy-count">{{ hero_count }} videos ({{ "{:.1f}%".format((hero_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
                                 </div>
                                 <div class="strategy-bar">
                                     <div class="strategy-fill hero-fill" style="width: {{ (hero_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
                                 </div>
-                                <p class="strategy-description">Contenu de marque et d'inspiration pour awareness</p>
+                                <p class="strategy-description">Brand and inspirational content for awareness</p>
                             </div>
                             
                             <div class="strategy-item hub-strategy">
                                 <div class="strategy-header">
                                     <i class="bx bx-book-open"></i>
                                     <span class="strategy-type">HUB</span>
-                                    <span class="strategy-count">{{ hub_count }} vidéos ({{ "{:.1f}%".format((hub_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                    <span class="strategy-count">{{ hub_count }} videos ({{ "{:.1f}%".format((hub_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
                                 </div>
                                 <div class="strategy-bar">
                                     <div class="strategy-fill hub-fill" style="width: {{ (hub_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
                                 </div>
-                                <p class="strategy-description">Contenu éducatif et engageant pour rétention</p>
+                                <p class="strategy-description">Educational and engaging content for retention</p>
                             </div>
                             
                             <div class="strategy-item help-strategy">
                                 <div class="strategy-header">
                                     <i class="bx bx-help-circle"></i>
                                     <span class="strategy-type">HELP</span>
-                                    <span class="strategy-count">{{ help_count }} vidéos ({{ "{:.1f}%".format((help_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
+                                    <span class="strategy-count">{{ help_count }} videos ({{ "{:.1f}%".format((help_count / total_videos * 100)) if total_videos > 0 else "0%" }})</span>
                                 </div>
                                 <div class="strategy-bar">
                                     <div class="strategy-fill help-fill" style="width: {{ (help_count / total_videos * 100) if total_videos > 0 else 0 }}%;"></div>
                                 </div>
-                                <p class="strategy-description">Contenu d'aide et support pour conversion</p>
+                                <p class="strategy-description">Help and support content for conversion</p>
                             </div>
                         </div>
                     </div>
@@ -2405,12 +2405,12 @@
                             <div class="score-circle">
                                 <span class="score-value">{{ strategy_score }}/100</span>
                             </div>
-                            <p class="score-label">Équilibre Stratégique</p>
+                            <p class="score-label">Strategic Balance</p>
                             <div class="score-insights">
                                 {% if strategy_score >= 80 %}
                                 <span class="badge bg-success-subtle text-success">Excellent équilibre</span>
                                 {% elif strategy_score >= 60 %}
-                                <span class="badge bg-warning-subtle text-warning">Équilibre correct</span>
+                                <span class="badge bg-warning-subtle text-warning">Correct Balance</span>
                                 {% else %}
                                 <span class="badge bg-danger-subtle text-danger">À rééquilibrer</span>
                                 {% endif %}
@@ -2426,7 +2426,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📅 Calendrier de Contenu</h5>
+                        <h5 class="mb-0">📅 Content Calendar</h5>
                     </div>
                     <div class="card-body">
                         <div class="calendar-insights">
@@ -2484,7 +2484,7 @@
                                 <div class="format-bar">
                                     <div class="format-fill shorts-fill" style="width: {{ metrics.short_form_percentage }}%;"></div>
                                 </div>
-                                <small class="text-muted">Vidéos < 60 secondes</small>
+                                <small class="text-muted">Videos < 60 seconds</small>
                             </div>
                             
                             <div class="format-item">
@@ -2496,7 +2496,7 @@
                                 <div class="format-bar">
                                     <div class="format-fill long-fill" style="width: {{ metrics.long_form_percentage }}%;"></div>
                                 </div>
-                                <small class="text-muted">Vidéos > 60 secondes</small>
+                                <small class="text-muted">Videos > 60 seconds</small>
                             </div>
                         </div>
                         
@@ -2507,7 +2507,7 @@
                                 <span class="insight-tag primary">Focus Shorts</span>
                                 {% endif %}
                                 {% if metrics.avg_duration > 300 %}
-                                <span class="insight-tag success">Contenu Approfondi</span>
+                                <span class="insight-tag success">In-depth Content</span>
                                 {% endif %}
                                 {% if metrics.consistency_score > 80 %}
                                 <span class="insight-tag warning">Publication Régulière</span>
@@ -2524,7 +2524,7 @@
             <div class="col-md-7">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📈 Performance par Catégorie</h5>
+                        <h5 class="mb-0">📈 Performance by Category</h5>
                     </div>
                     <div class="card-body">
                         <div class="category-performance">
@@ -2610,7 +2610,7 @@
                                 <i class="bx bx-mobile-alt text-info"></i>
                                 <div class="recommendation-content">
                                     <strong>Diversifier Formats</strong>
-                                    <p class="mb-0">Équilibrer Shorts/Longs selon audience</p>
+                                    <p class="mb-0">Balance Shorts/Long according to audience</p>
                                 </div>
                             </div>
                         </div>
@@ -2681,7 +2681,7 @@
 
     <!-- TAB 5: Sentiment Analysis -->
     <div id="sentiment-analysis" class="competitor-content">
-        <h4 class="mb-4">💭 Analyse de Sentiment</h4>
+        <h4 class="mb-4">💭 Sentiment Analysis</h4>
         
         <!-- Sentiment Overview -->
         <div class="row mb-4">
@@ -2701,7 +2701,7 @@
                             </div>
                         </div>
                         <h6 class="mt-3 mb-1">Perception Globale</h6>
-                        <p class="text-muted small mb-0">Basé sur l'analyse de {{ sentiment.total_analyzed if sentiment else 450 }}+ titres vidéos</p>
+                        <p class="text-muted small mb-0">Based on analysis of {{ sentiment.total_analyzed if sentiment else 450 }}+ video titles</p>
                     </div>
                 </div>
             </div>
@@ -2709,7 +2709,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📊 Distribution des Sentiments</h5>
+                        <h5 class="mb-0">📊 Sentiment Distribution</h5>
                     </div>
                     <div class="card-body">
                         <div class="sentiment-distribution">
@@ -2719,13 +2719,13 @@
                                 </div>
                                 <div class="sentiment-content">
                                     <div class="sentiment-header">
-                                        <span class="sentiment-type">Positif</span>
+                                        <span class="sentiment-type">Positive</span>
                                         <span class="sentiment-percentage">{{ sentiment.positive_percentage if sentiment else 65 }}%</span>
                                     </div>
                                     <div class="sentiment-bar">
                                         <div class="sentiment-fill positive-fill" style="width: {{ sentiment.positive_percentage if sentiment else 65 }}%;"></div>
                                     </div>
-                                    <small class="text-muted">{{ sentiment.positive_count if sentiment else 293 }} vidéos</small>
+                                    <small class="text-muted">{{ sentiment.positive_count if sentiment else 293 }} videos</small>
                                 </div>
                             </div>
                             
@@ -2735,13 +2735,13 @@
                                 </div>
                                 <div class="sentiment-content">
                                     <div class="sentiment-header">
-                                        <span class="sentiment-type">Neutre</span>
+                                        <span class="sentiment-type">Neutral</span>
                                         <span class="sentiment-percentage">{{ sentiment.neutral_percentage if sentiment else 25 }}%</span>
                                     </div>
                                     <div class="sentiment-bar">
                                         <div class="sentiment-fill neutral-fill" style="width: {{ sentiment.neutral_percentage if sentiment else 25 }}%;"></div>
                                     </div>
-                                    <small class="text-muted">{{ sentiment.neutral_count if sentiment else 113 }} vidéos</small>
+                                    <small class="text-muted">{{ sentiment.neutral_count if sentiment else 113 }} videos</small>
                                 </div>
                             </div>
                             
@@ -2751,13 +2751,13 @@
                                 </div>
                                 <div class="sentiment-content">
                                     <div class="sentiment-header">
-                                        <span class="sentiment-type">Négatif</span>
+                                        <span class="sentiment-type">Negative</span>
                                         <span class="sentiment-percentage">{{ sentiment.negative_percentage if sentiment else 10 }}%</span>
                                     </div>
                                     <div class="sentiment-bar">
                                         <div class="sentiment-fill negative-fill" style="width: {{ sentiment.negative_percentage if sentiment else 10 }}%;"></div>
                                     </div>
-                                    <small class="text-muted">{{ sentiment.negative_count if sentiment else 44 }} vidéos</small>
+                                    <small class="text-muted">{{ sentiment.negative_count if sentiment else 44 }} videos</small>
                                 </div>
                             </div>
                         </div>
@@ -2771,7 +2771,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📈 Évolution des Émotions</h5>
+                        <h5 class="mb-0">📈 Emotion Evolution</h5>
                     </div>
                     <div class="card-body">
                         <div id="emotion-trend-chart" style="height: 250px;">
@@ -2780,15 +2780,15 @@
                         <div class="emotion-legend mt-3">
                             <div class="legend-item">
                                 <span class="legend-color positive"></span>
-                                <span class="legend-label">Positif</span>
+                                <span class="legend-label">Positive</span>
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color neutral"></span>
-                                <span class="legend-label">Neutre</span>
+                                <span class="legend-label">Neutral</span>
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color negative"></span>
-                                <span class="legend-label">Négatif</span>
+                                <span class="legend-label">Negative</span>
                             </div>
                         </div>
                     </div>
@@ -2798,7 +2798,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">🌍 Sentiment Géographique</h5>
+                        <h5 class="mb-0">🌍 Geographic Sentiment</h5>
                     </div>
                     <div class="card-body">
                         <div class="geo-sentiment">
@@ -2852,7 +2852,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">🎭 Sentiment par Type de Contenu</h5>
+                        <h5 class="mb-0">🎭 Sentiment by Content Type</h5>
                     </div>
                     <div class="card-body">
                         <div class="content-sentiment">
@@ -2872,7 +2872,7 @@
                                         <div class="negative-segment" style="width: 8%;"></div>
                                     </div>
                                 </div>
-                                <p class="content-insight">Les vidéos inspirationnelles génèrent beaucoup d'enthousiasme</p>
+                                <p class="content-insight">Inspirational videos generate a lot of enthusiasm</p>
                             </div>
                             
                             <div class="content-type-sentiment">
@@ -2891,7 +2891,7 @@
                                         <div class="negative-segment" style="width: 8%;"></div>
                                     </div>
                                 </div>
-                                <p class="content-insight">Contenu éducatif bien reçu, engagement solide</p>
+                                <p class="content-insight">Educational content well received, solid engagement</p>
                             </div>
                             
                             <div class="content-type-sentiment">
@@ -2910,7 +2910,7 @@
                                         <div class="negative-segment" style="width: 7%;"></div>
                                     </div>
                                 </div>
-                                <p class="content-insight">Contenu utile mais plus neutre émotionnellement</p>
+                                <p class="content-insight">Useful content but more emotionally neutral</p>
                             </div>
                         </div>
                     </div>
@@ -2938,7 +2938,7 @@
                                 <div class="alert-item success">
                                     <i class="bx bx-check-circle"></i>
                                     <div class="alert-content">
-                                        <strong>Sentiment Stable</strong>
+                                        <strong>Stable Sentiment</strong>
                                         <p class="mb-0">Pas de polémique détectée ce mois</p>
                                     </div>
                                 </div>
@@ -3008,7 +3008,7 @@
                             <div class="comment-item positive">
                                 <div class="comment-header">
                                     <span class="comment-sentiment">😊</span>
-                                    <span class="comment-type">Positif</span>
+                                    <span class="comment-type">Positive</span>
                                 </div>
                                 <p class="comment-text">"Séjour absolument magique ! Les enfants ont adoré l'Aqua Mundo et nous avons passé des vacances inoubliables."</p>
                             </div>
@@ -3016,7 +3016,7 @@
                             <div class="comment-item neutral">
                                 <div class="comment-header">
                                     <span class="comment-sentiment">😐</span>
-                                    <span class="comment-type">Neutre</span>
+                                    <span class="comment-type">Neutral</span>
                                 </div>
                                 <p class="comment-text">"Bon séjour dans l'ensemble. Les activités sont variées mais l'hébergement pourrait être rénové."</p>
                             </div>
@@ -3024,7 +3024,7 @@
                             <div class="comment-item negative">
                                 <div class="comment-header">
                                     <span class="comment-sentiment">😞</span>
-                                    <span class="comment-type">Négatif</span>
+                                    <span class="comment-type">Negative</span>
                                 </div>
                                 <p class="comment-text">"Prix très élevé pour les prestations proposées. Déçu du rapport qualité-prix."</p>
                             </div>
@@ -3095,21 +3095,21 @@ function initEmotionChart() {
         data: {
             labels: data.map(d => d.month),
             datasets: [{
-                label: 'Positif',
+                label: 'Positive',
                 data: data.map(d => d.positive),
                 borderColor: '#28c76f',
                 backgroundColor: 'rgba(40, 199, 111, 0.1)',
                 tension: 0.4,
                 fill: true
             }, {
-                label: 'Neutre',
+                label: 'Neutral',
                 data: data.map(d => d.neutral),
                 borderColor: '#ff9f43',
                 backgroundColor: 'rgba(255, 159, 67, 0.1)',
                 tension: 0.4,
                 fill: true
             }, {
-                label: 'Négatif',
+                label: 'Negative',
                 data: data.map(d => d.negative),
                 borderColor: '#ea5455',
                 backgroundColor: 'rgba(234, 84, 85, 0.1)',
@@ -3152,8 +3152,8 @@ function initWordCloud() {
         word.addEventListener('mouseenter', function() {
             this.style.transform = 'scale(1.2)';
             this.style.zIndex = '10';
-            this.title = `Sentiment: ${this.classList.contains('positive') ? 'Positif' : 
-                         this.classList.contains('negative') ? 'Négatif' : 'Neutre'}`;
+            this.title = `Sentiment: ${this.classList.contains('positive') ? 'Positive' : 
+                         this.classList.contains('negative') ? 'Negative' : 'Neutral'}`;
         });
         
         word.addEventListener('mouseleave', function() {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang="fr"
+  lang="en"
   class="light-style layout-navbar-fixed layout-menu-fixed"
   dir="ltr"
   data-theme="theme-default"
@@ -16,7 +16,7 @@
 
     <title>{% block title %}YT Channel Analyzer{% endblock %}</title>
 
-    <meta name="description" content="Analyseur de chaînes YouTube - Dashboard de veille concurrentielle" />
+    <meta name="description" content="YouTube Channel Analyzer - Competitive Intelligence Dashboard" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='sneat-pro/img/favicon/favicon.ico') }}" />
@@ -212,13 +212,7 @@
               </a>
             </li>
 
-            <!-- DATA -->
-            <li class="menu-item {% if request.endpoint == 'admin.data-export' %}active{% endif %}">
-              <a href="/data" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
-                <div class="text-truncate" data-i18n="DATA">DATA</div>
-              </a>
-            </li>
+            <!-- DATA menu item removed as requested -->
 
             <!-- AI Learning (dev mode only) -->
             {% if dev_mode %}
@@ -308,8 +302,8 @@
                     <input
                       type="text"
                       class="form-control border-0 bg-transparent"
-                      placeholder="Rechercher une chaîne..."
-                      aria-label="Rechercher..."
+                      placeholder="Search channel..."
+                      aria-label="Search..."
                       id="navbar-search-direct"
                       autocomplete="off"
                       style="box-shadow: none;"
@@ -337,13 +331,13 @@
                   <div class="dropdown-menu dropdown-menu-end py-0">
                     <div class="dropdown-menu-header border-bottom">
                       <div class="dropdown-header d-flex align-items-center py-3">
-                        <h5 class="text-body mb-0 me-auto">Raccourcis</h5>
+                        <h5 class="text-body mb-0 me-auto">Shortcuts</h5>
                         <a
                           href="javascript:void(0)"
                           class="dropdown-shortcuts-add text-body"
                           data-bs-toggle="tooltip"
                           data-bs-placement="top"
-                          title="Ajouter des raccourcis"
+                          title="Add shortcuts"
                           ><i class="bx bx-sm bx-plus-circle"></i
                         ></a>
                       </div>
@@ -354,15 +348,15 @@
                           <span class="dropdown-shortcuts-icon bg-label-secondary rounded-circle mb-2">
                             <i class="bx bx-user-circle fs-4"></i>
                           </span>
-                          <a href="{{ url_for('competitors.concurrents') }}" class="stretched-link">Concurrents</a>
-                          <small class="text-muted mb-0">Analyser la concurrence</small>
+                          <a href="{{ url_for('competitors.concurrents') }}" class="stretched-link">Competitors</a>
+                          <small class="text-muted mb-0">Analyze competition</small>
                         </div>
                         <div class="dropdown-shortcuts-item col">
                           <span class="dropdown-shortcuts-icon bg-label-secondary rounded-circle mb-2">
                             <i class="bx bx-video fs-4"></i>
                           </span>
-                          <a href="/top-videos" class="stretched-link">Top Vidéos</a>
-                          <small class="text-muted mb-0">Contenu performant</small>
+                          <a href="/top-videos" class="stretched-link">Top Videos</a>
+                          <small class="text-muted mb-0">High-performing content</small>
                         </div>
                       </div>
                       <div class="row row-bordered overflow-visible g-0">
@@ -371,14 +365,14 @@
                             <i class="bx bx-list-ul fs-4"></i>
                           </span>
                           <a href="/top-playlists" class="stretched-link">Top Playlists</a>
-                          <small class="text-muted mb-0">Stratégie de contenu</small>
+                          <small class="text-muted mb-0">Content strategy</small>
                         </div>
                         <div class="dropdown-shortcuts-item col">
                           <span class="dropdown-shortcuts-icon bg-label-secondary rounded-circle mb-2">
                             <i class="bx bx-bulb fs-4"></i>
                           </span>
                           <a href="/insights" class="stretched-link">Insights</a>
-                          <small class="text-muted mb-0">Analyses avancées</small>
+                          <small class="text-muted mb-0">Advanced analytics</small>
                         </div>
                       </div>
                       <div class="row row-bordered overflow-visible g-0">
@@ -387,14 +381,14 @@
                             <i class="bx bx-brain fs-4"></i>
                           </span>
                           <a href="/learn" class="stretched-link">IA Learning</a>
-                          <small class="text-muted mb-0">Classification IA</small>
+                          <small class="text-muted mb-0">AI Classification</small>
                         </div>
                         <div class="dropdown-shortcuts-item col">
                           <span class="dropdown-shortcuts-icon bg-label-secondary rounded-circle mb-2">
                             <i class="bx bx-code-alt fs-4"></i>
                           </span>
                           <a href="/api-usage" class="stretched-link">API YouTube</a>
-                          <small class="text-muted mb-0">Quota et utilisation</small>
+                          <small class="text-muted mb-0">Quota and usage</small>
                         </div>
                       </div>
                       <div class="row row-bordered overflow-visible g-0">
@@ -403,13 +397,13 @@
                             <i class="bx bx-wrench fs-4"></i>
                           </span>
                           <a href="/fix-problems" class="stretched-link">Maintenance</a>
-                          <small class="text-muted mb-0">Corriger les problèmes</small>
+                          <small class="text-muted mb-0">Fix issues</small>
                         </div>
                         <div class="dropdown-shortcuts-item col">
                           <span class="dropdown-shortcuts-icon bg-label-secondary rounded-circle mb-2">
                             <i class="bx bx-cog fs-4"></i>
                           </span>
-                          <a href="{{ url_for('admin.settings') }}" class="stretched-link">Paramètres</a>
+                          <a href="{{ url_for('admin.settings') }}" class="stretched-link">Settings</a>
                           <small class="text-muted mb-0">Configuration</small>
                         </div>
                       </div>
@@ -439,7 +433,7 @@
                           class="dropdown-notifications-all text-body"
                           data-bs-toggle="tooltip"
                           data-bs-placement="top"
-                          title="Marquer tout comme lu"
+                          title="Mark all as read"
                           ><i class="bx fs-4 bx-envelope-open"></i
                         ></a>
                       </div>
@@ -454,9 +448,9 @@
                               </div>
                             </div>
                             <div class="flex-grow-1">
-                              <h6 class="mb-1">Nouvelle analyse terminée</h6>
-                              <p class="mb-0">L'analyse de la chaîne "Example Channel" est terminée</p>
-                              <small class="text-muted">Il y a 2 minutes</small>
+                              <h6 class="mb-1">New analysis completed</h6>
+                              <p class="mb-0">Analysis of "Example Channel" is complete</p>
+                              <small class="text-muted">2 minutes ago</small>
                             </div>
                             <div class="flex-shrink-0 dropdown-notifications-actions">
                               <a href="javascript:void(0)" class="dropdown-notifications-read"
@@ -476,9 +470,9 @@
                               </div>
                             </div>
                             <div class="flex-grow-1">
-                              <h6 class="mb-1">Quota API atteint</h6>
-                              <p class="mb-0">Le quota quotidien YouTube API est presque atteint</p>
-                              <small class="text-muted">Il y a 1 heure</small>
+                              <h6 class="mb-1">API quota reached</h6>
+                              <p class="mb-0">Daily YouTube API quota is almost reached</p>
+                              <small class="text-muted">1 hour ago</small>
                             </div>
                             <div class="flex-shrink-0 dropdown-notifications-actions">
                               <a href="javascript:void(0)" class="dropdown-notifications-read"
@@ -574,7 +568,7 @@
                     <li>
                       <a class="dropdown-item" href="{{ url_for('admin.settings') }}">
                         <i class="bx bx-cog me-2"></i>
-                        <span class="align-middle">Paramètres</span>
+                        <span class="align-middle">Settings</span>
                       </a>
                     </li>
                     <li>
@@ -595,7 +589,7 @@
                     <li>
                       <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                         <i class="bx bx-power-off me-2"></i>
-                        <span class="align-middle">Déconnexion</span>
+                        <span class="align-middle">Logout</span>
                       </a>
                     </li>
                   </ul>
@@ -688,6 +682,38 @@
                 }
             });
         }
+        
+        // Initialize submenu toggle functionality
+        const menuToggles = document.querySelectorAll('.menu-toggle');
+        menuToggles.forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const menuItem = this.closest('.menu-item');
+                const submenu = menuItem.querySelector('.menu-sub');
+                
+                if (submenu) {
+                    // Toggle the submenu visibility
+                    if (menuItem.classList.contains('open')) {
+                        menuItem.classList.remove('open');
+                        submenu.style.display = 'none';
+                    } else {
+                        // Close other open submenus
+                        menuToggles.forEach(function(otherToggle) {
+                            const otherMenuItem = otherToggle.closest('.menu-item');
+                            const otherSubmenu = otherMenuItem.querySelector('.menu-sub');
+                            if (otherMenuItem !== menuItem && otherMenuItem.classList.contains('open')) {
+                                otherMenuItem.classList.remove('open');
+                                if (otherSubmenu) otherSubmenu.style.display = 'none';
+                            }
+                        });
+                        
+                        // Open this submenu
+                        menuItem.classList.add('open');
+                        submenu.style.display = 'block';
+                    }
+                }
+            });
+        });
     });
     </script>
 
@@ -978,7 +1004,7 @@
                                 <div class="alert alert-info d-flex align-items-center" role="alert">
                                     <i class="bx bx-info-circle me-2"></i>
                                     <div>
-                                        L'analyse se fera en arrière-plan. Vous pourrez suivre la progression dans l'onglet Tâches.
+                                        The analysis will run in the background. You can follow the progress in the Tasks tab.
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,448 @@
+{% extends "base_sneat.html" %}
+
+{% block title %}Classification Statistics - YT Channel Analyzer{% endblock %}
+
+{% block page_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        border: 1px solid #e7e7ff;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(102, 126, 234, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #696cff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #8592a3;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-breakdown {
+        font-size: 0.875rem;
+        color: #566a7f;
+    }
+    
+    .category-stats {
+        margin-top: 2rem;
+    }
+    
+    .category-bar {
+        margin-bottom: 1rem;
+    }
+    
+    .category-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .category-name {
+        font-weight: 600;
+        color: #566a7f;
+    }
+    
+    .category-count {
+        color: #8592a3;
+        font-size: 0.875rem;
+    }
+    
+    .progress-container {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        height: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 0.5rem;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-hero {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    }
+    
+    .progress-hub {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+    }
+    
+    .progress-help {
+        background: linear-gradient(135deg, #28c76f 0%, #20bf6b 100%);
+    }
+    
+    .ml-status {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .ml-enabled {
+        background: linear-gradient(135deg, rgba(40, 199, 111, 0.1) 0%, rgba(32, 191, 107, 0.05) 100%);
+        border: 1px solid rgba(40, 199, 111, 0.3);
+        color: #28c76f;
+    }
+    
+    .ml-disabled {
+        background: linear-gradient(135deg, rgba(255, 159, 67, 0.1) 0%, rgba(255, 143, 48, 0.05) 100%);
+        border: 1px solid rgba(255, 159, 67, 0.3);
+        color: #ff9f43;
+    }
+    
+    .classification-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .method-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #e7e7ff;
+        text-align: center;
+    }
+    
+    .method-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .method-human .method-icon {
+        background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+    }
+    
+    .method-ai .method-icon {
+        background: linear-gradient(135deg, #28c76f 0%, #20bf6b 100%);
+    }
+    
+    .method-pattern .method-icon {
+        background: linear-gradient(135deg, #ff9f43 0%, #ff8f30 100%);
+    }
+    
+    .method-title {
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+    
+    .method-count {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #696cff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold py-3 mb-0">
+                    <span class="text-muted fw-light">AI Learning /</span> Classification Statistics
+                </h4>
+                {% if ml_enabled %}
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="refreshStats()">
+                        <i class="bx bx-refresh me-1"></i>
+                        Refresh Stats
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ML Status -->
+            <div class="ml-status {{ 'ml-enabled' if ml_enabled else 'ml-disabled' }}">
+                <i class="bx {{ 'bx-check-circle' if ml_enabled else 'bx-info-circle' }} fs-2"></i>
+                <div>
+                    <h5 class="mb-1">
+                        {% if ml_enabled %}
+                            Development Mode - Full ML Access
+                        {% else %}
+                            Production Mode - Statistics View Only
+                        {% endif %}
+                    </h5>
+                    <p class="mb-0">
+                        {% if ml_enabled %}
+                            Real-time classification statistics with ability to train and update models.
+                        {% else %}
+                            Displaying cached classification statistics. Model training disabled in production.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.videos.total }}</div>
+                    <div class="stat-label">Total Videos</div>
+                    <div class="stat-breakdown">
+                        {{ stats.videos.classified }} classified • {{ stats.videos.unclassified }} unclassified
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.playlists.total }}</div>
+                    <div class="stat-label">Total Playlists</div>
+                    <div class="stat-breakdown">
+                        {{ stats.playlists.classified }} classified • {{ stats.playlists.unclassified }} unclassified
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.videos.human + stats.playlists.human }}</div>
+                    <div class="stat-label">Human Validated</div>
+                    <div class="stat-breakdown">
+                        {{ stats.videos.human }} videos • {{ stats.playlists.human }} playlists
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ ((stats.videos.classified / stats.videos.total) * 100) | round(1) if stats.videos.total > 0 else 0 }}%</div>
+                    <div class="stat-label">Classification Rate</div>
+                    <div class="stat-breakdown">
+                        {{ stats.videos.classified }} of {{ stats.videos.total }} videos
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classification Methods -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-category me-2"></i>
+                        Classification Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="classification-methods">
+                        <div class="method-card method-human">
+                            <div class="method-icon">
+                                <i class="bx bx-user"></i>
+                            </div>
+                            <div class="method-title">Human Validated</div>
+                            <div class="method-count">{{ stats.videos.human }}</div>
+                            <div class="text-muted small">Manually classified</div>
+                        </div>
+                        
+                        <div class="method-card method-ai">
+                            <div class="method-icon">
+                                <i class="bx bx-brain"></i>
+                            </div>
+                            <div class="method-title">AI Semantic</div>
+                            <div class="method-count">{{ stats.videos.ai }}</div>
+                            <div class="text-muted small">Sentence Transformers</div>
+                        </div>
+                        
+                        <div class="method-card method-pattern">
+                            <div class="method-icon">
+                                <i class="bx bx-code-alt"></i>
+                            </div>
+                            <div class="method-title">Pattern Matching</div>
+                            <div class="method-count">{{ stats.videos.pattern }}</div>
+                            <div class="text-muted small">Keyword patterns</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Distribution -->
+            {% if stats.categories %}
+            <div class="card category-stats">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-pie-chart-alt me-2"></i>
+                        Category Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for category in stats.categories %}
+                    <div class="category-bar">
+                        <div class="category-header">
+                            <span class="category-name">{{ category.name | upper }}</span>
+                            <span class="category-count">{{ category.total }} items</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar progress-{{ category.name | lower }}" 
+                                 style="width: {{ (category.total / (stats.videos.classified + stats.playlists.classified) * 100) if (stats.videos.classified + stats.playlists.classified) > 0 else 0 }}%">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mt-1">
+                            <span>Human: {{ category.human }} • AI: {{ category.ai }} • Pattern: {{ category.pattern }}</span>
+                            <span>{{ ((category.total / (stats.videos.classified + stats.playlists.classified)) * 100) | round(1) if (stats.videos.classified + stats.playlists.classified) > 0 else 0 }}%</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            {% if ml_enabled %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bx bx-cog me-2"></i>
+                        Classification Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-primary" onclick="runGlobalClassification()">
+                            <i class="bx bx-play me-1"></i>
+                            Run Global Classification
+                        </button>
+                        <button class="btn btn-success" onclick="trainModel()">
+                            <i class="bx bx-brain me-1"></i>
+                            Train Semantic Model
+                        </button>
+                        <button class="btn btn-info" onclick="validateIntegrity()">
+                            <i class="bx bx-check-shield me-1"></i>
+                            Validate Integrity
+                        </button>
+                        <a href="/human-classifications" class="btn btn-outline-primary">
+                            <i class="bx bx-list-ul me-1"></i>
+                            View Classifications
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+function refreshStats() {
+    location.reload();
+}
+
+{% if ml_enabled %}
+function runGlobalClassification() {
+    if (confirm('Run global AI classification on all unclassified content?')) {
+        showLoading('Running global classification...');
+        fetch('/api/global-ai-classification', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                showSuccess('Global classification completed successfully!');
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                showError('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showError('Network error: ' + error.message);
+        });
+    }
+}
+
+function trainModel() {
+    if (confirm('Train semantic model with current human classifications?')) {
+        showLoading('Training semantic model...');
+        fetch('/api/train-model', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.status === 'success') {
+                showSuccess('Model training completed successfully!');
+            } else {
+                showError('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showError('Network error: ' + error.message);
+        });
+    }
+}
+
+function validateIntegrity() {
+    showLoading('Validating classification integrity...');
+    fetch('/api/verify-classification-integrity', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.status === 'success') {
+            showSuccess('Classification integrity validated successfully!');
+        } else {
+            showError('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showError('Network error: ' + error.message);
+    });
+}
+
+function showLoading(message) {
+    // Implement loading indicator
+    console.log('Loading: ' + message);
+}
+
+function hideLoading() {
+    // Hide loading indicator
+    console.log('Loading complete');
+}
+
+function showSuccess(message) {
+    // Implement success notification
+    alert('Success: ' + message);
+}
+
+function showError(message) {
+    // Implement error notification
+    alert('Error: ' + message);
+}
+{% endif %}
+</script>
+{% endblock %}
