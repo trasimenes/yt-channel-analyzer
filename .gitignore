@@ -107,18 +107,22 @@ scanners/
 the-youtube-scraper-master/
 
 # ==============================================
-# PyTorch et Machine Learning - Fichiers volumineux
+# PRODUCTION BRANCH - ML MODELS STRICTLY FORBIDDEN
 # ==============================================
 
-# Modèles PyTorch
+# Development files that should NEVER be in production
+run_development.py
+requirements-semantic.txt
+.env.development
+scripts/repair_venv_semantic.py
+
+# ML Models - BANNED in production (400MB+ files)
 *.pt
 *.pth
 *.pkl
 *.pickle
 *.dylib
 *.so
-
-# Modèles Transformers et HuggingFace
 *.safetensors
 *.bin
 *.onnx
@@ -126,30 +130,27 @@ the-youtube-scraper-master/
 *.tflite
 *.pb
 
-# Cache et données de modèles
+# ML Directories - BANNED in production
 transformers_cache/
+transformers_models/
+ml_models/
 models/
 model_cache/
 .cache/
 *.cache
 **/.cache/
-
-# Répertoires de modèles spécifiques
-transformers_models/
 models--*/
 snapshots/
 blobs/
 refs/
 
-# Données d'entraînement
+# Training and Development - BANNED in production
 training_data/
 datasets/
 data/embeddings/
 embeddings/
 *.npy
 *.npz
-
-# Checkpoints et sauvegardes de modèles
 checkpoint*/
 checkpoints/
 runs/
@@ -157,14 +158,15 @@ wandb/
 tensorboard/
 *.ckpt
 
-# Environnement virtuel sémantique
+# Virtual Environments - BANNED in production
 venv_semantic/
 venv_semantic_*/
 
-# Jupyter et notebooks
+# Jupyter Notebooks - BANNED in production
 .ipynb_checkpoints/
+notebooks/
 *.ipynb
 
-# Fichiers de configuration ML
+# ML Configuration - BANNED in production
 ai_training_metadata.json
 transformer_stats.json

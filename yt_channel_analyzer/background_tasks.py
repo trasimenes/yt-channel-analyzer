@@ -440,44 +440,27 @@ class BackgroundTaskManager:
                 competitor_id = save_competitor_data(channel_url, all_videos)
                 print(f"[TASKS] ✅ Sauvegarde réussie pour {channel_url}")
                 
-                # 🚀 CORRECTION À LA SOURCE : Auto-génération des statistiques
+                # 🚀 WORKFLOW AUTOMATIQUE COMPLET POST-IMPORT
                 if competitor_id:
-                    print(f"[TASKS] 📊 Génération automatique des statistiques pour competitor_id: {competitor_id}")
+                    print(f"[TASKS] 🚀 Lancement du workflow automatique pour competitor_id: {competitor_id}")
                     try:
-                        from .database.base import get_db_connection
+                        from .import_workflow import workflow_manager
                         
-                        conn = get_db_connection()
-                        cursor = conn.cursor()
+                        self.update_task(task_id, current_step='🚀 Workflow post-import...', progress=97)
                         
-                        # Créer/mettre à jour les statistiques dans competitor_stats
-                        cursor.execute('''
-                            INSERT OR REPLACE INTO competitor_stats (
-                                competitor_id, 
-                                total_videos, 
-                                total_views, 
-                                avg_views,
-                                last_updated
-                            ) VALUES (
-                                ?,
-                                (SELECT COUNT(*) FROM video WHERE concurrent_id = ?),
-                                (SELECT SUM(view_count) FROM video WHERE concurrent_id = ?),
-                                (SELECT AVG(view_count) FROM video WHERE concurrent_id = ?),
-                                datetime('now')
-                            )
-                        ''', (competitor_id, competitor_id, competitor_id, competitor_id))
+                        # Exécuter le workflow complet
+                        workflow_results = workflow_manager.run_post_import_workflow(
+                            competitor_id, channel_url
+                        )
                         
-                        conn.commit()
+                        # Afficher les résultats
+                        print(f"[TASKS] ✅ Workflow terminé:")
+                        for step_name, step_result in workflow_results['steps'].items():
+                            status = step_result.get('status', 'unknown')
+                            print(f"[TASKS]    - {step_name}: {status}")
                         
-                        # Vérifier les résultats
-                        cursor.execute('SELECT total_videos, total_views FROM competitor_stats WHERE competitor_id = ?', (competitor_id,))
-                        stats = cursor.fetchone()
-                        if stats:
-                            print(f"[TASKS] ✅ Stats créées: {stats[0]} vidéos, {stats[1]:,} vues totales")
-                        
-                        conn.close()
-                        
-                    except Exception as stats_error:
-                        print(f"[TASKS] ⚠️ Erreur génération stats (non critique): {stats_error}")
+                    except Exception as workflow_error:
+                        print(f"[TASKS] ⚠️ Erreur workflow (non critique): {workflow_error}")
                         import traceback
                         traceback.print_exc()
                     

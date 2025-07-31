@@ -154,11 +154,33 @@ class DatabaseUtils:
             if 'il y a' in date_str:
                 # Pour les dates relatives, utiliser la date actuelle
                 return datetime.now()
-            else:
-                # Essayer de parser la date directement
+            
+            # Format ISO 8601 avec Z (timezone UTC) - convertir en naive
+            if 'T' in date_str and date_str.endswith('Z'):
+                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                return dt.replace(tzinfo=None)  # Convertir en naive pour compatibilité
+            
+            # Format ISO 8601 standard - convertir en naive si timezone présente
+            if 'T' in date_str:
+                dt = datetime.fromisoformat(date_str)
+                return dt.replace(tzinfo=None) if dt.tzinfo else dt
+            
+            # Format date simple YYYY-MM-DD
+            if '-' in date_str and len(date_str) == 10:
                 return datetime.strptime(date_str, '%Y-%m-%d')
-        except:
-            return datetime.now()
+                
+            # Autres formats possibles
+            for fmt in ['%Y-%m-%d %H:%M:%S', '%d/%m/%Y', '%Y/%m/%d']:
+                try:
+                    return datetime.strptime(date_str, fmt)
+                except:
+                    continue
+                    
+        except Exception as e:
+            print(f"[WARNING] Impossible de parser la date '{date_str}': {e}")
+            
+        # Ne PAS retourner datetime.now() - retourner None pour indiquer l'échec
+        return None
 
 
 class DatabaseSchema:
