@@ -382,6 +382,33 @@ class VideoManager:
         ))
 
 
+def calculate_publication_frequency(competitor_id: int) -> float:
+    """Calcule la fréquence de publication en vidéos par semaine"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                julianday(MAX(published_at)) - julianday(MIN(published_at)) as days_span,
+                COUNT(*) as video_count
+            FROM video 
+            WHERE concurrent_id = ? 
+            AND published_at IS NOT NULL
+        """, (competitor_id,))
+        
+        result = cursor.fetchone()
+        
+        if result and result[0] and result[0] > 0:
+            days_span, video_count = result
+            return (video_count / days_span) * 7  # Convertir en vidéos par semaine
+        else:
+            return 0.0
+            
+    finally:
+        conn.close()
+
+
 class VideoClassificationManager:
     """Gestionnaire de classification des vidéos."""
     
