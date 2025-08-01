@@ -355,9 +355,25 @@ class CompetitorAdvancedMetricsService:
         for video in videos:
             if video['published_at']:
                 try:
-                    date = datetime.fromisoformat(video['published_at'].replace('Z', '+00:00'))
+                    # Handle both string dates and datetime objects
+                    if isinstance(video['published_at'], str):
+                        # Parse string date
+                        date_str = video['published_at']
+                        if 'T' in date_str and date_str.endswith('Z'):
+                            date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                        else:
+                            date = datetime.fromisoformat(date_str)
+                    else:
+                        # Already a datetime object
+                        date = video['published_at']
+                    
+                    # Convert to naive datetime (remove timezone) for consistent sorting
+                    if date.tzinfo is not None:
+                        date = date.replace(tzinfo=None)
+                    
                     dates.append(date)
-                except:
+                except Exception as e:
+                    # Skip problematic dates
                     continue
         
         if not dates or len(dates) < 2:
@@ -432,9 +448,25 @@ class CompetitorAdvancedMetricsService:
         for video in videos:
             if video['published_at']:
                 try:
-                    date = datetime.fromisoformat(video['published_at'].replace('Z', '+00:00'))
+                    # Handle both string dates and datetime objects
+                    if isinstance(video['published_at'], str):
+                        # Parse string date
+                        date_str = video['published_at']
+                        if 'T' in date_str and date_str.endswith('Z'):
+                            date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                        else:
+                            date = datetime.fromisoformat(date_str)
+                    else:
+                        # Already a datetime object
+                        date = video['published_at']
+                    
+                    # Convert to naive datetime (remove timezone) for consistent sorting
+                    if date.tzinfo is not None:
+                        date = date.replace(tzinfo=None)
+                    
                     dates.append(date)
-                except:
+                except Exception as e:
+                    # Skip problematic dates
                     continue
         
         if len(dates) < 3:

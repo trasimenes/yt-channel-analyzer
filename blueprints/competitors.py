@@ -78,8 +78,35 @@ def concurrents():
         # Calculate total videos
         total_videos = sum(comp['video_count'] for comp in competitors)
         
+        # Group competitors by country for the tabs template
+        competitors_by_country = {
+            'international': [],
+            'france': [],
+            'germany': [],
+            'netherlands': [], 
+            'uk': []
+        }
+        
+        for comp in competitors:
+            country = comp.get('country', '').lower()
+            if country == 'france':
+                competitors_by_country['france'].append(comp)
+            elif country == 'germany':
+                competitors_by_country['germany'].append(comp) 
+            elif country == 'netherlands':
+                competitors_by_country['netherlands'].append(comp)
+            elif country in ['united kingdom', 'uk']:
+                competitors_by_country['uk'].append(comp)
+            else:
+                competitors_by_country['international'].append(comp)
+        
         return render_template('concurrents_sneat_pro_tabs.html', 
                              competitors=competitors,
+                             international_competitors=competitors_by_country['international'],
+                             france_competitors=competitors_by_country['france'],
+                             germany_competitors=competitors_by_country['germany'],
+                             netherlands_competitors=competitors_by_country['netherlands'],
+                             uk_competitors=competitors_by_country['uk'],
                              total_competitors=len(competitors),
                              total_videos=total_videos,
                              dev_mode=session.get('dev_mode', False))
@@ -93,7 +120,7 @@ def concurrents():
                              total_videos=0)
 
 
-@competitors_bp.route('/competitor/<int:competitor_id>')
+@competitors_bp.route('/competitor/<int:competitor_id>')  
 @login_required
 def competitor_detail(competitor_id):
     """
